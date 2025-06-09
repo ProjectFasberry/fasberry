@@ -1,0 +1,11 @@
+export const GALLERY_FOLDER_ITEM = (name: string) => `/images/gallery/${name}.webp`
+export const LOCATION_FOLDER_ITEM = (name: string) => `/images/game-content/locations/${name}.png`
+export const GAMEPLAY_FOLDER_ITEM = (name: string) => `/images/gameplay/${name}.webp`
+export const COMMUNITY_FOLDER_ITEM = (name: string) => `/images/community/${name}.webp`
+export const MENUS_FOLDER_ITEM = (name: string) => `/images/game-content/menus/${name}.png`
+export const WALLETS_FOLDER_ITEM = (name: string) => `/images/game-content/wallets/${name}.png`
+export const OTHER_FOLDER_ITEM = (name: string) => `/images/game-content/other/${name}.png`
+export const ANIMALS_FOLDER_ITEM = (name: string) => `/images/game-content/animals/${name}.png`
+export const PETS_FOLDER_ITEM = (name: string) => `/images/game-content/animals/${name}.png`
+export const ARMOR_FOLDER_ITEM = (name: string) => `/images/game-content/armor/${name}.png`
+export const REGIONS_FOLDER_ITEM = (name: string) => `/images/game-content/regions/${name}.png`

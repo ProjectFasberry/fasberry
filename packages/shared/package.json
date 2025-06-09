@@ -1,0 +1,21 @@
+{
+  "name": "@repo/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/assets": "*",
+    "ky": "1.7.2"
+  },
+  "devDependencies": {
+    "@repo/config-typescript": "*",
+    "clsx": "2.1.1",
+    "react": "18.3.1",
+    "typescript": "^5.4.5"
+  }
+}

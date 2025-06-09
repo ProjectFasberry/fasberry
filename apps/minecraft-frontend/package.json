@@ -1,0 +1,36 @@
+{
+  "name": "minecraft-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vike dev",
+    "build": "vike build",
+    "lint": "eslint .",
+    "start": "vike preview --port 3002 --host",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/config-typescript": "*",
+    "@vitejs/plugin-react": "4.5.1",
+    "class-variance-authority": "0.7.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.468.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-skinview3d": "5.1.0",
+    "skinview3d": "3.1.0",
+    "tw-animate-css": "^1.3.4",
+    "vike": "^0.4.231",
+    "vike-react": "0.6.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.8",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "tailwindcss": "4.1.8",
+    "typescript": "^5.4.5",
+    "vite": "^6.3.5"
+  }
+}

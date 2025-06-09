@@ -1,0 +1,147 @@
+.map {
+    --zoom: 4;
+    box-sizing: content-box;
+    border-width: calc(var(--block-size) / var(--zoom));
+    border-image: url('/images/minecraft/ui/map.png');
+    border-image-width: calc(var(--block-size) / var(--zoom));
+    border-image-slice: 12.75% 15.75% fill;
+    border-image-repeat: repeat;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+    margin: 0.75rem 0;
+}
+
+.markdown h1 {
+    font-size: var(--fluid-7);
+} .markdown h2 {
+      font-size: var(--fluid-6);
+  } .markdown h3 {
+        font-size: var(--fluid-5);
+    } .markdown h4 {
+          font-size: var(--fluid-4);
+      } .markdown h5 {
+            font-size: var(--fluid-3);
+        } .markdown h6 {
+              font-size: var(--fluid-2);
+          }
+
+.book {
+    --zoom: 4;
+    --size: calc((var(--block-size) / var(--zoom) * 3));
+    border-width: var(--size);
+    border-style: solid;
+    border-left-width: calc(var(--size) / 1.5);
+    border-image: url('/images/minecraft/ui/book.png');
+    border-image-width: var(--size) var(--size) var(--size) calc(var(--size) / 1.5);
+    border-image-slice: 8.5% 15% 12.75% 10% fill;
+    border-image-repeat: stretch;
+    text-shadow: none;
+}
+
+.button {
+    --zoom: 10;
+    user-select: none;
+    cursor: pointer;
+    image-rendering: pixelated;
+    background-size: cover;
+    background-image: url('/images/minecraft/ui/button-inside.png');
+    border-width: calc(var(--block-size) / var(--zoom));
+    border-image: url('/images/minecraft/ui/button-border.png');
+    border-image-width: calc(var(--block-size) / var(--zoom));
+    border-image-slice: 10% 3%;
+    border-image-repeat: stretch;
+    text-shadow: 1px 1px #000;
+} .button:hover {
+      background-size: cover;
+      background-image: url('/images/minecraft/ui/button-inside-hover.png');
+      border-width: calc(var(--block-size) / var(--zoom));
+      border-image: url('/images/minecraft/ui/button-border-hover.png');
+      border-image-width: calc(var(--block-size) / var(--zoom));
+      border-image-slice: 10% 3%;
+      border-image-repeat: stretch;
+  } .button:active {
+        background-size: cover;
+        background-image: url('/images/minecraft/ui/button-inside-active.png');
+        border-width: calc(var(--block-size) / var(--zoom));
+        border-image: url('/images/minecraft/ui/button-border-active.png');
+        border-image-width: calc(var(--block-size) / var(--zoom));
+        border-image-slice: 10% 3%;
+        border-image-repeat: contain;
+    }
+
+.raised-slot,
+.raised-slot-button,
+.scrollbar::-webkit-scrollbar-corner {
+    --zoom: 24;
+    border-width: calc(var(--block-size) / var(--zoom));
+    border-image: url('/images/minecraft/ui/raised-slot.png');
+    border-image-width: calc(var(--block-size) / var(--zoom));
+    border-image-slice: 33.5% 33.5% fill;
+    border-image-repeat: stretch;
+} .raised-slot-hover,
+  .raised-slot-button:hover {
+      --zoom: 24;
+      border-width: calc(var(--block-size) / var(--zoom));
+      border-image: url('/images/minecraft/ui/raised-slot-hover.png');
+      border-image-width: calc(var(--block-size) / var(--zoom));
+      border-image-slice: 33.5% 33.5% fill;
+      border-image-repeat: stretch;
+  } .raised-slot-active,
+    .raised-slot-button:active {
+        --zoom: 24;
+        border-width: calc(var(--block-size) / var(--zoom));
+        border-image: url('/images/minecraft/ui/raised-slot-active.png');
+        border-image-width: calc(var(--block-size) / var(--zoom));
+        border-image-slice: 33.5% 33.5% fill;
+        border-image-repeat: stretch;
+    }
+
+.enchanting-slot,
+.enchanting-slot-button {
+    --zoom: 24;
+    border-width: calc(var(--block-size) / var(--zoom));
+    border-image: url('/images/minecraft/ui/enchanting-slot.png');
+    border-image-width: calc(var(--block-size) / var(--zoom));
+    border-image-slice: 33.5% 33.5% fill;
+    border-image-repeat: stretch;
+} .enchanting-slot-hover,
+  .enchanting-slot-button:hover {
+      --zoom: 24;
+      border-width: calc(var(--block-size) / var(--zoom));
+      border-image: url('/images/minecraft/ui/enchanting-slot-hover.png');
+      border-image-width: calc(var(--block-size) / var(--zoom));
+      border-image-slice: 33.5% 33.5% fill;
+      border-image-repeat: stretch;
+  } .enchanting-slot-active,
+    .enchanting-slot-button:active {
+        --zoom: 24;
+        border-width: calc(var(--block-size) / var(--zoom));
+        border-image: url('/images/minecraft/ui/enchanting-slot-active.png');
+        border-image-width: calc(var(--block-size) / var(--zoom));
+        border-image-slice: 33.5% 33.5% fill;
+        border-image-repeat: stretch;
+    }
+
+.anvil-textbox {
+    --zoom: 16;
+    border-width: calc(var(--block-size) / var(--zoom));
+    border-image: url('/images/minecraft/ui/anvil-textbox.png');
+    border-image-width: calc(var(--block-size) / var(--zoom));
+    border-image-slice: 40% 40% fill;
+    border-image-repeat: stretch;
+} .anvil-textbox-active,
+  .anvil-textbox:active,
+  .anvil-textbox:focus {
+      --zoom: 16;
+      border-width: calc(var(--block-size) / var(--zoom));
+      border-image: url('/images/minecraft/ui/anvil-textbox-active.png');
+      border-image-width: calc(var(--block-size) / var(--zoom));
+      border-image-slice: 40% 40% fill;
+      border-image-repeat: stretch;
+  }

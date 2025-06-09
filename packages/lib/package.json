@@ -1,0 +1,20 @@
+{
+  "name": "@repo/lib",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "imports": {
+    "#*": "./*"
+  },
+  "exports": {
+    "./cn": "./cn.ts"
+  },
+  "dependencies": {
+    "@repo/assets": "*",
+    "@repo/shared": "*"
+  },
+  "devDependencies": {
+    "@repo/config-typescript": "*",
+    "typescript": "^5.4.5"
+  }
+}
