@@ -16,6 +16,7 @@ import duration from "dayjs/plugin/duration";
 import "dayjs/locale/ru";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import { FORUM_SHARED_API } from '@repo/shared/constants/api';
+import { createSearchParams } from "@repo/lib/create-params"
 
 dayjs.extend(relativeTime);
 dayjs.extend(localeData);
@@ -43,7 +44,7 @@ const NewsPageItem = ({
 }: News) => {
   return (
     <Dialog>
-      <DialogTrigger 
+      <DialogTrigger
         className="flex flex-col group overflow-hidden h-[320px] 
           relative border-2 border-neutral-600 rounded-xl"
       >
@@ -122,17 +123,16 @@ export const NEWS_QUERY_KEY = ['news'];
 export const getNews = async ({
   ascending, cursor, limit, searchQuery
 }: z.infer<typeof getNewsSchema>) => {
-  const res = await FORUM_SHARED_API(`get-news`, {
-    // @ts-expect-error
-    searchParams: {
-      ascending: ascending ? ascending.toString() : undefined,
-      limit: limit ? limit.toString() : undefined,
-      cursor: cursor ? cursor.toString() : undefined,
-      searchQuery
-    }
+  const searchParams = createSearchParams({
+    ascending: ascending ? ascending.toString() : undefined,
+    limit: limit ? limit.toString() : undefined,
+    cursor: cursor ? cursor.toString() : undefined,
+    searchQuery
   })
 
-  const data = await res.json<{ data: Array<NewsType>, meta: { hasNextPage: boolean} } | { error: string }>()
+  const res = await FORUM_SHARED_API(`get-news`, { searchParams })
+
+  const data = await res.json<{ data: Array<NewsType>, meta: { hasNextPage: boolean } } | { error: string }>()
 
   if ("error" in data) {
     return null
@@ -146,6 +146,7 @@ export const newsQuery = (values: z.infer<typeof getNewsSchema>) => useQuery({
   queryFn: () => getNews(values),
   refetchOnMount: false,
   refetchOnWindowFocus: false,
+  retry: 1,
   placeholderData: keepPreviousData
 })
 

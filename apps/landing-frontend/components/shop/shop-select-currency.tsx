@@ -81,7 +81,8 @@ export const currenciesQuery = () => useQuery({
   queryKey: ["currencies"],
   queryFn: () => getCurrencies(),
   refetchOnMount: false,
-  refetchOnWindowFocus: false
+  refetchOnWindowFocus: false,
+  retry: 1
 })
 
 export const ShopSelectCurrency = () => {

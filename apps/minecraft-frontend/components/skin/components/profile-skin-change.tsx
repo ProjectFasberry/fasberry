@@ -1,4 +1,3 @@
-import { requestedUserIsSameAtom } from "#components/profile/main/models/requested-user.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { MINECRAFT_SITE_DOMAIN } from "@repo/shared/constants/origin-list";
 import { Button } from "@repo/ui/src/components/button";
@@ -6,7 +5,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/src/components/di
 import { Typography } from "@repo/ui/src/components/typography";
 
 export const ProfileSkinHowToChange = reatomComponent(({ ctx }) => {
-  const isOwner = ctx.spy(requestedUserIsSameAtom)
+  const isOwner = true
   if (!isOwner) return null;
 
   return (

@@ -1,19 +1,17 @@
-import { Icon } from "@repo/shared/ui/icon/icon.tsx";
-import { RotateCw } from "lucide-react";
+import { PiIcon, RotateCw } from "lucide-react";
 import { HTMLAttributes, lazy, Suspense } from "react";
 import { cva, VariantProps } from "class-variance-authority";
-import { reatomComponent } from "@reatom/npm-react";
 import { skinRotatingAtom, skinAnimationAtom, SKIN_ANIMATIONS } from "../models/skin-animation.model.ts";
 import { ProfileSkinDownloadLink } from "./profile-skin-download.tsx";
-import { isAuthenticatedAtom } from "@repo/lib/queries/global-option-query.ts";
+import { reatomComponent } from "@reatom/npm-react";
 
-const ProfileSkinHowToChange = lazy(() => import("./profile-skin-change.tsx").then(m => ({ default: m.ProfileSkinHowToChange })))
+// const ProfileSkinHowToChange = lazy(() => import("./profile-skin-change.tsx").then(m => ({ default: m.ProfileSkinHowToChange })))
 
-const profileSkinControlVariants = cva("flex items-center justify-center cursor-pointer border border-shark-800 rounded-xl h-[46px] w-[46px]", {
+const profileSkinControlVariants = cva("flex items-center justify-center cursor-pointer border border-neutral-800 rounded-xl h-[46px] w-[46px]", {
   variants: {
     variant: {
       default: "bg-transparent",
-      active: "bg-shark-700/80"
+      active: "bg-neutral-700/80"
     }
   },
   defaultVariants: {
@@ -48,14 +46,14 @@ const ProfileSkinControlsList = reatomComponent(({ ctx }) => {
         onClick={() => skinAnimationAtom(ctx, control.animation)}
         variant={ctx.spy(skinAnimationAtom) === control.animation ? "active" : "default"}
       >
-        <Icon name={control.icon} className="text-xl" />
+        <control.icon className="text-xl" />
       </ProfileSkinControl>
     ))
   )
 })
 
-export const ProfileSkinControls = reatomComponent(({ ctx }) => {
-  const isAuthenticated = ctx.spy(isAuthenticatedAtom)
+export const ProfileSkinControls = reatomComponent(() => {
+  const isAuthenticated = true
 
   return (
     <div className="flex flex-col items-center w-full justify-center gap-4">
@@ -65,9 +63,9 @@ export const ProfileSkinControls = reatomComponent(({ ctx }) => {
       </div>
       {isAuthenticated && (
         <div className="flex flex-col items-center justify-end gap-4 w-full">
-          <Suspense>
+          {/* <Suspense>
             <ProfileSkinHowToChange />
-          </Suspense>
+          </Suspense> */}
           <ProfileSkinDownloadLink />
         </div>
       )}

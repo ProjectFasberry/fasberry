@@ -8,6 +8,7 @@
     "sourceMap": true,
     "module": "ESNext",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "moduleResolution": "Bundler",
     "target": "ES2022",
     "lib": [

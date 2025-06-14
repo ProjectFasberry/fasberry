@@ -1,9 +1,8 @@
-import { landAtom } from "#components/land/models/land.model"
-import { CustomLink } from "#components/shared/link"
-import { Avatar } from "#components/user/avatar/components/avatar.tsx"
-import { UserNickname } from "#components/user/name/nickname"
+
 import { reatomComponent } from "@reatom/npm-react"
-import { createIdLink } from "@repo/lib/utils/create-link"
+import { landAtom } from "../models/land.model";
+import { Link } from "@/shared/components/Link";
+import { Avatar } from "@/components/avatar/components/avatar";
 
 export const LandMembers = reatomComponent(({ ctx }) => {
   const land = ctx.get(landAtom)
@@ -17,12 +16,12 @@ export const LandMembers = reatomComponent(({ ctx }) => {
             key={uuid}
             className="flex w-full items-end gap-2 rounded-md p-2 hover:bg-shark-700"
           >
-            <CustomLink to={createIdLink("user", nickname)}>
+            <Link href={`/player/${nickname}`}>
               <Avatar nickname={nickname} propWidth={64} propHeight={64} />
-            </CustomLink>
-            <CustomLink to={createIdLink("user", nickname)}>
-              <UserNickname nickname={nickname} />
-            </CustomLink>
+            </Link>
+            <Link href={`/player/${nickname}`}>
+              <p>{nickname}</p>
+            </Link>
           </div>
         ))}
       </div>

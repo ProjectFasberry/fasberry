@@ -5,6 +5,6 @@ import Layout from "../layouts/LayoutDefault.js";
 export default {
   Layout,
   title: "Fasberry",
-  description: "Minecraft Fasberry Project. Init description",
   extends: vikeReact,
+  reactStrictMode: false
 } satisfies Config;

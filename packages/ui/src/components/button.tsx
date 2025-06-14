@@ -1,8 +1,8 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@repo/lib/utils/ui/cn.ts";
+import { cn } from "@repo/lib/cn";
 import { ButtonHTMLAttributes, forwardRef } from "react";
-import { WindowLoader } from "./window-loader.js";
+import { WindowLoader } from "./window-loader";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap" +

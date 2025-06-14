@@ -1,19 +1,20 @@
-import { landsClient } from "@repo/shared/api/minecraft-client"
 import { Button } from "@repo/ui/src/components/button"
 import { Typography } from "@repo/ui/src/components/typography"
-import { InferResponseType } from "hono/client"
 import Looking from '@repo/assets/images/looking.jpg'
 import BottleEnchating from "@repo/assets/images/minecraft/bottle_enchanting.webp"
 import Charism from "@repo/assets/images/minecraft/charism_wallet.png"
 import SteveHead from "@repo/assets/images/minecraft/steve_head.jpg"
-import { ColoredText } from "#components/wrappers/components/colored-text-wrapper"
 import { reatomComponent } from "@reatom/npm-react"
-import { CustomLink } from "#components/shared/link"
-import { createIdLink } from "@repo/lib/utils/create-link"
+import { Link } from "@/shared/components/Link"
 
-const client = landsClient.lands['get-lands'].$get
-
-type LandCard = InferResponseType<typeof client, 200>["data"][0]
+type LandCard = {
+  balance: number,
+  level: number,
+  members: {},
+  title: string,
+  ulid: string,
+  name: string
+}
 
 export const LandCard = reatomComponent<LandCard>(({ ctx, balance, level, members, name, title, ulid }) => {
   // const currentUserUUID = getUser(ctx).uuid
@@ -39,7 +40,7 @@ export const LandCard = reatomComponent<LandCard>(({ ctx, balance, level, member
             <Typography className="text-[20px] font-[Minecraft]">
               {name}
             </Typography>
-            {title && <ColoredText className="font-[Minecraft]" text={title} />}
+            {/* {title && <ColoredText className="font-[Minecraft]" text={title} />} */}
           </div>
           <div className="flex select-none items-center gap-4">
             <div className="flex items-center gap-1">
@@ -62,13 +63,13 @@ export const LandCard = reatomComponent<LandCard>(({ ctx, balance, level, member
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <CustomLink to={createIdLink("land", ulid)}>
+            <Link href={`/land/${ulid}`}>
               <Button state="default">
                 <Typography className="text-[16px] font-[Minecraft]">
                   Перейти
                 </Typography>
               </Button>
-            </CustomLink>
+            </Link>
           </div>
         </div>
       </div>

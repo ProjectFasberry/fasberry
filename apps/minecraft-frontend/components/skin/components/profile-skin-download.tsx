@@ -1,13 +1,9 @@
-import { ConfirmationButton } from "#components/modals/confirmation-modal/components/confirmation-action-button";
-import { ConfirmationActionModalTemplate } from "#components/modals/confirmation-modal/components/confirmation-action-modal";
-import { requestedUserParamAtom } from "#components/profile/main/models/requested-user.model";
 import { reatomComponent } from "@reatom/npm-react";
-import { skinClient } from "@repo/shared/api/minecraft-client";
 import { Button } from "@repo/ui/src/components/button";
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@repo/ui/src/components/dialog";
 import { Typography } from "@repo/ui/src/components/typography";
-import { ArrowDownFromLine } from "lucide-react";
 import { useState } from "react";
+import { requestedUserParamAtom } from "../models/skin.model";
 
 export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -15,26 +11,21 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const nickname = ctx.spy(requestedUserParamAtom)
   if (!nickname) return null;
 
-  const downloadUrl = skinClient.skin["download-skin"][":nickname"].$url({ param: { nickname } });
+  const downloadUrl = `https://api.fasberry.su/minecraft/skin/download-skin/${nickname}`
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <div className="flex items-center justify-center gap-2 w-full">
-          <Button variant="positive" className="w-full h-[46px]">
-            <Typography textSize="medium" className="text-shark-50">
-              Скачать скин
-            </Typography>
-          </Button>
-          <Button variant="positive" className="h-[46px] w-[46px]">
-            <ArrowDownFromLine size={20} />
-          </Button>
-        </div>
+        <Button className="bg-neutral-50 items-center justify-center flex w-full h-[46px]">
+          <Typography textSize="medium" className="font-semibold text-neutral-900">
+            Скачать скин
+          </Typography>
+        </Button>
       </DialogTrigger>
       <DialogContent>
-        <ConfirmationActionModalTemplate title="Скачать скин?">
+        <div title="Скачать скин?">
           <a
-            href={downloadUrl.href}
+            href={downloadUrl}
             onClick={() => setDialogOpen(false)}
             target="_blank"
             rel="noopener noreferrer"
@@ -46,9 +37,11 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
             </Typography>
           </a>
           <DialogClose>
-            <ConfirmationButton actionType="cancel" title="Отмена" />
+            <Button>
+              Отмена
+            </Button>
           </DialogClose>
-        </ConfirmationActionModalTemplate>
+        </div>
       </DialogContent>
     </Dialog>
   )

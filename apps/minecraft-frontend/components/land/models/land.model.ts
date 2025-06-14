@@ -1,11 +1,10 @@
 import { reatomAsync, withErrorAtom, withStatusesAtom } from "@reatom/async"
 import { atom, Ctx } from "@reatom/core"
-import { landsClient } from "@repo/shared/api/minecraft-client"
-import type { UnwrapPromise } from '@repo/lib/helpers/unwrap-promise-type';
-import { playerClient } from "@repo/shared/api/minecraft-client"
 import { sleep, withReset } from "@reatom/framework"
-import { withHistory } from "@repo/lib/utils/reatom/with-history";
-import { logger } from "@repo/lib/utils/logger";
+import { withHistory } from "@/lib/reatom-helpers";
+import { MINECRAFT_LANDS_API } from "@repo/shared/constants/api";
+
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
 type AnotherLandsByOwner = UnwrapPromise<ReturnType<typeof getAnotherLandsByOwner>> | null
 type Land = UnwrapPromise<ReturnType<typeof getLandById>> | null
@@ -35,16 +34,30 @@ landAtom.onChange((ctx, state) => {
     anotherLandsByOwnerAction(ctx)
   }
 
-  logger.info("landAtom", state)
+  console.log("landAtom", state)
 })
 
 landParamAtom.onChange((ctx, state) => {
   if (state) landAction(ctx, state)
 })
 
+export type Ex = { 
+  ulid: string, 
+  created_at: Date | string, 
+  stats: any, 
+  type: string, 
+  chunks_amount: number,
+  areas_amount: number, 
+  name: string, 
+  balance: number,
+  level: number,
+  title: string, 
+  members: Array<{ nickname: string, uuid: string }>
+}
+
 async function getLandById(id: string) {
-  const res = await landsClient.lands['get-land'][':id'].$get({ param: { id } })
-  const data = await res.json()
+  const res = await MINECRAFT_LANDS_API(`get-land/${id}`)
+  const data = await res.json<Ex>()
 
   if (!data || 'error' in data) return null
 
@@ -61,11 +74,13 @@ export const landAction = reatomAsync(async (ctx, target: string) => {
 }).pipe(withStatusesAtom(), withErrorAtom())
 
 async function getAnotherLandsByOwner(nickname: string, exclude: string) {
-  const res = await playerClient.player['get-player-lands'][':nickname'].$get({
-    param: { nickname }, query: { exclude },
+  const res = await MINECRAFT_LANDS_API(`player/get-player-lands/${nickname}`, {
+    searchParams: {
+      exclude
+    }
   })
 
-  const data = await res.json()
+  const data = await res.json<{ data: Array<Ex>, meta: { hasNextPage: boolean, endCursor?: string } }>()
 
   if (!data || 'error' in data) return null
 

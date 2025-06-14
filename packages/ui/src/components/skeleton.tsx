@@ -1,4 +1,4 @@
-import { cn } from "@repo/lib/utils/ui/cn.ts";
+import { cn } from "@repo/lib/cn";
 import { HTMLAttributes } from "react";
 
 export function Skeleton({

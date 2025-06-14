@@ -1378,7 +1378,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:^1.0.4, @radix-ui/react-dialog@npm:^1.1.2":
+"@radix-ui/react-dialog@npm:1.1.14, @radix-ui/react-dialog@npm:^1.0.4, @radix-ui/react-dialog@npm:^1.1.2":
   version: 1.1.14
   resolution: "@radix-ui/react-dialog@npm:1.1.14"
   dependencies:
@@ -4584,6 +4584,118 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@reatom/async@npm:^3.16.8":
+  version: 3.16.8
+  resolution: "@reatom/async@npm:3.16.8"
+  dependencies:
+    "@reatom/core": "npm:^3.5.0"
+    "@reatom/effects": "npm:^3.10.0"
+    "@reatom/hooks": "npm:^3.2.0"
+    "@reatom/primitives": "npm:^3.5.0"
+    "@reatom/utils": "npm:^3.11.0"
+  checksum: 10c0/dd228b4ab7a5a68486467fe9399afbcade0356b456237fcc2424b5bd16d2fbad58fc43745fc5711f78fbaf8effbf3e8b1dcb7ac54342a2ad051f62f0e7532e5c
+  languageName: node
+  linkType: hard
+
+"@reatom/core@npm:^3.1.1, @reatom/core@npm:^3.10.1, @reatom/core@npm:^3.2.0, @reatom/core@npm:^3.4.0, @reatom/core@npm:^3.5.0, @reatom/core@npm:^3.8.1":
+  version: 3.10.1
+  resolution: "@reatom/core@npm:3.10.1"
+  checksum: 10c0/801e5596791fd2e09fd69123db3a6d302b93d53b3bb13178256dcf3039f588f432c34c3c07ea3e4f407dc84a007e75b9bc26fc581cbc3cf040d505d4af724447
+  languageName: node
+  linkType: hard
+
+"@reatom/effects@npm:^3.10.0, @reatom/effects@npm:^3.11.3, @reatom/effects@npm:^3.2.0, @reatom/effects@npm:^3.7.0, @reatom/effects@npm:^3.7.3":
+  version: 3.11.3
+  resolution: "@reatom/effects@npm:3.11.3"
+  dependencies:
+    "@reatom/core": "npm:^3.2.0"
+    "@reatom/utils": "npm:^3.5.0"
+  checksum: 10c0/3d4ac05001491471fed9895852494d614b53801b3ee7b5943bf01733911b68020458776b02af4e619eb1c76d7fc4f7db43fc461c51f8a1d91f103f2aa1791848
+  languageName: node
+  linkType: hard
+
+"@reatom/framework@npm:^3.4.64":
+  version: 3.4.64
+  resolution: "@reatom/framework@npm:3.4.64"
+  dependencies:
+    "@reatom/async": "npm:^3.16.8"
+    "@reatom/core": "npm:^3.10.1"
+    "@reatom/effects": "npm:^3.11.3"
+    "@reatom/hooks": "npm:^3.6.1"
+    "@reatom/lens": "npm:^3.12.0"
+    "@reatom/logger": "npm:^3.8.4"
+    "@reatom/primitives": "npm:^3.11.0"
+    "@reatom/utils": "npm:^3.11.3"
+  checksum: 10c0/0d85922cbcf212982e2c4cb5273c23646f50b87c19ac33433286e458988d80e1577f6fb3742965ce693d6ed9c360966974f64ccffa9ed9ae76b91946de7317c4
+  languageName: node
+  linkType: hard
+
+"@reatom/hooks@npm:^3.2.0, @reatom/hooks@npm:^3.3.1, @reatom/hooks@npm:^3.6.1":
+  version: 3.6.1
+  resolution: "@reatom/hooks@npm:3.6.1"
+  dependencies:
+    "@reatom/core": "npm:^3.2.0"
+    "@reatom/effects": "npm:^3.7.0"
+    "@reatom/utils": "npm:^3.3.0"
+  checksum: 10c0/dd8ab158ffa4db0ec965f8de4f9a005b3f66183570e0b83baf4a7db08e91c3ed0b5506bb1f895d3709cad8fcac3d3bc3b108d8612e9ae142c0d639da1757bf07
+  languageName: node
+  linkType: hard
+
+"@reatom/lens@npm:^3.1.0, @reatom/lens@npm:^3.12.0":
+  version: 3.12.0
+  resolution: "@reatom/lens@npm:3.12.0"
+  dependencies:
+    "@reatom/core": "npm:^3.4.0"
+    "@reatom/effects": "npm:^3.2.0"
+    "@reatom/hooks": "npm:^3.3.1"
+    "@reatom/primitives": "npm:^3.6.0"
+    "@reatom/utils": "npm:^3.1.0"
+  checksum: 10c0/a10fb7d77cfdf9355aba2e4296a6edf273a82bad87fb545605e764ad4f86b5549a2938dec6b8c8883fb85d98d1ca2e5b60461975a654e87ce8edbab76298d5f7
+  languageName: node
+  linkType: hard
+
+"@reatom/logger@npm:^3.8.4":
+  version: 3.8.4
+  resolution: "@reatom/logger@npm:3.8.4"
+  dependencies:
+    "@reatom/core": "npm:^3.8.1"
+    "@reatom/utils": "npm:^3.9.0"
+  checksum: 10c0/b949fcc5402755497f7077d0e40fc7f9d7f8fb7b8f4b64b3867dd6787f5e27970442a2f07c0d78f42770c8d86b3c6a703794cb7a5ac66030f76340b0ad383e4e
+  languageName: node
+  linkType: hard
+
+"@reatom/npm-react@npm:^3.10.6":
+  version: 3.10.6
+  resolution: "@reatom/npm-react@npm:3.10.6"
+  dependencies:
+    "@reatom/core": "npm:^3.5.0"
+    "@reatom/effects": "npm:^3.7.3"
+    "@reatom/lens": "npm:^3.1.0"
+    "@reatom/utils": "npm:^3.9.0"
+    use-sync-external-store: "npm:^1.2.0"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 10c0/f88d2c3f35754cbda0fce1856b776721ea0ce4a6816a258c36d52bccfdbf9ee36a17b19f515cd436fc9a381d9b810c9699da54b8c95ec4c16287c20daaefb3d4
+  languageName: node
+  linkType: hard
+
+"@reatom/primitives@npm:^3.11.0, @reatom/primitives@npm:^3.5.0, @reatom/primitives@npm:^3.6.0":
+  version: 3.11.0
+  resolution: "@reatom/primitives@npm:3.11.0"
+  dependencies:
+    "@reatom/core": "npm:^3.1.1"
+    "@reatom/utils": "npm:^3.1.1"
+  checksum: 10c0/f8141d4290c8e92b3a3ac69a6a9e371e66f0ea2da7c08eccd1255d57dc95468321a588e8d147b6ad3bef0533b77724a7177a665cf6c22303ec5b8679abfb5203
+  languageName: node
+  linkType: hard
+
+"@reatom/utils@npm:^3.1.0, @reatom/utils@npm:^3.1.1, @reatom/utils@npm:^3.11.0, @reatom/utils@npm:^3.11.3, @reatom/utils@npm:^3.3.0, @reatom/utils@npm:^3.5.0, @reatom/utils@npm:^3.9.0":
+  version: 3.11.3
+  resolution: "@reatom/utils@npm:3.11.3"
+  checksum: 10c0/c3b27d8cd5d8eb3f7d3153f942536482a63b1a4a4bf05c6a85c9d0ef5660b32d4fbfb36cbd289e744ce1a3d20818271fe6a0860c90c749df0422546ed44df80c
+  languageName: node
+  linkType: hard
+
 "@repo/assets@npm:*, @repo/assets@workspace:packages/assets":
   version: 0.0.0-use.local
   resolution: "@repo/assets@workspace:packages/assets"
@@ -4683,7 +4795,7 @@ __metadata:
     "@radix-ui/react-accordion": "npm:1.2.0"
     "@radix-ui/react-checkbox": "npm:1.0.4"
     "@radix-ui/react-context-menu": "npm:2.2.2"
-    "@radix-ui/react-dialog": "npm:1.0.5"
+    "@radix-ui/react-dialog": "npm:1.1.14"
     "@radix-ui/react-dropdown-menu": "npm:2.0.6"
     "@radix-ui/react-hover-card": "npm:latest"
     "@radix-ui/react-label": "npm:2.0.2"
@@ -4902,6 +5014,24 @@ __metadata:
   dependencies:
     tslib: "npm:^2.8.0"
   checksum: 10c0/fe1f33ebb968558c5a0c595e54f2e479e4609bff844f9ca9a2d1ffd8dd8504c26f862a11b031f48f75c95b0381c2966c3dd156e25942f90089badd24341e7dbb
+  languageName: node
+  linkType: hard
+
+"@tabler/icons-react@npm:^3.34.0":
+  version: 3.34.0
+  resolution: "@tabler/icons-react@npm:3.34.0"
+  dependencies:
+    "@tabler/icons": "npm:3.34.0"
+  peerDependencies:
+    react: ">= 16"
+  checksum: 10c0/b2d094c6ae02fc157d9a059e06c65b1dd49a96c7fc77a57bc9acf289899df66504bcab533e7a22d9ec3ca7c3952176c6c916e84aff827b24d2c69ecc7bfc737d
+  languageName: node
+  linkType: hard
+
+"@tabler/icons@npm:3.34.0":
+  version: 3.34.0
+  resolution: "@tabler/icons@npm:3.34.0"
+  checksum: 10c0/7b4bb937e051ece9258ab4321363f284a4c1d53fbe0211c6976bff41d0ca031e8196156595bb30fa2bfb963f1771814d1438aa01a4422df9a6e21a46ebe6cc9b
   languageName: node
   linkType: hard
 
@@ -5323,6 +5453,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:19.1.6":
+  version: 19.1.6
+  resolution: "@types/react-dom@npm:19.1.6"
+  peerDependencies:
+    "@types/react": ^19.0.0
+  checksum: 10c0/7ba74eee2919e3f225e898b65fdaa16e54952aaf9e3472a080ddc82ca54585e46e60b3c52018d21d4b7053f09d27b8293e9f468b85f9932ff452cd290cc131e8
+  languageName: node
+  linkType: hard
+
 "@types/react@npm:*":
   version: 19.1.6
   resolution: "@types/react@npm:19.1.6"
@@ -5339,6 +5478,15 @@ __metadata:
     "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10c0/8bae8d9a41619804561574792e29112b413044eb0d53746dde2b9720c1f9a59f71c895bbd7987cd8ce9500b00786e53bc032dced38cddf42910458e145675290
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:19.1.8":
+  version: 19.1.8
+  resolution: "@types/react@npm:19.1.8"
+  dependencies:
+    csstype: "npm:^3.0.2"
+  checksum: 10c0/4908772be6dc941df276931efeb0e781777fa76e4d5d12ff9f75eb2dcc2db3065e0100efde16fde562c5bafa310cc8f50c1ee40a22640459e066e72cd342143e
   languageName: node
   linkType: hard
 
@@ -5689,6 +5837,77 @@ __metadata:
     "@typescript-eslint/types": "npm:8.34.0"
     eslint-visitor-keys: "npm:^4.2.0"
   checksum: 10c0/d50997e921a178589913d08ffe14d02eba40666c90bdc0c9751f2b87ce500598f64027e2d866dfc975647b2f8b907158503d0722d6b1976c8f1cf5dd8e1d6d69
+  languageName: node
+  linkType: hard
+
+"@uiw/react-heat-map@npm:^2.3.3":
+  version: 2.3.3
+  resolution: "@uiw/react-heat-map@npm:2.3.3"
+  peerDependencies:
+    "@babel/runtime": ">=7.10.0"
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10c0/ef327b07107680083b21aed0ac42744a78be6fe532d18da6d7a58d13c287f24a5ad1862137bed7709568f2ed4ed13a4eb5ce30af9d9d7eb2af4fe076148e0ed8
+  languageName: node
+  linkType: hard
+
+"@uiw/react-overlay-trigger@npm:^4.22.3":
+  version: 4.22.3
+  resolution: "@uiw/react-overlay-trigger@npm:4.22.3"
+  dependencies:
+    "@uiw/react-overlay": "npm:^4.22.3"
+    "@uiw/utils": "npm:^4.22.3"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10c0/45268b4315dd3b6deff594f60e1fb0056ceed5d5c89e395151a2fc53eb6fa93e65593b6ab3e3aedca9a9e113b51fcb9519c97da6760ace64b1e315314cda1520
+  languageName: node
+  linkType: hard
+
+"@uiw/react-overlay@npm:^4.22.3":
+  version: 4.22.3
+  resolution: "@uiw/react-overlay@npm:4.22.3"
+  dependencies:
+    "@uiw/react-portal": "npm:^4.22.3"
+    "@uiw/utils": "npm:^4.22.3"
+    react-transition-group: "npm:~4.4.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10c0/4114ac1e8c13b50c4e061bfced04b1f94123ed1f558cbcaf95ceaa77c34d65f7ff48481c51f919609031432e9dfe3e8b07001445a5667df73cd19679a001b30f
+  languageName: node
+  linkType: hard
+
+"@uiw/react-portal@npm:^4.22.3":
+  version: 4.22.3
+  resolution: "@uiw/react-portal@npm:4.22.3"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10c0/d484d4766b0c909e0cc05778788d3519c49bebd260fcde4710bfab7a0301447b5210ba3722f76c217a38e3a1259c33d9f6f362bfc86fb5e49b37c383967cee96
+  languageName: node
+  linkType: hard
+
+"@uiw/react-tooltip@npm:^4.22.3":
+  version: 4.22.3
+  resolution: "@uiw/react-tooltip@npm:4.22.3"
+  dependencies:
+    "@uiw/react-overlay-trigger": "npm:^4.22.3"
+    "@uiw/utils": "npm:^4.22.3"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10c0/8dfec87a214fb024b940bdee3ba01bc9d23bb4a5e5eb40b3e4ae3b5697bff6942311449e22d1e33a9e0bc1e4f3e7517e3859bbfac17716e403b94a26ec67c284
+  languageName: node
+  linkType: hard
+
+"@uiw/utils@npm:^4.22.3":
+  version: 4.22.3
+  resolution: "@uiw/utils@npm:4.22.3"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10c0/63ead47b788f21aca98263bae95297f857baac14a147549a4015583b8a714176dc70245f0a36c68ad91995eee1b176f87e8ee791337d6ec96efddd0ab79a8114
   languageName: node
   linkType: hard
 
@@ -9292,22 +9511,30 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "minecraft-frontend@workspace:apps/minecraft-frontend"
   dependencies:
+    "@reatom/async": "npm:^3.16.8"
+    "@reatom/core": "npm:^3.10.1"
+    "@reatom/framework": "npm:^3.4.64"
+    "@reatom/npm-react": "npm:^3.10.6"
     "@repo/config-typescript": "npm:*"
+    "@repo/shared": "npm:*"
+    "@tabler/icons-react": "npm:^3.34.0"
     "@tailwindcss/vite": "npm:4.1.8"
-    "@types/react": "npm:18.3.12"
-    "@types/react-dom": "npm:18.3.1"
+    "@types/react": "npm:19.1.8"
+    "@types/react-dom": "npm:19.1.6"
+    "@uiw/react-heat-map": "npm:^2.3.3"
+    "@uiw/react-tooltip": "npm:^4.22.3"
     "@vitejs/plugin-react": "npm:4.5.1"
     class-variance-authority: "npm:0.7.0"
     clsx: "npm:2.1.1"
     lucide-react: "npm:0.468.0"
-    react: "npm:18.3.1"
-    react-dom: "npm:18.3.1"
-    react-skinview3d: "npm:5.1.0"
-    skinview3d: "npm:3.1.0"
+    react: "npm:19.1.0"
+    react-dom: "npm:19.1.0"
+    react-skinview3d: "npm:6.0.0"
+    skinview3d: "npm:3.4.1"
     tailwindcss: "npm:4.1.8"
-    tw-animate-css: "npm:^1.3.4"
+    tw-animate-css: "npm:1.3.4"
     typescript: "npm:^5.4.5"
-    vike: "npm:^0.4.231"
+    vike: "npm:0.4.231"
     vike-react: "npm:0.6.4"
     vite: "npm:^6.3.5"
   languageName: unknown
@@ -10333,7 +10560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:>=16.8.0":
+"react-dom@npm:19.1.0, react-dom@npm:^19.1.0":
   version: 19.1.0
   resolution: "react-dom@npm:19.1.0"
   dependencies:
@@ -10479,17 +10706,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-skinview3d@npm:5.1.0":
-  version: 5.1.0
-  resolution: "react-skinview3d@npm:5.1.0"
+"react-skinview3d@npm:6.0.0":
+  version: 6.0.0
+  resolution: "react-skinview3d@npm:6.0.0"
   dependencies:
-    react: "npm:>=16.8.0"
-    react-dom: "npm:>=16.8.0"
-    skinview3d: "npm:^3.0.0-alpha.1"
+    react: "npm:^19.1.0"
+    react-dom: "npm:^19.1.0"
+    skinview3d: "npm:^3.3.0"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 10c0/9adea094b12499f78fbe07c82c78773cb6a2a3bb1f5e8da2dd5a39a3b9ea51e1a17518f14f77a8f91ff1ce21df43c6cf18ded6d9631a200c344997d016d5ed31
+  checksum: 10c0/fc159d11e0f6ef5f023029a308b03cc41e2a32926bf2c47664bbb7644273d825acfef7804c664135841d8bc2003c30221066cf2cb8a3546912a032f43c071464
   languageName: node
   linkType: hard
 
@@ -10574,7 +10801,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-transition-group@npm:^4.4.5":
+"react-transition-group@npm:^4.4.5, react-transition-group@npm:~4.4.2":
   version: 4.4.5
   resolution: "react-transition-group@npm:4.4.5"
   dependencies:
@@ -10598,7 +10825,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:>=16.8.0":
+"react@npm:19.1.0, react@npm:^19.1.0":
   version: 19.1.0
   resolution: "react@npm:19.1.0"
   checksum: 10c0/530fb9a62237d54137a13d2cfb67a7db6a2156faed43eecc423f4713d9b20c6f2728b026b45e28fcd72e8eadb9e9ed4b089e99f5e295d2f0ad3134251bdd3698
@@ -11148,18 +11375,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"skinview3d@npm:3.1.0":
-  version: 3.1.0
-  resolution: "skinview3d@npm:3.1.0"
-  dependencies:
-    "@types/three": "npm:^0.156.0"
-    skinview-utils: "npm:^0.7.1"
-    three: "npm:^0.156.1"
-  checksum: 10c0/04ebb0567759d965e95b8fe5fef0d75548e39b8182c7779d0de956b2660ee0fb3316919b9bc485a55f486dd4b4ec1a12683d6bd260481890d06b72a75a0a1add
-  languageName: node
-  linkType: hard
-
-"skinview3d@npm:^3.0.0-alpha.1":
+"skinview3d@npm:3.4.1, skinview3d@npm:^3.3.0":
   version: 3.4.1
   resolution: "skinview3d@npm:3.4.1"
   dependencies:
@@ -11719,7 +11935,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three@npm:^0.156.0, three@npm:^0.156.1":
+"three@npm:^0.156.0":
   version: 0.156.1
   resolution: "three@npm:0.156.1"
   checksum: 10c0/e1f8c5e1a1f4c9b431279c3b9875cbd64b2456c2031116543583320192873042d18e7c1255edb9f9b167796ae338e08e9185cfdd29c3fc721e37bb35cfd6b118
@@ -11892,7 +12108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tw-animate-css@npm:^1.3.4":
+"tw-animate-css@npm:1.3.4":
   version: 1.3.4
   resolution: "tw-animate-css@npm:1.3.4"
   checksum: 10c0/fc17e27684351ee151dd0bcef848ef72d1ec4bce6769ece079f30ac8a481c52a6c9d523f7ecd55ef73adc4b7375fdc7a46bb2598335fb06d86d0bc65a6c3e37b
@@ -12234,7 +12450,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vike@npm:^0.4.231":
+"vike@npm:0.4.231":
   version: 0.4.231
   resolution: "vike@npm:0.4.231"
   dependencies:

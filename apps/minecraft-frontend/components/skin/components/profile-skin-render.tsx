@@ -1,10 +1,11 @@
-import { skinStateAction } from "../models/skin.model.ts";
+import { skinHeadAction, skinStateAction } from "../models/skin.model.ts";
 import { Skeleton } from "@repo/ui/src/components/skeleton.tsx";
 import { Typography } from "@repo/ui/src/components/typography.tsx";
-import { reatomComponent } from "@reatom/npm-react";
-import { atom, onConnect, withInit } from "@reatom/framework";
 import { skinViewerAtom } from "../models/skin-animation.model.ts";
 import { lazy, Suspense } from "react";
+import { atom } from "@reatom/core";
+import { reatomComponent } from "@reatom/npm-react";
+import { onConnect, withInit } from "@reatom/framework";
 
 const ReactSkinview3d = lazy(() => import("react-skinview3d").then(m => ({ default: m.default })))
 
@@ -74,13 +75,14 @@ onConnect(skinStateAction.dataAtom, (ctx) => {
 
 export const ProfileSkinRender = reatomComponent(({ ctx }) => {
   const skin = ctx.spy(skinStateAction.dataAtom)!
+  const head = ctx.spy(skinHeadAction.dataAtom)!
 
   if (ctx.spy(skinStateAction.statusesAtom).isPending) {
     return <Skeleton className="w-full h-full" />;
   }
 
   return (
-    <div className="flex items-center min-h-[450px] justify-center py-2 overflow-hidden border border-shark-600 rounded-lg w-full">
+    <div className="flex flex-col gap-4 items-center min-h-[450px] justify-center pb-6 pt-0 overflow-hidden border border-neutral-700 rounded-lg w-full">
       {ctx.spy(hardwareAccIsEnabledAtom) ? (
         <Suspense fallback={<Skeleton className="w-full h-full" />}>
           <ReactSkinview3d
@@ -89,9 +91,9 @@ export const ProfileSkinRender = reatomComponent(({ ctx }) => {
             width="300"
             options={{ zoom: 0.8 }}
             className="cursor-move"
-            // @ts-expect-error
             onReady={({ viewer }) => skinViewerAtom(ctx, viewer)}
           />
+          <img src={head} width={48} height={48} className="cursor-pointer rounded-lg p-0.5 border-2 border-green-600" />
         </Suspense>
       ) : (
         <div className="flex w-full px-2 py-6 items-center justify-center h-full">

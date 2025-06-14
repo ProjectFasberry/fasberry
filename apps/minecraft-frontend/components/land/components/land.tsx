@@ -1,25 +1,22 @@
 import { reatomComponent } from "@reatom/npm-react"
 import { landAction, landAtom } from "../models/land.model"
-import { ContentNotFound } from "#components/templates/components/content-not-found"
-import { BlockWrapper } from "#components/wrappers/components/block-wrapper"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/src/components/tabs"
 import { Typography } from "@repo/ui/src/components/typography"
-import { ColoredText } from "#components/wrappers/components/colored-text-wrapper"
 import dayjs from "dayjs"
 import { LandMembers } from "./land-members"
-import { Avatar } from "#components/user/avatar/components/avatar"
 // @ts-ignore
 import Looking from '@repo/assets/images/looking.jpg'
 import { AnotherLandsByOwner } from "./another-lands"
 import { Skeleton } from "@repo/ui/src/components/skeleton"
 import { MINECRAFT_MAP_SITE_DOMAIN } from "@repo/shared/constants/origin-list"
+import { Avatar } from "@/components/avatar/components/avatar"
 
 const Main = reatomComponent(({ ctx }) => {
   const land = ctx.spy(landAtom)
 
   if (ctx.spy(landAction.statusesAtom).isPending) {
     return (
-      <BlockWrapper className="flex flex-col gap-4 w-3/5 !p-4">
+      <div className="flex flex-col gap-4 w-3/5 !p-4">
         <div className="flex items-start flex-col w-full">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-10 w-24" />
@@ -29,14 +26,14 @@ const Main = reatomComponent(({ ctx }) => {
         <div className="flex flex-col pt-2 gap-2 w-full h-full">
           <Skeleton className="h-48 w-full" />
         </div>
-      </BlockWrapper>
+      </div>
     )
   }
 
   if (!land) return null;
 
   return (
-    <BlockWrapper className="flex order-last md:order-first flex-col gap-4 md:w-3/5 w-full !p-4">
+    <div className="flex order-last md:order-first flex-col gap-4 md:w-3/5 w-full !p-4">
       <Tabs defaultValue="general" className="flex items-start flex-col w-full">
         <TabsList className="gap-2 justify-start overflow-x-auto w-full">
           <TabsTrigger value="general">
@@ -60,7 +57,7 @@ const Main = reatomComponent(({ ctx }) => {
               <Typography className="text-[24px] font-semibold font-[Minecraft]">
                 {land.name}
               </Typography>
-              {land.title && <ColoredText className="font-[Minecraft]" text={land.title} />}
+              {/* {land.title && <ColoredText className="font-[Minecraft]" text={land.title} />} */}
             </div>
           </div>
           <div className="flex flex-col gap-4 h-full w-full">
@@ -118,18 +115,18 @@ const Main = reatomComponent(({ ctx }) => {
           </div>
         </TabsContent>
       </Tabs>
-    </BlockWrapper>
+    </div>
   )
 })
 
 const Panel = reatomComponent(({ ctx }) => {
   const land = ctx.spy(landAtom)
 
-  if (!land) return <ContentNotFound title="Упс, похоже этого региона уже нет :/" />
+  if (!land) return <span>Упс, похоже этого региона уже нет :/</span>
 
   return (
     <div className="flex flex-col items-center overflow-hidden justify-start gap-4 w-full md:w-2/5 md:h-full">
-      <BlockWrapper className="flex flex-col items-center overflow-hidden justify-end relative !p-0 gap-4 w-full">
+      <div className="flex flex-col items-center overflow-hidden justify-end relative !p-0 gap-4 w-full">
         <div
           className="absolute h-1/3 bg-gradient-to-t rounded-md from-black/40 z-[1] via-black/40 to-transparent backdrop-blur-sm w-full bottom-0"
         />
@@ -146,7 +143,7 @@ const Panel = reatomComponent(({ ctx }) => {
             {land.name}
           </Typography>
         </div>
-      </BlockWrapper>
+      </div>
       <AnotherLandsByOwner />
     </div >
   )

@@ -33,7 +33,8 @@ const modpacksQuery = () => useQuery({
   queryKey: ["modpacks"],
   queryFn: () => getModpacks(),
   refetchOnWindowFocus: false,
-  refetchOnMount: false
+  refetchOnMount: false,
+  retry: 2
 })
 
 const ModpackListNull = () => {

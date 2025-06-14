@@ -1,9 +1,11 @@
+import { Ex } from "@/components/land/models/land.model";
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { landsClient } from "@repo/shared/api/minecraft-client";
+import { MINECRAFT_LANDS_API } from "@repo/shared/constants/api";
 
 export async function getLands() {
-  const res = await landsClient.lands['get-lands'].$get({ query: { cursor: '' } })
-  const data = await res.json()
+  const res = await MINECRAFT_LANDS_API("get-lands")
+
+  const data = await res.json<{ data: Ex[], meta: { hasNextPage: boolean, endCursor?: string} }>()
 
   if (!data || 'error' in data) return null
 

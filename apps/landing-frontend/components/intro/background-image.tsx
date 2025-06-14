@@ -1,10 +1,10 @@
 "use client"
 
-import { FORUM_API } from "@repo/shared/constants/api";
+import { FORUM_SHARED_API } from "@repo/shared/constants/api";
 import { useQuery } from "@tanstack/react-query"
 
 async function getIntroBackgroundImage() {
-  const res = await FORUM_API(`shared/get-static-image`, {
+  const res = await FORUM_SHARED_API(`get-static-image`, {
     searchParams: {
       bucket: "user_images",
       fileName: "default/rain-weather.jpg"
