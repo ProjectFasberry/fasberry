@@ -41,7 +41,7 @@ The most common scripts available at the root level are:
 
 ## 📚 Documentation
 
-This README provides a high-level overview of the monorepo structure. For comprehensive information on specific applications, the build system, and shared libraries, please visit the **[Official Documentation](LINK_TO_YOUR_DOCS)**.
+This README provides a high-level overview of the monorepo structure. For comprehensive information on specific applications, the build system, and shared libraries, please visit the **[Official Documentation](https://deepwiki.com/ProjectFasberry/minecraft-turbo/1-overview)**.
 
 The documentation covers:
 *   **Landing Frontend Application**
