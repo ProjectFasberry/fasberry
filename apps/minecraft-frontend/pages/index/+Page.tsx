@@ -7,7 +7,7 @@ import { News } from "@/shared/components/landing/news/news-list";
 import { SpawnCarousel } from "@/shared/components/landing/gallery/spawn-carousel";
 import { StatusItem } from "@/shared/components/landing/status/status-item";
 
-const URL = "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/underwater.png"
+const URL = "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/underwater.webp"
 
 const IntroBackgroundImage = () => {
   return (
@@ -41,7 +41,7 @@ export default function IndexPage() {
                 Атмосферная и ламповая атмосфера ждет тебя ★
               </p>
             </div>
-            <div className="flex sm:flex-row flex-col select-none items-center gap-4 w-full justify-center">
+            <div className="flex sm:flex-row flex-col select-none items-center px-6 gap-4 w-full justify-center">
               <Link href="/start" className="w-full sm:w-fit">
                 <button
                   className="btn w-full hover:bg-[#088d47] duration-300 bg-[#05b458]"

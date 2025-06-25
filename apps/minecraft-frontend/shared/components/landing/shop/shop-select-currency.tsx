@@ -1,13 +1,12 @@
 import { HTMLAttributes, useState } from 'react';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import CreditCardIcon from "@repo/assets/images/credit-card.webp"
 import SBPIcon from "@repo/assets/images/sbp.jpg"
 import { PaymentCurrency } from '@repo/shared/constants/currencies';
 import { reatomComponent } from '@reatom/npm-react';
 import { tv, VariantProps } from 'tailwind-variants';
-import { Dialog, Portal } from '@ark-ui/react';
 import { Typography } from '@/shared/ui/typography';
 import { currenciesResource, priceByCurrencyAction, StoreItem, storeItem } from './store.model';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/shared/ui/dialog';
 
 const currencyItemVariants = tv({
   base: `flex cursor-pointer items-center backdrop-blur-xl
@@ -62,7 +61,7 @@ export const ShopSelectCurrency = reatomComponent(({ ctx }) => {
 
   const selectCurrency = () => {
     if (!selCurrency) return;
-    
+
     setOpen(false);
     storeItem(ctx, (state) => ({ ...state, currency: selCurrency }));
   };
@@ -75,85 +74,78 @@ export const ShopSelectCurrency = reatomComponent(({ ctx }) => {
         Метод оплаты
       </Typography>
       <div className="flex items-center gap-2 w-fit">
-        <Dialog.Root open={open} onOpenChange={e => setOpen(e.open)}>
-          <Dialog.Trigger
+        <Dialog open={open} onOpenChange={v => setOpen(v)}>
+          <DialogTrigger
             className='flex group max-w-1/3 overflow-hidden gap-2 border-2 border-neutral-600 bg-background-dark/80 lg:px-6 px-4 py-1 lg:py-2 rounded-lg'
           >
             <Typography color="white" className="text-[14px] lg:text-[16px]">
               {currency ?? 'выбрать'}
             </Typography>
-          </Dialog.Trigger>
-          <Portal>
-            <Dialog.Backdrop />
-            <Dialog.Positioner>
-              <Dialog.Content className="p-0 max-w-2xl">
-                <VisuallyHidden>
-                  <Dialog.Title>Выберите способ оплаты</Dialog.Title>
-                </VisuallyHidden>
-                <div className="flex items-center p-4 border-2 border-neutral-700 rounded-xl h-full w-full">
-                  <div className="flex flex-col w-full gap-4">
-                    <Typography className="text-xl text-center">Выберите способ оплаты</Typography>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 auto-rows-auto w-full h-full">
-                      {!currencies && (
-                        <Typography className="text-lg">Доступных валют нет :/</Typography>
-                      )}
-                      {currencies && (
-                        currencies.map(({ id, title, imageUrl, isAvailable, value }) => (
-                          <CurrencyItem
-                            key={id}
-                            onClick={() => setSelCurrency(value as PaymentCurrency)}
-                            variant={!isAvailable ? 'disabled' : selCurrency === value ? 'selected' : 'default'}
-                          >
-                            <img src={imageUrl} alt="" width={36} height={36} className="rounded-3xl" />
-                            <Typography className="text-xl" color="white">
-                              {title}
-                            </Typography>
-                          </CurrencyItem>
-                        )))}
-                    </div>
-                    {currency === 'RUB' && (
-                      <div className="flex flex-col gap-4 w-full h-fit">
-                        <div className="flex items-center *:w-full gap-2">
-                          <CurrencyItem
-                            variant={fiatMethod === 'sbp' ? 'selected' : 'default'}
-                            onClick={() => selectFiatMethod('sbp')}
-                          >
-                            <img src={SBPIcon} alt="" width={36} height={36} />
-                            <Typography>
-                              СБП
-                            </Typography>
-                          </CurrencyItem>
-                          <CurrencyItem
-                            variant={fiatMethod === 'card' ? 'selected' : 'default'}
-                            onClick={() => selectFiatMethod('card')}
-                          >
-                            <img src={CreditCardIcon} alt="" width={36} height={36} />
-                            <Typography>Банковская карта</Typography>
-                          </CurrencyItem>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex flex-col lg:flex-row gap-2 items-center justify-between w-full">
-                      <Typography color="gray" className="text-base text-neutral-400">
-                        {selCurrency !== 'RUB' && 'Оплата проходит через телеграм-бота'}
-                      </Typography>
-                      <div className="flex items-center lg:w-fit w-full gap-2">
-                        <button
-                          onClick={selectCurrency}
-                          className="btn py-2 w-full rounded-lg hover:bg-[#05b458] bg-[#088d47] duration-300 backdrop-blur-lg"
-                        >
-                          <Typography className="text-lg text-white">
-                            Выбрать
-                          </Typography>
-                        </button>
-                      </div>
+          </DialogTrigger>
+          <DialogContent className="p-0 max-w-2xl">
+            <DialogTitle className='hidden'>Выберите способ оплаты</DialogTitle>
+            <div className="flex items-center p-4 border-2 border-neutral-700 rounded-xl h-full w-full">
+              <div className="flex flex-col w-full gap-4">
+                <Typography className="text-xl text-center">Выберите способ оплаты</Typography>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 auto-rows-auto w-full h-full">
+                  {!currencies && (
+                    <Typography className="text-lg">Доступных валют нет :/</Typography>
+                  )}
+                  {currencies && (
+                    currencies.map(({ id, title, imageUrl, isAvailable, value }) => (
+                      <CurrencyItem
+                        key={id}
+                        onClick={() => setSelCurrency(value as PaymentCurrency)}
+                        variant={!isAvailable ? 'disabled' : selCurrency === value ? 'selected' : 'default'}
+                      >
+                        <img src={imageUrl} alt="" width={36} height={36} className="rounded-3xl" />
+                        <Typography className="text-xl" color="white">
+                          {title}
+                        </Typography>
+                      </CurrencyItem>
+                    )))}
+                </div>
+                {currency === 'RUB' && (
+                  <div className="flex flex-col gap-4 w-full h-fit">
+                    <div className="flex items-center *:w-full gap-2">
+                      <CurrencyItem
+                        variant={fiatMethod === 'sbp' ? 'selected' : 'default'}
+                        onClick={() => selectFiatMethod('sbp')}
+                      >
+                        <img src={SBPIcon} alt="" width={36} height={36} />
+                        <Typography>
+                          СБП
+                        </Typography>
+                      </CurrencyItem>
+                      <CurrencyItem
+                        variant={fiatMethod === 'card' ? 'selected' : 'default'}
+                        onClick={() => selectFiatMethod('card')}
+                      >
+                        <img src={CreditCardIcon} alt="" width={36} height={36} />
+                        <Typography>Банковская карта</Typography>
+                      </CurrencyItem>
                     </div>
                   </div>
+                )}
+                <div className="flex flex-col lg:flex-row gap-2 items-center justify-between w-full">
+                  <Typography color="gray" className="text-base text-neutral-400">
+                    {selCurrency !== 'RUB' && 'Оплата проходит через телеграм-бота'}
+                  </Typography>
+                  <div className="flex items-center lg:w-fit w-full gap-2">
+                    <button
+                      onClick={selectCurrency}
+                      className="btn py-2 w-full rounded-lg hover:bg-[#05b458] bg-[#088d47] duration-300 backdrop-blur-lg"
+                    >
+                      <Typography className="text-lg text-white">
+                        Выбрать
+                      </Typography>
+                    </button>
+                  </div>
                 </div>
-              </Dialog.Content>
-            </Dialog.Positioner>
-          </Portal>
-        </Dialog.Root>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <UpdatePrice />
       </div>
     </div>

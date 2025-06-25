@@ -12,7 +12,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ark-ui/react": "5.14.2",
+    "@bprogress/react": "1.2.7",
     "@reatom/async": "3.16.8",
     "@reatom/core": "3.10.1",
     "@reatom/framework": "3.4.64",
@@ -21,14 +21,15 @@
     "@repo/config-typescript": "*",
     "@repo/lib": "*",
     "@repo/shared": "*",
-    "@repo/ui": "*",
-    "@tabler/icons-react": "^3.34.0",
-    "@uiw/react-heat-map": "^2.3.3",
-    "@uiw/react-tooltip": "^4.22.3",
+    "@tabler/icons-react": "3.34.0",
+    "@uiw/react-heat-map": "2.3.3",
+    "@uiw/react-tooltip": "4.22.3",
     "@vitejs/plugin-react": "4.5.1",
     "dayjs": "1.11.11",
     "ky": "1.7.2",
     "lucide-react": "0.468.0",
+    "motion": "^12.19.1",
+    "radix-ui": "^1.4.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-intersection-observer": "9.10.2",
@@ -42,6 +43,8 @@
     "zod-validation-error": "3.0.0"
   },
   "devDependencies": {
+    "@mdx-js/react": "^3.1.0",
+    "@mdx-js/rollup": "^3.1.0",
     "@tailwindcss/typography": "0.5.16",
     "@tailwindcss/vite": "4.1.8",
     "@types/react": "19.1.8",

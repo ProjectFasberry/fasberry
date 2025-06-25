@@ -1,16 +1,16 @@
 import { reatomComponent } from '@reatom/npm-react';
-import { Dialog } from '@ark-ui/react';
-import { Skeleton } from '../../../ui/skeleton';
-import { Typography } from '../../../ui/typography';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Typography } from '@/shared/ui/typography';
 import { dayjs } from '@/shared/lib/create-dayjs';
 import { News, newsAction, newsDataAtom, newsFilterAtom } from './news.model';
+import { Dialog, DialogContent, DialogTrigger } from '@/shared/ui/dialog';
 
 const NewsPageItem = ({
   imageUrl, created_at, description, title
 }: News) => {
   return (
-    <Dialog.Root>
-      <Dialog.Trigger
+    <Dialog>
+      <DialogTrigger
         className="flex flex-col group overflow-hidden h-[320px] relative border-2 border-neutral-600 rounded-xl"
       >
         <img
@@ -48,8 +48,8 @@ const NewsPageItem = ({
             {description.length > 38 ? description.slice(0, 36) + "..." : description}
           </Typography>
         </div>
-      </Dialog.Trigger>
-      <Dialog.Content className="flex lg:flex-row flex-col items-start gap-4">
+      </DialogTrigger>
+      <DialogContent className="flex lg:flex-row flex-col items-start gap-4">
         <div className="flex flex-col w-full lg:w-2/3 gap-y-4">
           <div className="flex flex-col">
             <Typography className="text-white text-xl text-left">
@@ -73,11 +73,10 @@ const NewsPageItem = ({
             className="rounded-xl relative w-full h-full object-cover"
           />
         </div>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   );
 };
-
 
 export const NewsListSkeleton = () => {
   return (

@@ -1,7 +1,7 @@
 import { reatomComponent } from "@reatom/npm-react";
 import { useState } from "react";
 import { requestedUserParamAtom } from "../models/skin.model";
-import { Dialog } from "@ark-ui/react";
+import { Dialog, DialogClose, DialogContent, DialogTrigger } from '@/shared/ui/dialog';
 
 export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -12,15 +12,15 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const downloadUrl = `https://api.fasberry.su/minecraft/skin/download-skin/${nickname}`
 
   return (
-    <Dialog.Root open={dialogOpen} onOpenChange={e => setDialogOpen(e.open)}>
-      <Dialog.Trigger asChild>
+    <Dialog open={dialogOpen} onOpenChange={v => setDialogOpen(v)}>
+      <DialogTrigger asChild>
         <button className="bg-neutral-50 items-center justify-center flex w-full h-[46px]">
           <p className="text-md font-semibold text-neutral-900">
             Скачать скин
           </p>
         </button>
-      </Dialog.Trigger>
-      <Dialog.Content>
+      </DialogTrigger>
+      <DialogContent>
         <div title="Скачать скин?">
           <a
             href={downloadUrl}
@@ -34,13 +34,13 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
               Скачать
             </p>
           </a>
-          <Dialog.CloseTrigger>
+          <DialogClose>
             <button className="btn">
               Отмена
             </button>
-          </Dialog.CloseTrigger>
+          </DialogClose>
         </div>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }, "ProfileSkinDownloadLink")

@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { ArmorItem } from '@repo/shared/wiki/data/wiki/wiki-list';
-import { Dialog } from "@ark-ui/react";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
+import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/shared/ui/dialog";
 
 const columnHelper = createColumnHelper<ArmorItem>();
 
@@ -86,21 +86,21 @@ export const armorColumnsPopulators = [
         id: "Structory_Biomes",
         header: "Структура",
         cell: (props) => (
-          <Dialog.Root modal>
+          <Dialog modal>
             {props.getValue()?.populators?.structory ?
-              <Dialog.Trigger>
+              <DialogTrigger>
                 список
-              </Dialog.Trigger> : "-"}
-            <Dialog.Content className="mx-auto w-[90%] max-w-md bg-transparent border-none p-0 m-0">
+              </DialogTrigger> : "-"}
+            <DialogContent className="mx-auto w-[90%] max-w-md bg-transparent border-none p-0 m-0">
               <div className="flex p-4 rounded-lg border border-neutral-400">
                 <div className="flex flex-col items-start gap-x-2">
                   <div className="flex justify-between">
                     <p className="text-lg lg:text-xl text-[#fabbfb] mb-4">
                       Биомы, где можно найти данную руду:
                     </p>
-                    <Dialog.CloseTrigger className="text-xl self-start">
+                    <DialogClose className="text-xl self-start">
                       &times;
-                    </Dialog.CloseTrigger>
+                    </DialogClose>
                   </div>
                   {props
                     .getValue()?.populators?.structory
@@ -111,31 +111,34 @@ export const armorColumnsPopulators = [
                     ))}
                 </div>
               </div>
-            </Dialog.Content>
-          </Dialog.Root>
+            </DialogContent>
+          </Dialog>
         ),
       }),
       columnHelper.accessor("isNatural", {
         id: "Structory_Chance",
         header: "Шанс",
         cell: (props) => (
-          <Tooltip
-            trigger={
-              props.getValue() ? (
-                <div>
-                  <span>{props.getValue()?.populators?.chance + "%"}</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                {props.getValue() ? (
+                  <div>
+                    <span>{props.getValue()?.populators?.chance + "%"}</span>
+                  </div>
+                ) : (
+                  "-"
+                ) }
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="bg-black/50 backdrop-filter backdrop-blur-md border-none p-2 rounded-xl">
+                  <p className="text-neutral-400 text-lg">
+                    Шанс нахождения руды на 1 чанк
+                  </p>
                 </div>
-              ) : (
-                "-"
-              )
-            } content={
-              <div className="bg-black/50 backdrop-filter backdrop-blur-md border-none p-2 rounded-xl">
-                <p className="text-neutral-400 text-lg">
-                  Шанс нахождения руды на 1 чанк
-                </p>
-              </div>
-            }
-          />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ),
       }),
     ],

@@ -1,6 +1,6 @@
-import { Typography } from '@repo/landing-ui/src/typography';
 import Bzzvanet from '@repo/assets/images/credits-bzzvanet.jpg';
 import { MainWrapperPage } from '@/shared/ui/main-wrapper';
+import { Typography } from '@/shared/ui/typography';
 
 export default function CreditsPage() {
   return (
@@ -20,7 +20,7 @@ export default function CreditsPage() {
                 <Typography className="text-white text-2xl font-bold">
                   Изображения
                 </Typography>
-                <Typography size="lg" className="text-fuchsia-300">
+                <Typography  className="text-lg text-fuchsia-300">
                   bzzVanet
                 </Typography>
               </div>

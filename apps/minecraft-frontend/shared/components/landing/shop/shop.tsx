@@ -1,14 +1,15 @@
-import { WalletList, WalletsList } from "./shop-list-wallets"
+import { SelectedWallet, WalletsList } from "./shop-list-wallets"
 import { EventsList } from "./shop-list-events"
 import { ShopPaymentModal } from "./shop-payment-modal"
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@/shared/ui/typography";
-import { Tabs } from "@ark-ui/react";
 import { donatesResource, paymentResultDialogIsOpen, paymentResultType, StoreItem, storeItem } from "./store.model"
-import { DonateList, DonatesList } from "./shop-list-donates"
+import { DonatesList, SelectedDonate } from "./shop-list-donates"
 import EndCrystal from "@repo/assets/images/minecraft/end_crystal.webp"
 import Belkoin from "@repo/assets/images/minecraft/belkoin_wallet.png"
 import Elytra from "@repo/assets/images/minecraft/elytra.webp"
+import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { ShopFooter } from "./shop-footer";
 
 const S = ({ type }: { type: "donate" | "wallet" | "events" }) => {
   useUpdate((ctx) => donatesResource(ctx, type), [type])
@@ -58,8 +59,8 @@ const ShopActivePaymentInfo = reatomComponent(({ ctx }) => {
 
 const ShopNavigation = () => {
   return (
-    <Tabs.List className="flex lg:flex-row justify-between flex-col items-center gap-4 *:duration-300 w-full *:p-4">
-      <Tabs.Trigger
+    <TabsList className="flex lg:flex-row justify-between flex-col items-center !p-0 sm:gap-4 *:h-18 *:sm:h-24 *:duration-300 w-full *:p-2 *:sm:p-4">
+      <TabsTrigger
         value="donate"
         className="flex data-[state=active]:bg-gradient-to-r gap-2
         items-center data-[state=active]:border-[#e28100] 
@@ -71,9 +72,9 @@ const ShopNavigation = () => {
           Привилегии
         </Typography>
         <img src={Elytra} width={28} height={28} alt="" />
-      </Tabs.Trigger>
+      </TabsTrigger>
       <span className="hidden lg:inline text-[20px] text-neutral-300">⏺</span>
-      <Tabs.Trigger
+      <TabsTrigger
         value="wallet"
         className="flex data-[state=active]:bg-gradient-to-r gap-2 
         items-center data-[state=active]:border-[#db1ed7] 
@@ -85,9 +86,9 @@ const ShopNavigation = () => {
           Валюта
         </Typography>
         <img src={Belkoin} width={28} height={28} alt="" />
-      </Tabs.Trigger>
+      </TabsTrigger>
       <span className="hidden lg:inline text-[20px] text-neutral-300">⏺</span>
-      <Tabs.Trigger
+      <TabsTrigger
         value="events"
         className="flex data-[state=active]:bg-gradient-to-r gap-2 
         items-center data-[state=active]:border-[#05b458] 
@@ -99,8 +100,8 @@ const ShopNavigation = () => {
           Ивенты
         </Typography>
         <img src={EndCrystal} width={28} height={28} alt="" />
-      </Tabs.Trigger>
-    </Tabs.List>
+      </TabsTrigger>
+    </TabsList>
   )
 }
 
@@ -131,11 +132,11 @@ export const Shop = reatomComponent(({ ctx }) => {
           <ShopActivePaymentInfo />
         </div>
       ) : (
-        <Tabs.Root
+        <Tabs
           value={ctx.spy(storeItem).category}
-          onValueChange={e => handleTabChange(e.value as StoreItem["category"])}
+          onValueChange={v => handleTabChange(v as StoreItem["category"])}
           defaultValue="donate"
-          className="flex-col w-full flex gap-8"
+          className="flex flex-col w-full gap-8"
         >
           <ShopNavigation />
           <div className="flex flex-col xl:flex-row items-start w-full h-fit gap-4">
@@ -150,20 +151,24 @@ export const Shop = reatomComponent(({ ctx }) => {
               </div>
             </div>
             <div
-              className="flex flex-col items-center p-4 w-full xl:w-3/4 h-full bg-neutral-900 rounded-lg *:data-[state=active]:flex *:data-[state=inactive]:hidden"
+              className="flex flex-col items-center p-4 w-full xl:w-3/4 h-full bg-neutral-900 rounded-lg"
             >
-              <Tabs.Content value="donate" className="flex flex-col gap-4 w-full h-full">
-                <DonateList />
-              </Tabs.Content>
-              <Tabs.Content value="wallet" className="flex flex-col gap-4 w-full h-full">
-                <WalletList />
-              </Tabs.Content>
-              <Tabs.Content value="events" className="flex flex-col gap-4 w-full h-full">
-                <EventsList />
-              </Tabs.Content>
+              <TabsContents className="w-full">
+                <TabsContent value="donate" className="flex flex-col gap-4 w-full h-full">
+                  <SelectedDonate />
+                  <ShopFooter />
+                </TabsContent>
+                <TabsContent value="wallet" className="flex flex-col gap-4 w-full h-full">
+                  <SelectedWallet />
+                  <ShopFooter />
+                </TabsContent>
+                <TabsContent value="events" className="flex flex-col gap-4 w-full h-full">
+                  <EventsList />
+                </TabsContent>
+              </TabsContents>
             </div>
           </div>
-        </Tabs.Root >
+        </Tabs >
       )}
     </div >
   )

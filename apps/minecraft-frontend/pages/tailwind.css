@@ -38,7 +38,6 @@
 }
 
 @layer components {
-
   .full-screen-section {
     @apply relative;
   }
@@ -52,7 +51,7 @@
   }
 
   .responsive {
-    @apply w-[90%];
+    @apply w-[calc(100%-8px)] sm:w-[90%];
   }
 
   footer::before {

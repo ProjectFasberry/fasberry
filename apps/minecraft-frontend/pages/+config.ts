@@ -6,5 +6,6 @@ export default {
   Layout,
   title: "Fasberry",
   extends: vikeReact,
-  reactStrictMode: false
+  reactStrictMode: false,
+  prefetchStaticAssets: 'viewport'
 } satisfies Config;

@@ -6,7 +6,7 @@ import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reat
 import { reatomComponent } from "@reatom/npm-react";
 import { actionCopyboard } from "@/shared/lib/copyboard-helpers";
 import { Typography } from "@/shared/ui/typography";
-import { Tooltip } from "@/shared/ui/tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/shared/ui/tooltip";
 
 const NumericItem = ({ index }: { index: number }) => {
   return (
@@ -34,24 +34,26 @@ const ServerIp = reatomComponent(({ ctx }) => {
 
   const handle = async () => {
     if (!ip) return;
-    
+
     await actionCopyboard(ip)
     toast.success("IP успешно скопирован!")
   }
 
   return (
-    <Tooltip
-      trigger={
-        <div className="flex items-center justify-start bg-black w-full py-2 px-2 border-2 border-neutral-500">
-          <Typography onClick={handle} color="white" className="text-base text-left">
-            {isLoading ? "загрузка..." : ip ? ip : "недоступно"}
-          </Typography>
-        </div>
-      }
-      content={
-        <Typography color="gray" className="text-lg">Скопировать IP</Typography>
-      }
-    />
+    <TooltipProvider>
+      <Tooltip delayDuration={1}>
+        <TooltipTrigger>
+          <div className="flex items-center justify-start bg-black w-full py-2 px-2 border-2 border-neutral-500">
+            <Typography onClick={handle} color="white" className="text-base text-left">
+              {isLoading ? "загрузка..." : ip ? ip : "недоступно"}
+            </Typography>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <Typography color="gray" className="text-lg">Скопировать IP</Typography>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 })
 
@@ -76,22 +78,24 @@ const HowToConnectOnServer = () => {
           <ServerIp />
         </div>
         <div className="flex flex-col gap-y-2">
-          <Tooltip
-            trigger={
-              <div className="flex items-center justify-start bg-black w-full py-2 px-2 border-2 border-neutral-500">
-                <Typography
-                  className="text-center text-shadow-xl text-shadow-xl text-[0.8rem] lg:text-base text-white"
-                >
-                  Наборы ресурсов: Включены
+          <TooltipProvider>
+            <Tooltip delayDuration={1}>
+              <TooltipTrigger>
+                <div className="flex items-center justify-start bg-black w-full py-2 px-2 border-2 border-neutral-500">
+                  <Typography
+                    className="text-center text-shadow-xl text-shadow-xl text-[0.8rem] lg:text-base text-white"
+                  >
+                    Наборы ресурсов: Включены
+                  </Typography>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <Typography color="gray" className="text-lg">
+                  На сервере используется ресурспак. Эту нужно оставить включенным!
                 </Typography>
-              </div>
-            }
-            content={
-              <Typography color="gray" className="text-lg">
-                На сервере используется ресурспак. Эту нужно оставить включенным!
-              </Typography>
-            }
-          />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <div className="bg-neutral-800 cursor-pointer border-2 border-neutral-500 w-full px-2 py-1">
             <Typography className="text-center text-shadow-xl text-[0.8rem] text-white lg:text-base">
               Готово

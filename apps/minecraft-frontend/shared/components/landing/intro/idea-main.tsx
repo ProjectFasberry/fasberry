@@ -23,7 +23,7 @@ const IDEAS = [
 	},
 	{
 		title: "Карта",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/map-preview.png",
+		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/map-preview.webp",
 		link: {
 			title: "Перейти к карте",
 			href: "https://map.fasberry.su"
@@ -43,7 +43,7 @@ const IDEAS = [
 	},
 	{
 		title: "Ресурспак",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/custom-armor.png",
+		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/custom-armor.webp",
 		link: {
 			title: "Узнать больше",
 			href: "/wiki?tab=resourcepack"

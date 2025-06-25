@@ -8,7 +8,7 @@ import { AnotherLandsByOwner } from "./another-lands"
 import { MINECRAFT_MAP_SITE_DOMAIN } from "@repo/shared/constants/origin-list"
 import { Avatar } from "@/shared/components/app/avatar/avatar"
 import { Skeleton } from "@/shared/ui/skeleton"
-import { Tabs } from "@ark-ui/react"
+import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 
 const Main = reatomComponent(({ ctx }) => {
   const land = ctx.spy(landAtom)
@@ -33,87 +33,90 @@ const Main = reatomComponent(({ ctx }) => {
 
   return (
     <div className="flex order-last md:order-first flex-col gap-4 md:w-3/5 w-full !p-4">
-      <Tabs.Root defaultValue="general" className="flex items-start flex-col w-full">
-        <Tabs.List className="gap-2 justify-start overflow-x-auto w-full">
-          <Tabs.Trigger value="general">
+      <Tabs defaultValue="general" className="flex items-start flex-col w-full">
+        <TabsList className="gap-2 justify-start overflow-x-auto w-full">
+          <TabsTrigger value="general">
             <p>Основное</p>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="members">
+          </TabsTrigger>
+          <TabsTrigger value="members">
             <p>
               Участники
             </p>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="stats">
+          </TabsTrigger>
+          <TabsTrigger value="stats">
             <p>Статистика</p>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="chunks">
+          </TabsTrigger>
+          <TabsTrigger value="chunks">
             <p>Территории</p>
-          </Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Content value="general" className="flex flex-col pt-2 gap-2 w-full h-full">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <p className="text-[24px] font-semibold font-[Minecraft]">
-                {land.name}
-              </p>
-              {/* {land.title && <ColoredText className="font-[Minecraft]" text={land.title} />} */}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContents>
+
+          <TabsContent value="general" className="flex flex-col pt-2 gap-2 w-full h-full">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <p className="text-[24px] font-semibold font-[Minecraft]">
+                  {land.name}
+                </p>
+                {/* {land.title && <ColoredText className="font-[Minecraft]" text={land.title} />} */}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col gap-4 h-full w-full">
-            <p className="text-[18px]">
-              Создана: {dayjs(land.created_at).format('DD.MM.YYYY HH:mm')}
+            <div className="flex flex-col gap-4 h-full w-full">
+              <p className="text-[18px]">
+                Создана: {dayjs(land.created_at).format('DD.MM.YYYY HH:mm')}
+              </p>
+              <p className="text-[18px]">Тип: {land.type}</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="members" className="flex flex-col pt-2 gap-4 w-full">
+            <p className="text-[19px] text-neutral-400" >
+              Участники территории
             </p>
-            <p className="text-[18px]">Тип: {land.type}</p>
-          </div>
-        </Tabs.Content>
-        <Tabs.Content value="members" className="flex flex-col pt-2 gap-4 w-full">
-          <p className="text-[19px] text-neutral-400" >
-            Участники территории
-          </p>
-          <LandMembers />
-        </Tabs.Content>
-        <Tabs.Content value="chunks" className="flex flex-col pt-2 gap-4 w-full">
-          <p className="text-[19px] text-neutral-400">
-            Здесь отображается количество чанков и созданных областей внутри
-            территории
-          </p>
-          <div className="flex flex-col gap-2 w-full h-full">
-            <p className="text-[18px]">
-              Чанков захвачено: {land.chunks_amount}
+            <LandMembers />
+          </TabsContent>
+          <TabsContent value="chunks" className="flex flex-col pt-2 gap-4 w-full">
+            <p className="text-[19px] text-neutral-400">
+              Здесь отображается количество чанков и созданных областей внутри
+              территории
             </p>
-            <p className="text-[18px]">
-              Областей внутри территории: {land.areas_amount}
+            <div className="flex flex-col gap-2 w-full h-full">
+              <p className="text-[18px]">
+                Чанков захвачено: {land.chunks_amount}
+              </p>
+              <p className="text-[18px]">
+                Областей внутри территории: {land.areas_amount}
+              </p>
+            </div>
+            <div className="flex items-center gap-4 w-full h-full">
+              <a target="_blank" href={MINECRAFT_MAP_SITE_DOMAIN} rel="noreferrer" className="flex items-center justify-center px-6 py-2 rounded-md bg-shark-800">
+                <p>Перейти к карте территории</p>
+              </a>
+            </div>
+          </TabsContent>
+          <TabsContent value="stats" className="flex flex-col pt-2 gap-4 w-full h-full">
+            <p className="text-[19px] text-neutral-400">
+              Здесь отображается основная статистика территории
             </p>
-          </div>
-          <div className="flex items-center gap-4 w-full h-full">
-            <a target="_blank" href={MINECRAFT_MAP_SITE_DOMAIN} rel="noreferrer" className="flex items-center justify-center px-6 py-2 rounded-md bg-shark-800">
-              <p>Перейти к карте территории</p>
-            </a>
-          </div>
-        </Tabs.Content>
-        <Tabs.Content value="stats" className="flex flex-col pt-2 gap-4 w-full h-full">
-          <p className="text-[19px] text-neutral-400">
-            Здесь отображается основная статистика территории
-          </p>
-          <div className="flex flex-col gap-2 w-full h-full">
-            <p className="text-[18px]">
-              Убийств: {land.stats.kills}
-            </p>
-            <p className="text-[18px]">
-              Смертей: {land.stats.deaths}
-            </p>
-            <p className="text-[18px]">
-              Побед: {land.stats.wins}
-            </p>
-            <p className="text-[18px]">
-              Захватов: {land.stats.captures}
-            </p>
-            <p className="text-[18px]">
-              Поражений: {land.stats.defeats}
-            </p>
-          </div>
-        </Tabs.Content>
-      </Tabs.Root>
+            <div className="flex flex-col gap-2 w-full h-full">
+              <p className="text-[18px]">
+                Убийств: {land.stats.kills}
+              </p>
+              <p className="text-[18px]">
+                Смертей: {land.stats.deaths}
+              </p>
+              <p className="text-[18px]">
+                Побед: {land.stats.wins}
+              </p>
+              <p className="text-[18px]">
+                Захватов: {land.stats.captures}
+              </p>
+              <p className="text-[18px]">
+                Поражений: {land.stats.defeats}
+              </p>
+            </div>
+          </TabsContent>
+        </TabsContents>
+      </Tabs>
     </div>
   )
 })

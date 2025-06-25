@@ -1,4 +1,4 @@
-import { Dialog } from "@ark-ui/react";
+import { Dialog, DialogContent, DialogTrigger } from '@/shared/ui/dialog';
 import { reatomComponent } from "@reatom/npm-react";
 import { MINECRAFT_SITE_DOMAIN } from "@repo/shared/constants/origin-list";
 
@@ -7,15 +7,15 @@ export const ProfileSkinHowToChange = reatomComponent(({ ctx }) => {
   if (!isOwner) return null;
 
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <button className="btn bg-shark-50 w-full h-[46px]">
           <p className="text-md text-shark-950">
             Как изменить скин?
           </p>
         </button>
-      </Dialog.Trigger>
-      <Dialog.Content>
+      </DialogTrigger>
+      <DialogContent>
         <div className="flex flex-col gap-y-4 w-full items-center justify-center">
           <p variant="dialogTitle">
             Как изменить скин?
@@ -32,7 +32,7 @@ export const ProfileSkinHowToChange = reatomComponent(({ ctx }) => {
           </div>
           <div className="flex items-center w-full p-2">
             <a href={`${MINECRAFT_SITE_DOMAIN}/wiki?tab=skin`} rel="noreferrer" target="_blank">
-              <button state="default" className="btn">
+              <button className="btn">
                 <p className="text-md">
                   Больше о формировании скина
                 </p>
@@ -40,7 +40,7 @@ export const ProfileSkinHowToChange = reatomComponent(({ ctx }) => {
             </a>
           </div>
         </div>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }, "ProfileSkinHowToChange")

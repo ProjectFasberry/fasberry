@@ -1,7 +1,7 @@
 import { Modpack } from './modpack-list';
 import { Typography } from '@/shared/ui/typography';
 import { dayjs } from '@/shared/lib/create-dayjs';
-import { Dialog, Portal } from '@ark-ui/react';
+import { Dialog, DialogContent } from '@/shared/ui/dialog';
 import { reatomComponent } from '@reatom/npm-react';
 import { action, atom } from '@reatom/core';
 import { withReset } from '@reatom/framework';
@@ -29,47 +29,42 @@ export const ModpackItemDialog = reatomComponent(({ ctx }) => {
   const formattedCreatedAt = dayjs(created_at).format('YYYY-MM-DD HH:mm:ss')
 
   return (
-    <Dialog.Root
+    <Dialog
       open={ctx.spy(selectedModpackDialogIsOpen)}
-      onOpenChange={v => selectedModpackDialogIsOpen(ctx, v.open)}
+      onOpenChange={v => selectedModpackDialogIsOpen(ctx, v)}
     >
-      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content className="flex flex-col gap-y-4">
-            <div className="flex flex-col gap-2">
-              <Typography className="text-xl">Моды</Typography>
-              {!mods && <Typography color="gray" className="text-lg">пусто</Typography>}
-              {mods && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  {mods.map((mod, idx) =>
-                    <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
-                      <Typography className="text-lg text-white">{mod}</Typography>
-                    </div>
-                  )}
+      <DialogContent className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-2">
+          <Typography className="text-xl">Моды</Typography>
+          {!mods && <Typography color="gray" className="text-lg">пусто</Typography>}
+          {mods && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {mods.map((mod, idx) =>
+                <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
+                  <Typography className="text-lg text-white">{mod}</Typography>
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Typography className='text-xl'>Шейдеры</Typography>
-              {!shaders && <Typography color="gray" className="text-lg">пусто</Typography>}
-              {shaders && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  {shaders.map((shader, idx) =>
-                    <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
-                      <Typography color="white" className="text-lg">{shader}</Typography>
-                    </div>
-                  )}
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <Typography className='text-xl'>Шейдеры</Typography>
+          {!shaders && <Typography color="gray" className="text-lg">пусто</Typography>}
+          {shaders && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {shaders.map((shader, idx) =>
+                <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
+                  <Typography color="white" className="text-lg">{shader}</Typography>
                 </div>
               )}
             </div>
-            <div className="self-end">
-              <Typography color="gray" className='text-md'>Создан {formattedCreatedAt}</Typography>
-            </div>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
-    </Dialog.Root>
+          )}
+        </div>
+        <div className="self-end">
+          <Typography color="gray" className='text-md'>Создан {formattedCreatedAt}</Typography>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }, "ModpackItemDialog")
 

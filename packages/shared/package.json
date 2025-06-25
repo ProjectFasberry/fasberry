@@ -15,7 +15,7 @@
   "devDependencies": {
     "@repo/config-typescript": "*",
     "clsx": "2.1.1",
-    "react": "18.3.1",
+    "react": "19.1.0",
     "typescript": "^5.4.5"
   }
 }

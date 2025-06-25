@@ -2,7 +2,6 @@
 	"extends": "@repo/config-typescript/base.json",
 	"include": [
 		".", 
-		"../lib/constants/dayjs-instance.ts",
 	],
 	"compilerOptions": {
 		"jsx": "react-jsx",

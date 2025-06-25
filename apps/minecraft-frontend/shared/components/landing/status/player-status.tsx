@@ -1,7 +1,7 @@
 import { Link } from "../../config/Link";
-import { Dialog } from "@ark-ui/react";
-import { Typography } from "../../../ui/typography";
-import { Skeleton } from "../../../ui/skeleton";
+import { Typography } from "@/shared/ui/typography";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/shared/ui/dialog';
 
 export type PlayerStatusProps = {
 	nickname: string
@@ -46,8 +46,8 @@ export const PlayerStatus = ({
 	const nicknameByCookie = null;
 
 	return (
-		<Dialog.Root>
-			<Dialog.Trigger className="w-full">
+		<Dialog>
+			<DialogTrigger className="w-full">
 				<div
 					title="Перейти к игроку"
 					className="flex items-center w-full px-4 py-3 rounded-xl duration-300 hover:bg-neutral-700 bg-neutral-800 justify-start gap-4"
@@ -62,10 +62,9 @@ export const PlayerStatus = ({
 						</Typography>
 					)}
 				</div>
-			</Dialog.Trigger>
-			<Dialog.Positioner>
-				<Dialog.Content className="justify-center !max-w-xl">
-					<Dialog.Title className="text-center">{nickname}</Dialog.Title>
+			</DialogTrigger>
+				<DialogContent className="justify-center !max-w-xl">
+					<DialogTitle className="text-center">{nickname}</DialogTitle>
 					<div className="flex flex-col items-center gap-8 w-full">
 						<PlayerStatusImage type="full" nickname={nickname} />
 						<div className="flex flex-col gap-2 w-full">
@@ -78,7 +77,7 @@ export const PlayerStatus = ({
 									Перейти к профилю
 								</p>
 							</Link>
-							<Dialog.CloseTrigger className="w-full">
+							<DialogClose className="w-full">
 								<div
 									className="inline-flex items-center justify-center whitespace-nowrap
 								px-4 py-2 hover:bg-[#E66A6D] bg-[#C65558] rounded-md w-full"
@@ -87,11 +86,10 @@ export const PlayerStatus = ({
 										Закрыть
 									</p>
 								</div>
-							</Dialog.CloseTrigger>
+							</DialogClose>
 						</div>
 					</div>
-				</Dialog.Content>
-			</Dialog.Positioner>
-		</Dialog.Root>
+				</DialogContent>
+		</Dialog>
 	)
 }

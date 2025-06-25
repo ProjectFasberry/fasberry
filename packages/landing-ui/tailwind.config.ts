@@ -1,1 +1,0 @@
-export * from "@repo/config-tailwind/tailwind-landing.config"

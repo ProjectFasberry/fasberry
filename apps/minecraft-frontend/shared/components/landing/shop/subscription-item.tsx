@@ -3,11 +3,11 @@ import Totem from '@repo/assets/gifs/totem-of-undying-faked-death.gif';
 import Heart from '@repo/assets/gifs/hardcore-heart-minecraft.gif';
 import { SubscriptionItemForm } from './subscription-item-form';
 import { reatomComponent } from '@reatom/npm-react';
-import { Dialog } from '@ark-ui/react';
 import { ShopAreaItem } from './shop-area';
 import { Typography } from '@/shared/ui/typography';
 import { ShopFinishedPreview } from './shop-preview';
 import { createPaymentAction, paymentResult, paymentResultType } from './store.model';
+import { Dialog, DialogContent, DialogTrigger } from '@/shared/ui/dialog';
 
 export const StartPayment = reatomComponent<{ trigger: ReactNode }>(({ ctx, trigger }) => {
   const [open, setOpen] = useState(false)
@@ -30,11 +30,11 @@ export const StartPayment = reatomComponent<{ trigger: ReactNode }>(({ ctx, trig
   const isCreatePaymentProccessing = ctx.spy(createPaymentAction.statusesAtom).isPending
 
   return (
-    <Dialog.Root open={open} onOpenChange={e => handleClose(e.open)}>
-      <Dialog.Trigger asChild>
+    <Dialog open={open} onOpenChange={v => handleClose(v)}>
+      <DialogTrigger asChild>
         {trigger}
-      </Dialog.Trigger>
-      <Dialog.Content className="!w-[640px] h-auto overflow-y-auto border-none gap-0">
+      </DialogTrigger>
+      <DialogContent className="!w-[640px] bg-neutral-950 h-auto overflow-y-auto border-none gap-0">
         {isCreatePaymentError && (
           <ShopAreaItem image={Heart}>
             <Typography className="text-xl">
@@ -58,7 +58,7 @@ export const StartPayment = reatomComponent<{ trigger: ReactNode }>(({ ctx, trig
             <SubscriptionItemForm />
           </div>
         )}
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }, "StartPayment")

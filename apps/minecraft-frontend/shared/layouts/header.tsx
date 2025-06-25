@@ -4,7 +4,7 @@ import { Avatar } from "@/shared/components/app/avatar/avatar";
 import { usePageContext } from "vike-react/usePageContext";
 import { lazy, Suspense } from "react";
 import { toast } from 'sonner';
-import { Menu } from "@ark-ui/react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 const HeaderMobileSheet = lazy(() => import("./header-mobile").then(m => ({ default: m.HeaderSheet })))
 
@@ -13,62 +13,81 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   const isActive = pathname === href;
 
   const pathDetect = (href: string | null) => {
-    if (href) {
-      if (pathname === href) {
-        return toast.info("Вы уже на этой странице", {
-          icon: <img alt="" loading="lazy" width={32} height={32} src="/images/minecraft/icons/bell.webp" />
-        })
-      }
+    if (!href) return;
+
+    if (pathname === href) {
+      return toast.info("Вы уже на этой странице", {
+        icon: <img alt="" loading="lazy" width={32} height={32} src="/images/minecraft/icons/bell.webp" />
+      })
     }
   }
 
   return (
-    <Menu.Root>
-      <Menu.Trigger className="group">
-        <Link
-          onClick={() => pathDetect(href)}
-          href={href ?? "/"}
-          className="flex items-center gap-1 mx-2 cursor-pointer"
-        >
-          {isActive && (
-            <img src="/images/minecraft/icons/experience_big.webp" width={20} alt="" height={20} />
-          )}
-          <p
-            data-href={href}
-            data-state={isActive}
-            className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8] data-[href=/store]:text-gold"
+    <DropdownMenu>
+      <DropdownMenuTrigger className="group">
+        {href ? (
+          <Link
+            onClick={() => pathDetect(href)}
+            href={href}
+            className="flex items-center gap-1 mx-2"
           >
-            {name}
-          </p>
-          {childs && (
-            <>
-              <span className="text-white group-data-[state=open]:inline hidden">⏶</span>
-              <span className="text-white group-data-[state=closed]:inline hidden">⏷</span>
-            </>
-          )}
-        </Link>
-      </Menu.Trigger>
+            {isActive && (
+              <img src="/images/minecraft/icons/experience_big.webp" width={20} alt="" height={20} />
+            )}
+            <p
+              data-href={href}
+              data-state={isActive}
+              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8] data-[href=/store]:text-gold"
+            >
+              {name}
+            </p>
+            {childs && (
+              <>
+                <span className="text-white group-data-[state=open]:inline hidden">⏶</span>
+                <span className="text-white group-data-[state=closed]:inline hidden">⏷</span>
+              </>
+            )}
+          </Link>
+        ) : (
+          <div
+            onClick={() => pathDetect(href)}
+            className="flex items-center gap-1 mx-2 cursor-pointer"
+          >
+            <p
+              data-href={href}
+              data-state={isActive}
+              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8] data-[href=/store]:text-gold"
+            >
+              {name}
+            </p>
+            {childs && (
+              <>
+                <span className="text-white group-data-[state=open]:inline hidden">⏶</span>
+                <span className="text-white group-data-[state=closed]:inline hidden">⏷</span>
+              </>
+            )}
+          </div>
+        )}
+      </DropdownMenuTrigger>
       {childs && (
-        <Menu.Positioner>
-          <Menu.Content className="border">
-            <div className="flex flex-col py-2 px-4 gap-2 w-full">
-              {childs.map(item => (
-                <div key={item.name} className="flex items-center gap-1 cursor-pointer">
-                  {item.href === pathname && (
-                    <img src="/images/minecraft/icons/experience_big.webp" width={16} alt="" height={16} />
-                  )}
-                  <Link href={item.href || "/"}>
-                    <p className="hover:brightness-150 text-lg text-project-color">
-                      {item.name}
-                    </p>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </Menu.Content>
-        </Menu.Positioner>
+        <DropdownMenuContent className="rounded-md z-[1000] bg-neutral-950 w-[200px]">
+          <div className="flex flex-col py-2 px-4 gap-2 w-full">
+            {childs.map(item => (
+              <div key={item.name} className="flex items-center gap-1 cursor-pointer">
+                {item.href === pathname && (
+                  <img src="/images/minecraft/icons/experience_big.webp" width={16} alt="" height={16} />
+                )}
+                <Link href={item.href || "/"}>
+                  <p className="hover:brightness-150 text-lg text-project-color">
+                    {item.name}
+                  </p>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </DropdownMenuContent>
       )}
-    </Menu.Root>
+    </DropdownMenu>
   )
 }
 

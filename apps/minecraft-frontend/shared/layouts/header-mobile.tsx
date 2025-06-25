@@ -2,9 +2,10 @@ import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
 import { usePageContext } from 'vike-react/usePageContext';
 import { navigate } from 'vike/client/router';
 import { Link } from '@/shared/components/config/Link';
-import { Accordion, Dialog } from '@ark-ui/react';
 import { atom } from '@reatom/core';
 import { reatomComponent } from '@reatom/npm-react';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../ui/sheet';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 
 const ExperienceCircle = () => {
   return (
@@ -29,10 +30,10 @@ const Content = reatomComponent(({ ctx }) => {
           <img src="/images/fasberry_logo.webp" alt="Fasberry" width={224} height={64} />
         </Link>
       </div>
-      <Accordion.Root collapsible className="flex flex-col items-center justify-center w-full gap-4 px-4">
+      <Accordion type="single" collapsible className="flex flex-col items-center justify-center w-full gap-4 px-4">
         {MAIN_HEADER.map(({ name, href, childs }) => (
-          <Accordion.Item key={name} value={name} className="w-full">
-            <Accordion.ItemTrigger
+          <AccordionItem key={name} value={name} className="w-full">
+            <AccordionTrigger
               onClick={() => handleToPage(href)}
               className="flex border-2 border-neutral-600 hover:bg-neutral-600 group bg-neutral-800 rounded-md gap-6 py-2 px-2 w-full"
             >
@@ -48,9 +49,9 @@ const Content = reatomComponent(({ ctx }) => {
                   </>
                 )}
               </div>
-            </Accordion.ItemTrigger>
+            </AccordionTrigger>
             {childs && (
-              <Accordion.ItemContent className="flex flex-col gap-2 pt-1">
+              <AccordionContent className="flex flex-col gap-2 pt-1">
                 {childs.map(({ name, href }) => (
                   <div
                     key={name}
@@ -72,32 +73,36 @@ const Content = reatomComponent(({ ctx }) => {
                     </div>
                   </div>
                 ))}
-              </Accordion.ItemContent>
+              </AccordionContent>
             )}
-          </Accordion.Item>
+          </AccordionItem>
         ))}
-      </Accordion.Root>
+      </Accordion>
     </>
   )
 }, "Content")
 
-const sheetIsOpenAtom = atom(false, "")
+const sheetIsOpenAtom = atom(false, "sheetIsOpenAtom")
 
 export const HeaderSheet = reatomComponent(({ ctx }) => {
-  const chestStatusImage = ctx.spy(sheetIsOpenAtom)
+  const isOpen = ctx.spy(sheetIsOpenAtom)
+
+  const chestStatusImage = isOpen
     ? '/images/minecraft/icons/chest_opened.webp'
     : '/images/minecraft/icons/chest_closed.webp';
 
   return (
-    <Dialog.Root modal open={ctx.spy(sheetIsOpenAtom)} onOpenChange={e => sheetIsOpenAtom(ctx, e.open)}>
-      <Dialog.Trigger className="xl:hidden absolute top-[10px] right-[8px] z-[3000]">
+    <Sheet modal open={isOpen} onOpenChange={v => sheetIsOpenAtom(ctx, v)}>
+      <SheetTrigger className="xl:hidden absolute top-[10px] right-[8px] z-[3000]">
         <img src={chestStatusImage} alt="" width={48} height={48} />
-      </Dialog.Trigger>
-      <Dialog.Content
-        className="xl:hidden flex flex-col items-start justify-between theme-background rounded-xl min-h-1/2 h-fit p-4 w-full"
+      </SheetTrigger>
+      <SheetContent
+        side="bottom"
+        className="xl:hidden flex border-none flex-col items-start justify-between bg-neutral-950 rounded-xl min-h-1/3 h-fit p-4 w-full"
       >
+        <SheetTitle className="hidden"></SheetTitle>
         <Content />
-      </Dialog.Content>
-    </Dialog.Root>
+      </SheetContent>
+    </Sheet>
   );
 }, "HeaderSheet")

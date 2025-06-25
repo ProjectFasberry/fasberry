@@ -1,11 +1,11 @@
 import { ShopAreaItem } from "./shop-area"
 import Duo from '@repo/assets/gifs/duo.gif';
 import { ShopFinishedPreview } from "./shop-preview"
-import { Dialog } from "@ark-ui/react";
 import { Typography } from "@/shared/ui/typography";
 import { reatomComponent } from "@reatom/npm-react";
 import { paymentResultDialogIsOpen, paymentResult } from "./store.model";
 import { ShopPaymentStatus } from "./shop-payment-status";
+import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
 
 export const ShopPaymentModal = reatomComponent(({ctx}) => {
   const result = ctx.spy(paymentResult)
@@ -14,11 +14,11 @@ export const ShopPaymentModal = reatomComponent(({ctx}) => {
   const isFinished = result.status === 'success' || result.status === 'canceled'
 
   return (
-    <Dialog.Root
+    <Dialog
       open={ctx.spy(paymentResultDialogIsOpen)}
-      onOpenChange={e => paymentResultDialogIsOpen(ctx, e.open)}
+      onOpenChange={v => paymentResultDialogIsOpen(ctx, v)}
     >
-      <Dialog.Content className="!max-w-3xl">
+      <DialogContent className="!max-w-3xl">
         <ShopAreaItem image={Duo}>
           <div className="flex flex-col items-center w-full gap-4">
             <div className="flex flex-col">
@@ -44,7 +44,7 @@ export const ShopPaymentModal = reatomComponent(({ctx}) => {
                 </a>
               )}
               {isFinished && (
-                <Dialog.CloseTrigger>
+                <DialogClose>
                   <button
                     className="btn w-full lg:w-fit bg-neutral-700 duration-300 rounded-lg py-4 px-12"
                   >
@@ -52,13 +52,13 @@ export const ShopPaymentModal = reatomComponent(({ctx}) => {
                       Вернуться
                     </Typography>
                   </button>
-                </Dialog.CloseTrigger>
+                </DialogClose>
               )}
             </div>
             <ShopPaymentStatus />
           </div>
         </ShopAreaItem>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   )
 }, "ShopPaymentModal")

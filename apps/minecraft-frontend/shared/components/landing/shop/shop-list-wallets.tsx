@@ -1,6 +1,5 @@
 import Charism from "@repo/assets/images/minecraft/charism_wallet.png"
 import Belkoin from "@repo/assets/images/minecraft/belkoin_wallet.png"
-import { ShopFooter } from "./shop-footer";
 import { useState } from "react";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@/shared/ui/typography";
@@ -180,7 +179,7 @@ const SelectWalletValue = reatomComponent(({ ctx }) => {
   )
 }, "SelectWalletValue")
 
-const SelectedWallet = reatomComponent(({ ctx }) => {
+export const SelectedWallet = reatomComponent(({ ctx }) => {
   const shopItemState = ctx.spy(storeItem)
   const currentWallets = ctx.spy(donatesResource.dataAtom) as Wallets[]
 
@@ -214,12 +213,3 @@ const SelectedWallet = reatomComponent(({ ctx }) => {
     </>
   )
 }, "SelectedWallet")
-
-export const WalletList = () => {
-  return (
-    <>
-      <SelectedWallet />
-      <ShopFooter />
-    </>
-  )
-}

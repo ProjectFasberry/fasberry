@@ -1,4 +1,3 @@
-import { ShopFooter } from "./shop-footer"
 import { ShopNickname } from "./shop-list-wallets"
 import { Typography } from "@/shared/ui/typography"
 import { reatomComponent } from "@reatom/npm-react"
@@ -71,7 +70,7 @@ export const DonatesList = reatomComponent(({ ctx }) => {
   )
 }, "DonatesList")
 
-const SelectedDonate = reatomComponent(({ctx}) => {
+export const SelectedDonate = reatomComponent(({ctx}) => {
   const shopItemState = ctx.spy(storeItem)
   const currentDonates = ctx.spy(donatesResource.dataAtom) as Donates[]
 
@@ -128,12 +127,3 @@ const SelectedDonate = reatomComponent(({ctx}) => {
     )
   )
 }, "SelectedDonate")
-
-export const DonateList = () => {
-  return (
-    <>
-      <SelectedDonate />
-      <ShopFooter />
-    </>
-  )
-}
