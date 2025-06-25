@@ -1,84 +1,54 @@
-# Turborepo starter
+#  fasberry-minecraft
 
-This Turborepo starter is maintained by the Turborepo core team.
+[![Built with Turbo](https://img.shields.io/badge/built%20with-Turbo-blue.svg?style=for-the-badge&logo=turborepo)](https://turbo.build/repo)
+[![License](https://img.shields.io/github/license/ProjectFasberry/minecraft-turbo?style=for-the-badge)](./LICENSE)
 
-## Using this example
+A sophisticated monorepo containing Minecraft-related web applications and shared component libraries, managed by [Turborepo](https://turbo.build/repo).
 
-Run the following command:
+This repository contains all the code for the Fasberry Minecraft ecosystem, including multiple frontend applications and shared packages, developed in a unified environment.
 
-```sh
-npx create-turbo@latest
-```
+## 🚀 Getting Started
 
-## What's inside?
+To get the project up and running locally, follow these steps:
 
-This Turborepo includes the following packages/apps:
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/fasberry-minecraft.git
+    cd fasberry-minecraft
+    ```
 
-### Apps and Packages
+2.  **Install dependencies:**
+    This project uses `pnpm` as the package manager.
+    ```bash
+    yarn install
+    ```
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+3.  **Run the development server:**
+    This command will start all applications in development mode simultaneously.
+    ```bash
+    yarn dev
+    ```
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 🛠️ Available Scripts
 
-### Utilities
+The most common scripts available at the root level are:
 
-This Turborepo has some additional tools already setup for you:
+| Command      | Description                                                 |
+|--------------|-------------------------------------------------------------|
+| `yarn dev`   | Starts all applications in development mode.                |
+| `yarn build` | Builds all applications and packages for production.        |
+| `yarn start` | Starts all applications.                                    |
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## 📚 Documentation
 
-### Build
+This README provides a high-level overview of the monorepo structure. For comprehensive information on specific applications, the build system, and shared libraries, please visit the **[Official Documentation](https://deepwiki.com/ProjectFasberry/minecraft-turbo/1-overview)**.
 
-To build all apps and packages, run the following command:
+The documentation covers:
+*   **Landing Frontend Application**
+*   **Minecraft App Frontend Application**
+*   **Build System & Architecture**
+*   **UI Component Library**
 
-```
-cd my-turborepo
-pnpm build
-```
+## 📄 License
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+This project is licensed under the MIT License. See the `LICENSE` file for details.
