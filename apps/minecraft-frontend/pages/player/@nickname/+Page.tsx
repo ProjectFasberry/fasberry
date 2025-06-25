@@ -1,12 +1,12 @@
-import { ProfileSkinRender } from "@/components/skin/components/profile-skin-render"
-import { requestedUserParamAtom, skinHeadAction } from "@/components/skin/models/skin.model"
+import { ProfileSkinRender } from "@/shared/components/app/skin/components/profile-skin-render"
+import { requestedUserParamAtom, skinHeadAction } from "@/shared/components/app/skin/models/skin.model"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Button } from "@repo/ui/src/components/button"
 import { Heart } from "lucide-react"
 import { usePageContext } from "vike-react/usePageContext"
 import HeatMap from '@uiw/react-heat-map';
 import Tooltip from '@uiw/react-tooltip';
-import { ProfileSkinControls } from "@/components/skin/components/profile-skin-controls"
+import { ProfileSkinControls } from "@/shared/components/app/skin/components/profile-skin-controls"
 
 const value = [
   { date: '2016/01/11', count: 2 },

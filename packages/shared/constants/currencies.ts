@@ -21,4 +21,4 @@ export type CurrencyString = typeof PAYMENT_CURRENCIES_MAPPING[keyof typeof PAYM
 
 export const currencyFiatSchema = z.enum(['RUB']);
 export const paymentCurrencySchema = z.union([currencyFiatSchema, currencyCryptoSchema]);
-export const paymentFiatMethodSchema = z.enum(["creditCard", "sbp"])
+export const paymentFiatMethodSchema = z.enum(["card", "sbp"])

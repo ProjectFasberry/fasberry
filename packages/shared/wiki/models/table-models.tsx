@@ -11,7 +11,6 @@ import {
   TooltipTrigger,
 } from "@repo/landing-ui/src/tooltip";
 import { createColumnHelper } from "@tanstack/react-table";
-import Image from "next/image";
 import { ArmorItem } from '@repo/shared/wiki/data/wiki/wiki-list';
 
 const columnHelper = createColumnHelper<ArmorItem>();
@@ -25,7 +24,7 @@ const TableImage = ({
   src, alt
 }: TableImageProps) => {
   return (
-    <Image
+    <img
       src={`${src}`}
       width={16}
       height={16}

@@ -1,6 +1,6 @@
 type MainRoutes =
   | "/"
-  | "/shop"
+  | "/store"
   | "/rules"
   | "/wiki"
   | "/wiki/modpack"
@@ -19,8 +19,8 @@ export type MainHeaderType = MainHeaderDetails & Partial<{
 export const MAIN_HEADER: MainHeaderType[] = [
   { name: "Главная", href: "/", },
   { name: "Правила", href: "/rules", },
-  { name: "Магазин", href: "/shop", },
-  // { name: "Поддержка", href: "/support", },
+  { name: "Магазин", href: "/store", },
+  { name: "Поддержка", href: "/support", },
   {
     name: "Игра",
     childs: [
