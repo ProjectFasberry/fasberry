@@ -1,12 +1,12 @@
 import { Link } from "@/shared/components/config/Link";
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { toast } from "sonner";
 import { FORUM_SHARED_API } from "@repo/shared/constants/api";
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { reatomComponent } from "@reatom/npm-react";
 import { actionCopyboard } from "@/shared/lib/copyboard-helpers";
-import { Typography } from "@/shared/ui/typography";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/shared/ui/tooltip";
+import { Typography } from "@repo/ui/typography";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip";
 
 const NumericItem = ({ index }: { index: number }) => {
   return (
@@ -49,7 +49,7 @@ const ServerIp = reatomComponent(({ ctx }) => {
             </Typography>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="left">
+        <TooltipContent side="left" className="bg-neutral-900">
           <Typography color="gray" className="text-lg">Скопировать IP</Typography>
         </TooltipContent>
       </Tooltip>
@@ -59,22 +59,14 @@ const ServerIp = reatomComponent(({ ctx }) => {
 
 const HowToConnectOnServer = () => {
   return (
-    <div
-      className="flex justify-center items-center bg-repeat border-4 bg-black/20 p-4 relative border-black h-full w-full"
-    >
-      <div className="flex flex-col gap-y-6 justify-between md:w-96 w-full">
-        <div className="flex flex-col gap-y-2 w-full">
-          <Typography color="gray" className="text-base">
-            Название сервера
-          </Typography>
+    <div className="flex justify-center items-center bg-repeat border-4 bg-black/20 px-4 py-8 relative border-black h-full w-full">
+      <div className="flex flex-col gap-6 justify-between md:w-96 w-full">
+        <div className="flex flex-col gap-2 w-full">
+          <Typography color="gray" className="text-base">Название сервера</Typography>
           <div className="bg-black py-2 px-2 border-2 border-neutral-500 w-full">
-            <Typography className="text-left text-base text-white">
-              Сервер Minecraft
-            </Typography>
+            <Typography color="white" className="text-left text-base">Сервер Minecraft</Typography>
           </div>
-          <Typography color="gray" className="text-base">
-            Адрес сервера
-          </Typography>
+          <Typography color="gray" className="text-base">Адрес сервера</Typography>
           <ServerIp />
         </div>
         <div className="flex flex-col gap-y-2">
@@ -83,21 +75,21 @@ const HowToConnectOnServer = () => {
               <TooltipTrigger>
                 <div className="flex items-center justify-start bg-black w-full py-2 px-2 border-2 border-neutral-500">
                   <Typography
-                    className="text-center text-shadow-xl text-shadow-xl text-[0.8rem] lg:text-base text-white"
+                    color="white" className="text-center text-base"
                   >
                     Наборы ресурсов: Включены
                   </Typography>
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="left">
+              <TooltipContent side="left" className="bg-neutral-900">
                 <Typography color="gray" className="text-lg">
                   На сервере используется ресурспак. Эту нужно оставить включенным!
                 </Typography>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <div className="bg-neutral-800 cursor-pointer border-2 border-neutral-500 w-full px-2 py-1">
-            <Typography className="text-center text-shadow-xl text-[0.8rem] text-white lg:text-base">
+          <div className="flex items-center justify-center bg-neutral-500 cursor-pointer border-2 border-neutral-800 w-full px-2 py-1">
+            <Typography color="black" className="text-center text-base">
               Готово
             </Typography>
           </div>
@@ -117,15 +109,15 @@ export default function StartPage() {
         <div className="flex flex-col gap-6 items-center h-full w-full">
           <div className="flex items-start gap-4 w-full">
             <NumericItem index={1} />
-            <p className="text-black dark:text-white text-md md:text-xl lg:text-2xl">
-              <Link
-                href="/auth"
+            <Typography color="white" className="text-md md:text-xl lg:text-2xl">
+              <a
+                href="https://app.fasberry.su/auth"
                 className="text-green text-shadow-lg hover:underline-offset-8 hover:underline"
               >
                 Зарегистрироваться
-              </Link>&nbsp;на проекте.
+              </a>&nbsp;на проекте.
               После регистрации убедитесь, что вы успешно вошли на форум и личный кабинет.
-            </p>
+            </Typography>
           </div>
         </div>
         <div className="flex flex-col h-full w-full gap-4">

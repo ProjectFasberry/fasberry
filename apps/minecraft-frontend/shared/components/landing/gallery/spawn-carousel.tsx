@@ -1,5 +1,5 @@
-import { Carousel, CarouselContent, CarouselIndicator, CarouselItem, CarouselNavigation } from '@/shared/ui/carousel';
-import { Typography } from '@/shared/ui/typography';
+import { Carousel, CarouselContent, CarouselIndicator, CarouselItem, CarouselNavigation } from '@repo/ui/carousel';
+import { Typography } from '@repo/ui/typography';
 import { atom } from '@reatom/core';
 import { reatomComponent } from '@reatom/npm-react';
 
@@ -22,11 +22,21 @@ export const SpawnCarousel = reatomComponent(({ ctx }) => {
         <CarouselIndicator className='bottom-2' />
         <CarouselNavigation className='z-[6]' alwaysShow />
         <CarouselContent>
-          {SPAWN_IMAGES.map((image, index) => (
-            <CarouselItem key={index} className="w-full h-screen">
-              <img src={image} draggable={false} className="w-full select-none brightness-75 h-full rounded-xl object-cover" width={1920} height={1080} alt="" />
-            </CarouselItem>
-          ))}
+          {SPAWN_IMAGES.map((image, index) => {
+            return (
+              <CarouselItem key={index} className="w-full h-screen">
+                <img
+                  src={image}
+                  draggable={false}
+                  className="w-full select-none brightness-75 h-full rounded-xl object-cover"
+                  width={1920}
+                  height={1080}
+                  loading="lazy"
+                  alt=""
+                />
+              </CarouselItem>
+            )
+          })}
         </CarouselContent>
       </Carousel>
       <div className="select-none flex absolute bottom-8 right-0 left-0 w-full items-end justify-center h-full">

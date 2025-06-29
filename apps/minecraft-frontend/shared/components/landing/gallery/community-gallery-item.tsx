@@ -1,5 +1,5 @@
-import { Carousel, CarouselContent, CarouselIndicator, CarouselItem, CarouselNavigation } from "@/shared/ui/carousel";
-import { MorphingDialog, MorphingDialogClose, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTrigger } from "@/shared/ui/morph-dialog";
+import { Carousel, CarouselContent, CarouselIndicator, CarouselItem, CarouselNavigation } from "@repo/ui/carousel";
+import { MorphingDialog, MorphingDialogClose, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTrigger } from "@repo/ui/morph-dialog";
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { commuinityGallery } from "@repo/shared/wiki/data/community/community-list";
@@ -14,7 +14,7 @@ const CarouselGallery = reatomComponent(({ ctx }) => {
       <CarouselContent>
         {commuinityGallery.map((image, i) => (
           <CarouselItem key={i} className="max-h-[720px] relative">
-            <img draggable={false} src={image} alt="" className="select-none w-full object-cover h-full" width={1920} height={1080} />
+            <img draggable={false} loading="lazy" src={image} alt="" className="select-none w-full object-cover h-full" width={1920} height={1080} />
           </CarouselItem>
         ))}
       </CarouselContent>
@@ -33,7 +33,7 @@ const GalleryItemDialog = reatomComponent<{ image: string }>(({ ctx, image }) =>
         className='flex flex-col rounded-md overflow-hidden hover:brightness-50'
       >
         <img
-          src={image} width={1280} alt="" height={720} className="w-full sm:h-[96px] md:h-[120px] lg:w-[250px] lg:h-[136px] object-cover"
+          src={image} loading="lazy" width={1280} alt="" height={720} className="w-full sm:h-[96px] md:h-[120px] lg:w-[250px] lg:h-[136px] object-cover"
         />
       </MorphingDialogTrigger>
       <MorphingDialogContainer>

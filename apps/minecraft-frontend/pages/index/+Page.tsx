@@ -2,10 +2,12 @@ import { Link } from "@/shared/components/config/Link"
 import { CommunityGallery } from "@/shared/components/landing/gallery/community-gallery-item";
 import { ContactsSection } from "@/shared/components/landing/intro/contacts-section";
 import { IdeaMain } from "@/shared/components/landing/intro/idea-main";
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { News } from "@/shared/components/landing/news/news-list";
 import { SpawnCarousel } from "@/shared/components/landing/gallery/spawn-carousel";
 import { StatusItem } from "@/shared/components/landing/status/status-item";
+import { Button } from "@repo/ui/button";
+import { Typography } from "@repo/ui/typography";
 
 const URL = "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/underwater.webp"
 
@@ -34,31 +36,33 @@ export default function IndexPage() {
             className="flex flex-col z-[2] w-full lg:w-[60%] gap-4 justify-center items-center rounded-xl py-4 lg:py-6"
           >
             <div className="flex flex-col gap-1 items-center justify-center w-full">
-              <p className="text-green text-center mb-4 text-4xl md:text-5xl xl:text-6xl">
+              <Typography className="text-green text-center mb-4 text-4xl md:text-5xl xl:text-6xl">
                 Добро пожаловать!
-              </p>
-              <p className="text-shadow-lg text-white text-center text-lg lg:text-3xl">
+              </Typography>
+              <Typography color="white" className="text-shadow-lg text-center text-lg lg:text-3xl">
                 Атмосферная и ламповая атмосфера ждет тебя ★
-              </p>
+              </Typography>
             </div>
             <div className="flex sm:flex-row flex-col select-none items-center px-6 gap-4 w-full justify-center">
               <Link href="/start" className="w-full sm:w-fit">
-                <button
-                  className="btn w-full hover:bg-[#088d47] duration-300 bg-[#05b458]"
+                <Button
+                  draggable={false}
+                  className="w-full hover:bg-[#088d47] duration-300 bg-[#05b458]"
                 >
-                  <p className="!text-white text-xl text-shadow-xl">
+                  <Typography color="white" className="text-xl text-shadow-xl">
                     Начать играть
-                  </p>
-                </button>
+                  </Typography>
+                </Button>
               </Link>
               <Link href="#idea" className="w-full sm:w-fit">
-                <button
-                  className="btn w-full bg-white/10 sm:backdrop-blur-md border-2 border-neutral-400 duration-300"
+                <Button
+                  draggable={false}
+                  className="w-full bg-white/10 sm:backdrop-blur-md border-2 border-neutral-400 duration-300"
                 >
-                  <p className="text-white text-xl text-shadow-xl">
+                  <Typography color="white"  className="text-xl text-shadow-xl">
                     О сервере
-                  </p>
-                </button>
+                  </Typography>
+                </Button>
               </Link>
             </div>
           </div>
@@ -68,9 +72,9 @@ export default function IndexPage() {
         id="idea" className="full-screen-section relative h-screen flex flex-col items-center justify-center"
       >
         <div className="flex flex-col items-center mx-auto responsive gap-6 justify-center select-none relative">
-          <p className="text-xl text-black dark:text-white text-center sm:text-3xl lg:text-4xl">
+          <Typography color="white" className="text-xl text-center sm:text-3xl lg:text-4xl">
             ♦ Особенности сервера ♦
-          </p>
+          </Typography>
           <IdeaMain />
         </div>
       </div>
@@ -86,22 +90,22 @@ export default function IndexPage() {
           <div
             id="project-news" className="flex flex-col gap-y-6 w-full xl:w-3/5"
           >
-            <p className="text-black dark:text-white text-2xl sm:text-3xl lg:text-4xl">
+            <Typography color="white" className="text-2xl sm:text-3xl lg:text-4xl">
               Новости
-            </p>
+            </Typography>
             <News />
           </div>
           <div
             id="commuinity" className="flex flex-col gap-y-6 w-full xl:w-2/5"
           >
-            <p className="text-black dark:text-white text-2xl sm:text-3xl lg:text-4xl">
+            <Typography color="white" className="text-2xl sm:text-3xl lg:text-4xl">
               Cообщество
-            </p>
+            </Typography>
             <StatusItem />
-            <div className="flex flex-col bg-background-light p-4 rounded-xl dark:bg-background-dark h-fit gap-4">
-              <p className="text-black dark:text-white text-xl lg:text-2xl">
+            <div className="flex flex-col p-4 rounded-xl bg-neutral-900 h-fit gap-4">
+              <Typography color="white" className="text-xl lg:text-2xl">
                 Скриншоты от игроков
-              </p>
+              </Typography>
               <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-3 auto-rows-auto gap-2">
                 <CommunityGallery />
               </div>

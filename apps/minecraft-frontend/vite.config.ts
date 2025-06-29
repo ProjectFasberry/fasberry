@@ -3,14 +3,15 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import vike from "vike/plugin";
 import mdx from '@mdx-js/rollup'
+import path from 'path'; 
 
 export default defineConfig({
   plugins: [
-    { 
-      enforce: 'pre', ...mdx({}) 
+    {
+      enforce: 'pre', ...mdx({})
     },
-    vike(), 
-    react(), 
+    vike(),
+    react(),
     tailwindcss(),
   ],
   build: {
@@ -28,12 +29,16 @@ export default defineConfig({
     },
   },
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       "@": new URL("./", import.meta.url).pathname,
-      '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs',
+      '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
     },
   },
+  preview: {
+    allowedHosts: true
+  },
   server: {
-    allowedHosts: ["mc.fasberry.su"]
+    allowedHosts: true
   }
 });

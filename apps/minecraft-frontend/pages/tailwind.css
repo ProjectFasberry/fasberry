@@ -1,9 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@plugin "daisyui" {
-  themes: business --default, dark --prefersdark;
-}
+@source "../../../apps/frontend/**/*.{ts,tsx}";
+@source "../../../packages/ui/**/*.{ts,tsx}";
 
 @layer base {
   @font-face {
@@ -23,6 +22,8 @@
   }
 
   body {
+    @apply bg-background-dark text-neutral-50;
+
     overflow-x: hidden;
     letter-spacing: normal;
   }
@@ -38,18 +39,6 @@
 }
 
 @layer components {
-  .full-screen-section {
-    @apply relative;
-  }
-
-  .gallery-image-trigger {
-    @apply flex items-end justify-center p-2 absolute top-0 right-0 left-0 z-10 duration-500 transition opacity-0 w-full h-full md:group-hover:opacity-100 md:group-hover:bg-black/50 md:group-hover:transition md:group-hover:duration-500;
-  }
-
-  .gallery-image-content {
-    @apply lg:max-w-5xl xl:max-w-6xl max-h-[720px] w-[90%] !p-0;
-  }
-
   .responsive {
     @apply w-[calc(100%-8px)] sm:w-[90%];
   }
@@ -110,6 +99,10 @@
     transform: scale(-1);
   }
 
+  .full-screen-section {
+    @apply relative;
+  }
+
   .full-screen-section::before {
     content: "";
     width: 100%;
@@ -133,64 +126,18 @@
     transform: scale(-1);
   }
 
-  .windows-loading-spinner {
-    box-sizing: border-box;
-    width: 1.5rem;
-    height: 1.5rem;
-    padding: 2px;
-    overflow: visible;
-  }
-
-  .windows-loading-spinner>circle {
-    stroke: #fff;
-    fill: none;
-    stroke-width: 2px;
-    stroke-linecap: round;
-    transform-origin: 50% 50%;
-    transition: all 0.2s ease-in-out 0s;
-    animation: 2s linear 0s infinite normal none running loading-spinner;
-  }
-
-  @keyframes loading-spinner {
-    0% {
-      stroke-dasharray: 0.01px, 43.97px;
-      transform: rotate(0);
-    }
-
-    50% {
-      stroke-dasharray: 21.99px, 21.99px;
-      transform: rotate(450deg);
-    }
-
-    100% {
-      stroke-dasharray: 0.01px, 43.97px;
-      transform: rotate(1080deg);
-    }
-  }
-
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes fadeOut {
-    from {
-      opacity: 1;
-    }
-
-    to {
-      opacity: 0;
-    }
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 }
 
 @theme {
-
   --color-dark-blue: oklch(19.6% 0.99 306);
   --color-dark-green: oklch(60.6% 0.88 136);
   --color-dark-aqua: oklch(63.1% 0.37 196);
@@ -278,7 +225,7 @@
   --color-blue: #5555FF;
   --color-green: #55FF55;
   --color-aqua: #55FFFF;
-  --color-red: #55FF55;
+  --color-red: #FB3E3E;
   --color-light-purple: #55FF55;
   --color-yellow: #55FF55;
   --color-discord-color: #7289da;

@@ -1,12 +1,12 @@
 import { CONTACTS_LIST, ContactsListProps } from '@repo/shared/wiki/data/contacts/contacts-list';
 import { Link } from "@/shared/components/config/Link";
-import { Typography } from '@/shared/ui/typography';
+import { Typography } from '@repo/ui/typography';
 
 const ContactItem = ({ content, name, href }: ContactsListProps) => {
   return (
-    <div className="flex flex-col bg-background-dark h-full justify-between rounded-xl p-4 lg:p-6">
+    <div className="flex flex-col bg-neutral-900 h-full justify-between rounded-xl p-4 lg:p-6">
       <div className="flex flex-col mb-4">
-        <Typography className="dark:text-neutral-50 text-neutral-800 text-3xl lg:text-4xl xl:text-5xl mb-4">
+        <Typography className="text-neutral-50 text-3xl lg:text-4xl xl:text-5xl mb-4">
           {name}
         </Typography>
         <h1 className="text-[#5CC85C] text-lg xl:text-3xl">плюсы:</h1>

@@ -9,11 +9,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/assets": "*",
-    "ky": "1.7.2"
+    "@repo/assets": "workspace:*",
+    "ky": "1.8.1"
   },
   "devDependencies": {
-    "@repo/config-typescript": "*",
+    "@repo/config-typescript": "workspace:*",
     "clsx": "2.1.1",
     "react": "19.1.0",
     "typescript": "^5.4.5"

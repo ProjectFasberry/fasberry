@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { ArmorItem } from '@repo/shared/wiki/data/wiki/wiki-list';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/shared/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@repo/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/tooltip";
 
 const columnHelper = createColumnHelper<ArmorItem>();
 
@@ -14,13 +14,7 @@ const TableImage = ({
   src, alt
 }: TableImageProps) => {
   return (
-    <img
-      src={`${src}`}
-      width={16}
-      height={16}
-      className="w-[9px] h-[9px] lg:w-[16px] lg:h-[16px]"
-      alt={alt}
-    />
+    <img src={src} width={16} height={16} className="w-[9px] h-[9px] lg:w-[16px] lg:h-[16px]" alt={alt} />
   );
 };
 

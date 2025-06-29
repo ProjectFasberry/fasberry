@@ -1,11 +1,11 @@
 import { ShopAreaItem } from "./shop-area"
 import Duo from '@repo/assets/gifs/duo.gif';
 import { ShopFinishedPreview } from "./shop-preview"
-import { Typography } from "@/shared/ui/typography";
+import { Typography } from "@repo/ui/typography";
 import { reatomComponent } from "@reatom/npm-react";
 import { paymentResultDialogIsOpen, paymentResult } from "./store.model";
 import { ShopPaymentStatus } from "./shop-payment-status";
-import { Dialog, DialogClose, DialogContent } from "@/shared/ui/dialog";
+import { Dialog, DialogClose, DialogContent } from "@repo/ui/dialog";
 
 export const ShopPaymentModal = reatomComponent(({ctx}) => {
   const result = ctx.spy(paymentResult)

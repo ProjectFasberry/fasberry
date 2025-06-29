@@ -2,10 +2,13 @@ import Charism from "@repo/assets/images/minecraft/charism_wallet.png"
 import Belkoin from "@repo/assets/images/minecraft/belkoin_wallet.png"
 import { useState } from "react";
 import { reatomComponent } from "@reatom/npm-react";
-import { Typography } from "@/shared/ui/typography";
-import { Input } from "../news/news-page-search";
-import { Skeleton } from "@/shared/ui/skeleton";
-import { donatesResource, storeItem, validateNumber, Wallets, storeTargetNickname } from "./store.model";
+import { Typography } from "@repo/ui/typography";
+import { Skeleton } from "@repo/ui/skeleton";
+import { itemsResource, storeItem, Wallets, storeTargetNickname, storeCategoryAtom } from "./store.model";
+import { validateNumber } from "@/shared/lib/validate-primitives";
+import { Input } from "@repo/ui/input"
+import { loggedUserAtom } from "@/shared/api/global.model";
+import { Button } from "@repo/ui/button";
 
 export const walletsMap: Record<string, { title: string; img: string; description: string }> = {
   "charism": {
@@ -24,20 +27,23 @@ const NicknameInput = reatomComponent(({ ctx }) => {
   return (
     <Input
       type="text"
-      maxLength={32}
-      className="px-4 w-full lg:w-1/3"
+      title="Никнейм должен содержать от 3 до 16 символов: только латинские буквы, цифры и подчёркивания."
+      maxLength={16}
+      className="p-4 w-full lg:w-1/3 rounded-md"
       placeholder="Введите никнейм"
-      value={ctx.spy(storeTargetNickname)}
+      pattern="^[a-zA-Z0-9_]{3,16}$"
       name="store-recipient"
+      value={ctx.spy(storeTargetNickname)}
       autoComplete="off"
       onChange={e => storeTargetNickname(ctx, e.target.value)}
     />
   )
-})
+}, "NicknameInput")
 
 export const ShopNickname = reatomComponent(({ ctx }) => {
-  const [isVisible, setIsVisible] = useState<boolean>(true)
-  const { nickname } = { nickname: null }
+  const current = ctx.spy(storeTargetNickname)
+  const [isVisible, setIsVisible] = useState<boolean>(!current)
+  const nickname = ctx.get(loggedUserAtom)
 
   const hideTip = () => {
     if (!nickname) return;
@@ -46,33 +52,29 @@ export const ShopNickname = reatomComponent(({ ctx }) => {
     storeTargetNickname(ctx, nickname)
   }
 
+  const isActive = isVisible && nickname
+
   return (
     <div className="flex flex-col gap-2">
       <Typography className="text-[18px]">Укажите никнейм</Typography>
       <div className="flex flex-col lg:flex-row items-center gap-2 w-full">
         <NicknameInput />
-        {(isVisible && nickname) && (
+        {isActive && (
           <div className="flex items-center min-h-10 lg:min-h-14 w-full lg:w-fit bg-neutral-700 px-4 py-1 h-full rounded-lg gap-4">
             <Typography>
               Ваш ник {nickname}?
             </Typography>
             <div className="flex flex-col lg:flex-row items-center gap-2">
-              <button
-                className="btn bg-green rounded-md py-1 w-full lg:w-fit"
-                onClick={hideTip}
-              >
-                <Typography className="text-neutral-950 text-[14px]">
+              <Button className="bg-green rounded-md py-1 w-full lg:w-fit" onClick={hideTip}>
+                <Typography className="text-neutral-950 text-base">
                   Да
                 </Typography>
-              </button>
-              <button
-                onClick={() => setIsVisible(false)}
-                className="btn bg-red rounded-md py-1 w-full lg:w-fit"
-              >
-                <Typography className="text-neutral-950 text-[14px]">
+              </Button>
+              <Button onClick={() => setIsVisible(false)} className="bg-red rounded-md py-1 w-full lg:w-fit">
+                <Typography className="text-neutral-950 text-base">
                   Нет
                 </Typography>
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -101,10 +103,10 @@ const CurrentPrice = ({ type, value }: Wallets) => {
 
 export const WalletsList = reatomComponent(({ ctx }) => {
   const shopItemState = ctx.spy(storeItem)
-  const wallets = ctx.spy(donatesResource.dataAtom) as Wallets[]
+  const wallets = ctx.spy(itemsResource.dataAtom) as Wallets[]
   const selectedWallet = shopItemState?.paymentType;
 
-  if (ctx.spy(donatesResource.statusesAtom).isPending) {
+  if (ctx.spy(itemsResource.statusesAtom).isPending) {
     return (
       <>
         <Skeleton className="w-full h-16" />
@@ -119,7 +121,8 @@ export const WalletsList = reatomComponent(({ ctx }) => {
     const wallet = wallets.find(w => w.type === type)
     if (!wallet) return;
 
-    storeItem(ctx, (state) => ({ ...state, paymentType: type, category: "wallet" }))
+    storeCategoryAtom(ctx, "wallet")
+    storeItem(ctx, (state) => ({ ...state, paymentType: type }))
   }
 
   if (!wallets) {
@@ -181,7 +184,7 @@ const SelectWalletValue = reatomComponent(({ ctx }) => {
 
 export const SelectedWallet = reatomComponent(({ ctx }) => {
   const shopItemState = ctx.spy(storeItem)
-  const currentWallets = ctx.spy(donatesResource.dataAtom) as Wallets[]
+  const currentWallets = ctx.spy(itemsResource.dataAtom) as Wallets[]
 
   const selectedWallet = currentWallets
     ? currentWallets.find(cw => cw.type === shopItemState?.paymentType)

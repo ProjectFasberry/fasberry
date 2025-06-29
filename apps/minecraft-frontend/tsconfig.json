@@ -22,10 +22,15 @@
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@/backend": [
+        "../minecraft-backend/src"
+      ],
+      "@repo/ui/*": ["../../packages/ui/src/*"]
     }
   },
   "exclude": [

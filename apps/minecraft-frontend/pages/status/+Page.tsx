@@ -1,7 +1,7 @@
 import { PlayerStatus } from "@/shared/components/landing/status/player-status";
 import { serverStatusResource } from "@/shared/components/landing/status/server-status";
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
-import { Skeleton } from "@/shared/ui/skeleton";
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { Skeleton } from "@repo/ui/skeleton";
 import { reatomComponent } from "@reatom/npm-react"
 
 export const PageServerStatus = reatomComponent(({ ctx }) => {

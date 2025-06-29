@@ -1,5 +1,5 @@
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
-import { Typography } from "@/shared/ui/typography";
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { Typography } from "@repo/ui/typography";
 import { MINECRAFT_SITE_DOMAIN } from "@repo/shared/constants/origin-list";
 import { MAIL_FASBERRY_SUPPORT } from "@repo/shared/wiki/data/configs";
 

@@ -1,10 +1,10 @@
 import { reatomComponent, useUpdate } from '@reatom/npm-react';
 import { Link } from '@/shared/components/config/Link';
-import { Typography } from '@/shared/ui/typography';
+import { Typography } from '@repo/ui/typography';
 import { News as NewsType, newsAction, newsDataAtom } from './news.model';
 import { NewsListSkeleton, NewsNotFound } from './news-page-list';
 import { dayjs } from '@/shared/lib/create-dayjs';
-import { MorphingDialog, MorphingDialogClose, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTrigger } from '@/shared/ui/morph-dialog';
+import { MorphingDialog, MorphingDialogClose, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTrigger } from '@repo/ui/morph-dialog';
 
 // todo: migrate to resource
 const FetchNews = () => {
@@ -14,7 +14,7 @@ const FetchNews = () => {
 
 const NewsItem = reatomComponent<NewsType>(({ ctx, imageUrl, title, created_at, description, id }) => {
   return (
-    <div className="flex flex-col w-full h-full bg-neutral-950 overflow-hidden rounded-xl">
+    <div className="flex flex-col w-full h-full bg-neutral-900 overflow-hidden rounded-xl">
       <MorphingDialog
         transition={{ type: 'spring', bounce: 0.05, duration: 0.25 }}
       >
@@ -35,7 +35,7 @@ const NewsItem = reatomComponent<NewsType>(({ ctx, imageUrl, title, created_at, 
         </MorphingDialogTrigger>
         <MorphingDialogContainer>
           <MorphingDialogContent
-            className='flex flex-col gap-6 xl:flex-row rounded-lg p-0 bg-neutral-950 pointer-events-auto relative h-auto w-full mx-2 overflow-hidden sm:w-1/2'
+            className='flex flex-col gap-6 xl:flex-row rounded-lg p-0 bg-neutral-900 pointer-events-auto relative h-auto w-full mx-2 overflow-hidden sm:w-1/2'
           >
             <div className="max-h-[200px] lg:max-h-[420px] w-full overflow-hidden">
               <img

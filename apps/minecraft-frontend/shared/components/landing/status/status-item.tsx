@@ -3,8 +3,8 @@ import WildArmor from "@repo/assets/images/minecraft/wild_armor_trim_ыmithing_�
 import { Link } from "@/shared/components/config/Link";
 import { serverStatusResource } from "./server-status";
 import { reatomComponent } from "@reatom/npm-react";
-import { Skeleton } from "@/shared/ui/skeleton";
-import { Typography, typographyVariants } from "@/shared/ui/typography";
+import { Skeleton } from "@repo/ui/skeleton";
+import { Typography, typographyVariants } from "@repo/ui/typography";
 import { tv } from "tailwind-variants";
 
 const serverTitle = tv({
@@ -24,7 +24,7 @@ export const StatusItem = reatomComponent(({ ctx }) => {
 	const serverOnline = status?.proxy.online ?? 0
 
 	return (
-		<div className="flex flex-col bg-background-light p-4 rounded-xl dark:bg-background-dark h-fit gap-y-4">
+		<div className="flex flex-col p-4 rounded-xl bg-neutral-900 h-fit gap-y-4">
 			<Typography color="white" className="text-xl lg:text-2xl">
 				Статус
 			</Typography>

@@ -1,5 +1,5 @@
-import { MainWrapperPage } from "@/shared/ui/main-wrapper"
-import { Typography } from "@/shared/ui/typography"
+import { MainWrapperPage } from "@repo/ui/main-wrapper"
+import { Typography } from "@repo/ui/typography"
 
 export const metadata = {
   title: "Технические проблемы"

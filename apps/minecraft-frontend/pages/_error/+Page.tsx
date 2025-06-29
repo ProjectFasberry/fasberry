@@ -1,5 +1,6 @@
 import { Link } from "@/shared/components/config/Link";
-import { Typography } from "@/shared/ui/typography";
+import { Button } from "@repo/ui/button";
+import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 
 export default function Page() {
@@ -8,7 +9,6 @@ export default function Page() {
   if (is404) {
     return (
       <div
-        id="not-found"
         className="flex min-h-screen justify-center items-center px-8"
         style={{
           backgroundImage: 'url("/images/static/dirt.webp")'
@@ -22,11 +22,11 @@ export default function Page() {
             Не удалось найти нужный ресурс.
           </Typography>
           <Link href="/">
-            <button
-              className="btn  md:w-max mt-6 raised-slot-button text-center text-neutral-800 text-base md:text-xl py-1 px-4 md:px-6"
+            <Button
+              className="md:w-max mt-6 raised-slot-button text-center text-neutral-800 text-base md:text-xl py-1 px-4 md:px-6"
             >
               Вернуться в безопасное место
-            </button>
+            </Button>
           </Link>
         </div>
       </div>
@@ -35,7 +35,6 @@ export default function Page() {
 
   return (
     <div
-      id="not-found"
       className="flex min-h-screen justify-center items-center px-8"
       style={{
         backgroundImage: 'url("/images/static/dirt.webp")'
@@ -46,11 +45,11 @@ export default function Page() {
           Отключено
         </Typography>
         <Link href="/">
-          <button
-            className="btn bg-neutral-600 md:w-max mt-6 raised-slot-button text-center text-base md:text-xl py-1 px-4 md:px-6"
+          <Button
+            className="bg-neutral-600 md:w-max mt-6 raised-slot-button text-center text-base md:text-xl py-1 px-4 md:px-6"
           >
             Вернуться в безопасное место
-          </button>
+          </Button>
         </Link>
       </div>
     </div>

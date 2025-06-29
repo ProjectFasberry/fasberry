@@ -4,8 +4,8 @@ import { navigate } from 'vike/client/router';
 import { Link } from '@/shared/components/config/Link';
 import { atom } from '@reatom/core';
 import { reatomComponent } from '@reatom/npm-react';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../ui/sheet';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@repo/ui/sheet';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/ui/accordion';
 
 const ExperienceCircle = () => {
   return (

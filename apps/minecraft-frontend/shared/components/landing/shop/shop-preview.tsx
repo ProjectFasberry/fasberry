@@ -1,7 +1,7 @@
 import { walletsMap } from "./shop-list-wallets";
 import { reatomComponent } from "@reatom/npm-react";
-import { Typography } from "@/shared/ui/typography";
-import { Donates, donatesResource, storeItem } from "./store.model";
+import { Typography } from "@repo/ui/typography";
+import { Donates, itemsResource, storeCategoryAtom, storeItem, storeTargetNickname } from "./store.model";
 
 const titleMap: Record<string, string> = {
   donate: "Привилегия",
@@ -11,17 +11,19 @@ const titleMap: Record<string, string> = {
 
 export const ShopFinishedPreview = reatomComponent(({ctx}) => {
   const shopItemState  = ctx.spy(storeItem)
+  const shopItemNickname = ctx.spy(storeTargetNickname)
+  const storeCategory = ctx.spy(storeCategoryAtom)
 
   if (!shopItemState.paymentType || !walletsMap) return null;
 
-  const paymentType: string = shopItemState.category === 'donate'
+  const paymentType: string = storeCategory === 'donate'
     ? shopItemState.paymentValue as "arkhont" | "authentic" | "loyal"
     : shopItemState.paymentType
 
   const getSelectedDetails = () => {
     switch (shopItemState.paymentType) {
       case "donate":
-        const currentDonates = ctx.get(donatesResource.dataAtom) as Donates[]
+        const currentDonates = ctx.get(itemsResource.dataAtom) as Donates[]
 
         const selDonate = currentDonates?.find(cd => cd.origin === shopItemState.paymentValue)
 
@@ -61,11 +63,11 @@ export const ShopFinishedPreview = reatomComponent(({ctx}) => {
       </div>
       <div className="flex flex-col">
         <Typography className="text-[20px]">
-          {titleMap[shopItemState.category]} {details.title}
+          {titleMap[storeCategory]} {details.title}
         </Typography>
         <Typography className="text-[18px]">
           для <span className="text-neutral-400 font-semibold">
-            {shopItemState?.nickname}
+            {shopItemNickname}
           </span>
         </Typography>
       </div>

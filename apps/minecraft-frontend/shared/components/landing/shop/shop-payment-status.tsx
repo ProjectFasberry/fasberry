@@ -1,5 +1,5 @@
 import { reatomComponent } from "@reatom/npm-react"
-import { Typography } from "@/shared/ui/typography"
+import { Typography } from "@repo/ui/typography"
 import { IconCheck, IconX } from "@tabler/icons-react"
 import { paymentStatusAction, PaymentResult, paymentResult } from "./store.model"
 

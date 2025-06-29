@@ -1,10 +1,6 @@
 import { ModpackList } from "@/shared/components/landing/modpacks/modpack-list";
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
-import { Typography } from "@/shared/ui/typography";
-
-export const metadata = {
-  title: 'Модпак',
-};
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { Typography } from "@repo/ui/typography";
 
 export default function WikiModpackPage() {
   return (

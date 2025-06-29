@@ -3,7 +3,7 @@ import { RulesTerminItem } from './rules-termin-item';
 import { FORUM_SHARED_API } from '@repo/shared/constants/api';
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { reatomComponent } from '@reatom/npm-react';
-import { Skeleton } from '@/shared/ui/skeleton';
+import { Skeleton } from '@repo/ui/skeleton';
 
 type Rules = {
   rules: {

@@ -1,6 +1,6 @@
 import Bzzvanet from '@repo/assets/images/credits-bzzvanet.jpg';
-import { MainWrapperPage } from '@/shared/ui/main-wrapper';
-import { Typography } from '@/shared/ui/typography';
+import { MainWrapperPage } from '@repo/ui/main-wrapper';
+import { Typography } from '@repo/ui/typography';
 
 export default function CreditsPage() {
   return (

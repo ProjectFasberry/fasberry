@@ -1,7 +1,7 @@
 import { Link } from "../../config/Link";
-import { Typography } from "@/shared/ui/typography";
-import { Skeleton } from "@/shared/ui/skeleton";
-import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/shared/ui/dialog';
+import { Typography } from "@repo/ui/typography";
+import { Skeleton } from "@repo/ui/skeleton";
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
 
 export type PlayerStatusProps = {
 	nickname: string

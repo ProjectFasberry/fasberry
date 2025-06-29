@@ -3,9 +3,11 @@ import { reatomAsync, reatomResource, withCache, withDataAtom, withStatusesAtom 
 import { atom } from "@reatom/core"
 import { sleep, withReset } from "@reatom/framework"
 import { CURRENCIES_API, FORUM_SHARED_API, PAYMENTS_API } from "@repo/shared/constants/api"
-import { CurrencyString, PaymentCurrency, paymentCurrencySchema, paymentFiatMethodSchema } from "@repo/shared/constants/currencies"
+import { CurrencyString, PAYMENT_CURRENCIES_MAPPING, PaymentCurrency, paymentCurrencySchema, paymentFiatMethodSchema } from "@repo/shared/constants/currencies"
 import ky, { HTTPError } from "ky"
 import { z, ZodError } from 'zod/v4';
+import { logger } from '@repo/lib/logger';
+import { parseZodErrorMessages } from '@/shared/lib/zod-helpers';
 
 const ORDERS_API = ky.extend({
   prefixUrl: "https://api.fasberry.su/payment",
@@ -47,17 +49,11 @@ type PaymentOrder = {
 type PaymentValueType = string | number
 type PaymentType = "donate" | "belkoin" | "charism" | "item" | "event"
 
-export type StoreItem = Partial<{
-  paymentType: PaymentType
-  paymentValue: PaymentValueType
-}> & {
-  currency: PaymentCurrency,
-  fiatMethod: "card" | "sbp",
-  category: "donate" | "wallet" | "events"
-}
+export type StoreCategory = "donate" | "wallet" | "events"
 
-type GetDonatesRequest = {
-
+export type StoreItem = {
+  paymentType: PaymentType | null
+  paymentValue: PaymentValueType | null
 }
 
 export type Donates = {
@@ -92,6 +88,8 @@ const donateSchema = z.enum(['authentic', 'arkhont', 'loyal']);
 const paymentTypeSchema = z.enum(['donate', 'belkoin', 'charism', 'item', 'event']);
 const paymentValueSchema = z.union([donateSchema, z.number(), z.string()]);
 
+export const FIAT_CURRENCY = ["RUB"]
+
 const paymentMetaSchema = z.object({
   nickname: z.string().min(1,
     { error: "Никнейм должен содержать хотя бы 1 символ" }).max(32, { error: "Превышена максимальная длина никнейма" }),
@@ -110,22 +108,22 @@ const createOrderBodySchema = z.intersection(
   paymentMetaSchema.check((ctx) => paymentTypeValidator({ data: ctx.value, ctx: ctx.issues }))
 )
 
-const storeItemInitial: StoreItem = {
-  currency: "RUB",
-  category: "donate",
-  fiatMethod: "card"
-}
-
 export const paymentResult = atom<PaymentResult | null>(null, "paymentResult").pipe(withReset())
 export const paymentResultType = atom<PaymentResultType | null>(null, "paymentResultType").pipe(withReset())
 export const paymentResultDialogIsOpen = atom(false, "paymentResultDialogIsOpen")
 
+export const storeTargetNickname = atom<string>("", "storeTargetNickname").pipe(withReset())
+export const storeItem = atom<StoreItem>({ paymentType: null, paymentValue: null }, "storeItem").pipe(withReset())
+export const storeCategoryAtom = atom<StoreCategory>("donate", "storeCategory").pipe(withReset())
+export const storeCurrencyAtom = atom<PaymentCurrency>("RUB", "storeCurrency").pipe(withReset())
+
+export const storePayMethodAtom = atom<"card" | "sbp">("card", "storePayMethod").pipe(withReset())
+
+export const privacyAtom = atom(false, "privacy").pipe(withReset())
+
 paymentResult.onChange((ctx, state) => console.log("paymentResult", state))
 paymentResultType.onChange((ctx, state) => console.log("paymentResultType", state))
 paymentResultDialogIsOpen.onChange((ctx, state) => console.log("paymentResultDialogIsOpen", state))
-
-export const storeTargetNickname = atom<string>("", "storeTargetNickname")
-export const storeItem = atom<StoreItem>(storeItemInitial, "storeItem").pipe(withReset())
 
 paymentResult.onChange((ctx, target) => {
   if (!target) return;
@@ -141,7 +139,18 @@ export const paymentStatusAction = reatomAsync(async (
   ctx, values: Pick<PaymentResult, "current" | "paymentType">
 ) => {
   await sleep(2000)
-  return await ctx.schedule(() => getPaymentStatus(values.current, values.paymentType))
+  return await ctx.schedule(async () => {
+    const res = await ORDERS_API(`get-order/${values.current}`, {
+      searchParams: { type: values.paymentType },
+      signal: ctx.controller.signal
+    })
+
+    const data = await res.json<{ data: PaymentOrder } | { error: string }>()
+
+    if (!data || "error" in data) return { error: data.error };
+
+    return data.data;
+  })
 }, {
   name: "paymentStatusAction",
   onFulfill: (ctx, res) => {
@@ -163,14 +172,45 @@ export const paymentStatusAction = reatomAsync(async (
   }
 }).pipe(withStatusesAtom())
 
-export const donatesResource = reatomAsync(async (ctx, type: "donate" | "wallet" | "events") => {
-  return await ctx.schedule(() => getDonates({ type }))
-}, "donatesResource").pipe(withStatusesAtom(), withCache(), withDataAtom())
-
-export const priceByCurrencyAction = reatomAsync(async (ctx, currency: string) => {
-  if (currency === "RUB") return;
+export const itemsResource = reatomResource(async (ctx) => {
+  const type = ctx.spy(storeCategoryAtom)
 
   return await ctx.schedule(async () => {
+    const res = await FORUM_SHARED_API("get-donates", {
+      searchParams: { type },
+      signal: ctx.controller.signal
+    });
+
+    const data = await res.json<{ data: Array<unknown> } | { error: string }>();
+
+    if ("error" in data) return null;
+
+    return data.data.length > 0 ? data.data : null
+  })
+}, "itemsResource").pipe(withStatusesAtom(), withCache(), withDataAtom())
+
+export const priceByCurrencyAction = reatomAsync(async (ctx, currency: string) => {
+  if (FIAT_CURRENCY.includes(currency)) {
+    return;
+  }
+
+  return await ctx.schedule(async () => {
+    async function getCurrencyPriceByRub<T extends CurrencyString>(convertedCurrency: T): Promise<{
+      [key in T]: { rub: number }
+    }> {
+      // @ts-expect-error
+      const currencyId = PAYMENT_CURRENCIES_MAPPING[convertedCurrency]
+
+      const params = {
+        "ids": currencyId, "vs_currencies": "rub"
+      }
+
+      const res = await COINGECKO_API("v3/simple/price", { searchParams: params })
+      const data = await res.json<{ [key in T]: { rub: number } }>()
+
+      return data;
+    }
+
     const res = await getCurrencyPriceByRub(currency)
 
     if (Object.keys(res).length === 0) return null;
@@ -178,30 +218,56 @@ export const priceByCurrencyAction = reatomAsync(async (ctx, currency: string) =
     return res
   })
 }, {
-  name: "priceByCurrencyAction"
+  name: "priceByCurrencyAction",
+  onReject: (ctx, e) => {
+    if (e instanceof Error) {
+      logger.error(e.message)
+    }
+
+    throw e
+  }
 }).pipe(withDataAtom(), withStatusesAtom())
 
 export const currenciesResource = reatomResource(async (ctx) => {
-  return await ctx.schedule(() => getCurrencies())
+  return await ctx.schedule(async () => {
+    const res = await CURRENCIES_API("get-currencies", { signal: ctx.controller.signal })
+
+    const data = await res.json<{ data: Array<Currency> } | { error: string }>()
+
+    if ("error" in data) return null
+
+    return data.data
+  })
 }, "currenciesResource").pipe(withStatusesAtom(), withCache(), withDataAtom())
 
 const createPaymentActionVariables = atom<PaymentAction | null>(null)
 
 export const createPaymentAction = reatomAsync(async (ctx) => {
-  const { currency, fiatMethod, paymentType, paymentValue } = ctx.get(storeItem)
+  const { paymentType, paymentValue } = ctx.get(storeItem)
+  const currency = ctx.get(storeCurrencyAtom)
+  const fiatMethod = ctx.get(storePayMethodAtom)
   const nickname = ctx.get(storeTargetNickname)
 
-  console.log(nickname, ctx.get(storeItem))
+  if (!paymentType || !paymentValue) return;
 
-  if (!paymentType || !paymentValue) return; 
-
-  const values: PaymentAction = { 
+  const values: PaymentAction = {
     currency, fiatMethod, nickname, paymentType, paymentValue, privacy: true
   }
 
   createPaymentActionVariables(ctx, values)
 
-  return await ctx.schedule(() => createPayment(values))
+  return await ctx.schedule(async () => {
+    const res = await PAYMENTS_API.post("create-order", {
+      json: { values },
+      signal: ctx.controller.signal
+    })
+
+    const data = await res.json<{ data: { url: string, orderId: string } } | { error: string }>()
+
+    if ("error" in data) return { error: data.error }
+
+    return data
+  })
 }, {
   name: "createPaymentAction",
   onFulfill: (ctx, res) => {
@@ -228,78 +294,24 @@ export const createPaymentAction = reatomAsync(async (ctx) => {
       paymentResultType(ctx, "created")
       paymentResultDialogIsOpen(ctx, true)
     }
-  }
-}).pipe(withStatusesAtom())
-
-async function createPayment(payment: z.infer<typeof createOrderBodySchema>) {
-  try {
-    const res = await PAYMENTS_API.post("create-order", { json: { payment } })
-    const data = await res.json<{ data: { url: string, orderId: string } } | { error: string }>()
-
-    if ("error" in data) return { error: data.error }
-
-    return data
-  } catch (e) {
+  },
+  onReject: async (ctx, e) => {
+    if (e instanceof Error) {
+      toast.error(e.message)
+    }
+    
     if (e instanceof HTTPError) {
       if (e instanceof ZodError) {
         const errorBody = await e.response.json<{ error: ZodError }>();
+
         return { error: parseZodErrorMessages(errorBody.error).join(", ") }
       }
 
       const { error } = await e.response.json<{ error: string }>();
       return { error }
     }
-    throw e;
   }
-}
-
-async function getCurrencyPriceByRub<T extends CurrencyString>(convertedCurrency: T): Promise<{
-  [key in T]: { rub: number }
-}> {
-  // @ts-expect-error
-  const currencyId = PAYMENT_CURRENCIES_MAPPING[convertedCurrency] as string
-
-  try {
-    const params = {
-      "ids": currencyId, "vs_currencies": "rub"
-    }
-
-    return await COINGECKO_API("v3/simple/price", { searchParams: params })
-      .json<{ [key in T]: { rub: number } }>();
-  } catch (e) {
-    throw e
-  }
-}
-
-async function getPaymentStatus(id: string, type: PaymentResult["paymentType"]) {
-  const res = await ORDERS_API(`get-order/${id}`, { searchParams: { type } })
-  const data = await res.json<{ data: PaymentOrder } | { error: string }>()
-  if (!data || "error" in data) return { error: data.error };
-  return data.data;
-}
-
-async function getCurrencies() {
-  const res = await CURRENCIES_API("get-currencies")
-  const data = await res.json<{ data: Array<Currency> } | { error: string }>()
-  if ("error" in data) return null
-  return data.data
-}
-
-export async function getDonates(args: GetDonatesRequest) {
-  const res = await FORUM_SHARED_API("get-donates", { searchParams: args });
-  const data = await res.json<{ data: Array<unknown> } | { error: string }>();
-  if ("error" in data) return null;
-  return data.data.length > 0 ? data.data : null
-}
-
-export function validateNumber(input: string): number | null {
-  const num = Number(input);
-  return Number.isFinite(num) ? num : null;
-};
-
-function parseZodErrorMessages(error: ZodError): string[] {
-  return error.issues.map(issue => issue.message);
-}
+}).pipe(withStatusesAtom())
 
 function paymentTypeValidator({ data, ctx }: {
   data: any,

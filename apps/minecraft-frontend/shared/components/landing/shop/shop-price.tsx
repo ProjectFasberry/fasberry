@@ -1,17 +1,19 @@
 import { PAYMENT_CURRENCIES_MAPPING } from "@repo/shared/constants/currencies"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
-import { Typography } from "@/shared/ui/typography"
-import { Skeleton } from "@/shared/ui/skeleton"
-import { Donates, donatesResource, priceByCurrencyAction, storeItem, Wallets } from "./store.model"
+import { Typography } from "@repo/ui/typography"
+import { Skeleton } from "@repo/ui/skeleton"
+import { Donates, itemsResource, priceByCurrencyAction, storeCurrencyAtom, storeItem, Wallets } from "./store.model"
 
-const S = ({ currency }: { currency: string }) => {
+const SyncCurrency = ({ currency }: { currency: string }) => {
   useUpdate((ctx) => priceByCurrencyAction(ctx, currency), [currency])
+  
   return null;
 }
 
 export const ShopPrice = reatomComponent(({ ctx }) => {
   const shopItemState = ctx.spy(storeItem)
   const priceByCurrency = ctx.spy(priceByCurrencyAction.dataAtom)
+  const currentCurrency = ctx.spy(storeCurrencyAtom)
 
   const getFinishedPrice = (value: number = 0): number => {
     if (!shopItemState || !shopItemState?.paymentType) return 0
@@ -23,7 +25,7 @@ export const ShopPrice = reatomComponent(({ ctx }) => {
     switch (paymentType) {
       case "belkoin":
       case "charism":
-        const currentWallets = ctx.get(donatesResource.dataAtom) as Wallets[]
+        const currentWallets = ctx.get(itemsResource.dataAtom) as Wallets[]
         const selectedWallet = currentWallets
           ? currentWallets.find(cw => cw.type === shopItemState.paymentType)
           : null;
@@ -33,7 +35,7 @@ export const ShopPrice = reatomComponent(({ ctx }) => {
         price = value * selectedWallet.value
         break;
       case "donate":
-        const currentDonates = ctx.get(donatesResource.dataAtom) as Donates[]
+        const currentDonates = ctx.get(itemsResource.dataAtom) as Donates[]
 
         const selectedDonate = currentDonates
           ? currentDonates.find(cd => cd.origin === shopItemState.paymentValue)
@@ -45,8 +47,8 @@ export const ShopPrice = reatomComponent(({ ctx }) => {
         break;
     }
 
-    if (shopItemState.currency !== "RUB" && priceByCurrency) {
-      const currencyId = PAYMENT_CURRENCIES_MAPPING[shopItemState.currency] as string
+    if (currentCurrency !== "RUB" && priceByCurrency) {
+      const currencyId = PAYMENT_CURRENCIES_MAPPING[currentCurrency] as string
 
       if (priceByCurrency) {
         const target = priceByCurrency[currencyId]
@@ -64,11 +66,11 @@ export const ShopPrice = reatomComponent(({ ctx }) => {
 
   const finishedPrice = getFinishedPrice(Number(shopItemState?.paymentValue ?? 0))
 
-  const currency = shopItemState?.currency ?? "RUB"
+  const currency = currentCurrency ?? "RUB"
 
   return (
     <>
-      <S currency={shopItemState.currency} />
+      <SyncCurrency currency={currentCurrency} />
       {ctx.spy(priceByCurrencyAction.statusesAtom).isPending ? <Skeleton className="h-6 w-34" /> : (
         <Typography className="text-[18px]">
           {ctx.spy(priceByCurrencyAction.statusesAtom).isRejected ? "Ошибка" : `${finishedPrice} ${currency}`}

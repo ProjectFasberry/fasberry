@@ -21,8 +21,9 @@ coverage
 # Vercel
 .vercel
 
+data/
+
 # Build Outputs
-.next/
 out/
 build
 dist

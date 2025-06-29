@@ -3,19 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
-  "imports": {
-    "#*": "./*"
-  },
-  "exports": {
-    "./cn": "./cn.ts",
-    "./create-params": "./create-params.ts"
-  },
+  "type": "module",
   "dependencies": {
-    "@repo/assets": "*",
-    "@repo/shared": "*"
+    "@neodx/log": "^0.4.1",
+    "@repo/assets": "workspace:*",
+    "@repo/shared": "workspace:*"
   },
   "devDependencies": {
-    "@repo/config-typescript": "*",
+    "@repo/config-typescript": "workspace:*",
     "typescript": "^5.4.5"
   }
 }

@@ -1,7 +1,7 @@
 import { Link } from "../../config/Link";
 import { action, atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
-import { Typography } from "../../../ui/typography";
+import { Typography } from "@repo/ui/typography";
 import { tv } from "tailwind-variants";
 
 const IDEAS = [
@@ -93,9 +93,9 @@ const IdeaMainNavigation = reatomComponent<{ type: "next" | "prev" }>(({ ctx, ty
 			onClick={() => toggle(ctx, type)}
 		>
 			{type === 'prev' ? (
-				<img src="/images/minecraft/icons/large-arrow-left-hover.png" width={20} height={20} alt="назад" />
+				<img src="/images/minecraft/icons/large-arrow-left-hover.png" width={20} loading="lazy"  height={20} alt="назад" />
 			) : (
-				<img src="/images/minecraft/icons/large-arrow-right-hover.png" width={20} height={20} alt="далее" />
+					<img src="/images/minecraft/icons/large-arrow-right-hover.png" width={20} loading="lazy" height={20} alt="далее" />
 			)}
 			<Typography className="inline md:hidden">{type === 'prev' ? 'Назад' : 'Далее'}</Typography>
 		</div>
@@ -156,7 +156,7 @@ const IdeaPreviewCard = reatomComponent(({ ctx }) => {
 			{type === 'full' && (
 				<div className="absolute top-0 bottom-0 right-0 left-0 w-full h-full">
 					<div className="absolute left-0 h-full w-full z-[2] bg-gradient-to-r from-neutral-900/60 via-transparent to-transparent" />
-					<img src={image} alt="" width={1000} height={1000} className="brightness-[55%] w-full h-full object-cover" />
+					<img src={image} loading="lazy"  alt="" width={1000} height={1000} className="brightness-[55%] w-full h-full object-cover" />
 				</div>
 			)}
 			<div className={previewChildCard({ variant: type as "module" | "full" })}>
@@ -176,7 +176,7 @@ const IdeaPreviewCard = reatomComponent(({ ctx }) => {
 			</div>
 			{type === 'module' && (
 				<div className="flex items-center justify-center w-full sm:w-2/4 h-full">
-					<img src={image} alt="" width={1000} height={1000} className="w-full h-full object-cover rounded-xl" />
+					<img src={image} loading="lazy"  alt="" width={1000} height={1000} className="w-full h-full object-cover rounded-xl" />
 				</div>
 			)}
 		</div>

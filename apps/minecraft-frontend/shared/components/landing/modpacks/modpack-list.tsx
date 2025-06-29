@@ -1,8 +1,8 @@
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { ModpackItem, ModpackItemDialog } from '../modpacks/modpack-item';
 import { FORUM_SHARED_API } from '@repo/shared/constants/api';
-import { Typography } from '@/shared/ui/typography';
-import { Skeleton } from '@/shared/ui/skeleton';
+import { Typography } from '@repo/ui/typography';
+import { Skeleton } from '@repo/ui/skeleton';
 import { reatomComponent } from '@reatom/npm-react';
 
 export type Modpack = {

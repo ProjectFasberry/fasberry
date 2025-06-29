@@ -1,5 +1,5 @@
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
-import { Typography } from "@/shared/ui/typography";
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { Typography } from "@repo/ui/typography";
 import { MAIL_FASBERRY_SUPPORT, TELEGRAM_CHANNEL_LINK, VK_GROUP_LINK } from "@repo/shared/wiki/data/configs";
 
 export default function InfoContactsPage() {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { ArmorItem } from '@repo/shared/wiki/data/wiki/wiki-list';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@repo/ui/table';
 
 interface TableProps {
   array_name: ArmorItem[],

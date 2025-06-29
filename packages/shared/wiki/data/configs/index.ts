@@ -1,15 +1,6 @@
-type MainRoutes =
-  | "/"
-  | "/store"
-  | "/rules"
-  | "/wiki"
-  | "/wiki/modpack"
-  | "/support"
-  | "https://map.fasberry.su"
-
 type MainHeaderDetails = {
   name: string,
-  href: MainRoutes | null
+  href: string | null
 }
 
 export type MainHeaderType = MainHeaderDetails & Partial<{

@@ -1,4 +1,4 @@
-import { MainWrapperPage } from "@/shared/ui/main-wrapper";
+import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { NewsPageSearch } from "@/shared/components/landing/news/news-page-search";
 import { useUpdate } from "@reatom/npm-react";
 import { clientOnly } from "vike-react/clientOnly";

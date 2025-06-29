@@ -1,4 +1,4 @@
-import { Typography } from "@/shared/ui/typography";
+import { Typography } from "@repo/ui/typography";
 
 // export const EventSuggest = () => {
 //   const { createNewEventSuggestMutation } = useEventSuggest()

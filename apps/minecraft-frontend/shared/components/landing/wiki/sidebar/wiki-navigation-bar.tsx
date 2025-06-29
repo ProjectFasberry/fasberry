@@ -1,11 +1,11 @@
 import { WIKI_HEADERS } from "@repo/shared/wiki/data/configs"
 import { navigate } from "vike/client/router";
 import { Link } from "@/shared/components/config/Link";
-import { Typography } from "@/shared/ui/typography";
+import { Typography } from "@repo/ui/typography";
 import { reatomComponent } from "@reatom/npm-react";
 import { wikiParamAtom } from "../content/wiki-content";
-import { TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion";
+import { TabsList, TabsTrigger } from "@repo/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@repo/ui/accordion";
 
 export const WikiNavigationBar = reatomComponent(({ ctx }) => {
   return (
@@ -21,7 +21,7 @@ export const WikiNavigationBar = reatomComponent(({ ctx }) => {
             <AccordionItem value="aspects">
               <AccordionTrigger className="py-0 my-0 group">
                 <Typography className="text-xl">
-                  Аспекты игры <span className="text-base text-neutral-300">{`>`}</span>
+                  Аспекты игры
                 </Typography>
               </AccordionTrigger>
               <AccordionContent className="flex gap-1 flex-row w-full h-full">

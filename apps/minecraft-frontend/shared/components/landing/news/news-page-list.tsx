@@ -1,9 +1,9 @@
 import { reatomComponent } from '@reatom/npm-react';
-import { Skeleton } from '@/shared/ui/skeleton';
-import { Typography } from '@/shared/ui/typography';
+import { Skeleton } from '@repo/ui/skeleton';
+import { Typography } from '@repo/ui/typography';
 import { dayjs } from '@/shared/lib/create-dayjs';
 import { News, newsAction, newsDataAtom, newsFilterAtom } from './news.model';
-import { Dialog, DialogContent, DialogTrigger } from '@/shared/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@repo/ui/dialog';
 
 const NewsPageItem = ({
   imageUrl, created_at, description, title

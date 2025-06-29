@@ -1,7 +1,7 @@
 import { Modpack } from './modpack-list';
-import { Typography } from '@/shared/ui/typography';
+import { Typography } from '@repo/ui/typography';
 import { dayjs } from '@/shared/lib/create-dayjs';
-import { Dialog, DialogContent } from '@/shared/ui/dialog';
+import { Dialog, DialogContent } from '@repo/ui/dialog';
 import { reatomComponent } from '@reatom/npm-react';
 import { action, atom } from '@reatom/core';
 import { withReset } from '@reatom/framework';

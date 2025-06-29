@@ -1,8 +1,8 @@
 import { ShopNickname } from "./shop-list-wallets"
-import { Typography } from "@/shared/ui/typography"
+import { Typography } from "@repo/ui/typography"
 import { reatomComponent } from "@reatom/npm-react"
-import { Skeleton } from "@/shared/ui/skeleton"
-import { Donates, donatesResource, storeItem } from "./store.model"
+import { Skeleton } from "@repo/ui/skeleton"
+import { Donates, itemsResource, storeItem } from "./store.model"
 
 const DonateListNotFound = () => {
   return (
@@ -23,10 +23,10 @@ const DonatesListSkeleton = () => {
 }
 
 export const DonatesList = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(donatesResource.dataAtom)
+  const data = ctx.spy(itemsResource.dataAtom)
   const shopItemState = ctx.spy(storeItem)
 
-  if (ctx.spy(donatesResource.statusesAtom).isPending) return <DonatesListSkeleton/>
+  if (ctx.spy(itemsResource.statusesAtom).isPending) return <DonatesListSkeleton/>
 
   if (!data) return <DonateListNotFound />
 
@@ -43,7 +43,6 @@ export const DonatesList = reatomComponent(({ ctx }) => {
       ...state,
       paymentType: "donate",
       paymentValue: type,
-      category: state.category,
     }))
   }
 
@@ -72,7 +71,7 @@ export const DonatesList = reatomComponent(({ ctx }) => {
 
 export const SelectedDonate = reatomComponent(({ctx}) => {
   const shopItemState = ctx.spy(storeItem)
-  const currentDonates = ctx.spy(donatesResource.dataAtom) as Donates[]
+  const currentDonates = ctx.spy(itemsResource.dataAtom) as Donates[]
 
   const selectedDonate = currentDonates
     ? currentDonates.find(cw => cw.origin === shopItemState.paymentValue) : null;

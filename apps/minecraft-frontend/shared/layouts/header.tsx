@@ -1,12 +1,11 @@
 import { Link } from "@/shared/components/config/Link";
 import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
-import { Avatar } from "@/shared/components/app/avatar/avatar";
 import { usePageContext } from "vike-react/usePageContext";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { toast } from 'sonner';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
-
-const HeaderMobileSheet = lazy(() => import("./header-mobile").then(m => ({ default: m.HeaderSheet })))
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@repo/ui/dropdown-menu";
+import { reatomComponent } from "@reatom/npm-react";
+import { HeaderSheet } from "./header-mobile";
 
 const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   const pathname = usePageContext().urlParsed.pathname;
@@ -91,19 +90,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   )
 }
 
-const HeaderUser = () => {
-  // @ts-expect-error
-  const nickname = usePageContext().nickname as string | undefined
-  if (!nickname) return null;
-
-  return (
-    <Link href={`/player/${nickname}`} className="w-[38px] h-[38px] overflow-hidden rounded-md border border-neutral-400">
-      <Avatar url={null} nickname={nickname} propHeight={38} propWidth={38} />
-    </Link>
-  )
-}
-
-export const Header = () => {
+export const Header = reatomComponent(({ ctx }) => {
   return (
     <div
       className="header flex items-center justify-between absolute top-0 transition w-full bg-repeat-x z-50
@@ -117,65 +104,10 @@ export const Header = () => {
         {MAIN_HEADER.map(item => (
           <HeaderItemMenu key={item.name} childs={item.childs} name={item.name} href={item.href} />
         ))}
-        <HeaderUser />
       </div>
       <Suspense>
-        <HeaderMobileSheet />
+        <HeaderSheet />
       </Suspense>
     </div>
   );
-};
-
-// export const HeaderV1 = () => {
-//   const [open, setOpen] = useState(false)
-
-//   return (
-//     <>
-//       <Sheet open={open} onOpenChange={v => setOpen(v)}>
-//         <SheetContent className="flex bg-neutral-700 flex-col gap-4 w-full z-[100]">
-//           <SheetTitle></SheetTitle>
-//           <Link href="/">
-//             <p className="font-semibold">Главная</p>
-//           </Link>
-//           <Link href="/stats">
-//             <p className="font-semibold">Статистика</p>
-//           </Link>
-//           <Link href="/wiki">
-//             <p className="font-semibold">Вики</p>
-//           </Link>
-//           <Link href="/lands">
-//             <p className="font-semibold">Регионы</p>
-//           </Link>
-//         </SheetContent>
-//       </Sheet>
-//       <div className="flex items-center justify-start w-full border border-neutral-800 absolute h-20 top-0">
-//         <div className="flex items-center justify-between px-2 sm:px-6 w-full">
-//           <a href="/" className="bg-transparent cursor-pointer relative">
-//             <img src="/favicon.ico" width={56} height={56} alt="" />
-//           </a>
-//           <div className="sm:hidden block">
-//             <IconMenu2 onClick={() => setOpen(true)} size={36} className="text-neutral-400 sm:hidden block" />
-//           </div>
-//           <div
-//             className="hidden sm:flex items-center h-20 text-neutral-400
-//             *:flex *:items-center *:justify-center *:border-b *:h-full *:px-6 *:data-[state=inactive]:border-transparent *:data-[state=active]:border-green-500"
-//           >
-//             <Link href="/">
-//               <p className="font-semibold">Главная</p>
-//             </Link>
-//             <Link href="/stats">
-//               <p className="font-semibold">Статистика</p>
-//             </Link>
-//             <Link href="/wiki">
-//               <p className="font-semibold">Вики</p>
-//             </Link>
-//             <Link href="/lands">
-//               <p className="font-semibold">Регионы</p>
-//             </Link>
-//           </div>
-//           <div className="hidden sm:block"></div>
-//         </div>
-//       </div>
-//     </>
-//   )
-// }
+}, "Header")

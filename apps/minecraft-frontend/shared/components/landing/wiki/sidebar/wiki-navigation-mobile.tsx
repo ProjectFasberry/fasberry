@@ -1,8 +1,8 @@
-import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/shared/ui/sheet";
-import { TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/accordion";
-import { IconCategory, IconMenu3 } from "@tabler/icons-react";
-import { Typography } from "@/shared/ui/typography";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@repo/ui/sheet";
+import { TabsList, TabsTrigger } from "@repo/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@repo/ui/accordion";
+import { IconCategory } from "@tabler/icons-react";
+import { Typography } from "@repo/ui/typography";
 import { WIKI_HEADERS } from "@repo/shared/wiki/data/configs";
 import { Link } from "@/shared/components/config/Link";
 import { navigate } from "vike/client/router";

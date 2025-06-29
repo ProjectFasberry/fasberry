@@ -1,4 +1,4 @@
-import { Typography } from "@/shared/ui/typography";
+import { Typography } from "@repo/ui/typography";
 
 type RulesRuleItemContent = {
   title: string,
@@ -15,19 +15,15 @@ export const RulesRuleItemContent = ({
       <div className="flex-col flex gap-1">
         <p className="text-project-color text-md md:text-lg">
           {id}{`)`}&nbsp;
-          <span className="text-white font-semibold">
-						{title}
-					</span>
+          <span className="text-white">{title}</span>
         </p>
         {description &&
-          <Typography color="gray" className="inline-block">
-            [?] {description}
-          </Typography>
+          <Typography color="gray" className="inline-block">[?] {description}</Typography>
         }
         {punishment && (
           <div className="flex flex-row gap-1 items-start md:items-center">
-            <span className="text-red">Наказание:</span>
-            <Typography color="white" className="text-sm md:text-lg">
+            <Typography color="white" className="relative top-0.5 text-sm md:text-lg">
+              <span className="text-red mr-2">Наказание:</span>
               {punishment}
             </Typography>
           </div>
@@ -43,13 +39,8 @@ export const RulesRuleItem = ({
   if (!content) return null;
 
   return (
-    <div
-      id={categoryTitle}
-      className="flex flex-col py-2 group md:py-4 px-2 md:px-4 border-2 border-[#454545] duration-300 rounded-lg"
-    >
-      <h1 className="text-gold text-xl md:text-4xl text-shadow-xl mb-6">
-        {categoryTitle}
-      </h1>
+    <div id={categoryTitle} className="flex flex-col p-2 md:p-4 border-2 border-[#454545]">
+      <h1 className="text-gold text-xl md:text-4xl mb-6">{categoryTitle}</h1>
       {content.map(i => <RulesRuleItemContent key={i.id} {...i} />)}
     </div>
   );

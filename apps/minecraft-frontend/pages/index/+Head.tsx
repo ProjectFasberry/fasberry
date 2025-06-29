@@ -1,7 +1,6 @@
 export default function HeadIndex() {
   return (
     <>
-      <title>Fasberry</title>
       <meta name="description" content="Официальная страница майнкрафт-проекта Fasberry. Жанр: RP, RPG, полу-ванила. 1.20.1+. Играть: play.fasberry.su." />
       <meta name="robots" content="index, follow, noarchive" />
       <meta name="googlebot" content="index, follow, noimageindex, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />

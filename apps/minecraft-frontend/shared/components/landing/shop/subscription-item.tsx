@@ -4,10 +4,10 @@ import Heart from '@repo/assets/gifs/hardcore-heart-minecraft.gif';
 import { SubscriptionItemForm } from './subscription-item-form';
 import { reatomComponent } from '@reatom/npm-react';
 import { ShopAreaItem } from './shop-area';
-import { Typography } from '@/shared/ui/typography';
+import { Typography } from '@repo/ui/typography';
 import { ShopFinishedPreview } from './shop-preview';
 import { createPaymentAction, paymentResult, paymentResultType } from './store.model';
-import { Dialog, DialogContent, DialogTrigger } from '@/shared/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@repo/ui/dialog';
 
 export const StartPayment = reatomComponent<{ trigger: ReactNode }>(({ ctx, trigger }) => {
   const [open, setOpen] = useState(false)
@@ -34,7 +34,7 @@ export const StartPayment = reatomComponent<{ trigger: ReactNode }>(({ ctx, trig
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="!w-[640px] bg-neutral-950 h-auto overflow-y-auto border-none gap-0">
+      <DialogContent className="sm:min-w-[640px] bg-neutral-950 h-auto overflow-y-auto border-none gap-0">
         {isCreatePaymentError && (
           <ShopAreaItem image={Heart}>
             <Typography className="text-xl">

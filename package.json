@@ -2,21 +2,18 @@
   "name": "fasberry-minecraft",
   "private": true,
   "scripts": {
-    "start": "turbo start",
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
+    "start": "bun scripts/run start",
+    "build": "bun scripts/run build",
+    "dev": "bun scripts/run dev",
+    "lint": "bun scripts/run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo check-types"
+    "check-types": "bun scripts/run check-types"
   },
   "devDependencies": {
     "prettier": "^3.5.3",
-    "turbo": "^2.5.4"
+    "@types/bun": "1.2.17",
+    "concurrently": "9.1.2"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "yarn@4.3.0",
   "workspaces": [
     "apps/*",
     "packages/*"

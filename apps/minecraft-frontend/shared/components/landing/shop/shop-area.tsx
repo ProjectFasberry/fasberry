@@ -2,7 +2,7 @@ import Totem from '@repo/assets/gifs/totem-of-undying-faked-death.gif';
 import Heart from '@repo/assets/gifs/hardcore-heart-minecraft.gif';
 import { ReactNode } from 'react';
 import { ShopFinishedPreview } from './shop-preview';
-import { Typography } from '@/shared/ui/typography';
+import { Typography } from '@repo/ui/typography';
 import { SubscriptionItemForm } from './subscription-item-form';
 import { reatomComponent } from '@reatom/npm-react';
 import { createPaymentAction, paymentResultType } from './store.model';
