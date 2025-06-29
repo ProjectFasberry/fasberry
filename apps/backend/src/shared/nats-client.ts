@@ -3,7 +3,7 @@ import { connect, ConnectionOptions, NatsConnection } from "nats";
 // @ts-ignore
 const token = process.env.NATS_AUTH_TOKEN!
 // @ts-ignore
-const host = process.env.NATS_HOST! ?? "localhost:4222"
+const host = process.env.NATS_HOST! ?? "localhost:4223"
 
 const NATS_CONFIG: ConnectionOptions = {
   servers: `nats://${host}`,

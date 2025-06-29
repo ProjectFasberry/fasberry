@@ -1,8 +1,6 @@
 import { Rec } from "@reatom/core"
 import { PersistRecord } from "@reatom/persist"
 
-declare module "*.jpg"
-
 declare global {
   namespace Vike {
     interface GlobalContext {

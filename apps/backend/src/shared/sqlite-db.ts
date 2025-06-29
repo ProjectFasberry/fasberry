@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import type { DB as sqliteDBType } from "./sqlite-db-types.ts";
 import { Database } from "bun:sqlite";
 import { BunSqliteDialect } from 'kysely-bun-sqlite';
-import db from "../../../../data/sqlite.db"
+import db from "../../../../data/fasberry/db/sqlite.db"
 
 const database = new Database(db)
 
