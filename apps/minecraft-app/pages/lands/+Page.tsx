@@ -1,0 +1,41 @@
+import { LandsList } from "@/shared/components/app/lands/components/lands-list"
+import LandsPreview from "@repo/assets/images/clan-preview.jpg"
+import { MainWrapperPage } from "@repo/ui/main-wrapper"
+import { Typography } from "@repo/ui/typography"
+
+const LandsPreviewImage = () => {
+  return (
+    <div className="flex select-none flex-col items-center justify-end relative overflow-hidden h-[180px] rounded-lg w-full">
+      <img
+        draggable={false}
+        src={LandsPreview}
+        alt=""
+        loading="lazy"
+        width={800}
+        height={800}
+        className="absolute w-full h-[210px] rounded-lg object-cover"
+      />
+      <div className="absolute bottom-0 bg-gradient-to-t h-[60px] from-black/60 via-black/20 to-transparent w-full" />
+    </div>
+  )
+}
+
+export default function LandsPage() {
+  return (
+    <MainWrapperPage>
+      <div className="flex flex-col gap-y-4 w-full h-full">
+        <LandsPreviewImage />
+        <div className="flex lg:flex-row flex-col w-full gap-2">
+          <div className="flex flex-col gap-y-6 w-full !p-4">
+            <Typography className="font-semibold text-2xl">
+              Территории сервера
+            </Typography>
+            <div className="flex flex-col gap-y-4 w-full">
+              <LandsList />
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainWrapperPage>
+  )
+}
