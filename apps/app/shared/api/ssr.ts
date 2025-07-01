@@ -4,5 +4,3 @@ export const ssrStorage = createMemStorage({ name: 'ssr', subscribe: false })
 export const { snapshotAtom } = ssrStorage;
 
 export const withSsr = reatomPersist(ssrStorage)
-
-export const isSsr = () => typeof window !== 'undefined'

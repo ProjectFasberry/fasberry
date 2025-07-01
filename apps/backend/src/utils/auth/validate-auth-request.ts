@@ -1,5 +1,5 @@
 import { isProduction } from "#/helpers/is-production"
-import { auth } from "#/shared/auth-db";
+import { auth } from "#/shared/database/auth-db";
 import { verifyAuth } from "./verify-cloudflare";
 
 export const MAX_USERS_PER_IP = 3;

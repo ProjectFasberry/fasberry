@@ -1,9 +1,9 @@
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { ModpackItem, ModpackItemDialog } from '../modpacks/modpack-item';
-import { FORUM_SHARED_API } from '@repo/shared/constants/api';
 import { Typography } from '@repo/ui/typography';
 import { Skeleton } from '@repo/ui/skeleton';
 import { reatomComponent } from '@reatom/npm-react';
+import { BASE } from '@/shared/api/client';
 
 export type Modpack = {
   name: string,
@@ -17,15 +17,18 @@ export type Modpack = {
   imageUrl: string
 }
 
-const getModpacks = async () => {
-  const res = await FORUM_SHARED_API("get-modpacks")
-  const data = await res.json<{ data: Array<Modpack> } | { error: string }>()
-  if ("error" in data) return null;
-  return data.data
-}
-
 const modpacksResource = reatomResource(async (ctx) => {
-  return await ctx.schedule(() => getModpacks())
+  return await ctx.schedule(async () => {
+    const res = await BASE("shared/modpacks", { 
+      throwHttpErrors: false, signal: ctx.controller.signal 
+    })
+
+    const data = await res.json<{ data: Array<Modpack> } | { error: string }>()
+    
+    if ("error" in data) return null;
+
+    return data.data
+  })
 }).pipe(withDataAtom(), withStatusesAtom(), withCache())
 
 const ModpackListNull = () => {

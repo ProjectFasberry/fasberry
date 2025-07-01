@@ -2,12 +2,13 @@ import { toast } from 'sonner';
 import { reatomAsync, reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
 import { sleep, withReset } from "@reatom/framework"
-import { CURRENCIES_API, FORUM_SHARED_API, PAYMENTS_API } from "@repo/shared/constants/api"
+import { CURRENCIES_API, PAYMENTS_API } from "@repo/shared/constants/api"
 import { CurrencyString, PAYMENT_CURRENCIES_MAPPING, PaymentCurrency, paymentCurrencySchema, paymentFiatMethodSchema } from "@repo/shared/constants/currencies"
 import ky, { HTTPError } from "ky"
 import { z, ZodError } from 'zod/v4';
 import { logger } from '@repo/lib/logger';
 import { parseZodErrorMessages } from '@/shared/lib/zod-helpers';
+import { BASE } from '@/shared/api/client';
 
 const ORDERS_API = ky.extend({
   prefixUrl: "https://api.fasberry.su/payment",
@@ -176,7 +177,7 @@ export const itemsResource = reatomResource(async (ctx) => {
   const type = ctx.spy(storeCategoryAtom)
 
   return await ctx.schedule(async () => {
-    const res = await FORUM_SHARED_API("get-donates", {
+    const res = await BASE("shared/store/items", {
       searchParams: { type },
       signal: ctx.controller.signal
     });

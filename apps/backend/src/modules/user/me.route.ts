@@ -1,20 +1,17 @@
 import dayjs from 'dayjs';
 import { throwError } from "#/helpers/throw-error";
-import { auth } from "#/shared/auth-db";
+import { auth } from "#/shared/database/auth-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
+import { cookieSetup } from '../global/setup';
 
 export const me = new Elysia()
-  .derive(
-    { as: "global" },
-    ({ cookie }) => ({ session: cookie["session"].value ?? null })
-  )
+  .use(cookieSetup)
   .get("/get-me", async (ctx) => {
     const token = ctx.session as string | null;
 
     if (!token) {
-      ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
-      return { error: "Unauthorized" }
+      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { error: "Unauthorized" })
     }
 
     try {
@@ -31,23 +28,17 @@ export const me = new Elysia()
         .executeTakeFirst()
 
       if (!query) {
-        ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND)
-
-        return { data: null }
+        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, { data: null })
       }
 
-      ctx.status(HttpStatusEnum.HTTP_200_OK)
-      
       const data = {
         ...query,
         issued_time: dayjs(Number(query.issued_time)).toDate(),
         reg_date: dayjs(Number(query.reg_date)).toDate()
       }
 
-      return { data };
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
-      ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-      
-      return { error: throwError(e) }
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   })

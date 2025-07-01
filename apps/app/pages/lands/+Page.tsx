@@ -23,16 +23,14 @@ const LandsPreviewImage = () => {
 export default function LandsPage() {
   return (
     <MainWrapperPage>
-      <div className="flex flex-col gap-y-4 w-full h-full">
+      <div className="flex flex-col gap-4 w-full h-full">
         <LandsPreviewImage />
-        <div className="flex lg:flex-row flex-col w-full gap-2">
-          <div className="flex flex-col gap-y-6 w-full !p-4">
-            <Typography className="font-semibold text-2xl">
-              Территории сервера
-            </Typography>
-            <div className="flex flex-col gap-y-4 w-full">
-              <LandsList />
-            </div>
+        <div className="flex flex-col gap-4 h-full w-full">
+          <Typography color="white" className="font-semibold text-2xl">
+            Территории сервера
+          </Typography>
+          <div className="flex flex-col gap-2 h-fit w-full">
+            <LandsList />
           </div>
         </div>
       </div>

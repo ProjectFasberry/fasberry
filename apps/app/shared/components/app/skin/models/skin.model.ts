@@ -1,15 +1,20 @@
-import { MINECRAFT_SKIN_API } from '@repo/shared/constants/api';
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { isChanged } from '@/shared/lib/reatom-helpers';
 import { take } from '@reatom/framework';
 import { userParam } from '@/shared/api/global.model';
+import { BASE } from '@/shared/api/client';
 
 export async function getSkinDetails({
   type, nickname
 }: {
   type: "head" | "skin", nickname: string
 }) {
-  const blob = await MINECRAFT_SKIN_API(`get-${type}/${nickname}`).blob()
+  const blob = await BASE(`server/skin/${nickname}`, {
+    searchParams: {
+      type: type === 'head' ? "head" : "full"
+    }
+  }).blob()
+  
   return URL.createObjectURL(blob)
 }
 

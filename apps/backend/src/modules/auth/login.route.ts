@@ -1,18 +1,19 @@
 import { UAParser } from 'ua-parser-js';
-import Elysia, { Cookie, t } from "elysia"
-import { auth } from "#/shared/auth-db"
+import Elysia from "elysia"
+import { auth } from "#/shared/database/auth-db"
 import bcrypt from 'bcryptjs';
 import { throwError } from '#/helpers/throw-error';
 import { authSchema, createSession, DEFAULT_SESSION_EXPIRE, getExistsUser } from './auth.model';
 import { generateSessionToken } from '#/utils/auth/generate-session-token';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
-import { ip } from 'elysia-ip';
 import { setCookie } from '#/helpers/cookie';
+import { cookieSetup, ipSetup } from '../global/setup';
 
 const loginSchema = authSchema
 
 export const login = new Elysia()
-  .use(ip({ checkHeaders: ["X-Forwarded-For", "X-Real-IP"] }))
+  .use(ipSetup)
+  .use(cookieSetup)
   .post("/login", async ({ cookie, ...ctx }) => {
     const { nickname, password, token: cfToken } = ctx.body;
 
@@ -26,8 +27,7 @@ export const login = new Elysia()
     const existsUser = await getExistsUser(nickname)
 
     if (!existsUser.result) {
-      ctx.status(404)
-      return { error: "User not exists" }
+      return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, { error: "User not exists" })
     }
 
     const hash = existsUser.hash as string
@@ -35,8 +35,7 @@ export const login = new Elysia()
     const passwordIsValid = bcrypt.compareSync(password, hash)
 
     if (!passwordIsValid) {
-      ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
-      return { error: "Invalid password" }
+      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, { error: "Invalid password" })
     }
 
     const token = generateSessionToken()
@@ -49,16 +48,14 @@ export const login = new Elysia()
         token, nickname, expires_at, info: { ...ua, ip: ctx.ip }
       })
 
-      ctx.status(HttpStatusEnum.HTTP_200_OK)
-
       setCookie({ cookie, key: "session", expires: expires_at, value: token })
       setCookie({ cookie, key: "logged_nickname", expires: expires_at, value: nickname })
 
-      return { data: { id: result.id, nickname: result.nickname } }
+      const data = { id: result.id, nickname: result.nickname }
+
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
-      ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-      
-      return throwError(e)
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
     beforeHandle: async ({ session, ...ctx }) => {
@@ -71,8 +68,7 @@ export const login = new Elysia()
         .executeTakeFirst()
 
       if (existsSession && Number(existsSession.count)) {
-        ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE)
-        return { error: "You are authorized" }
+        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, { error: "You are authorized" })
       }
     },
     body: loginSchema

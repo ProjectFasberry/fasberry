@@ -61,6 +61,7 @@ services:
       - ${BISQUITE_MYSQL_PORT}:3306/tcp
     volumes:
       - ./data/fasberry/db/minecraft/bisquite/data:/var/lib/mysql
+      - ./data/fasberry/db/minecraft/bisquite/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
 
   luckperms_db:
     container_name: luckperms_db

@@ -1,12 +1,12 @@
 import { Link } from "@/shared/components/config/Link";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { toast } from "sonner";
-import { FORUM_SHARED_API } from "@repo/shared/constants/api";
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { reatomComponent } from "@reatom/npm-react";
 import { actionCopyboard } from "@/shared/lib/copyboard-helpers";
 import { Typography } from "@repo/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip";
+import { BASE } from "@/shared/api/client";
 
 const NumericItem = ({ index }: { index: number }) => {
   return (
@@ -18,14 +18,18 @@ const NumericItem = ({ index }: { index: number }) => {
   )
 }
 
-async function getServerIp(): Promise<string | null> {
-  const res = await FORUM_SHARED_API("get-server-ip").json<{ data: { ip?: string } } | { error: string }>()
-  if ("error" in res) return null;
-  return res.data?.ip ?? null;
-}
-
 const serverIpResource = reatomResource(async (ctx) => {
-  return await ctx.schedule(() => getServerIp())
+  return await ctx.schedule(async () => {
+    const res = await BASE("shared/server-ip", {
+      signal: ctx.controller.signal, throwHttpErrors: false
+    })
+
+    const data = await res.json<{ data: { ip?: string } } | { error: string }>()
+
+    if ("error" in data) return null;
+
+    return data.data?.ip ?? null;
+  })
 }).pipe(withDataAtom(), withCache(), withStatusesAtom())
 
 const ServerIp = reatomComponent(({ ctx }) => {
@@ -124,15 +128,15 @@ export default function StartPage() {
           <div className="flex items-start gap-4 w-full">
             <NumericItem index={2} />
             <div className="flex flex-col">
-              <p className="text-black dark:text-white text-md md:text-xl lg:text-2xl">
+              <p className="text-white text-md md:text-xl lg:text-2xl">
                 Зайди в клиент майнкрафта под ником, который вы указали при регистрации
               </p>
-              <span className="text-black dark:text-white text-md md:text-xl lg:text-2xl mt-4">P.S:</span>
-              <p className="text-black dark:text-white text-md md:text-xl lg:text-2xl">
-                Если пиратка, рекомендую: <Link href="https://llaun.ch/ru" className="text-neutral-600 dark:text-neutral-400">*тык</Link>
+              <span className="text-white text-md md:text-xl lg:text-2xl mt-4">P.S:</span>
+              <p className="text-white text-md md:text-xl lg:text-2xl">
+                Если пиратка, рекомендую: <Link href="https://llaun.ch/ru" className="text-neutral-400">*тык</Link>
               </p>
-              <p className="text-black dark:text-white text-md md:text-xl lg:text-2xl">
-                Если лицензия, рекомендую: <Link href="https://modrinth.com/app" className="text-neutral-600 dark:text-neutral-400">*тык</Link>
+              <p className="text-white text-md md:text-xl lg:text-2xl">
+                Если лицензия, рекомендую: <Link href="https://modrinth.com/app" className="text-neutral-400">*тык</Link>
               </p>
             </div>
           </div>
@@ -146,7 +150,7 @@ export default function StartPage() {
         </div>
         <div className="flex items-start gap-4 w-full">
           <NumericItem index={3} />
-          <p className="text-black dark:text-white text-md md:text-xl lg:text-2xl">
+          <p className="text-white text-md md:text-xl lg:text-2xl">
             Удачной игры! <span className="text-red">❤</span>
           </p>
         </div>

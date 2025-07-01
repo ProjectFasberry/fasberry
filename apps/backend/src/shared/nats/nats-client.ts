@@ -1,13 +1,8 @@
-import { connect, ConnectionOptions, NatsConnection } from "nats"; 
-
-// @ts-ignore
-const token = process.env.NATS_AUTH_TOKEN!
-// @ts-ignore
-const host = process.env.NATS_HOST! ?? "localhost:4223"
+import { connect, ConnectionOptions, type NatsConnection } from "nats"; 
 
 const NATS_CONFIG: ConnectionOptions = {
-  servers: `nats://${host}`,
-  token,
+  servers: `nats://${Bun.env.NATS_HOST ?? "localhost:4223"}`,
+  token: Bun.env.NATS_AUTH_TOKEN,
   reconnect: true,
   maxReconnectAttempts: -1,
   reconnectTimeWait: 2000,

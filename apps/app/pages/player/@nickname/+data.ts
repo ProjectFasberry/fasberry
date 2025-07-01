@@ -5,6 +5,6 @@ export type Data = Awaited<ReturnType<typeof data>>;
 export async function data(pageContext: PageContextServer) {
   return {
     id: pageContext.routeParams.nickname,
-    title: pageContext.routeParams.nickname
+    title: pageContext.routeParams.nickname,
   }
 }

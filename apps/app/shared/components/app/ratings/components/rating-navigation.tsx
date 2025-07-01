@@ -15,12 +15,12 @@ export const NavigationBadge = ({
   return (
     <div
       className="flex items-center duration-150 select-none ease-in data-[state=active]:bg-green-800/80
-       rounded-xl group cursor-pointer justify-center py-4"
+       rounded-lg px-4 w-full group cursor-pointer justify-center py-4"
       {...props}
     >
       <Typography
         title={title}
-        className="duration-150 group-hover:duration-150 text-shark-50 font-semibold text-[18px]"
+        className="text-neutral-50 text-nowrap font-semibold text-lg"
       >
         {title}
       </Typography>
@@ -28,35 +28,34 @@ export const NavigationBadge = ({
   );
 };
 
-
-const RATING_NAVIGATION: { title: string, type: GetRatings["type"] }[] = [
-  { title: "Время игры", type: "playtime" },
-  { title: "Харизма", type: "charism" },
-  { title: "Белкоин", type: "belkoin" },
-  { title: "Паркур", type: "parkour" },
-  { title: "Регионы", type: "lands_chunks" },
-  { title: "Репутация", type: "reputation" }
+const RATING_NAVIGATION: { title: string, by: GetRatings["by"] }[] = [
+  { title: "Время игры", by: "playtime" },
+  { title: "Харизма", by: "charism" },
+  { title: "Белкоин", by: "belkoin" },
+  { title: "Паркур", by: "parkour" },
+  { title: "Регионы", by: "lands_chunks" },
+  { title: "Репутация", by: "reputation" }
 ]
 
 export const RatingNavigation = reatomComponent(({ ctx }) => {
-  const currentType = ctx.spy(ratingFilterAtom).type
+  const currentType = ctx.spy(ratingFilterAtom).by
 
-  const changeRatingType = (type: RatingFilterQuery["type"]) => {
-    if (type === currentType) return
+  const changeRatingType = (by: RatingFilterQuery["by"]) => {
+    if (by === currentType) return
 
-    ratingFilterAtom(ctx, (state) => ({ ...state, type }))
+    ratingFilterAtom(ctx, (state) => ({ ...state, by }))
 
     updateRatingAction(ctx, "update-filter")
   }
 
   return (
-    <div className="grid grid-cols-2 bg-shark-950 p-2 gap-2 overflow-hidden rounded-xl auto-rows-auto lg:flex lg:flex-nowrap w-full *:w-full">
+    <div className="flex overflow-x-auto overflow-y-hidden gap-2 w-full pb-2">
       {RATING_NAVIGATION.map(rating => (
         <NavigationBadge
-          key={rating.type}
-          data-state={currentType === rating.type ? "active" : "inactive"}
+          key={rating.by}
+          data-state={currentType === rating.by ? "active" : "inactive"}
           title={rating.title}
-          onClick={() => changeRatingType(rating.type)}
+          onClick={() => changeRatingType(rating.by)}
         />
       ))}
     </div>

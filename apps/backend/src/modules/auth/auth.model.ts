@@ -1,5 +1,5 @@
 import { normalizeIp } from "#/helpers/normalize-ip"
-import { auth } from "#/shared/auth-db"
+import { auth } from "#/shared/database/auth-db"
 import { Static, t } from "elysia"
 
 // 15 days
@@ -64,7 +64,16 @@ type CreateUserProperties = {
 }
 
 export const authSchema = t.Object({
-  nickname: t.String({ minLength: 1 }),
+  nickname: t.String({
+    minLength: 2,
+    maxLength: 16,
+    pattern: '^(?!.*[\\u0400-\\u04FF])\\S*$',
+    errorMessage: {
+      minLength: 'Поле обязательно для заполнения!',
+      maxLength: 'Ник не содержит больше 16 символов!',
+      pattern: 'Ник содержит недопустимые символы или пробелы',
+    },
+  }),
   password: t.String({ minLength: 6 }),
   token: t.String({ minLength: 4 })
 })

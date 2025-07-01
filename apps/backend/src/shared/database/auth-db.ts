@@ -1,6 +1,6 @@
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import type { DB as authDBType } from "./auth-db-types";
+import type { DB as authDBType } from "../types/auth-db-types";
 
 const authDialect = ({
   host, database, user, password, port
@@ -10,7 +10,7 @@ const authDialect = ({
 
 export const auth = new Kysely<authDBType>({
   dialect: authDialect({
-    host: "127.0.0.1",
+    host: Bun.env.AUTHORIZATION_POSTGRES_HOST!,
     database: Bun.env.AUTHORIZATION_POSTGRES_DB!,
     user: Bun.env.AUTHORIZATION_POSTGRES_USER!,
     password: Bun.env.AUTHORIZATION_POSTGRES_PASSWORD!,

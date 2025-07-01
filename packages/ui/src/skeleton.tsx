@@ -12,10 +12,8 @@ const skeleton = tv({
 })
 
 const { child, rel } = skeleton()
- 
-export function Skeleton({
-  className, ...props
-}: HTMLAttributes<HTMLDivElement>) {
+
+export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={rel({ className })} {...props}>
       <div className={child()} />

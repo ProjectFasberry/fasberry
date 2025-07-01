@@ -20,8 +20,9 @@ pageContextAtom.onChange((ctx, target) => {
 
 export async function getMe(headers?: Record<string, string>) {
   const res = await BASE("get-me", { headers: headers, throwHttpErrors: false })
+  if (!res.ok) return null;
 
-  const data = await res.json<{ data: CurrentUser } | { error: string }>()
+  const data = await res.json<WrappedResponse<CurrentUser>>()
 
   if ('error' in data) return null;
 

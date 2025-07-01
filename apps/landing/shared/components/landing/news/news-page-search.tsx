@@ -3,6 +3,8 @@ import { reatomComponent } from "@reatom/npm-react";
 import { tv, VariantProps } from "tailwind-variants";
 import { InputHTMLAttributes } from "react";
 import { newsFilterAtom, updateNewsAction } from "./news.model";
+import { action } from "@reatom/core";
+import { sleep, withConcurrency } from "@reatom/framework";
 
 const inputVariants = tv({
 	base: `flex min-h-10 w-full px-4 py-1 file:border-0 file:bg-transparent file:text-sm font-normal file:font-medium focus-visible:outline-none " +
@@ -48,8 +50,16 @@ export const Input = ({ variant, className, status, background, rounded, type, .
 	);
 }
 
+const onChange = action(async (ctx, e) => {
+	const { value } = e.target;
+
+	await ctx.schedule(() => sleep(300))
+
+	updateNewsAction(ctx, { search: value })
+}).pipe(withConcurrency())	
+
 export const NewsPageSearch = reatomComponent(({ ctx }) => {
-	const { searchQuery, ascending } = ctx.spy(newsFilterAtom)
+	const { ascending } = ctx.spy(newsFilterAtom)
 
 	return (
 		<div className="flex w-full gap-4 items-center">
@@ -66,9 +76,8 @@ export const NewsPageSearch = reatomComponent(({ ctx }) => {
 			<Input
 				placeholder="Добавлены"
 				className="p-6"
-				onChange={e => updateNewsAction(ctx, { searchQuery: e.target.value })}
-				value={searchQuery}
-				maxLength={1000}
+				onChange={e => onChange(ctx, e)}
+				maxLength={32}
 			/>
 		</div>
 	)

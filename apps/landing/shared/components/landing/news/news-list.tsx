@@ -12,7 +12,7 @@ const FetchNews = () => {
   return null;
 }
 
-const NewsItem = reatomComponent<NewsType>(({ ctx, imageUrl, title, created_at, description, id }) => {
+const NewsItem = reatomComponent<NewsType>(({ ctx, imageUrl, title, created_at, description, views, id }) => {
   return (
     <div className="flex flex-col w-full h-full bg-neutral-900 overflow-hidden rounded-xl">
       <MorphingDialog
@@ -22,14 +22,17 @@ const NewsItem = reatomComponent<NewsType>(({ ctx, imageUrl, title, created_at, 
           <div className="h-[200px] lg:h-[444px] cursor-pointer w-full">
             <img width={1920} height={1080} src={imageUrl} alt="" className="object-cover w-full h-full" />
           </div>
-          <div className="flex lg:flex-row flex-col justify-between items-start lg:items-center overflow-hidden p-4 lg:p-6 w-full gap-y-4">
-            <div className="block whitespace-normal w-3/4 overflow-hidden truncate">
+          <div className="flex flex-col items-start overflow-hidden p-4 lg:p-6 w-full gap-4">
+            <div className="block whitespace-normal w-full overflow-hidden truncate">
               <Typography color="white" className="text-left text-xl">{title}</Typography>
             </div>
-            <div className="w-full lg:w-1/4 flex justify-end">
-              <p className="text-neutral-400 text-lg">
+            <div className="flex justify-between gap-2 w-full items-center">
+              <Typography color="gray" className="text-nowrap text-base md:text-lg">
                 {dayjs(created_at).format('DD.MM.YYYY HH:mm')}
-              </p>
+              </Typography>
+              <Typography color="gray" className="text-nowrap text-base md:text-lg">
+                ☹ {views ?? 0}
+              </Typography>
             </div>
           </div>
         </MorphingDialogTrigger>

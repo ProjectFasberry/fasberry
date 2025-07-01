@@ -12,23 +12,8 @@ import { Typography } from "@repo/ui/typography"
 import { logout } from "@/shared/components/app/auth/models/auth.model"
 import { IconHeart } from "@tabler/icons-react"
 
-const HeatMap = clientOnly(() => import("@uiw/react-heat-map").then(m => m.default))
-const Tooltip = clientOnly(() => import("@uiw/react-tooltip").then(m => m.default))
+// const Stats = clientOnly(() => import("@/shared/components/app/player/heatmap").then(m => m.Stats))
 const ProfileSkinRender = clientOnly(() => import("@/shared/components/app/skin/components/profile-skin-render").then(m => m.ProfileSkinRender))
-
-const value = [
-  { date: '2016/01/11', count: 2 },
-  { date: '2016/01/12', count: 20 },
-  { date: '2016/01/13', count: 10 },
-  ...[...Array(17)].map((_, idx) => ({
-    date: `2016/02/${idx + 10}`, count: idx, content: ''
-  })),
-  { date: '2016/04/11', count: 2 },
-  { date: '2016/05/01', count: 5 },
-  { date: '2016/05/02', count: 5 },
-  { date: '2016/05/04', count: 11 },
-];
-
 
 pageContextAtom.onChange((ctx, target) => {
   if (!target) return;
@@ -48,11 +33,9 @@ const Skin = reatomComponent(({ ctx }) => {
 
   return (
     <div className="flex flex-col h-full gap-2 w-full lg:w-1/3">
-      <div className="flex flex-col gap-2 justify-between w-full lg:min-h-[520px] border border-neutral-700 rounded-lg">
+      <div className="flex flex-col gap-2 justify-between w-full lg:min-h-[520px] lg:border lg:border-neutral-700 rounded-lg">
         <div className="hidden lg:flex flex-col items-center gap-2 w-full text-neutral-400">
-          <Suspense fallback={<Skeleton className="w-full h-[450px]" />}>
-            <ProfileSkinRender />
-          </Suspense>
+          <ProfileSkinRender fallback={<Skeleton className="w-full h-[450px]" />} />
           <img
             src={head}
             width={48}
@@ -70,47 +53,6 @@ const Skin = reatomComponent(({ ctx }) => {
         </div>
       </div>
       <ProfileSkinControls />
-    </div>
-  )
-})
-
-const Stats = reatomComponent(({ ctx }) => {
-  return (
-    <div className="flex flex-col gap-2 w-full">
-      <h3 className="font-semibold text-2xl">Статистика</h3>
-      <p className="text-lg text-neutral-400">
-        Наиграл: <strong>1786.1 ч.</strong> 
-        Месяц: <strong>0.0 ч.</strong> 
-        Неделя: <strong>0.0 ч.</strong> 
-        Сегодня: <strong>0.0 ч.</strong>
-      </p>
-      <HeatMap
-        className="w-full border"
-        value={value}
-        startDate={new Date('2016/01/01')}
-        panelColors={{
-          0: '#252525',
-          7: '#3d3d3d',
-          14: '#454545',
-          21: '#4f4f4f',
-          28: '#5d5d5d',
-          35: '#888888'
-        }}
-        rectProps={{ rx: 4 }}
-        weekLabels={false}
-        monthLabels={false}
-        legendCellSize={0}
-        rectSize={16}
-        rectRender={(props, data) => {
-          // if (!data.count) return <rect {...props} />;
-
-          return (
-            <Tooltip placement="top" className="text-lg" content={`${data.count || 0}ч`}>
-              <rect {...props} />
-            </Tooltip>
-          );
-        }}
-      />
     </div>
   )
 })
@@ -163,7 +105,7 @@ const PlayerAttributes = reatomComponent(({ ctx }) => {
 
 const Logout = reatomComponent(({ ctx }) => {
   const currentUser = ctx.spy(currentUserAtom)
-  
+
   if (!currentUser) return null;
 
   const user = ctx.spy(userParam)
@@ -193,7 +135,7 @@ export default function PlayerPage() {
         <Skin />
         <div className="flex flex-col w-full py-4 gap-12 lg:w-2/3 h-full">
           <PlayerInfo />
-          <Stats />
+          {/* <Stats fallback={<Skeleton className="h-[200px] w-full" />} /> */}
           <PlayerAttributes />
           <Logout />
         </div>

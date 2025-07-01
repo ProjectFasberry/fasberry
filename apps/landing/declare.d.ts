@@ -8,6 +8,13 @@ declare global {
       Page: () => React.JSX.Element
     }
   }
+
+  interface PaginatedMeta {
+    hasNextPage: false,
+    hasPrevPage: false,
+    endCursor?: string,
+    startCursor?: string
+  }
 }
 
 export { }

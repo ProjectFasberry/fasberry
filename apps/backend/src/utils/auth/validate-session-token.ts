@@ -1,6 +1,6 @@
 import { MIN_SESSION_EXPIRE } from "#/modules/auth/auth.model";
 import { deleteSession } from "#/modules/auth/invalidate.route";
-import { auth } from "#/shared/auth-db";
+import { auth } from "#/shared/database/auth-db";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeHexLowerCase } from "@oslojs/encoding";
 

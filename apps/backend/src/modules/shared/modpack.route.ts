@@ -1,0 +1,44 @@
+import { throwError } from "#/helpers/throw-error";
+import { sqlite } from "#/shared/database/sqlite-db";
+import Elysia from "elysia";
+import { HttpStatusEnum } from "elysia-http-status-code/status";
+import { getStaticUrl } from "./news.route";
+import { cacheSetup } from "../global/setup";
+import { CacheControl } from "elysiajs-cdn-cache";
+
+async function getModpacks() {
+  const query = await sqlite
+    .selectFrom("modpacks")
+    .selectAll()
+    .execute()
+
+  return query.map(modpack => {
+    const mods = JSON.parse(modpack.mods) as string[]
+    const shaders = modpack.shaders ? JSON.parse(modpack.shaders) as string[] : []
+
+    return {
+      ...modpack, mods, shaders,
+      imageUrl: getStaticUrl(modpack.imageUrl ?? "/modpacks/art-bzzvanet.jpg")
+    }
+  });
+}
+
+export const modpack = new Elysia()
+  .use(cacheSetup)
+  .get('/modpacks', async (ctx) => {
+    try {
+      const modpacks = await getModpacks()
+
+      ctx.cacheControl.set(
+        "Cache-Control",
+        new CacheControl()
+          .set("public", true)
+          .set("max-age", 60)
+          .set("s-maxage", 60)
+      );
+
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: modpacks })
+    } catch (e) {
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+    }
+  })

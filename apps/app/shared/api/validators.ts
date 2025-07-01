@@ -3,8 +3,11 @@ import { PageContext } from "vike/types";
 import { redirect } from "vike/abort";
 
 async function request(headers?: Record<string, string>) {
-  const res = await BASE(`validate-session`, { headers: headers, throwHttpErrors: false })
-  const data = await res.json<{ data: boolean } | { error: string }>()
+  const res = await BASE(`auth/validate-session`, { headers: headers })
+
+  if (!res.ok) return false;
+
+  const data = await res.json<WrappedResponse<string>>()
 
   if ("error" in data) return false;
 

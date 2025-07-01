@@ -2,7 +2,7 @@ import { reatomComponent } from '@reatom/npm-react';
 import { Skeleton } from '@repo/ui/skeleton';
 import { Typography } from '@repo/ui/typography';
 import { dayjs } from '@/shared/lib/create-dayjs';
-import { News, newsAction, newsDataAtom, newsFilterAtom } from './news.model';
+import { News, newsAction, newsDataAtom, newsFilterAtom, updateNewsAction } from './news.model';
 import { Dialog, DialogContent, DialogTrigger } from '@repo/ui/dialog';
 
 const NewsPageItem = ({
@@ -97,13 +97,17 @@ export const NewsNotFound = () => {
 }
 
 export const NewsPageList = reatomComponent(({ ctx }) => {
-  const searchQuery = ctx.spy(newsFilterAtom).searchQuery
+  const searchQuery = ctx.spy(newsFilterAtom).search
   const news = ctx.spy(newsDataAtom)
 
-  if (ctx.spy(newsAction.statusesAtom).isPending) return <NewsListSkeleton />
+  if (ctx.spy(updateNewsAction.statusesAtom).isPending || ctx.spy(newsAction.statusesAtom).isPending) {
+    return <NewsListSkeleton />
+  }
 
-  if (ctx.spy(newsAction.statusesAtom).isRejected || !news) return <NewsNotFound/>
-
+  if (ctx.spy(newsAction.statusesAtom).isRejected || !news) {
+    return <NewsNotFound/>
+  }
+  
   if (!news.length && searchQuery) {
     return (
       <Typography color="gray" className="text-2xl">

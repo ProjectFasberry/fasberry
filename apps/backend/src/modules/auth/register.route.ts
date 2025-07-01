@@ -6,8 +6,8 @@ import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-reques
 import ky from "ky";
 import { logger } from "@repo/lib/logger";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { ip } from "elysia-ip";
-import { auth } from "#/shared/auth-db";
+import { auth } from "#/shared/database/auth-db";
+import { cookieSetup, ipSetup } from "../global/setup";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -56,36 +56,33 @@ async function getUserUUID(nickname: string) {
 }
 
 export const register = new Elysia()
-  .use(ip({ checkHeaders: ["X-Forwarded-For", "X-Real-IP"] }))
+  .use(ipSetup)
+  .use(cookieSetup)
   .post("/register", async (ctx) => {
     const { findout, nickname, password, token: cfToken, referrer } = ctx.body
 
     const result = await validateAuthenticationRequest({ token: cfToken, ip: ctx.ip })
 
     if (result && "error" in result) {
-      ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE)
-      return { error: result.error }
+      return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, { error: result.error })
     }
 
     const existsUser = await getExistsUser(nickname)
 
     if (existsUser.result) {
-      ctx.status(400)
-      return { error: "User already exists" }
+      return ctx.status(400, { error: "User already exists" })
     }
 
     const isPasswordSafe = validatePasswordSafe(password)
 
     if (!isPasswordSafe) {
-      ctx.status(401)
-      return { error: "Unsafe password" }
+      return ctx.status(401, { error: "Unsafe password" })
     }
 
     const uuid = await getUserUUID(nickname)
 
     if (!uuid) {
-      ctx.status(HttpStatusEnum.HTTP_409_CONFLICT)
-      return { error: "UUID must be required" }
+      return ctx.status(HttpStatusEnum.HTTP_409_CONFLICT, { error: "UUID must be required" })
     }
 
     try {
@@ -93,19 +90,17 @@ export const register = new Elysia()
         algorithm: "bcrypt", cost: 10
       })
 
-      const result = await createUser({ nickname, findout, uuid, referrer, password: hash, ip: ctx.ip })
+      const result = await createUser({ 
+        nickname, findout, uuid, referrer, password: hash, ip: ctx.ip 
+      })
 
       if (!result) {
-        ctx.status(502)
-        return { error: "Error" }
+        return ctx.status(502, { error: "Error" })
       }
 
-      ctx.status(200)
-
-      return { data: { nickname: result.nickname } }
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: { nickname: result.nickname } })
     } catch (e) {
-      ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-      return throwError(e)
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
     beforeHandle: async ({ session, ...ctx }) => {
@@ -118,8 +113,7 @@ export const register = new Elysia()
         .executeTakeFirst()
 
       if (existsSession && Number(existsSession.count)) {
-        ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE)
-        return { error: "You are authorized" }
+        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, { error: "You are authorized" })
       }
     },
     body: registerSchema

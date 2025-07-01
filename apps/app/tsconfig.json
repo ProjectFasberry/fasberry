@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
-    "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
+    "strict": true,
     "module": "ESNext",
     "noEmit": true,
     "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "target": "ES2022",
     "lib": [
       "DOM",
@@ -17,23 +19,25 @@
     ],
     "types": [
       "vite/client",
-      "vike-react"
+      "vike-react",
+      "bun-types"
     ],
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
       ],
-      "@/backend": [
-        "../minecraft-backend/src"
+      "@backend": [
+        "../backend/src"
       ],
       "@repo/ui/*": [
         "../../packages/ui/src/*"
       ]
-    },
-    "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    }
   },
+  "include": [
+    "."
+  ],
   "exclude": [
     "dist"
   ]

@@ -1,20 +1,20 @@
-import type { DB as skinsDBType } from "./skins-database-types.ts";
+import type { DB as playerPointsDBType } from "../types/player-points-database-types.js";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
 
-const skinsDialect = ({
+const playerPointsDialect = ({
   user, password, port, database, host
 }: DatabaseConnection) => {
   return new MysqlDialect({ pool: createPool({ database, host, user, password, port, connectionLimit: 10 }) });
 };
 
-export const skins = new Kysely<skinsDBType>({
-  dialect: skinsDialect({
+export const playerPoints = new Kysely<playerPointsDBType>({
+  dialect: playerPointsDialect({
     user: Bun.env.MYSQL_USER!,
     password: Bun.env.MYSQL_ROOT_PASSWORD!,
-    port: Number(Bun.env.SKINS_MYSQL_PORT!),
-    database: "skins_proxy",
+    port: Number(Bun.env.PLAYERPOINTS_MYSQL_PORT!),
+    database: "playerpoints",
     host: "127.0.0.1"
   })
-});
+}); 

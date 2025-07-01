@@ -1,5 +1,5 @@
 import { throwError } from "#/helpers/throw-error";
-import { auth } from "#/shared/auth-db";
+import { auth } from "#/shared/database/auth-db";
 import { encodeHexLowerCase } from "@oslojs/encoding";
 import Elysia, { Cookie, t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
@@ -43,45 +43,31 @@ export async function invalidateSession(token: string) {
 export const invalidate = new Elysia()
   .post("/invalidate-session", async ({ cookie, ...ctx }) => {
     if (!cookie) {
-      ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
-      return { error: "s" }
+      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, { error: "s" })
     }
 
     const sessionToken = cookie.session.value
 
     if (!sessionToken) {
-      ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
-      return { error: "Session token not found" }
+      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { error: "Session token not found" })
     }
-
-    let sessionDetails: { nickname: string; ip: string; } | null = null;
 
     try {
       const sessionId = encodeHexLowerCase(
         sha256(new TextEncoder().encode(sessionToken))
       );
 
-      sessionDetails = await getSessionDetails(sessionId);
-
       const result = await invalidateSession(sessionToken);
 
       if (!result) {
-        ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-        return { error: "Internal Server Error" }
+        return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, { error: "Internal Server Error" })
       }
-
-      // if (sessionDetails) {
-      //   logger.info(`${sessionDetails.nickname} logged. Ip: ${sessionDetails.ip} Time: ${dayjs().format("DD-MM-YYYY HH:mm:ss")}`)
-      // }
 
       unsetCookie({ cookie, key: "session" })
       unsetCookie({ cookie, key: "logged_nickname" })
 
-      ctx.status(HttpStatusEnum.HTTP_200_OK)
-
-      return { data: null, status: "success" }
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null, status: "success" })
     } catch (e) {
-      ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-      return { error: throwError(e) }
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   })

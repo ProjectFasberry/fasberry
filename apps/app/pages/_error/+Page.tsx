@@ -11,7 +11,7 @@ export default function Page() {
       <div
         className="flex min-h-screen justify-center items-center px-8"
       >
-        <div className="flex flex-col items-center gap-y-2">
+        <div className="flex flex-col items-center gap-2">
           <Typography className="text-neutral-400 text-base md:text-xl font-normal">
             Отключено
           </Typography>
@@ -20,7 +20,7 @@ export default function Page() {
           </Typography>
           <Link href="/">
             <Button
-              className="md:w-max mt-6 bg-neutral-600 text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
+              className="md:w-max bg-neutral-600 text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
             >
               Вернуться в безопасное место
             </Button>
@@ -34,13 +34,13 @@ export default function Page() {
     <div
       className="flex min-h-screen justify-center items-center px-8"
     >
-      <div className="flex flex-col items-center gap-y-2">
+      <div className="flex flex-col items-center gap-2">
         <Typography className="text-neutral-400 text-base md:text-xl font-normal">
           Отключено
         </Typography>
         <Link href="/">
           <Button
-            className="bg-neutral-600 md:w-max mt-6 text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
+            className="bg-neutral-600 md:w-max text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
           >
             Вернуться в безопасное место
           </Button>

@@ -11,7 +11,6 @@ const avatarVariants = tv({
   variants: {
     variant: {
       default: 'max-w-[68px] max-h-[68px]',
-      page: 'max-w-[256px] max-h-[256px]',
     }
   },
 });
@@ -86,7 +85,7 @@ const AvatarImage = reatomComponent<AvatarProps>(({
   const isLoading = ctx.spy(selectAvatarStatus(nickname))
 
   if (isLoading) {
-    return <Skeleton className={avatarVariants({ variant, className })} />
+    return <Skeleton style={{ height: propHeight, width: propWidth }} className={avatarVariants({ variant, className })} />
   }
 
   return (

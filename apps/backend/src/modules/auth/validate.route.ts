@@ -3,7 +3,8 @@ import { throwError } from "#/helpers/throw-error";
 import { validateSessionToken } from "#/utils/auth/validate-session-token";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { auth } from "#/shared/auth-db";
+import { auth } from "#/shared/database/auth-db";
+import { cookieSetup } from "../global/setup";
 
 export const SESSION_DOMAIN = "mc.fasberry.su"
 export const SESSION_KEY = "session"
@@ -17,12 +18,13 @@ export async function getUserSession(token: string) {
 }
 
 export const validate = new Elysia()
-  .state("sessionToken", "test")
-  .state("nickname", "test")
+  .use(cookieSetup)
   .get("/validate-session", async ({ cookie, ...ctx }) => {
     const token = cookie.session.value
-    const nickname = ctx.store.nickname
+    // const nickname = ctx.store.nickname
 
+    const nickname = "Test"
+    
     try {
       // const nickname = await getNicknameByTokenFromKv(token);
 
@@ -30,8 +32,7 @@ export const validate = new Elysia()
         const session = await validateSessionToken(token as string);
 
         if (!session) {
-          ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
-          return { error: "Invalid session token" }
+          return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { error: "Invalid session token" })
         }
 
         cookie.session.httpOnly = true
@@ -43,19 +44,16 @@ export const validate = new Elysia()
         cookie.session.value = token
       }
 
-      ctx.status(HttpStatusEnum.HTTP_200_OK)
-      
-      return { data: true, status: "success" }
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: true, status: "success" })
     } catch (e) {
-      ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-      return { error: throwError(e) }
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
     beforeHandle: async (ctx) => {
       const token = ctx.cookie["session"].value
 
       if (!token) {
-        return { error: "Unauthorized"}
+        return { error: "Unauthorized" }
       }
 
       const session = await getUserSession(token)

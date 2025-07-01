@@ -55,7 +55,7 @@ export const ProfileSkinControls = reatomComponent(() => {
   const isAuthenticated = true
 
   return (
-    <div className="flex flex-col items-center w-full justify-center gap-4">
+    <div className="hidden lg:flex flex-col items-center w-full justify-center gap-4">
       <div className="flex items-center justify-center gap-4 w-full">
         <ProfileSkinControlsList />
         <ProfileSkinControlRotate />

@@ -1,9 +1,9 @@
 import { RulesRuleItem } from './rules-rule-item';
 import { RulesTerminItem } from './rules-termin-item';
-import { FORUM_SHARED_API } from '@repo/shared/constants/api';
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { reatomComponent } from '@reatom/npm-react';
 import { Skeleton } from '@repo/ui/skeleton';
+import { BASE } from '@/shared/api/client';
 
 type Rules = {
   rules: {
@@ -30,15 +30,15 @@ type Rules = {
   };
 }
 
-async function getRules() {
-  const res = await FORUM_SHARED_API("get-rules")
-  const data = await res.json<{ data: Rules } | { error: string }>()
-  if ("error" in data) return null;
-  return data.data
-}
-
 const rulesResource = reatomResource(async (ctx) => {
-  return await ctx.schedule(() => getRules())
+  return await ctx.schedule(async () => {
+    const res = await BASE("shared/rules", { signal: ctx.controller.signal, throwHttpErrors: false })
+    const data = await res.json<{ data: Rules } | { error: string }>()
+
+    if ("error" in data) return null;
+
+    return data.data
+  })
 }, "rulesResource").pipe(withDataAtom(), withCache(), withStatusesAtom())
 
 export const RulesListNull = () => {

@@ -1,104 +1,85 @@
-import { reatomAsync, withErrorAtom, withStatusesAtom } from "@reatom/async"
+import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom, Ctx } from "@reatom/core"
 import { sleep, withReset } from "@reatom/framework"
-import { withHistory } from "@/shared/lib/reatom-helpers";
-import { MINECRAFT_LANDS_API } from "@repo/shared/constants/api";
+import { BASE } from "@/shared/api/client";
+import { withSsr } from "@/shared/api/ssr";
 
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+export type Land = {
+  title: string,
+  name: string,
+  created_at: Date | string,
+  type: "LAND" | string,
+  area: {
+    ulid: string,
+    banned: string[],
+    invites: string[],
+    settings: string[],
+    holder: any,
+    tax: any
+  },
+  stats: {
+    captures: number,
+    deaths: number,
+    defeats: number,
+    kills: number,
+    wins: number
+  },
+  members: Array<{ nickname: string, uuid: string }>
+  chunks_amount: number,
+  areas_amount: number,
+  balance: number,
+  level: number,
+}
 
-type AnotherLandsByOwner = UnwrapPromise<ReturnType<typeof getAnotherLandsByOwner>> | null
-type Land = UnwrapPromise<ReturnType<typeof getLandById>> | null
+export type Lands = Array<Land>
 
-export const landParamAtom = atom<string | null>(null, "landParam").pipe(withHistory(1))
-export const landAtom = atom<Land>(null, "land").pipe(withReset())
+export const landAtom = atom<Land | null>(null, "land").pipe(
+  withReset(), withSsr("land")
+)
+type d = {
+  ulid: string,
+  name: string,
+  members: { nickname: string, uuid: string }[]
+}[]
+
 export const landOwnerAtom = atom<string | null>(null, "landOwner").pipe(withReset())
-export const anotherLandsByOwnerAtom = atom<AnotherLandsByOwner>(null, "anotherLandsByOwner").pipe(withReset())
+
+landAtom.onChange((ctx, state) => {
+  console.log("landAtom", state)
+
+  if (state) {
+    const target = state.members[0].nickname
+
+    landOwnerAtom(ctx, target)
+  }
+})
+
+export const anotherLandsByOwnerAction = reatomAsync(async (ctx) => {
+  await sleep(400)
+
+  const nickname = ctx.get(landOwnerAtom)
+  const exclude = ctx.get(landAtom)?.area.ulid;
+
+  if (!nickname || !exclude) return;
+
+  return await ctx.schedule(async () => {
+    const res = await BASE(`server/lands/${nickname}`, {
+      searchParams: { exclude },
+      signal: ctx.controller.signal
+    })
+
+    const data = await res.json<{ data: d, meta: PaginatedMeta }>()
+
+    if (!data || 'error' in data) return null
+
+    return data.data.length > 0 ? data.data : null
+  })
+}, {
+  name: "anotherLandsByOwnerAction",
+}).pipe(withStatusesAtom(), withDataAtom())
 
 function landReset(ctx: Ctx) {
   landAtom.reset(ctx)
   landOwnerAtom.reset(ctx)
-  anotherLandsByOwnerAtom.reset(ctx)
+  anotherLandsByOwnerAction.dataAtom.reset(ctx)
 }
-
-landParamAtom.onChange((ctx, state) => {
-  const prev = ctx.get(landParamAtom.history)[1]
-
-  if (prev !== undefined && prev !== state) {
-    landReset(ctx)
-  }
-})
-
-landAtom.onChange((ctx, state) => {
-  if (state) {
-    landOwnerAtom(ctx, state.members[0].nickname)
-    anotherLandsByOwnerAction(ctx)
-  }
-
-  console.log("landAtom", state)
-})
-
-landParamAtom.onChange((ctx, state) => {
-  if (state) landAction(ctx, state)
-})
-
-export type Ex = { 
-  ulid: string, 
-  created_at: Date | string, 
-  stats: any, 
-  type: string, 
-  chunks_amount: number,
-  areas_amount: number, 
-  name: string, 
-  balance: number,
-  level: number,
-  title: string, 
-  members: Array<{ nickname: string, uuid: string }>
-}
-
-async function getLandById(id: string) {
-  const res = await MINECRAFT_LANDS_API(`get-land/${id}`)
-  const data = await res.json<Ex>()
-
-  if (!data || 'error' in data) return null
-
-  return data
-}
-
-export const landAction = reatomAsync(async (ctx, target: string) => {
-  if (ctx.get(landAtom)) return ctx.get(landAtom)
-    
-  return await ctx.schedule(() => getLandById(target))
-}, {
-  name: "landAction",
-  onFulfill: (ctx, res) => landAtom(ctx, res)
-}).pipe(withStatusesAtom(), withErrorAtom())
-
-async function getAnotherLandsByOwner(nickname: string, exclude: string) {
-  const res = await MINECRAFT_LANDS_API(`player/get-player-lands/${nickname}`, {
-    searchParams: {
-      exclude
-    }
-  })
-
-  const data = await res.json<{ data: Array<Ex>, meta: { hasNextPage: boolean, endCursor?: string } }>()
-
-  if (!data || 'error' in data) return null
-
-  return data.data.length > 0 ? data.data : null
-}
-
-export const anotherLandsByOwnerAction = reatomAsync(async (ctx) => {
-  const nickname = ctx.get(landOwnerAtom)
-  const exclude = ctx.get(landParamAtom)
-
-  if (!nickname || !exclude) return; 
-
-  await sleep(1200)
-
-  return await ctx.schedule(() => getAnotherLandsByOwner(nickname, exclude))
-}, {
-  name: "anotherLandsByOwnerAction",
-  onFulfill: (ctx, res) => {
-    if (res) anotherLandsByOwnerAtom(ctx, res)
-  }
-}).pipe(withStatusesAtom())
