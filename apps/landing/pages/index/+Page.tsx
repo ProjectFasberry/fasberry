@@ -37,29 +37,29 @@ export default function IndexPage() {
           >
             <div className="flex flex-col gap-1 items-center justify-center w-full">
               <Typography className="text-green text-center mb-4 text-4xl md:text-5xl xl:text-6xl">
-                Добро пожаловать!
+                Добро пожаловать
               </Typography>
               <Typography color="white" className="text-shadow-lg text-center text-lg lg:text-3xl">
-                Атмосферная и ламповая атмосфера ждет тебя ★
+                Атмосферная и ламповая атмосфера ждет тебя ♦
               </Typography>
             </div>
             <div className="flex sm:flex-row flex-col select-none items-center px-6 gap-4 w-full justify-center">
-              <Link href="/start" className="w-full sm:w-fit">
+              <Link href="https://app.fasberry.su/auth" className="w-full sm:w-fit">
                 <Button
                   draggable={false}
-                  className="w-full hover:bg-[#088d47] duration-300 bg-[#05b458]"
+                  className="w-full border-2 border-[#05b458] sm:backdrop-blur-md bg-[#088d47]/90"
                 >
                   <Typography color="white" className="text-xl text-shadow-xl">
-                    Начать играть
+                    Играть
                   </Typography>
                 </Button>
               </Link>
               <Link href="#idea" className="w-full sm:w-fit">
                 <Button
                   draggable={false}
-                  className="w-full bg-white/10 sm:backdrop-blur-md border-2 border-neutral-400 duration-300"
+                  className="w-full bg-white/10 sm:backdrop-blur-md border-2 border-neutral-400"
                 >
-                  <Typography color="white"  className="text-xl text-shadow-xl">
+                  <Typography color="white" className="text-xl text-shadow-xl">
                     О сервере
                   </Typography>
                 </Button>
@@ -73,7 +73,7 @@ export default function IndexPage() {
       >
         <div className="flex flex-col items-center mx-auto responsive gap-6 justify-center select-none relative">
           <Typography color="white" className="text-xl text-center sm:text-3xl lg:text-4xl">
-            ♦ Особенности сервера ♦
+            Особенности сервера
           </Typography>
           <IdeaMain />
         </div>

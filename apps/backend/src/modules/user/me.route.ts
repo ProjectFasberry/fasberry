@@ -3,15 +3,15 @@ import { throwError } from "#/helpers/throw-error";
 import { auth } from "#/shared/database/auth-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { cookieSetup } from '../global/setup';
+import { cookieSetup } from '#/lib/middlewares/cookie';
 
 export const me = new Elysia()
-  .use(cookieSetup)
+  .use(cookieSetup())
   .get("/get-me", async (ctx) => {
     const token = ctx.session as string | null;
 
     if (!token) {
-      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { error: "Unauthorized" })
+      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
     }
 
     try {
@@ -40,5 +40,13 @@ export const me = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+    }
+  }, {
+    beforeHandle: async (ctx) => {
+      const token = ctx.session as string | null;
+
+      if (!token) {
+        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
+      }
     }
   })

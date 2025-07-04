@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import type { DB as sqliteDBType } from "../types/sqlite-db-types.js";
+import type { DB as sqliteDBType } from "@repo/shared/types/db/sqlite-database-types";
 import { Database } from "bun:sqlite";
 import { BunSqliteDialect } from 'kysely-bun-sqlite';
 

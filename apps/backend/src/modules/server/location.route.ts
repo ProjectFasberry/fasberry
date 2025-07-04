@@ -17,20 +17,18 @@ type UserLocation = {
 async function getLocation(nickname: string) {
   const nc = getNatsConnection()
 
-  const payload = {
-    event: SERVER_EVENT_GET_USER_LOCATION,
-    nickname
-  }
+  const payload = { event: SERVER_EVENT_GET_USER_LOCATION, nickname }
 
   const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 7000 })
+  if (!res) return null;
 
-  return res.json<Omit<UserLocation, "customLocation">>()
+  const data = res.json<Omit<UserLocation, "customLocation">>()
+  return data
 }
 
 function parseWorldName(input: string): string | null {
   const regex = /CraftWorld\{name=(.+?)\}/;
   const match = input.match(regex);
-
   return match ? match[1] : null;
 }
 
@@ -94,7 +92,7 @@ function getCustomLocation({
 }
 
 export const userLocation = new Elysia()
-  .get("/get-location/:nickname", async (ctx) => {
+  .get("/location/:nickname", async (ctx) => {
     const initiator = "Test"
     const { nickname: recipient } = ctx.params
 
@@ -122,4 +120,3 @@ export const userLocation = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   })
-

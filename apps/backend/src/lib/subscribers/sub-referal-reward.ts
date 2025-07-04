@@ -1,6 +1,6 @@
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { USER_REFERAL_REWARD_SUBJECT } from "#/shared/nats/nats-subjects"
-import { callServerCommand } from "#/utils/call-command"
+import { callServerCommand } from "#/utils/server/call-command"
 import { natsLogger } from "@repo/lib/logger"
 
 type ReferalRewardPayload = {

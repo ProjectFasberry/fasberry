@@ -1,5 +1,5 @@
-import "@/pages/tailwind.css";
 import '@bprogress/core/css';
+import "@/pages/tailwind.css";
 
 import { Header } from "./header";
 import { ReatomProvider } from "./reatom-provider";

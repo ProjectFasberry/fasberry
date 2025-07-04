@@ -10,7 +10,7 @@ const createLink = (type: "player" | "land", value: string) => `/${type}/${value
 
 export const AuthorizeButton = reatomComponent(({ ctx }) => {
   return (
-    <Button onClick={() => navigate("/auth")} className="bg-green-500 rounded-md font-semibold text-neutral-50">
+    <Button onClick={() => navigate("/auth")} className="bg-green-600 rounded-md font-semibold text-neutral-50">
       Авторизоваться
     </Button>
   )
@@ -19,14 +19,16 @@ export const AuthorizeButton = reatomComponent(({ ctx }) => {
 const HeaderUser = reatomComponent(({ ctx }) => {
   const currentUser = ctx.spy(currentUserAtom)
 
-  return currentUser ? (
+  if (!currentUser) return <AuthorizeButton />
+
+  return (
     <Link
       href={createLink("player", currentUser.nickname)}
       className="w-[38px] h-[38px] overflow-hidden rounded-md border border-neutral-400"
     >
       <Avatar nickname={currentUser.nickname} propHeight={38} propWidth={38} className="min-w-[38px] min-h-[38px] w-[38px] h-[38px]" />
     </Link>
-  ) : <AuthorizeButton />
+  )
 }, "HeaderUser")
 
 export const Header = () => {
@@ -34,17 +36,17 @@ export const Header = () => {
     <>
       <div className="sm:hidden z-[20] fixed flex items-center justify-center bottom-0 px-6 rounded-t-md bg-neutral-800 h-16 w-full">
         <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-400 *:data-[state=active]:text-green-500">
-          <Link href="/">
+          <Link aria-label="Перейти на главную"  href="/">
             <div className="flex items-center justify-center">
               <IconCategory size={34} />
             </div>
           </Link>
-          <Link href="/lands">
+          <Link aria-label="Перейти к территориям игроков"  href="/lands">
             <div className="flex items-center justify-center">
               <IconUsersGroup size={34} />
             </div>
           </Link>
-          <Link href="/ratings">
+          <Link aria-label="Перейти к рейтингу игроков" href="/ratings">
             <div className="flex items-center justify-center">
               <IconStars size={34} />
             </div>
@@ -53,7 +55,7 @@ export const Header = () => {
       </div>
       <div className="flex items-center justify-start w-full border-b border-neutral-800 z-[20] h-20 top-0">
         <div className="flex items-center justify-between px-2 sm:px-6 w-full">
-          <Link href="/" className="bg-transparent relative">
+          <Link aria-label="Перейти на главную" href="/" className="bg-transparent relative">
             <img src="/favicon.ico" width={56} height={56} alt="" />
           </Link>
           <div
@@ -61,13 +63,13 @@ export const Header = () => {
             *:flex *:items-center *:justify-center *:border-b *:h-full *:px-6 
             *:data-[state=inactive]:border-transparent *:data-[state=active]:border-green-500"
           >
-            <Link href="/">
+            <Link aria-label="Перейти на главную" href="/">
               <p className="font-semibold">Главная</p>
             </Link>
-            <Link href="/lands">
+            <Link aria-label="Перейти к рейтингу игроков" href="/lands">
               <p className="font-semibold">Территории</p>
             </Link>
-            <Link href="/ratings">
+            <Link aria-label="Перейти к рейтингу игроков" href="/ratings">
               <p className="font-semibold">Рейтинг</p>
             </Link>
           </div>

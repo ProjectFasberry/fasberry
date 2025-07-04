@@ -3,7 +3,6 @@ import { createSearchParams } from "@/shared/lib/create-search-params"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
 import { action, atom } from "@reatom/core"
 import { sleep, withReset } from "@reatom/framework";
-import { FORUM_SHARED_API } from "@repo/shared/constants/api"
 import { z } from 'zod/v4';
 
 export const getNewsSchema = z.object({

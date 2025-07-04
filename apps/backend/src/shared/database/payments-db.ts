@@ -1,5 +1,5 @@
 import { Kysely, PostgresDialect } from 'kysely';
-import type { DB as paymentsDBType } from "../types/payments-database-types";
+import type { DB as paymentsDBType } from "@repo/shared/types/db/payments-database-types";
 import { Pool } from 'pg';
 
 const paymentsDialect = ({

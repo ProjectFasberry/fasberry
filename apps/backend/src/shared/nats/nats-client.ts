@@ -1,3 +1,4 @@
+import { logger } from "#/utils/config/logger";
 import { connect, ConnectionOptions, type NatsConnection } from "nats"; 
 
 const NATS_CONFIG: ConnectionOptions = {
@@ -13,7 +14,7 @@ let nc: NatsConnection | null = null;
 export async function initNats() {
   try {
     nc = await connect(NATS_CONFIG);
-    console.log(`Connected to ${NATS_CONFIG.servers}`)
+    logger.log(`Connected to ${NATS_CONFIG.servers}`)
   } catch (err) {
     throw new Error('NATS connection failed');
   }

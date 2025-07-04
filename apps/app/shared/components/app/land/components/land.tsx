@@ -9,7 +9,6 @@ import { Avatar } from "@/shared/components/app/avatar/avatar"
 import { Skeleton } from "@repo/ui/skeleton"
 import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@repo/ui/tabs"
 import { Typography } from "@repo/ui/typography"
-import Allay from "@repo/assets/gifs/allay.gif"
 import { Button } from "@repo/ui/button"
 
 const LandLoading = () => {
@@ -126,28 +125,12 @@ const Main = reatomComponent(({ ctx }) => {
   )
 }, "Main")
 
-const LandNotFound = () => {
-  return (
-    <div className="flex flex-col gap-4 justify-center w-full h-full items-center">
-      <img src={Allay} height={102} width={102} alt="" />
-      <Typography className="font-semibold text-base sm:text-xl">
-        Похоже этого региона уже нет :/
-      </Typography>
-      <Button onClick={() => window.history.back()} className='bg-neutral-50 w-fit'>
-        <Typography color="black" className="font-semibold px-6">
-          Назад
-        </Typography>
-      </Button>
-    </div>
-  )
-}
-
 const Panel = reatomComponent(({ ctx }) => {
   const land = ctx.spy(landAtom)
   const landOwner = ctx.spy(landOwnerAtom)
 
   if (!land || !landOwner) {
-    return <LandNotFound />
+    return null;
   }
 
   return (

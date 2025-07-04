@@ -1,22 +1,10 @@
 import { throwError } from "#/helpers/throw-error";
 import { auth } from "#/shared/database/auth-db";
 import { encodeHexLowerCase } from "@oslojs/encoding";
-import Elysia, { Cookie, t } from "elysia";
+import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { unsetCookie } from "#/helpers/cookie";
-
-async function getSessionDetails(token: string) {
-  const user = await auth
-    .selectFrom("sessions")
-    .select(['nickname', "ip"])
-    .where("token", "=", token)
-    .executeTakeFirst()
-
-  if (!user) return null;
-
-  return user;
-}
 
 export const deleteSession = async (sessionId: string) => {
   return auth
@@ -49,7 +37,7 @@ export const invalidate = new Elysia()
     const sessionToken = cookie.session.value
 
     if (!sessionToken) {
-      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { error: "Session token not found" })
+      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Session token not found"))
     }
 
     try {
@@ -60,7 +48,7 @@ export const invalidate = new Elysia()
       const result = await invalidateSession(sessionToken);
 
       if (!result) {
-        return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, { error: "Internal Server Error" })
+        return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Internal Server Error"))
       }
 
       unsetCookie({ cookie, key: "session" })

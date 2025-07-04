@@ -1,4 +1,4 @@
-import { headAction, skinAction } from "../models/skin.model";
+import { skinAction } from "../models/skin.model";
 import { skinViewerAtom } from "../models/skin-animation.model";
 import { lazy, Suspense } from "react";
 import { atom } from "@reatom/core";
@@ -74,7 +74,6 @@ onConnect(skinAction.dataAtom, (ctx) => {
 
 export const ProfileSkinRender = reatomComponent(({ ctx }) => {
   const skin = ctx.spy(skinAction.dataAtom)!
-  const head = ctx.spy(headAction.dataAtom)!
 
   if (ctx.spy(skinAction.statusesAtom).isPending) {
     return <Skeleton className="w-full h-full" />;

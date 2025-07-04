@@ -1,4 +1,4 @@
-import type { DB as skinsDBType } from "../types/skins-database-types.js";
+import type { DB as skinsDBType } from "@repo/shared/types/db/skins-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";

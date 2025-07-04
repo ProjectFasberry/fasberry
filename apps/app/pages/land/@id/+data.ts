@@ -1,5 +1,6 @@
 import { BASE } from "@/shared/api/client";
 import { Land } from "@/shared/components/app/land/models/land.model";
+import { render } from "vike/abort";
 import { PageContextServer } from "vike/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
@@ -20,6 +21,10 @@ export async function data(pageContext: PageContextServer) {
     land = await getLand(pageContext.routeParams.id)
   } catch (e) {
     console.error(e)
+  }
+
+  if (!land) {
+    throw render("/not-exist?type=land")
   }
 
   return {

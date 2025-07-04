@@ -4,6 +4,11 @@
 @source "../../../apps/frontend/**/*.{ts,tsx}";
 @source "../../../packages/ui/**/*.{ts,tsx}";
 
+:root {
+  --bprogress-color: #00AA00;
+  --bprogress-spinner-size: 0px;
+}
+
 @layer base {
   * {
     font-family: "Golos Text", sans-serif;

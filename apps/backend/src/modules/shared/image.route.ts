@@ -1,8 +1,8 @@
 import Elysia, { t } from "elysia";
-import { getStaticUrl, STATIC_IMAGES_BUCKET } from "./news.route";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
 import { supabase } from "#/shared/supabase/supabase";
+import { getStaticObject, STATIC_BUCKET } from '#/shared/minio/init';
 
 const imageSchema = t.Object({
   id: t.Optional(
@@ -22,11 +22,11 @@ export const publicImage = new Elysia()
     try {
       const { data: authImages } = await supabase
         .storage
-        .from(STATIC_IMAGES_BUCKET)
+        .from(STATIC_BUCKET)
         .list("auth_background", { limit: 100, offset: 0 })
 
       if (!authImages) {
-        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, { error: "Auth images not found" })
+        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, throwError("Auth images not found"))
       }
 
       let authImage;
@@ -40,10 +40,10 @@ export const publicImage = new Elysia()
       }
 
       if (!authImage) {
-        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, { error: "Auth image not found" })
+        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, throwError("Auth image not found"))
       }
 
-      const publicUrl = getStaticUrl(`auth_background/${authImage.name}`)
+      const publicUrl = getStaticObject(`auth_background/${authImage.name}`)
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: publicUrl })
     } catch (e) {

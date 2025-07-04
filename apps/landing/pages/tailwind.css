@@ -4,6 +4,11 @@
 @source "../../../apps/frontend/**/*.{ts,tsx}";
 @source "../../../packages/ui/**/*.{ts,tsx}";
 
+:root {
+  --bprogress-color: #00AA00;
+  --bprogress-spinner-size: 0px;
+}
+
 @layer base {
   @font-face {
     font-family: Monocraft;
@@ -127,13 +132,23 @@
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
   }
 }
 

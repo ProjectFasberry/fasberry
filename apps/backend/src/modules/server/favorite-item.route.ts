@@ -1,8 +1,8 @@
 import { throwError } from "#/helpers/throw-error";
 import { sqlite } from "#/shared/database/sqlite-db";
+import { getStaticObject } from "#/shared/minio/init";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { getStaticUrl } from "../shared/news.route";
 
 async function getFavoriteItem(favoriteId: string) {
   const query = await sqlite
@@ -20,7 +20,7 @@ async function getFavoriteItem(favoriteId: string) {
 }
 
 export const favoriteItem = new Elysia()
-  .get("/get-favorite-item/:nickname", async (ctx) => {
+  .get("/favorite-item/:nickname", async (ctx) => {
     const { nickname } = ctx.params
 
     try {
@@ -30,7 +30,7 @@ export const favoriteItem = new Elysia()
         return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null })
       }
 
-      let favoriteItemImage = getStaticUrl(favoriteItem.image)
+      let favoriteItemImage = getStaticObject(favoriteItem.image)
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: { ...favoriteItem, image: favoriteItemImage } })
     } catch (e) {

@@ -4,14 +4,10 @@ import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
-import { cacheSetup, ipSetup } from "../global/setup";
 import { CacheControl } from "elysiajs-cdn-cache";
-
-export const STATIC_IMAGES_BUCKET = "static";
-
-export function getStaticUrl(name: string) {
-  return `https://kong.fasberry.su/storage/v1/object/public/static/${name}`
-}
+import { cacheSetup } from "#/lib/middlewares/cache-control";
+import { ipSetup } from "#/lib/middlewares/ip";
+import { getStaticObject } from "#/shared/minio/init";
 
 const newsSchema = t.Object({
   limit: t.Optional(
@@ -53,7 +49,7 @@ async function createNewsViews(target: { ids: number[], ip: string }) {
 }
 
 export const soloNews = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get("/news/:id", async (ctx) => {
     const id = ctx.params.id
 
@@ -88,8 +84,8 @@ export const soloNews = new Elysia()
   })
 
 export const news = new Elysia()
-  .use(cacheSetup)
-  .use(ipSetup)
+  .use(cacheSetup())
+  .use(ipSetup())
   .get("/news", async (ctx) => {
     try {
       const { ascending, limit, cursor, search } = ctx.query;
@@ -143,7 +139,7 @@ export const news = new Elysia()
       const data = res.rows.map((news) => ({
         ...news,
         created_at: news.created_at.toString(),
-        imageUrl: news.imageUrl ? getStaticUrl(news.imageUrl) : null
+        imageUrl: news.imageUrl ? getStaticObject(news.imageUrl) : null
       }))
 
       createNewsViews({

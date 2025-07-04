@@ -4,7 +4,7 @@ import { validateSessionToken } from "#/utils/auth/validate-session-token";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { auth } from "#/shared/database/auth-db";
-import { cookieSetup } from "../global/setup";
+import { cookieSetup } from "#/lib/middlewares/cookie";
 
 export const SESSION_DOMAIN = "mc.fasberry.su"
 export const SESSION_KEY = "session"
@@ -18,7 +18,7 @@ export async function getUserSession(token: string) {
 }
 
 export const validate = new Elysia()
-  .use(cookieSetup)
+  .use(cookieSetup())
   .get("/validate-session", async ({ cookie, ...ctx }) => {
     const token = cookie.session.value
     // const nickname = ctx.store.nickname
@@ -32,13 +32,13 @@ export const validate = new Elysia()
         const session = await validateSessionToken(token as string);
 
         if (!session) {
-          return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { error: "Invalid session token" })
+          return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Invalid session token"))
         }
 
         cookie.session.httpOnly = true
         cookie.session.sameSite = "lax"
         cookie.session.domain = SESSION_DOMAIN
-        cookie.session.secure = isProduction()
+        cookie.session.secure = isProduction
         cookie.session.expires = new Date(session.expires_at)
         cookie.session.path = "/"
         cookie.session.value = token
@@ -53,13 +53,13 @@ export const validate = new Elysia()
       const token = ctx.cookie["session"].value
 
       if (!token) {
-        return { error: "Unauthorized" }
+        return throwError("Unauthorized")
       }
 
       const session = await getUserSession(token)
 
       if (!session) {
-        return { error: "Unauthorized" }
+        return throwError("Unauthorized")
       }
     }
   })

@@ -3,7 +3,7 @@ import { sql } from "kysely";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
-import { getStaticUrl } from "../shared/news.route";
+import { getStaticObject } from "#/shared/minio/init";
 
 async function getMinecraftItems() {
   const query = await sqlite
@@ -19,7 +19,7 @@ async function getMinecraftItems() {
 
   return query.map((item) => ({
     ...item,
-    image: getStaticUrl(item.image)
+    image: getStaticObject(item.image)
   }))
 }
 

@@ -1,8 +1,8 @@
 import { throwError } from "#/helpers/throw-error";
 import Elysia, { Static, t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { getStaticUrl } from "./news.route";
 import { payments } from "#/shared/database/payments-db";
+import { getStaticObject } from "#/shared/minio/init";
 
 async function getDonatesByType(args: Static<typeof donatesSchema>) {
   switch (args.type) {
@@ -15,7 +15,7 @@ async function getDonatesByType(args: Static<typeof donatesSchema>) {
 
       return donateQuery.map((donate) => {
         const imageUrl = donate.imageUrl
-        const url = getStaticUrl(imageUrl)
+        const url = getStaticObject(imageUrl)
 
         return { ...donate, imageUrl: url }
       })
@@ -32,7 +32,7 @@ async function getDonatesByType(args: Static<typeof donatesSchema>) {
 
       return walletQuery
     case "events":
-      // const eventsQuery = await paymentsDB
+      // const eventsQuery = await payments
       //   .selectFrom("events")
       //   .selectAll()
       //   .execute()

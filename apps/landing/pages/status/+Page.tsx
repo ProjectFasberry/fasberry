@@ -4,7 +4,7 @@ import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Skeleton } from "@repo/ui/skeleton";
 import { reatomComponent } from "@reatom/npm-react"
 
-export const PageServerStatus = reatomComponent(({ ctx }) => {
+const PageServerStatus = reatomComponent(({ ctx }) => {
   const data = ctx.spy(serverStatusResource.dataAtom)
 
   if (ctx.spy(serverStatusResource.statusesAtom).isPending) {

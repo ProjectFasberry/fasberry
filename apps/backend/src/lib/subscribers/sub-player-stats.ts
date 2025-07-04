@@ -1,7 +1,7 @@
 import { bisquite } from "#/shared/database/bisquite-db"
 import { reputation } from "#/shared/database/reputation-db"
 import { getNatsConnection } from "#/shared/nats/nats-client"
-import { USER_GET_STATS_SUBJECT } from "#/shared/nats/nats-subjects"
+// import { USER_GET_STATS_SUBJECT } from "#/shared/nats/nats-subjects"
 import { natsLogger } from "@repo/lib/logger"
 
 type PlayerStats = {
@@ -57,7 +57,8 @@ export const subscribePlayerStats = () => {
   console.log("Subscribed to player stats")
 
   try {
-    return nc.subscribe(USER_GET_STATS_SUBJECT + ".*", {
+    // todo: replace to real subject
+    return nc.subscribe("todo" + ".*", {
       callback: async (err, msg) => {
         if (err) {
           console.error(err)

@@ -1,9 +1,7 @@
 import { navigate } from "vike/client/router";
-import { WikiNavigationBar } from "../sidebar/wiki-navigation-bar";
 import { MDXProvider } from '@mdx-js/react'
-import { reatomComponent } from "@reatom/npm-react";
 import { atom } from "@reatom/core";
-import { Tabs, TabsContent, TabsContents } from "@repo/ui/tabs";
+import { TabsContent, TabsContents } from "@repo/ui/tabs";
 import { clientOnly } from "vike-react/clientOnly";
 import { WikiTableComponent } from "../table/wiki-table";
 import { ARMORS } from "@repo/shared/wiki/data/wiki/wiki-list";
@@ -29,8 +27,6 @@ import Pets from "./pets.mdx"
 import Lands from "./lands.mdx"
 import Profile from "./profile.mdx"
 import Skin from "./skin.mdx"
-
-const WikiNavigationMobile = clientOnly(() => import("../sidebar/wiki-navigation-mobile").then(m => m.WikiNavigationMobile))
 
 export const wikiParamAtom = atom("general", "param")
 
@@ -333,7 +329,7 @@ const components = {
 	}
 }
 
-const Content = () => {
+export const WikiContent = () => {
 	return (
 		<div className="flex flex-col p-4 xl:w-[75%] w-full overflow-hidden lg:w-auto">
 			<MDXProvider components={components}>
@@ -348,20 +344,3 @@ const Content = () => {
 		</div>
 	)
 }
-
-export const WikiContent = reatomComponent(({ ctx }) => {
-	return (
-		<>
-			<Tabs
-				defaultValue="general"
-				value={ctx.spy(wikiParamAtom)}
-				onValueChange={v => wikiParamAtom(ctx, v)}
-				className="flex flex-col lg:flex-row items-start justify-between bg-transparent w-full gap-x-4"
-			>
-				<WikiNavigationBar />
-				<Content />
-				<WikiNavigationMobile />
-			</Tabs>
-		</>
-	)
-}, "WikiContent")

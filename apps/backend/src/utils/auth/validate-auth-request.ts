@@ -18,11 +18,11 @@ async function validateIpRestricts(ip: string): Promise<boolean> {
 }
 
 export const validateAuthenticationRequest = async ({ ip, token }: { ip: string, token?: string | null }) => {
-  if (!isProduction()) {
+  if (!isProduction) {
     return;
   }
 
-  if (isProduction() && !token) {
+  if (isProduction && !token) {
     return { error: "Token is not provided" }
   }
 

@@ -1,6 +1,6 @@
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import type { DB as authDBType } from "../types/auth-db-types";
+import type { DB as authDBType } from "@repo/shared/types/db/auth-database-types";
 
 const authDialect = ({
   host, database, user, password, port

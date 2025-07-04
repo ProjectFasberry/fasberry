@@ -27,7 +27,7 @@ export const WikiNavigationMobile = reatomComponent(({ ctx }) => {
         <TabsList className="flex flex-col w-full items-start">
           <div className="flex flex-col p-4 w-full gap-y-12 h-full">
             <div className="flex flex-col gap-y-2">
-              <TabsTrigger onClick={handle} value="general" className="px-0 justify-start items-start">
+              <TabsTrigger onClick={handle} value="general" className="p-1 justify-start items-start">
                 <Typography className="text-xl">
                   Основной раздел
                 </Typography>

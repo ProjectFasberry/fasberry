@@ -1,9 +1,9 @@
 import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { cacheSetup } from "../global/setup";
 import { CacheControl } from "elysiajs-cdn-cache";
 import { throwError } from "#/helpers/throw-error";
+import { cacheSetup } from "#/lib/middlewares/cache-control";
 
 async function getServerIp() {
   const query = await sqlite
@@ -16,7 +16,7 @@ async function getServerIp() {
 }
 
 export const serverip = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get("/server-ip", async (ctx) => {
     try {
       const serverIp = await getServerIp()

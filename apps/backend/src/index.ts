@@ -1,19 +1,16 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { serverTiming } from '@elysiajs/server-timing'
-import { logger } from "@tqman/nice-logger";
+import { logger as loggerMiddleware } from "@tqman/nice-logger";
 import { swagger } from "@elysiajs/swagger"
 import { cors } from '@elysiajs/cors'
 import { initNats } from "./shared/nats/nats-client";
-
 import { login } from "#/modules/auth/login.route";
 import { register } from "#/modules/auth/register.route";
 import { invalidate } from "#/modules/auth/invalidate.route";
 import { validate } from "#/modules/auth/validate.route";
 import { me } from "#/modules/user/me.route";
 import { news, soloNews } from "./modules/shared/news.route";
-import { ipSetup } from "./modules/global/setup";
-import { rateLimit } from "elysia-rate-limit";
-import { RateLimitError } from "./lib/middlewares/rate-limit";
+import { ratelimit } from "./lib/middlewares/rate-limit";
 import { modpack } from "./modules/shared/modpack.route";
 import { rules } from "./modules/shared/rules.route";
 import { serverip } from "./modules/shared/server-ip.route";
@@ -23,7 +20,6 @@ import { userLocation } from "./modules/server/location.route";
 import { favoriteItem } from "./modules/server/favorite-item.route";
 import { minecraftItems } from "./modules/server/minecraft-items.route";
 import { skinGroup } from "./modules/server/skin.route";
-import { initSkinsBucket } from "./modules/server/init-buckets";
 import { playerBalance, playerSkills, playerStats } from "./modules/server/player.route";
 import { ratingBy } from "./modules/server/rating.route";
 import { land, lands, playerLands } from "./modules/server/lands.route";
@@ -36,10 +32,17 @@ import { subscribeReferalReward } from "./lib/subscribers/sub-referal-reward";
 import { subscribeReceiveFiatPayment } from "./lib/subscribers/sub-receive-fiat-payment";
 import { subscribeGiveBalance } from "./lib/subscribers/sub-give-balance";
 import { subscribePlayerStats } from "./lib/subscribers/sub-player-stats";
+import { initMinioBuckets, showMinio } from "./shared/minio/init";
+import { status } from "./modules/server/status.route";
+import { user } from "./modules/user/user.route";
+import { bot } from "./shared/bot/logger";
+import { handleFatalError } from "./utils/config/handle-log";
+import { showRoutes } from "./utils/config/print-routes";
+import { ipSetup } from "./lib/middlewares/ip";
+import { logger } from "./utils/config/logger";
 
 async function startNats() {
   await initNats()
-  await initSkinsBucket()
 
   // subscribePlayerGroup()
   subscribeRefferalCheck()
@@ -51,6 +54,8 @@ async function startNats() {
 }
 
 await startNats()
+await showMinio()
+await initMinioBuckets()
 
 const health = new Elysia()
   .get("/health", ({ status }) => status(200))
@@ -76,7 +81,7 @@ const shared = new Elysia()
   )
 
 const hooks = new Elysia()
-  .group("/hooks", app => 
+  .group("/hooks", app =>
     app
       .use(processPlayerVote)
   )
@@ -98,12 +103,12 @@ const server = new Elysia()
       .use(achievementsMeta)
       .use(achievements)
       .use(userGameStatus)
+      .use(status)
+      .use(user)
   )
 
-const LIMIT_PER_MINUTE = 300
-
 const app = new Elysia({ prefix: "/minecraft/v2" })
-  .use(rateLimit({ errorResponse: new RateLimitError(), max: LIMIT_PER_MINUTE }))
+  .use(ratelimit())
   .use(swagger())
   .trace(async ({ onHandle, context: { path } }) => {
     onHandle(({ begin, onStop }) => {
@@ -111,9 +116,9 @@ const app = new Elysia({ prefix: "/minecraft/v2" })
     })
   })
   .use(cors({ credentials: true }))
-  .use(serverTiming()) 
-  .use(logger())
-  .use(ipSetup)
+  .use(serverTiming())
+  .use(loggerMiddleware())
+  .use(ipSetup())
   .use(health)
   .use(auth)
   .use(me)
@@ -123,16 +128,13 @@ const app = new Elysia({ prefix: "/minecraft/v2" })
   .listen(4104)
   .compile()
 
-function printRoutes(app: App) {
-  for (const route of app.routes) {
-    console.log(route.path)
-  }
-}
+bot.init();
 
-printRoutes(app)
+showRoutes(app)
 
-console.log(`
-🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}
-`);
+process.on('uncaughtException', handleFatalError);
+process.on('unhandledRejection', handleFatalError);
 
 export type App = typeof app
+
+logger.success(`Server is running at ${app.server?.hostname}:${app.server?.port}`);

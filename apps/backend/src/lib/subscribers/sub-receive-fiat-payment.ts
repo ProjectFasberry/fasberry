@@ -1,11 +1,11 @@
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { PAYMENT_SUCCESS_SUBJECT } from "#/shared/nats/nats-subjects"
-import { paymentMetaSchema, paymentTypeValidator } from "#/shared/types/payment/payment-schema"
+import { paymentMetaSchema, paymentTypeValidator } from "@repo/shared/schemas/payment/payment-schema"
 import { natsLogger } from "@repo/lib/logger"
 import { PaymentMeta } from "../publishers/pub-payment-notify"
-import { processDonatePayment } from "#/utils/process-donate-payment"
-import { processBelkoinPayment } from "#/utils/process-belkoin-payment"
-import { processCharismPayment } from "#/utils/process-charism-payment"
+import { processDonatePayment } from "#/utils/payment/process-donate-payment"
+import { processBelkoinPayment } from "#/utils/payment/process-belkoin-payment"
+import { processCharismPayment } from "#/utils/payment/process-charism-payment"
 
 const receiveFiatPayload = paymentMetaSchema.check((ctx) => paymentTypeValidator({ data: ctx.value, ctx: ctx }))
 

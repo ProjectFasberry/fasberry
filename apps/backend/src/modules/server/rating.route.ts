@@ -2,12 +2,12 @@ import { throwError } from "#/helpers/throw-error";
 import Elysia, { Static, t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
-import { cacheSetup } from "../global/setup";
 import { CacheControl } from "elysiajs-cdn-cache";
 import { lobby } from "#/shared/database/lobby-db";
 import { playerPoints } from "#/shared/database/playerpoints-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { reputation } from "#/shared/database/reputation-db";
+import { cacheSetup } from "#/lib/middlewares/cache-control";
 
 const ratingSchema = t.Object({
   by: t.UnionEnum(["charism", "belkoin", "lands_chunks", "reputation", "playtime", "parkour"]),
@@ -223,7 +223,7 @@ async function getRatingBy({
 }
 
 export const ratingBy = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get("/rating", async (ctx) => {
     const { by, limit, cursor, ascending } = ctx.query;
 
@@ -234,8 +234,8 @@ export const ratingBy = new Elysia()
         "Cache-Control",
         new CacheControl()
           .set("public", true)
-          .set("max-age", 30)
-          .set("s-maxage", 30)
+          .set("max-age", 60)
+          .set("s-maxage", 60)
       );
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, res)

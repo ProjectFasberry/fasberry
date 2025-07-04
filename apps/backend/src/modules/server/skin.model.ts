@@ -1,20 +1,10 @@
-import SteveSkin from "@repo/assets/images/minecraft/steve_skin.png";
 import sharp from "sharp";
 import ky from "ky";
-import fs from "fs/promises";
-import path from "path";
 import { Blob } from "buffer";
-import { Objm } from "@nats-io/obj";
 import { skins } from "#/shared/database/skins-db";
-import { getNatsConnection } from "#/shared/nats/nats-client";
-import { USERS_SKINS_BUCKET } from "./init-buckets";
-
-export async function extractHeadFromSkin(sb: ArrayBuffer) {
-  return sharp(sb)
-    .extract({ left: 8, top: 8, width: 8, height: 8 })
-    .resize(128, 128, { kernel: 'nearest' })
-    .toBuffer();
-}
+import { AVATARS_BUCKET, getAvatarDestination, getObjectUrl, getSkinDestination, minio, SKINS_BUCKET, STATIC_BUCKET } from "#/shared/minio/init";
+import { ItemBucketMetadata } from "minio";
+import { blobToUint8Array, nodeToWebStream } from "#/helpers/streams";
 
 type Skin = {
   textures: {
@@ -27,156 +17,167 @@ type Skin = {
   }
 }
 
-export function readableStreamFrom(data: Uint8Array): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(data);
-      controller.close();
-    },
-  });
-}
+type SkinOutput = globalThis.Blob | Blob
 
-export async function blobToUint8Array(blob: globalThis.Blob | Blob): Promise<Uint8Array> {
-  const buffer = await blob.arrayBuffer();
-  return new Uint8Array(buffer);
+async function extractHeadFromSkin(sb: ArrayBuffer) {
+  return sharp(sb)
+    .extract({ left: 8, top: 8, width: 8, height: 8 })
+    .resize(128, 128, { kernel: 'nearest' })
+    .toBuffer();
 }
 
 const DEFAULT_SKIN_VARIANT = "CLASSIC"
+const DEFAULT_HEAD = "steve_head.png"
+const DEFAULT_SKIN = "steve_skin.png"
 
-export async function getExistsCustomPlayerSkin(nickname: string) {
+async function getExistsCustomPlayerSkin(nickname: string) {
   const queryPlayersCustomSkins = await skins
     .selectFrom('sr_players')
     .innerJoin('sr_cache', 'sr_cache.uuid', 'sr_players.uuid')
     .innerJoin("sr_player_skins", "sr_player_skins.uuid", "sr_players.skin_identifier")
+    .select([
+      "sr_players.skin_variant",
+      "sr_player_skins.value"
+    ])
     .where("sr_cache.name", "=", nickname)
-    .select(["sr_players.skin_variant", "sr_player_skins.value"])
     .executeTakeFirst();
-  
-  if (!queryPlayersCustomSkins?.value) {
-    return null;
-  }
+
+  if (!queryPlayersCustomSkins?.value) return null;
 
   const { skin_variant, value } = queryPlayersCustomSkins
 
   return { skin_variant: skin_variant ?? DEFAULT_SKIN_VARIANT, value }
 }
 
-async function getVanillaPlayerSkin(nickname: string): Promise<globalThis.Blob | Blob | null> {
+async function getVanillaPlayerSkin(nickname: string): Promise<SkinOutput | null> {
   const query = await skins
     .selectFrom("sr_cache")
     .select("uuid")
     .where("name", "=", nickname)
     .executeTakeFirst();
 
-  if (!query || !query.uuid) {
-    return null
-  }
+  if (!query?.uuid) return null
 
-  const blob = await ky.get(`https://api.mineatar.io/skin/${query.uuid}`).blob() ?? null;
+  const blob = await ky.get(`https://api.mineatar.io/skin/${query.uuid}`).blob()
 
-  return blob
+  return blob ?? null;
 }
 
-async function getCustomPlayerSkin(nickname: string): Promise<globalThis.Blob | Blob | null> {
+async function getCustomPlayerSkin(nickname: string): Promise<SkinOutput | null> {
   const query = await getExistsCustomPlayerSkin(nickname)
 
-  if (query && query.value) {
-    const data = atob(query.value);
-    const parsed = JSON.parse(data) as Skin
+  if (!query?.value) return null;
 
-    const blob = await ky.get(parsed.textures.SKIN.url).blob() ?? null
-  
-    return blob
-  } else {
-    return null;
-  }
+  const data = atob(query.value);
+  const parsed = JSON.parse(data) as Skin
+  const blob = await ky.get(parsed.textures.SKIN.url).blob()
+
+  return blob ?? null
 }
 
-async function putSkinInKv(nickname: string, skinData: Uint8Array) {
-  try {
-    const bucket = await getSkinBucket()
-    const stream = readableStreamFrom(skinData);
+async function putSkinInMinio(nickname: string, file: Uint8Array) {
+  const metadata: ItemBucketMetadata = { 'Content-Type': 'image/png' }
+  const destination = getSkinDestination(nickname)
+  const avatarDest = getAvatarDestination(nickname)
 
-    await bucket.put({ name: nickname }, stream);
+  async function uploadSkin(buffer: Buffer<ArrayBuffer>) {
+    await minio.putObject(SKINS_BUCKET, destination, buffer, buffer.length, metadata)
+    console.log(`[${SKINS_BUCKET}]: ` + 'file ' + ' uploaded as object ' + destination)
+  }
+
+  async function uploadHead(buffer: Buffer<ArrayBuffer>) {
+    const head = await extractHeadFromSkin(buffer.buffer)
+    await minio.putObject(AVATARS_BUCKET, avatarDest, head, head.length, metadata)
+    console.log(`[${AVATARS_BUCKET}]: ` + 'file ' + ' uploaded as object ' + avatarDest)
+  }
+
+  try {
+    const buffer = Buffer.from(file);
+
+    await Promise.all([
+      uploadSkin(buffer), uploadHead(buffer)
+    ])
+
   } catch (e) {
     console.error(e)
     throw e;
   }
 }
 
-let skinsBucket: ReturnType<Objm["open"]> | null = null;
-
-async function getSkinBucket() {
-  if (!skinsBucket) {
-    const nc = getNatsConnection()
-    const objm = new Objm(nc);
-
-    skinsBucket = objm.open(USERS_SKINS_BUCKET);
-  }
-
-  return skinsBucket;
-}
-
-async function getSkinByKv(nickname: string): Promise<globalThis.Blob | Blob | null> {
+export async function getRawSkin(nickname: string): Promise<SkinOutput> {
   try {
-    const bucket = await getSkinBucket()
-    const entry = await bucket.get(nickname)
-    
-    if (!entry || !entry?.data) {
-      return null;
-    }
-  
-    const blob = await Bun.readableStreamToBlob(entry.data) ?? null;
+    const stream = await minio.getObject(SKINS_BUCKET, getSkinDestination(nickname))
+    const readable = nodeToWebStream(stream)
+    const blob = await Bun.readableStreamToBlob(readable)
 
     return blob
   } catch (e) {
-    console.error(e)
-    throw e
+    const steve = await minio.getObject(STATIC_BUCKET, DEFAULT_SKIN)
+    const readable = nodeToWebStream(steve)
+    const blob = await Bun.readableStreamToBlob(readable)
+
+    return blob;
   }
 }
 
-export async function getPlayerSkin(nickname: string): Promise<globalThis.Blob | Blob> {
-  let skin: globalThis.Blob | Blob | null = null;
+async function extract(
+  nickname: string,
+  fetchSkin: (nickname: string) => Promise<SkinOutput | null>
+): Promise<SkinOutput | null> {
+  const skin = await fetchSkin(nickname);
+  if (!skin) return null;
 
-  const exists = await getSkinByKv(nickname)
+  const array = await blobToUint8Array(skin as globalThis.Blob);
 
-  if (exists) {
-    skin = exists
+  await putSkinInMinio(nickname, array);
+
+  return skin;
+}
+
+export async function getSkin(nickname: string): Promise<string> {
+  let target: string = ""
+
+  try {
+    const stream = await minio.getObject(SKINS_BUCKET, getSkinDestination(nickname))
+
+    if (!stream) {
+      throw new Error()
+    }
+
+    const url = getObjectUrl(SKINS_BUCKET, getSkinDestination(nickname))
+
+    target = url
+  } catch (e) {
+    const custom = await extract(nickname, getCustomPlayerSkin)
+    // if (custom) return custom;
+
+    const vanilla = await extract(nickname, getVanillaPlayerSkin)
+    // if (vanilla) return vanilla;
+
+    const steve = getObjectUrl(STATIC_BUCKET, DEFAULT_SKIN)
+    target = steve
   }
 
-  if (skin) return skin;
+  return target;
+}
 
-  const custom = await getCustomPlayerSkin(nickname)
+export async function getPlayerAvatar(nickname: string) {
+  let target: string = "";
 
-  if (custom) {
-    const array = await blobToUint8Array(custom)
+  try {
+    const stream = await minio.getObject(AVATARS_BUCKET, getAvatarDestination(nickname))
 
-    await putSkinInKv(nickname, array)
+    if (!stream) {
+      throw new Error()
+    }
 
-    skin = custom
+    const res = getObjectUrl(AVATARS_BUCKET, getAvatarDestination(nickname))
+
+    target = res;
+  } catch (e) {
+    const steve = getObjectUrl(STATIC_BUCKET, DEFAULT_HEAD)
+    target = steve;
   }
 
-  if (skin) return skin;
-
-  const vanilla = await getVanillaPlayerSkin(nickname)
-
-  if (vanilla) {
-    const array = await blobToUint8Array(vanilla)
-
-    await putSkinInKv(nickname, array)
-
-    skin = vanilla
-  }
-
-  if (!skin) {
-    const buffer = await fs.readFile(
-      path.resolve(SteveSkin)
-    );
-
-    const blob = new Blob([buffer], { type: 'image/png' });
-
-    skin = blob;
-  }
-
-  return skin
+  return target;
 }

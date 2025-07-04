@@ -1,8 +1,8 @@
 import { sqlite } from "#/shared/database/sqlite-db";
 import { getNatsConnection } from "#/shared/nats/nats-client";
 import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/nats-subjects";
-import { callServerCommand } from "#/utils/call-command";
-import { validateReferal } from "#/utils/validate-referal";
+import { callServerCommand } from "#/utils/server/call-command";
+import { validateReferal } from "#/utils/server/validate-referal";
 import { natsLogger } from "@repo/lib/logger";
 
 export const subscribeRefferalCheck = () => {

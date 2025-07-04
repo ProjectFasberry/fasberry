@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
-import { donateSchema } from './donate-schema';
-import { currencyCryptoSchema, currencyFiatSchema } from './currencies-schema';
+import { donateSchema } from '@repo/shared/schemas/entities/donate-schema';
+import { currencyCryptoSchema, currencyFiatSchema } from '@repo/shared/schemas/entities/currencies-schema';
 
 export const paymentFiatMethodSchema = z.enum(["creditCard", "sbp"])
 export const paymentTypeSchema = z.enum(['donate', 'belkoin', 'charism', 'item', 'event']);

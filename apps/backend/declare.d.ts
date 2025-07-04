@@ -40,6 +40,10 @@ declare global {
 
       NATS_HOST: string;
       NATS_AUTH_TOKEN: string;
+
+      MINIO_ACCESS_KEY: string;
+      MINIO_SECRET_KEY: string;
+      MINIO_ENDPOINT: string;
     }
   }
 

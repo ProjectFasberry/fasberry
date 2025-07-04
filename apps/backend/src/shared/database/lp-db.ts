@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import type { DB as lpDBType } from "../types/luckperms-database-types";
+import type { DB as lpDBType } from "@repo/shared/types/db/luckperms-database-types";
 import { PostgresDialect } from "kysely";
 import { Pool } from "pg";
 

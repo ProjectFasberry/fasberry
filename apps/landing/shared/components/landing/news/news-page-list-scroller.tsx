@@ -1,15 +1,15 @@
 import { useInView } from "react-intersection-observer";
 import { useUpdate } from "@reatom/npm-react";
-import { newsFilterAtom, updateNewsAction } from "./news.model";
+import { newsMetaAtom, updateNewsAction } from "./news.model";
 
 const Sync = ({ inView }: { inView: boolean }) => {
   useUpdate((ctx) => {
     if (!inView) return;
 
-    const hasNextPage = ctx.get(newsFilterAtom)?.hasNextPage
+    const hasNextPage = ctx.get(newsMetaAtom)?.hasNextPage
 
     if (hasNextPage) {
-      const cursor = ctx.get(newsFilterAtom).cursor
+      const cursor = ctx.get(newsMetaAtom)?.endCursor
 
       updateNewsAction(ctx, { cursor })
     }

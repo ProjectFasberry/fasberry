@@ -1,10 +1,11 @@
 import { bisquite } from "#/shared/database/bisquite-db";
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { cacheSetup } from "../global/setup";
 import { CacheControl } from "elysiajs-cdn-cache";
 import { throwError } from "#/helpers/throw-error";
 import { executeWithCursorPagination } from "kysely-paginate";
+import type { Land } from "@repo/shared/types/entities/land"
+import { cacheSetup } from "#/lib/middlewares/cache-control";
 
 async function getLand(id: string) {
   const query = await bisquite
@@ -55,13 +56,13 @@ async function getLand(id: string) {
 }
 
 export const land = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get("/land/:id", async (ctx) => {
     const { id } = ctx.params
 
     try {
       const data = await getLand(id)
-      
+
       ctx.cacheControl.set(
         "Cache-Control",
         new CacheControl()
@@ -97,7 +98,16 @@ export async function getLandsByNickname(nickname: string) {
 
   const lands = await bisquite
     .selectFrom("lands_lands")
-    .select(["area", "name", "members", "type", "created_at", "title", "ulid", "balance"])
+    .select([
+      "area", 
+      "name", 
+      "members", 
+      "type", 
+      "created_at", 
+      "title", 
+      "ulid", 
+      "balance",
+    ])
     .where(
       "members",
       "like",
@@ -142,18 +152,32 @@ export const playerLands = new Elysia()
     const { nickname } = ctx.params
     const { exclude } = ctx.query;
 
+    let data: { data: Land[], meta: { count: number }} = {
+      data: [],
+      meta: {
+        count: 0
+      }
+    }
+
     try {
-      let lands = await getLandsByNickname(nickname)
+      let lands: Land[] | null = await getLandsByNickname(nickname)
 
       if (!lands) {
-        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, { data: [] })
+        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: [] })
       }
 
       if (exclude) {
         lands = lands.filter(land => land.ulid !== exclude)
       }
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: lands })
+      data = {
+        data: lands,
+        meta: {
+          count: lands.length
+        }
+      }
+
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
     }
@@ -163,9 +187,7 @@ type GetLands = {
   cursor?: string
 }
 
-async function getLands({
-  cursor
-}: GetLands) {
+async function getLands({ cursor }: GetLands) {
   const query = bisquite
     .selectFrom("lands_lands")
     .selectAll()

@@ -1,5 +1,5 @@
-import { News } from "@/pages/index/+Page";
 import { BASE } from "@/shared/api/client";
+import { News } from "@/shared/components/app/news/components/news";
 import { PageContextServer } from "vike/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;

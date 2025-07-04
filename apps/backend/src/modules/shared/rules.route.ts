@@ -1,9 +1,9 @@
 import { throwError } from "#/helpers/throw-error";
+import { cacheSetup } from "#/lib/middlewares/cache-control";
 import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { CacheControl } from "elysiajs-cdn-cache";
-import { cacheSetup } from "../global/setup";
 
 const ruleTypes: Record<"chat" | "game" | "based", string> = {
   'chat': 'Правила чата',
@@ -41,7 +41,7 @@ async function getRules() {
 }
 
 export const rules = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get("/rules", async (ctx) => {
     try {
       const data = await getRules()

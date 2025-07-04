@@ -1,4 +1,4 @@
-import type { DB as lobbyDBType } from "../types/lobby-database-types";
+import type { DB as lobbyDBType } from "@repo/shared/types/db/lobby-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";

@@ -1,10 +1,10 @@
-import { reatomAsync } from '@reatom/async';
-import { atom } from '@reatom/core';
 import { HTMLAttributes } from 'react';
 import { tv, VariantProps } from 'tailwind-variants';
-import { getSkinDetails } from '../skin/models/skin.model';
 import { reatomComponent, useUpdate } from '@reatom/npm-react';
+import { reatomAsync } from '@reatom/async';
 import { Skeleton } from '@repo/ui/skeleton';
+import { getSkinDetails } from '../skin/models/skin.model';
+import { atom } from '@reatom/core';
 
 const avatarVariants = tv({
   base: `relative rounded-lg border border-neutral-600/20`,
@@ -81,19 +81,25 @@ export const Avatar = reatomComponent<AvatarProps>(({ ctx, ...values }) => {
 const AvatarImage = reatomComponent<AvatarProps>(({
   ctx, className, children, withStatus, variant, propWidth, propHeight, nickname, ...props
 }) => {
-  const avatar = ctx.spy(selectAvatar(nickname))
+  const url = ctx.spy(selectAvatar(nickname))
   const isLoading = ctx.spy(selectAvatarStatus(nickname))
 
   if (isLoading) {
-    return <Skeleton style={{ height: propHeight, width: propWidth }} className={avatarVariants({ variant, className })} />
+    return <Skeleton style={{ height: propHeight, width: propWidth }} />
   }
 
   return (
     <div
-      className={avatarVariants({ variant, className })}
-      {...props}
+      className={avatarVariants({ variant, className })} style={{ height: propHeight, width: propWidth }} {...props}
     >
-      <img src={avatar} width={propWidth} height={propHeight} className="rounded-sm" loading="eager" alt="" />
+      <img
+        src={url}
+        width={propWidth}
+        height={propHeight}
+        className={`rounded-sm`}
+        loading="eager"
+        alt=""
+      />
     </div>
   );
 }, "Avatar")

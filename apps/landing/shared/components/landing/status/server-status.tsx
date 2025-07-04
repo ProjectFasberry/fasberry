@@ -1,4 +1,4 @@
-import { FORUM_SHARED_API } from '@repo/shared/constants/api';
+import { BASE } from '@/shared/api/client';
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { reatomComponent } from '@reatom/npm-react';
 
@@ -21,15 +21,19 @@ type ServerStatus = {
   }
 }
 
-async function getServerStatus() {
-  const res = await FORUM_SHARED_API("get-status", { searchParams: { type: "servers" } })
-  const data = await res.json<{ data: ServerStatus } | { error: string }>()
-  if (!data || "error" in data) return null;
-  return data.data;
-}
-
 export const serverStatusResource = reatomResource(async (ctx) => {
-  return ctx.schedule(() => getServerStatus())
+  return ctx.schedule(async () => {
+    const res = await BASE("server/status", { 
+      searchParams: { type: "servers" },
+      signal: ctx.controller.signal 
+    })
+
+    const data = await res.json<{ data: ServerStatus } | { error: string }>()
+
+    if (!data || "error" in data) return null;
+
+    return data.data;
+  })
 }).pipe(withCache(), withDataAtom(), withStatusesAtom())
 
 export const ServerStatus = reatomComponent(({ ctx }) => {

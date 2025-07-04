@@ -7,13 +7,14 @@ import { authSchema, createSession, DEFAULT_SESSION_EXPIRE, getExistsUser } from
 import { generateSessionToken } from '#/utils/auth/generate-session-token';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { setCookie } from '#/helpers/cookie';
-import { cookieSetup, ipSetup } from '../global/setup';
+import { ipSetup } from '#/lib/middlewares/ip';
+import { cookieSetup } from '#/lib/middlewares/cookie';
 
 const loginSchema = authSchema
 
 export const login = new Elysia()
-  .use(ipSetup)
-  .use(cookieSetup)
+  .use(ipSetup())
+  .use(cookieSetup())
   .post("/login", async ({ cookie, ...ctx }) => {
     const { nickname, password, token: cfToken } = ctx.body;
 
@@ -24,24 +25,24 @@ export const login = new Elysia()
     //   return { error: result.error }
     // }
 
-    const existsUser = await getExistsUser(nickname)
-
-    if (!existsUser.result) {
-      return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, { error: "User not exists" })
-    }
-
-    const hash = existsUser.hash as string
-
-    const passwordIsValid = bcrypt.compareSync(password, hash)
-
-    if (!passwordIsValid) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, { error: "Invalid password" })
-    }
-
-    const token = generateSessionToken()
-    const ua = UAParser(ctx.headers["user-agent"])
-
     try {
+      const existsUser = await getExistsUser(nickname)
+
+      if (!existsUser.result) {
+        return ctx.status(HttpStatusEnum.HTTP_404_NOT_FOUND, throwError("User not exists"))
+      }
+
+      const hash = existsUser.hash as string
+
+      const passwordIsValid = bcrypt.compareSync(password, hash)
+
+      if (!passwordIsValid) {
+        return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("Invalid password"))
+      }
+
+      const token = generateSessionToken()
+      const ua = UAParser(ctx.headers["user-agent"])
+
       const expires_at = new Date(Date.now() + DEFAULT_SESSION_EXPIRE);
 
       const result = await createSession({
@@ -59,8 +60,6 @@ export const login = new Elysia()
     }
   }, {
     beforeHandle: async ({ session, ...ctx }) => {
-      console.log("auth.onRequest.session", session)
-
       const existsSession = await auth
         .selectFrom('sessions')
         .select(auth.fn.countAll("sessions").as("count"))
@@ -68,7 +67,7 @@ export const login = new Elysia()
         .executeTakeFirst()
 
       if (existsSession && Number(existsSession.count)) {
-        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, { error: "You are authorized" })
+        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("You are authorized"))
       }
     },
     body: loginSchema

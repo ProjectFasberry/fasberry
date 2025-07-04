@@ -1,3 +1,3 @@
 import { wrapTitle } from "@/shared/lib/wrap-title";
 
-export default () => wrapTitle(`Поддержка`)
+export default wrapTitle(`Поддержка`)

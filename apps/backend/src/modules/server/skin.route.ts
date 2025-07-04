@@ -1,26 +1,21 @@
-import SteveHead from "@repo/assets/images/minecraft/steve_head.jpg"
-import SteveSkin from "@repo/assets/images/minecraft/steve_skin.png"
 import { throwError } from '#/helpers/throw-error';
-import fs from 'fs';
-import path from 'path';
 import Elysia, { t } from 'elysia';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
-import { extractHeadFromSkin, getPlayerSkin } from './skin.model';
-import { cacheSetup } from '../global/setup';
+import { getPlayerAvatar, getRawSkin, getSkin } from './skin.model';
 import { CacheControl } from 'elysiajs-cdn-cache';
+import { cacheSetup } from '#/lib/middlewares/cache-control';
 
 const download = new Elysia()
   .get('/download/:nickname', async (ctx) => {
     const { nickname } = ctx.params
 
     try {
-      const skin = await getPlayerSkin(nickname)
-      const buffer = await skin.arrayBuffer();
+      const skin = await getRawSkin(nickname)
 
       ctx.headers["content-type"] = 'image/png'
       ctx.headers['content-disposition'] = `attachment; filename=${nickname}-skin.png`
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, buffer)
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, skin)
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
     }
@@ -31,34 +26,30 @@ const skinSchema = t.Object({
 })
 
 const skin = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get('/:nickname', async (ctx) => {
-    const { nickname } = ctx.params
-    const { type } = ctx.query;
+    const nickname = ctx.params.nickname
+    const type = ctx.query.type;
 
     try {
-      let result: Blob | null = null;
-
-      const skin = await getPlayerSkin(nickname)
+      let result: string = ""
 
       switch (type) {
         case "full":
-          result = skin as Blob;
+          const skin = await getSkin(nickname)
+
+          result = skin
           break;
         case "head":
-          const buffer = await skin.arrayBuffer();
-          const head = await extractHeadFromSkin(buffer)
-          const blob = new Blob([head], { type: "image/png" })
+          const avatar = await getPlayerAvatar(nickname)
 
-          result = blob
+          result = avatar
           break;
         default:
           break;
       }
 
       if (result) {
-        ctx.headers["content-type"] = 'image/png'
-
         ctx.cacheControl.set(
           "Cache-Control",
           new CacheControl()
@@ -72,11 +63,7 @@ const skin = new Elysia()
 
       return ctx.status(500)
     } catch (e) {
-      const stream = fs.createReadStream(
-        path.resolve(type === 'full' ? SteveSkin : SteveHead)
-      );
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, stream);
+      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
     }
   }, { query: skinSchema });
 

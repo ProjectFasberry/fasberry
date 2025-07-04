@@ -2,21 +2,8 @@ import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/
 import { isChanged } from '@/shared/lib/reatom-helpers';
 import { take } from '@reatom/framework';
 import { userParam } from '@/shared/api/global.model';
-import { BASE } from '@/shared/api/client';
-
-export async function getSkinDetails({
-  type, nickname
-}: {
-  type: "head" | "skin", nickname: string
-}) {
-  const blob = await BASE(`server/skin/${nickname}`, {
-    searchParams: {
-      type: type === 'head' ? "head" : "full"
-    }
-  }).blob()
-  
-  return URL.createObjectURL(blob)
-}
+import { getObjectUrl } from "@/shared/lib/volume-helpers";
+import { BASE } from "@/shared/api/client";
 
 userParam.onChange((ctx, state) => {
   console.log("target ->", state)
@@ -26,13 +13,30 @@ userParam.onChange((ctx, state) => {
   })
 })
 
-export const headAction = reatomAsync(async (ctx) => {
-  const target = ctx.get(userParam)
+export async function getSkinDetails({
+  type, nickname
+}: {
+  type: "head" | "skin", nickname: string
+}) {
+  const fallback = getObjectUrl(
+    "static",
+    type === 'skin' ? "steve_skin.png" : "steve_head.png"
+  )
 
-  return await ctx.schedule(() => getSkinDetails({ type: "head", nickname: target }))
-}, "skinHeadAction").pipe(
-  withDataAtom(), withCache(), withStatusesAtom()
-)
+  const res = await BASE(`server/skin/${nickname}`, {
+    searchParams: {
+      type: type === 'head' ? "head" : "full"
+    }
+  })
+
+  if (!res.ok) {
+    return fallback
+  }
+
+  const data = await res.text()
+
+  return data
+}
 
 export const skinAction = reatomAsync(async (ctx) => {
   let target = ctx.get(userParam)
@@ -42,8 +46,6 @@ export const skinAction = reatomAsync(async (ctx) => {
   }
 
   if (!target) return;
-
-  headAction(ctx)
 
   return await ctx.schedule(() => getSkinDetails({ type: "skin", nickname: target }))
 }, "skinStateAction").pipe(

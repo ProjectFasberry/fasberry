@@ -202,8 +202,8 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
     .leftJoin("playerpoints_username_cache", "CMI_users.username", "playerpoints_username_cache.username")
     .leftJoin("playerpoints_points", "playerpoints_points.uuid", "playerpoints_username_cache.uuid")
     .select([
-      "Balance",
-      "UserMeta",
+      "CMI_users.Balance",
+      "CMI_users.UserMeta",
       "playerpoints_points.points",
       "CMI_users.player_uuid",
       "CMI_users.TotalPlayTime",

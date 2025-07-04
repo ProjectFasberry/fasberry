@@ -2,9 +2,9 @@ import { throwError } from "#/helpers/throw-error";
 import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { getStaticUrl } from "./news.route";
-import { cacheSetup } from "../global/setup";
 import { CacheControl } from "elysiajs-cdn-cache";
+import { cacheSetup } from "#/lib/middlewares/cache-control";
+import { getStaticObject } from "#/shared/minio/init";
 
 async function getModpacks() {
   const query = await sqlite
@@ -18,13 +18,13 @@ async function getModpacks() {
 
     return {
       ...modpack, mods, shaders,
-      imageUrl: getStaticUrl(modpack.imageUrl ?? "/modpacks/art-bzzvanet.jpg")
+      imageUrl: getStaticObject(modpack.imageUrl)
     }
   });
 }
 
 export const modpack = new Elysia()
-  .use(cacheSetup)
+  .use(cacheSetup())
   .get('/modpacks', async (ctx) => {
     try {
       const modpacks = await getModpacks()

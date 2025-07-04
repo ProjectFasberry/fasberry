@@ -1,8 +1,7 @@
 import { getNatsConnection } from "#/shared/nats/nats-client"
-import { USER_NOTIFICATIONS_SUBJECT } from "#/shared/nats/nats-subjects"
 import { z } from 'zod/v4';
-import { currencyCryptoSchema } from "#/shared/types/payment/currencies-schema.js";
-import { paymentCurrencySchema, paymentStatusSchema, paymentTypeSchema, paymentValueSchema } from "#/shared/types/payment/payment-schema";
+import { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema.js";
+import { paymentCurrencySchema, paymentStatusSchema, paymentTypeSchema, paymentValueSchema } from "@repo/shared/schemas/payment/payment-schema";
 
 export const donateSchema = z.enum(["arkhont", "authentic", "loyal", "default", "dev", "helper", "moder"])
 
@@ -29,5 +28,6 @@ export function publishPaymentNotify({
     payload: { nickname, paymentType, paymentValue }
   })
 
-  return nc.publish(USER_NOTIFICATIONS_SUBJECT, payload)
+  // todo: replace to real subjct
+  return nc.publish("test", payload)
 }

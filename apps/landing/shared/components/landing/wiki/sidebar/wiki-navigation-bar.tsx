@@ -12,7 +12,7 @@ export const WikiNavigationBar = reatomComponent(({ ctx }) => {
     <TabsList className="hidden xl:flex flex-col p-0 w-full xl:w-[25%] items-start sticky top-0">
       <div className="flex flex-col p-4 w-full gap-y-12 h-full">
         <div className="flex flex-col gap-y-2">
-          <TabsTrigger value="general" className="px-0 justify-start items-start">
+          <TabsTrigger value="general" className="p-2 justify-start items-start">
             <Typography className="text-xl">
               Основной раздел
             </Typography>
