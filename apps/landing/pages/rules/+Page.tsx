@@ -26,15 +26,9 @@ export default function RulesPage() {
               </Typography>
             </div>
             <Link href="#rules-list">
-              <Button
-                className="group hover:bg-[#a20f40] border border-[#8a113c] bg-[#8a113c]"
-              >
-                <Typography color="white" className="font-bold text-xl">
-                  <span
-                    className="inline-block group-hover:rotate-0 rotate-90 duration-150"
-                  >
-                    ✎
-                  </span>
+              <Button variant="minecraft" className="group px-6 py-0.5 gap-2">
+                <span className="font-[Monocraft] relative -top-0.5 group-hover:rotate-0 rotate-90 duration-150">✎</span>
+                <Typography color="white" className="text-lg">
                   &nbsp;Список правил
                 </Typography>
               </Button>

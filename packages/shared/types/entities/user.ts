@@ -9,5 +9,9 @@ export type User = {
   details: {
     reg_date: string | Date,
     login_date: string | Date,
+    rate: {
+      count: number,
+      isRated: boolean
+    }
   },
 }

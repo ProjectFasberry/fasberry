@@ -6,10 +6,8 @@ export default function HeadIndex() {
 		улучшение игрового опыта и создание уникального контента для игроков." />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow, noimageindex, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
-      <link rel="canonical" href="/support" />
       <meta property="og:title" content="Поддержка Fasberry" />
       <meta property="og:description" content="Присоединяйтесь к сообществу Fasberry и помогайте нам развиваться! Ваша поддержка имеет значение." />
-      <meta property="og:url" content="https://mc.fasberry.su/support" />
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Официальный сайт майнкрафт сервера Fasberry." />

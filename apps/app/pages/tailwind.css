@@ -43,7 +43,7 @@
   }
 
   .responsive {
-    @apply w-full max-w-[clamp(420px,80vw,960px)] sm:px-0 px-2;
+    @apply w-full max-w-[clamp(420px,80vw,1400px)] sm:px-0 px-2;
   }
 
   .windows-loading-spinner {

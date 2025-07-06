@@ -4,6 +4,7 @@ import Events from "@repo/assets/images/looking.jpg"
 import { Typography } from "@repo/ui/typography"
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog"
 import { Button } from "@repo/ui/button"
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 
 const EventsNotFound = () => {
   return (

@@ -25,11 +25,9 @@ export default function SupportPage() {
               </Typography>
             </div>
             <Link href="#support-list">
-              <Button className="hover:bg-[#86600d] border border-[#86600d] bg-[#724e11]">
-                <Typography color="white" className="font-bold text-xl">
-                  <span className="inline-block">
-                    ○
-                  </span>
+              <Button variant="minecraft" className="group px-6 py-0.5 gap-2">
+                <span className="font-[Monocraft] relative -top-0.5 group-hover:rotate-0 rotate-90 duration-150">○</span>
+                <Typography color="white" className="text-lg">
                   &nbsp;Как поддержать?
                 </Typography>
               </Button>

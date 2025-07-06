@@ -33,7 +33,7 @@ const GalleryItemDialog = reatomComponent<{ image: string }>(({ ctx, image }) =>
         className='flex flex-col rounded-md overflow-hidden hover:brightness-50'
       >
         <img
-          src={image} loading="lazy" width={1280} alt="" height={720} className="w-full sm:h-[96px] md:h-[120px] lg:w-[250px] lg:h-[136px] object-cover"
+          src={image} loading="lazy" width={1280} alt="" height={720} className="w-auto object-cover"
         />
       </MorphingDialogTrigger>
       <MorphingDialogContainer>

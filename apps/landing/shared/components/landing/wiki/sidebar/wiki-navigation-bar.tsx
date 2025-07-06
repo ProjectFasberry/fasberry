@@ -19,7 +19,7 @@ export const WikiNavigationBar = reatomComponent(({ ctx }) => {
           </TabsTrigger>
           <Accordion type="single" collapsible defaultValue="aspects">
             <AccordionItem value="aspects">
-              <AccordionTrigger className="py-0 my-0 group">
+              <AccordionTrigger className="p-2 group">
                 <Typography className="text-xl">
                   Аспекты игры
                 </Typography>
@@ -49,7 +49,7 @@ export const WikiNavigationBar = reatomComponent(({ ctx }) => {
             item.links?.map((item, idx) => (
               <div key={idx} className="flex flex-row items-center justify-between group cursor-pointer">
                 {item.isTab ? (
-                  <TabsTrigger value={item.value} className="px-0 justify-start items-start">
+                  <TabsTrigger value={item.value} className="p-2 justify-start items-start">
                     <Typography className="text-xl">
                       {item.title}
                     </Typography>
@@ -69,7 +69,7 @@ export const WikiNavigationBar = reatomComponent(({ ctx }) => {
           <Typography className="text-3xl">
             Прочее
           </Typography>
-          <Link href="/wiki/modpack" className="group cursor-pointer">
+          <Link href="/wiki/modpack" className="group p-2 cursor-pointer">
             <Typography className="text-base">
               Сборки модов
             </Typography>

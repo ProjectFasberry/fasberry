@@ -1,8 +1,7 @@
 import '@bprogress/core/css';
 
 import "@/pages/tailwind.css";
-import "@/pages/minecraft-theme.css"
-import "@/pages/minecraft-weather.css"
+import "@/pages/minecraft.css"
 
 import { Header } from "./header";
 import { ReatomProvider } from "./reatom-provider";

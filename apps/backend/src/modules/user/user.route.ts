@@ -8,11 +8,26 @@ import type { User } from "@repo/shared/types/entities/user"
 import dayjs from "dayjs"
 import { Donate } from "@repo/shared/types/entities/donate-type";
 import { cookieSetup } from "#/lib/middlewares/cookie";
+import { sqlite } from "#/shared/database/sqlite-db";
 
 export const user = new Elysia()
   .use(cookieSetup())
   .get("/user/:nickname", async (ctx) => {
-    const nickname = ctx.params.nickname;
+    const recipient = ctx.params.nickname;
+
+    let initiator: string | null = null
+
+    if (ctx.session) {
+      const query = await auth
+        .selectFrom("sessions")
+        .select("nickname")
+        .where('token', "=", ctx.session)
+        .executeTakeFirst()
+
+      if (query?.nickname) {
+        initiator = query.nickname
+      }
+    }
 
     async function getDonate() {
       const query = await luckperms
@@ -22,12 +37,37 @@ export const user = new Elysia()
           "luckperms_user_permissions.permission as group"
         ])
         .where("luckperms_user_permissions.permission", "like", `%group%`)
-        .where("luckperms_players.username", "=", nickname)
+        .where("luckperms_players.username", "=", recipient)
         .executeTakeFirst()
 
       if (!query) return { group: "default" as Donate }
 
       return { group: query.group.slice(6) as Donate }
+    }
+
+    async function getDetails() {
+      const result = await sqlite
+        .selectFrom("likes")
+        .select([
+          sqlite.fn.countAll().as("count"),
+          sqlite.fn
+            .sum(
+              sqlite
+                .case()
+                .when("initiator", "=", initiator)
+                .then(1)
+                .else(0)
+                .end()
+            )
+            .as("isRatedByInitiator")
+        ])
+        .where("recipient", "=", recipient)
+        .executeTakeFirst();
+
+      return {
+        count: Number(result?.count ?? 0),
+        isRated: (Number(result?.isRatedByInitiator ?? 0)) > 0
+      };
     }
 
     async function getMain() {
@@ -40,7 +80,7 @@ export const user = new Elysia()
           "UUID as uuid",
           "LOWERCASENICKNAME as lowercase_nickname",
         ])
-        .where("NICKNAME", "=", nickname)
+        .where("NICKNAME", "=", recipient)
         .executeTakeFirst()
 
       if (!query) return null;
@@ -59,12 +99,20 @@ export const user = new Elysia()
     try {
       let user: User | null = null;
 
-      const [main, group, avatar] = await Promise.all([
-        getMain(), getDonate(), getPlayerAvatar(nickname)
+      const [main, group, avatar, details] = await Promise.all([
+        getMain(), getDonate(), getPlayerAvatar(recipient), getDetails()
       ])
 
       if (main && group) {
-        user = { ...main, ...group, avatar }
+        user = {
+          ...main,
+          ...group,
+          avatar,
+          details: {
+            ...main.details,
+            rate: details
+          }
+        }
       }
 
       if (!user) {

@@ -19,8 +19,7 @@ export const SpawnCarousel = reatomComponent(({ ctx }) => {
   return (
     <div className="flex items-center justify-center relative w-full overflow-hidden rounded-xl h-full">
       <Carousel className="z-20 w-full h-full" index={selected} onIndexChange={v => selectedKeyAtom(ctx, v)}>
-        <CarouselIndicator className='bottom-2' />
-        <CarouselNavigation className='z-[6]' alwaysShow />
+        <CarouselIndicator className='bottom-16' />
         <CarouselContent>
           {SPAWN_IMAGES.map((image, index) => {
             return (
@@ -39,12 +38,12 @@ export const SpawnCarousel = reatomComponent(({ ctx }) => {
           })}
         </CarouselContent>
       </Carousel>
-      <div className="select-none flex absolute bottom-8 right-0 left-0 w-full items-end justify-center h-full">
-        <div className="flex flex-col bg-white/10 backdrop-blur-md p-2 rounded-xl w-full gap-2 z-[21] lg:w-[50%]">
-          <Typography color="white" className="text-2xl leading-6 font-semibold text-center">
+      <div className="select-none flex absolute bottom-24 right-0 left-0 w-full items-end justify-center h-full">
+        <div className="flex flex-col bg-white/10 backdrop-blur-sm px-2 py-4 rounded-sm border-2 border-neutral-600 w-full gap-2 z-[21] lg:w-[40%]">
+          <Typography color="white" className="text-xl leading-6 text-center">
             Спавн сервера
           </Typography>
-          <Typography color="gray" className="!leading-5 text-lg text-center">
+          <Typography color="gray" className="!leading-5 text-base text-center">
             Спавном сервера является город Оффенбург, в котором можно найти много интересных и даже секретных мест,
             персонажей, с которыми можно пообщаться и прочие активности.
           </Typography>

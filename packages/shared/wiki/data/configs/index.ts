@@ -10,8 +10,8 @@ export type MainHeaderType = MainHeaderDetails & Partial<{
 export const MAIN_HEADER: MainHeaderType[] = [
   { name: "Главная", href: "/", },
   { name: "Правила", href: "/rules", },
-  { name: "Магазин", href: "/store", },
   { name: "Поддержка", href: "/support", },
+  { name: "Галерея", href: "/gallery", },
   {
     name: "Игра",
     childs: [

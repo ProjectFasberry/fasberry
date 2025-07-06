@@ -9,6 +9,7 @@ import { auth } from "#/shared/database/auth-db";
 import { ipSetup } from "#/lib/middlewares/ip";
 import { cookieSetup } from "#/lib/middlewares/cookie";
 import { logger } from "#/utils/config/logger";
+import { getExistSession } from "../private/validation.route";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -63,11 +64,11 @@ export const register = new Elysia()
     const { findout, nickname, password, token: cfToken, referrer } = ctx.body
 
     try {
-      const validateResult = await validateAuthenticationRequest({ token: cfToken, ip: ctx.ip })
+      // const validateResult = await validateAuthenticationRequest({ token: cfToken, ip: ctx.ip })
 
-      if (validateResult && "error" in validateResult) {
-        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError(validateResult.error))
-      }
+      // if (validateResult && "error" in validateResult) {
+      //   return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError(validateResult.error))
+      // }
 
       const existsUser = await getExistsUser(nickname)
 
@@ -101,14 +102,14 @@ export const register = new Elysia()
     }
   }, {
     beforeHandle: async ({ session, ...ctx }) => {
-      const existsSession = await auth
-        .selectFrom('sessions')
-        .select(auth.fn.countAll("sessions").as("count"))
-        .where("token", "=", session)
-        .executeTakeFirst()
+      if (session) {
+        const existsSession = await getExistSession(session)
 
-      if (existsSession && Number(existsSession.count)) {
-        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("You are authorized"))
+        if (existsSession && Number(existsSession.count)) {
+          return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("Authorized"))
+        }
+        
+        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
       }
     },
     body: registerSchema

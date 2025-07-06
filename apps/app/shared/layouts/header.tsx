@@ -1,4 +1,4 @@
-import { IconCategory, IconMenu2, IconStars, IconUsersGroup } from "@tabler/icons-react";
+import { IconBasket, IconCategory, IconMenu2, IconStars, IconUsersGroup } from "@tabler/icons-react";
 import { Link } from '@/shared/components/config/Link';
 import { reatomComponent } from "@reatom/npm-react";
 import { currentUserAtom } from "../api/global.model";
@@ -10,7 +10,7 @@ const createLink = (type: "player" | "land", value: string) => `/${type}/${value
 
 export const AuthorizeButton = reatomComponent(({ ctx }) => {
   return (
-    <Button onClick={() => navigate("/auth")} className="bg-green-600 rounded-md font-semibold text-neutral-50">
+    <Button onClick={() => navigate("/auth")} className="bg-green-700 rounded-lg font-semibold text-neutral-50">
       Авторизоваться
     </Button>
   )
@@ -31,49 +31,72 @@ const HeaderUser = reatomComponent(({ ctx }) => {
   )
 }, "HeaderUser")
 
+const LINKS = [
+  {
+    title: "Главная",
+    icon: IconCategory,
+    label: "Перейти на главную",
+    href: "/",
+  },
+  {
+    title: "Территории",
+    icon: IconUsersGroup,
+    label: "Перейти к территориям игроков",
+    href: "/lands",
+  },
+  {
+    title: "Рейтинг",
+    icon: IconStars,
+    label: "Перейти к рейтингу игроков",
+    href: "/ratings",
+  },
+  {
+    title: "Магазин",
+    icon: IconBasket,
+    label: "Перейти к магазину",
+    href: "/store",
+  },
+]
+
+const MobileBottomBar = () => {
+  return (
+    <div className="md:hidden z-[20] fixed flex items-center justify-center bottom-0 px-6 rounded-t-md bg-neutral-800 h-16 w-full">
+      <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-400 *:data-[state=active]:text-green-500">
+        {LINKS.map(link => (
+          <Link key={link.title} aria-label={link.label} href={link.href}>
+            <div className="flex items-center justify-center">
+              <link.icon size={34} />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export const Header = () => {
   return (
     <>
-      <div className="sm:hidden z-[20] fixed flex items-center justify-center bottom-0 px-6 rounded-t-md bg-neutral-800 h-16 w-full">
-        <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-400 *:data-[state=active]:text-green-500">
-          <Link aria-label="Перейти на главную"  href="/">
-            <div className="flex items-center justify-center">
-              <IconCategory size={34} />
-            </div>
-          </Link>
-          <Link aria-label="Перейти к территориям игроков"  href="/lands">
-            <div className="flex items-center justify-center">
-              <IconUsersGroup size={34} />
-            </div>
-          </Link>
-          <Link aria-label="Перейти к рейтингу игроков" href="/ratings">
-            <div className="flex items-center justify-center">
-              <IconStars size={34} />
-            </div>
-          </Link>
-        </div>
-      </div>
+      <MobileBottomBar />
       <div className="flex items-center justify-start w-full border-b border-neutral-800 z-[20] h-20 top-0">
         <div className="flex items-center justify-between px-2 sm:px-6 w-full">
-          <Link aria-label="Перейти на главную" href="/" className="bg-transparent relative">
-            <img src="/favicon.ico" width={56} height={56} alt="" />
+          <Link aria-label="Перейти на главную" href="/" className="w-1/5 bg-transparent relative">
+            <img src="/favicon.ico" width={52} height={52} alt="" />
           </Link>
           <div
-            className="hidden sm:flex items-center h-20 text-neutral-400
+            className="hidden md:flex w-3/5 justify-center items-center h-20 text-neutral-400
             *:flex *:items-center *:justify-center *:border-b *:h-full *:px-6 
             *:data-[state=inactive]:border-transparent *:data-[state=active]:border-green-500"
           >
-            <Link aria-label="Перейти на главную" href="/">
-              <p className="font-semibold">Главная</p>
-            </Link>
-            <Link aria-label="Перейти к рейтингу игроков" href="/lands">
-              <p className="font-semibold">Территории</p>
-            </Link>
-            <Link aria-label="Перейти к рейтингу игроков" href="/ratings">
-              <p className="font-semibold">Рейтинг</p>
-            </Link>
+            {LINKS.map(link => (
+              <Link key={link.title} aria-label={link.label} href={link.href}>
+                <p className="font-semibold">{link.title}</p>
+              </Link>
+            ))}
           </div>
-          <HeaderUser />
+          <div className="flex items-center w-full md:w-1/5 justify-end">
+            <HeaderUser />
+          </div>
         </div>
       </div>
     </>

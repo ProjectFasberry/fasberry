@@ -9,8 +9,8 @@ import dayjs from "dayjs"
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getUser(nickname: string) {
-  const res = await BASE(`server/user/${nickname}`)
+async function getUser({ headers, nickname }: { nickname: string, headers?: Record<string, string> }) {
+  const res = await BASE(`server/user/${nickname}`, { headers, throwHttpErrors: false })
   const data = await res.json<{ data: User } | { error: string }>()
 
   if (!data || 'error' in data) return null
@@ -24,7 +24,7 @@ export async function data(pageContext: PageContextServer) {
   let user: User | null = null;
 
   try {
-    user = await getUser(pageContext.routeParams.nickname)
+    user = await getUser({ headers: pageContext.headers ?? undefined, nickname: pageContext.routeParams.nickname })
   } catch (e) {
     console.error(e)
   }

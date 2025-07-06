@@ -4,8 +4,8 @@
   "module": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cross-env NODE_ENV=development bun run --watch src/index.ts",
-    "start": "cross-env NODE_ENV=production bun run dist/index.js",
+    "dev": "NODE_ENV=development bun run --watch src/index.ts",
+    "start": "NODE_ENV=production bun run dist/index.js",
     "build": "NODE_ENV=production bun build src/index.ts --target bun --minify --outdir ./dist --sourcemap",
     "type-check": "tsc --noEmit"
   },

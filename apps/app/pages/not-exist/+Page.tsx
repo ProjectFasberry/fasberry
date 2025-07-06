@@ -1,5 +1,5 @@
 import { Button } from "@repo/ui/button"
-import { MainWrapperPage } from "@repo/ui/main-wrapper"
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography"
 import { usePageContext } from "vike-react/usePageContext"
 import Allay from "@repo/assets/gifs/allay.gif"

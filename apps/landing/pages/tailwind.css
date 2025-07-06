@@ -16,8 +16,10 @@
     font-display: swap;
   }
 
-  * {
-    font-family: Monocraft, serif;
+  @font-face {
+    font-family: Minecraft;
+    src: url("/fonts/minecraft.ttf") format("truetype");
+    font-display: swap;
   }
 
   html {
@@ -29,6 +31,9 @@
   body {
     @apply bg-background-dark text-neutral-50;
 
+    font-family: 'Minecraft', sans-serif;
+    font-style: normal;
+    font-weight: 400;
     overflow-x: hidden;
     letter-spacing: normal;
   }
@@ -153,29 +158,6 @@
 }
 
 @theme {
-  --color-dark-blue: oklch(19.6% 0.99 306);
-  --color-dark-green: oklch(60.6% 0.88 136);
-  --color-dark-aqua: oklch(63.1% 0.37 196);
-  --color-dark-red: oklch(35.1% 0.77 40);
-  --color-dark-purple: oklch(40.3% 0.85 328);
-  --color-dark-gray: oklch(36.1% 0.00 297);
-
-  --color-wool-orange: oklch(61.7% 0.61 62);
-  --color-wool-magenta: oklch(51.4% 0.82 319);
-  --color-wool-light-blue: oklch(62.1% 0.37 271);
-  --color-wool-yellow: oklch(88.4% 0.81 103);
-  --color-wool-lime: oklch(74.7% 0.86 124);
-  --color-wool-pink: oklch(67.1% 0.48 0);
-  --color-wool-gray: oklch(32.3% 0.00 297);
-  --color-wool-light-gray: oklch(63.2% 0.00 297);
-  --color-wool-cyan: oklch(50.7% 0.22 243);
-  --color-wool-purple: oklch(40.1% 0.70 314);
-  --color-wool-blue: oklch(36.2% 0.63 294);
-  --color-wool-brown: oklch(34.5% 0.21 69);
-  --color-wool-green: oklch(49.8% 0.43 120);
-  --color-wool-red: oklch(36.7% 0.49 29);
-  --color-wool-black: oklch(8.8% 0.00 297);
-
   --color-grass-DEFAULT: oklch(71.2% 0.60 133);
   --color-grass-jungle: oklch(72.4% 0.81 135);
   --color-grass-dark-forest: oklch(46.8% 0.44 129);

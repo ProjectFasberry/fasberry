@@ -6,7 +6,7 @@ import { newsAction } from "@/shared/components/app/news/models/news.model";
 import { AuthorizeButton } from "@/shared/layouts/header";
 import { onConnect } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
-import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
 
 onConnect(newsAction.dataAtom, newsAction)

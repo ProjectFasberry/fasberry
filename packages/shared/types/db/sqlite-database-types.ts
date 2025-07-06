@@ -9,10 +9,23 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
+export interface Admins {
+  created_at: Generated<string>;
+  id: Generated<number | null>;
+  nickname: string;
+}
+
 export interface IpList {
   id: Generated<number | null>;
   ip: string;
   name: string;
+}
+
+export interface Likes {
+  created_at: Generated<string>;
+  id: Generated<number | null>;
+  initiator: string;
+  recipient: string;
 }
 
 export interface MinecraftNews {
@@ -59,7 +72,9 @@ export interface RulesTermins {
 }
 
 export interface DB {
+  admins: Admins;
   ip_list: IpList;
+  likes: Likes;
   minecraft_news: MinecraftNews;
   modpacks: Modpacks;
   news_views: NewsViews;

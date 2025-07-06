@@ -6,6 +6,7 @@ import { withSsr } from "@/shared/api/ssr";
 
 export type Land = {
   title: string,
+  ulid: string,
   name: string,
   created_at: Date | string,
   type: "LAND" | string,

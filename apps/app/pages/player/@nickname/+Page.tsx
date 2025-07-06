@@ -3,7 +3,7 @@ import { reatomComponent } from "@reatom/npm-react"
 import { ProfileSkinControls } from "@/shared/components/app/skin/components/profile-skin-controls"
 import { clientOnly } from "vike-react/clientOnly"
 import { Skeleton } from "@repo/ui/skeleton"
-import { MainWrapperPage } from "@repo/ui/main-wrapper"
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { atom, reatomAsync, spawn, withDataAtom, withStatusesAtom } from "@reatom/framework"
 import { currentUserAtom, isSsrAtom, pageContextAtom, userParam } from "@/shared/api/global.model"
 import { Button } from "@repo/ui/button"
@@ -18,7 +18,9 @@ import dayjs from "dayjs"
 import { BASE } from "@/shared/api/client"
 import { Land } from "@/shared/components/app/land/models/land.model"
 import { isChanged } from "@/shared/lib/reatom-helpers"
-import { getAvatarDestination, getObjectUrl } from "@/shared/lib/volume-helpers"
+import { navigate } from "vike/client/router"
+import { toast } from "sonner"
+import { tv } from "tailwind-variants"
 
 // const Stats = clientOnly(() => import("@/shared/components/app/player/heatmap").then(m => m.Stats))
 const ProfileSkinRender = clientOnly(() => import("@/shared/components/app/skin/components/profile-skin-render").then(m => m.ProfileSkinRender))
@@ -82,6 +84,68 @@ const Skin = reatomComponent(({ ctx }) => {
   )
 }, "Skin")
 
+const rateUser = reatomAsync(async (ctx, target: string) => {
+  if (ctx.get(isIdentityAtom)) {
+    return;
+  }
+
+  return await ctx.schedule(async () => {
+    const res = await BASE.post(`rate/${target}`, { throwHttpErrors: false, signal: ctx.controller.signal })
+    const data = await res.json<WrappedResponse<"rated" | "unrated">>()
+
+    if ("error" in data) {
+      return null;
+    }
+
+    return data.data
+  })
+}, {
+  name: "rateUser",
+  onFulfill: (ctx, res) => {
+    if (!res) return null;
+
+    userAtom(ctx, (state) => {
+      if (!state) return null;
+
+      const updated = {
+        rate: {
+          count: res === 'rated' ? state?.details.rate.count + 1 : state?.details.rate.count - 1,
+          isRated: res === 'rated'
+        }
+      }
+
+      return {
+        ...state, details: { ...state?.details, ...updated }
+      }
+    })
+  },
+  onReject: (ctx, e) => {
+    if (e instanceof Error) {
+      toast.error(e.message)
+    }
+  }
+}).pipe(withStatusesAtom())
+
+const isIdentityAtom = atom((ctx) => {
+  const currentUser = ctx.spy(currentUserAtom)
+  const targetUser = ctx.spy(userAtom)
+
+  return targetUser?.nickname === currentUser?.nickname;
+}, "isIdentity")
+
+const likeButtonVariants = tv({
+  base: `flex border-2 group rounded-full duration-150 *:duration-150 items-center gap-2`,
+  variants: {
+    variant: {
+      inactive: "border-neutral-700",
+      active: "border-red-600/90 bg-red-500/70 backdrop-blur-md"
+    }
+  },
+  defaultVariants: {
+    variant: "inactive"
+  }
+})
+
 const PlayerInfo = reatomComponent(({ ctx }) => {
   const user = ctx.spy(userAtom)
   if (!user) return null;
@@ -107,9 +171,17 @@ const PlayerInfo = reatomComponent(({ ctx }) => {
         </div>
       </div>
       <div className="flex items-center justify-center w-min">
-        <Button className="flex border-2 border-neutral-700 rounded-full items-center gap-2">
-          <IconHeart size={20} className="text-neutral-400" />
-          <span className="text-lg">0</span>
+        <Button
+          data-state={user.details.rate.isRated ? "rated" : "unrated"}
+          disabled={ctx.spy(rateUser.statusesAtom).isPending}
+          onClick={() => rateUser(ctx, user.nickname)}
+          className={likeButtonVariants({ variant: user.details.rate.isRated ? "active" : "inactive" })}
+        >
+          <IconHeart
+            size={20}
+            className="group-data-[state=rated]:text-neutral-50 group-data-[state=rated]:fill-neutral-50"
+          />
+          <span className="text-lg group-data-[state=rated]:text-neutral-50">{user.details.rate.count}</span>
         </Button>
       </div>
     </div>
@@ -126,12 +198,9 @@ type UserLands = {
 const userLands = reatomAsync(async (ctx, nickname: string) => {
   return await ctx.schedule(async () => {
     const res = await BASE(`server/lands/${nickname}`, { signal: ctx.controller.signal })
+    const data = await res.json<WrappedResponse<UserLands>>()
 
-    const data = await res.json<{ data: UserLands } | { error: string }>()
-
-    if ("error" in data) {
-      return null;
-    }
+    if ("error" in data) return null;
 
     return data.data
   })
@@ -160,7 +229,11 @@ const PlayerLands = reatomComponent(({ ctx }) => {
       </div>
       {lands && lands.data ? (
         lands.data.map(land => (
-          <div className="flex p-2 lg:p-4 border hover:bg-neutral-800 duration-150 ease-in-out border-neutral-800 rounded-md">
+          <div
+            key={land.ulid}
+            onClick={() => navigate(`/land/${land.ulid}`)}
+            className="flex p-2 lg:p-4 border hover:bg-neutral-800 duration-150 ease-in-out border-neutral-800 cursor-pointer rounded-md"
+          >
             <div className="flex flex-col w-full lg:w-3/4">
               <Typography className="text-lg font-semibold">
                 {land.name}
@@ -209,9 +282,9 @@ const Logout = reatomComponent(({ ctx }) => {
   const currentUser = ctx.spy(currentUserAtom)
   if (!currentUser) return null;
 
-  const user = ctx.spy(userParam)
+  const isIdentity = ctx.spy(isIdentityAtom)
 
-  if (user !== currentUser.nickname) return null;
+  if (!isIdentity) return null;
 
   const handle = () => void spawn(ctx, async (spawnCtx) => logout(spawnCtx))
 

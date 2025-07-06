@@ -2,12 +2,12 @@ import { pageContextAtom } from "@/shared/api/global.model";
 import { PageContext } from "vike/types";
 import { Data } from "./+data";
 import { atom } from "@reatom/core";
-import { News } from "@/pages/index/+Page";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import dayjs from "dayjs";
-import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { IconEye } from "@tabler/icons-react";
+import { News } from "@/shared/components/app/news/components/news";
 
 const getNewsUrl = (id: string) => `/news/${id}`
 

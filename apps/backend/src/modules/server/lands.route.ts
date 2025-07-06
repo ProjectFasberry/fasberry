@@ -14,6 +14,7 @@ async function getLand(id: string) {
     .innerJoin("lands_lands_claims", "lands_lands_claims.land", "lands_lands.ulid")
     .select([
       "lands_lands.area",
+      "lands_lands.ulid",
       "lands_lands.name",
       "lands_lands.members",
       "lands_lands.type",
@@ -26,7 +27,7 @@ async function getLand(id: string) {
       "lands_lands_claims.chunks_amount",
       "lands_lands_claims.areas_amount"
     ])
-    .where("ulid", "=", id)
+    .where("lands_lands.ulid", "=", id)
     .executeTakeFirst()
 
   if (!query) {
@@ -100,12 +101,12 @@ export async function getLandsByNickname(nickname: string) {
     .selectFrom("lands_lands")
     .select([
       "area", 
+      "ulid", 
       "name", 
       "members", 
       "type", 
       "created_at", 
       "title", 
-      "ulid", 
       "balance",
     ])
     .where(

@@ -1,14 +1,11 @@
 export default function HeadIndex() {
   return (
     <>
-      <title>Начать играть</title>
       <meta name="description" content="Начать играть на Fasberry сервере." />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow, noimageindex, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
-      <link rel="canonical" href="/start" />
       <meta property="og:title" content="Начать играть на Fasberry" />
       <meta property="og:description" content="Присоединяйтесь к сообществу Fasberry и помогайте нам развиваться! Ваша поддержка имеет значение." />
-      <meta property="og:url" content="https://mc.fasberry.su/start" />
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Начать играть на Fasberry" />

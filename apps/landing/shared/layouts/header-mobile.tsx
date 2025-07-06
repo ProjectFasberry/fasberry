@@ -9,7 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@r
 
 const ExperienceCircle = () => {
   return (
-    <img src="/images/minecraft/icons/experience_big.webp" width={16} height={16} alt="" />
+    <img src="/images/minecraft/icons/experience_big.webp" loading="lazy" width={16} height={16} alt="" />
   )
 }
 
@@ -93,7 +93,7 @@ export const HeaderSheet = reatomComponent(({ ctx }) => {
 
   return (
     <Sheet modal open={isOpen} onOpenChange={v => sheetIsOpenAtom(ctx, v)}>
-      <SheetTrigger className="xl:hidden absolute top-[10px] right-[8px] z-[3000]">
+      <SheetTrigger aria-label={isOpen ? "Открыто" : "Закрыто"} className="xl:hidden absolute top-[10px] right-[8px] z-[3000]">
         <img src={chestStatusImage} alt="" width={48} height={48} />
       </SheetTrigger>
       <SheetContent

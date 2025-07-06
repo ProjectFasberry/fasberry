@@ -1,7 +1,7 @@
 import { pageContextAtom } from "@/shared/api/global.model"
 import { Land } from "@/shared/components/app/land/components/land"
 import { landAtom } from "@/shared/components/app/land/models/land.model"
-import { MainWrapperPage } from "@repo/ui/main-wrapper"
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Data } from "./+data"
 import { PageContext } from "vike/types"
 

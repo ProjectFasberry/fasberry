@@ -40,6 +40,8 @@ import { handleFatalError } from "./utils/config/handle-log";
 import { showRoutes } from "./utils/config/print-routes";
 import { ipSetup } from "./lib/middlewares/ip";
 import { logger } from "./utils/config/logger";
+import { validateGroup } from "./modules/private/validation.route";
+import { rateGroup } from "./modules/user/like.route";
 
 async function startNats() {
   await initNats()
@@ -124,6 +126,8 @@ const app = new Elysia({ prefix: "/minecraft/v2" })
   .use(me)
   .use(shared)
   .use(server)
+  .use(validateGroup)
+  .use(rateGroup)
   .use(hooks)
   .listen(4104)
   .compile()

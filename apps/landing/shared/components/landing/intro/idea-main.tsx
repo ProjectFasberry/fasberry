@@ -89,13 +89,13 @@ const toggle = action((ctx, type: "prev" | "next") => {
 const IdeaMainNavigation = reatomComponent<{ type: "next" | "prev" }>(({ ctx, type }) => {
 	return (
 		<div
-			className="flex items-center gap-4 rounded-lg px-4 md:p-0 bg-neutral-800 md:bg-transparent cursor-pointer py-2"
+			className="flex items-center gap-4 px-4 md:p-0 bg-neutral-800 md:bg-transparent cursor-pointer py-2"
 			onClick={() => toggle(ctx, type)}
 		>
 			{type === 'prev' ? (
-				<img src="/images/minecraft/icons/large-arrow-left-hover.png" width={20} loading="lazy"  height={20} alt="назад" />
+				<img src="/images/minecraft/icons/large-arrow-left-hover.png" width={20} loading="lazy" height={20} alt="назад" />
 			) : (
-					<img src="/images/minecraft/icons/large-arrow-right-hover.png" width={20} loading="lazy" height={20} alt="далее" />
+				<img src="/images/minecraft/icons/large-arrow-right-hover.png" width={20} loading="lazy" height={20} alt="далее" />
 			)}
 			<Typography className="inline md:hidden">{type === 'prev' ? 'Назад' : 'Далее'}</Typography>
 		</div>
@@ -103,7 +103,7 @@ const IdeaMainNavigation = reatomComponent<{ type: "next" | "prev" }>(({ ctx, ty
 }, `IdeaMainNavigation`)
 
 const navigationBadge = tv({
-	base: `flex cursor-pointer duration-300 transition-all border-2 border-neutral-800 rounded-xl px-4 py-2`,
+	base: `flex cursor-pointer duration-300 transition-all border-2 border-neutral-800 px-4 py-2`,
 	variants: {
 		variant: { unselected: "text-neutral-50", selected: "bg-neutral-50 text-neutral-900", }
 	}
@@ -156,7 +156,7 @@ const IdeaPreviewCard = reatomComponent(({ ctx }) => {
 			{type === 'full' && (
 				<div className="absolute top-0 bottom-0 right-0 left-0 w-full h-full">
 					<div className="absolute left-0 h-full w-full z-[2] bg-gradient-to-r from-neutral-900/60 via-transparent to-transparent" />
-					<img src={image} loading="lazy"  alt="" width={1000} height={1000} className="brightness-[55%] w-full h-full object-cover" />
+					<img src={image} loading="lazy" alt="" width={1000} height={1000} className="brightness-[55%] w-full h-full object-cover" />
 				</div>
 			)}
 			<div className={previewChildCard({ variant: type as "module" | "full" })}>
@@ -176,7 +176,7 @@ const IdeaPreviewCard = reatomComponent(({ ctx }) => {
 			</div>
 			{type === 'module' && (
 				<div className="flex items-center justify-center w-full sm:w-2/4 h-full">
-					<img src={image} loading="lazy"  alt="" width={1000} height={1000} className="w-full h-full object-cover rounded-xl" />
+					<img src={image} loading="lazy" alt="" width={1000} height={1000} className="w-full h-full object-cover rounded-xl" />
 				</div>
 			)}
 		</div>
@@ -187,15 +187,18 @@ const IdeaMainNavigationTarget = reatomComponent(({ ctx }) => {
 	const selected = ctx.spy(selectedKeyAtom)
 
 	return (
-		<div className="hidden md:flex items-center gap-4 justify-center w-fit">
+		<div className="hidden md:flex items-center justify-center w-fit">
 			{IDEAS.map((preview, idx) => (
-				<div
-					key={preview.title}
-					onClick={() => selectedKeyAtom(ctx, idx)}
-					className={navigationBadge({ variant: selected === idx ? "selected" : "unselected" })}
-				>
-					<Typography className="truncate">{preview.title}</Typography>
-				</div>
+				<>
+					<div
+						key={preview.title}
+						onClick={() => selectedKeyAtom(ctx, idx)}
+						className={navigationBadge({ variant: selected === idx ? "selected" : "unselected" })}
+					>
+						<Typography className="truncate">{preview.title}</Typography>
+					</div>
+					{(idx + 1) < IDEAS.length && <hr className="w-4 h-[1px] border-2 border-neutral-600"/>}
+				</>
 			))}
 		</div>
 	)

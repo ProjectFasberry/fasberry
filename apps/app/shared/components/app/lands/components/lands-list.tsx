@@ -100,5 +100,5 @@ export const LandsList = reatomComponent(({ ctx }) => {
 
   if (!data) return null;
 
-  return data.data.map((land) => <LandCard key={land.area.ulid} ulid={land.area.ulid} {...land} />)
+  return data.data.map((land) => <LandCard key={land.ulid} {...land} />)
 }, "LandsList")

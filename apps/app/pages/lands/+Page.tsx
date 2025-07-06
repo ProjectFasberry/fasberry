@@ -1,6 +1,6 @@
 import { LandsList } from "@/shared/components/app/lands/components/lands-list"
 import LandsPreview from "@repo/assets/images/clan-preview.jpg"
-import { MainWrapperPage } from "@repo/ui/main-wrapper"
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography"
 
 const LandsPreviewImage = () => {

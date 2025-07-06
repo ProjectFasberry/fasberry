@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://mc.fasberry.su</loc>
+    <loc>https://mc.fasberry.su/</loc>
     <lastmod>2025-06-22</lastmod>
     <changefreq>always</changefreq>
     <priority>1.0</priority>
@@ -13,7 +13,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://mc.fasberry.su/shop</loc>
+    <loc>https://mc.fasberry.su/gallery</loc>
     <lastmod>2025-06-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>

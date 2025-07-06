@@ -2,7 +2,7 @@ import { RatingList } from "@/shared/components/app/ratings/components/rating-li
 import { RatingNavigation } from "@/shared/components/app/ratings/components/rating-navigation";
 import { ratingAction, ratingDataAtom } from "@/shared/components/app/ratings/models/ratings.model";
 import { onConnect } from "@reatom/framework";
-import { MainWrapperPage } from "@repo/ui/main-wrapper";
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
 import RatingsPreview from "@repo/assets/images/sand-camel.jpg"
 

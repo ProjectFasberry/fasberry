@@ -9,6 +9,7 @@ import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { setCookie } from '#/helpers/cookie';
 import { ipSetup } from '#/lib/middlewares/ip';
 import { cookieSetup } from '#/lib/middlewares/cookie';
+import { getExistSession } from '../private/validation.route';
 
 const loginSchema = authSchema
 
@@ -60,14 +61,14 @@ export const login = new Elysia()
     }
   }, {
     beforeHandle: async ({ session, ...ctx }) => {
-      const existsSession = await auth
-        .selectFrom('sessions')
-        .select(auth.fn.countAll("sessions").as("count"))
-        .where("token", "=", session)
-        .executeTakeFirst()
+      if (session) {
+        const existsSession = await getExistSession(session)
 
-      if (existsSession && Number(existsSession.count)) {
-        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("You are authorized"))
+        if (existsSession && Number(existsSession.count)) {
+          return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("Authorized"))
+        }
+
+        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
       }
     },
     body: loginSchema

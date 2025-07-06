@@ -1,7 +1,7 @@
 declare global {
   declare module "*.jpg"
 
-  type WrappedResponse<T> = | { data: T } | { error: string }
+  type WrappedResponse<T> = { data: T } | { error: string }
 
   interface PaginatedMeta {
     hasNextPage: false,

@@ -1,6 +1,11 @@
-import { GuardAsync, PageContext } from "vike/types";
-import { validateRequest } from "@/shared/api/validators";
+import { GuardAsync } from "vike/types";
+import { validateSession } from "@/shared/api/validators";
+import { redirect } from "vike/abort";
 
 export const guard: GuardAsync = async (pageContext) => {
-  await validateRequest(pageContext)
+  const isValid = await validateSession(pageContext.headers ?? undefined)
+
+  if (isValid) {
+    throw redirect("/")
+  }
 }

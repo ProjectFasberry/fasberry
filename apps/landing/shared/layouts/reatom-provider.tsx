@@ -1,9 +1,10 @@
-import { isClient } from '@/shared/lib/is-ssr'
 import { connectLogger, createCtx, Ctx } from '@reatom/framework'
 import { reatomContext } from '@reatom/npm-react'
 import { PropsWithChildren, useRef } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 import { snapshotAtom } from '../api/ssr'
+
+export const isSsr = () => typeof window !== 'undefined'
 
 export interface Fn<Args extends any[] = any[], Return = any> {
   (...a: Args): Return
@@ -29,7 +30,7 @@ export const ReatomProvider = ({ children }: PropsWithChildren) => {
   const ctx = useCreateCtx((ctx) => {
     snapshotAtom(ctx, snapshot)
 
-    if (isClient() && import.meta.env.DEV) {
+    if (isSsr() && import.meta.env.DEV) {
       connectLogger(ctx)
     }
   })

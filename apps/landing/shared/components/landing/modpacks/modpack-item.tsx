@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from '@repo/ui/dialog';
 import { reatomComponent } from '@reatom/npm-react';
 import { action, atom } from '@reatom/core';
 import { withReset } from '@reatom/framework';
+import { Button } from '@repo/ui/button';
 
 const selectedModpackItem = atom<Modpack | null>(null, "selectedModpackItem").pipe(withReset())
 const selectedModpackDialogIsOpen = atom(false, "selectedModpackDialogIsOpen")
@@ -73,24 +74,25 @@ export const ModpackItem = reatomComponent<Modpack>(({ ctx, ...values }) => {
 
   return (
     <div className="flex flex-col rounded-xl gap-4 justify-between h-full bg-neutral-950 p-4 relative">
-      <div className="flex flex-col justify-between grow">
+      <div className="flex flex-col gap-2 justify-between grow">
         <Typography className="text-xl lg:text-2xl text-project-color">{name}</Typography>
         <div className="flex items-center gap-2">
           <Typography color="white" className='text-lg'>Клиент: {client}</Typography>
           <Typography color="gray" className="text-lg">({version})</Typography>
         </div>
         <div className="flex flex-col md:flex-row items-center justify-center w-full gap-2">
-          <button className="btn w-full md:w-1/2 hover:bg-[#05b458]/80 duration-300 bg-[#088d47]/80 backdrop-blur-lg">
-            <a href={downloadLink} target="_blank" rel="noreferrer">
+          <a href={downloadLink} target="_blank" rel="noreferrer" className='w-full md:w-1/2'>
+            <Button variant="minecraft" className="py-0.5 w-full">
               <Typography color="white" className="text-xl">Скачать</Typography>
-            </a>
-          </button>
-          <button
+            </Button>
+          </a>
+          <Button
+            variant="minecraft"
             onClick={() => openModpackMore(ctx, values)}
-            className="btn w-full md:w-1/2 hover:bg-neutral-700/80 duration-300 bg-neutral-800/80 backdrop-blur-lg"
+            className="w-full py-0.5 md:w-1/2"
           >
             <Typography color="white" className="text-xl">Подробнее</Typography>
-          </button>
+          </Button>
         </div>
       </div>
       <div

@@ -9,7 +9,7 @@ export type ContactsListProps = {
 
 export const CONTACTS_LIST: ContactsListProps[] = [
 	{
-		name: "Дискорд",
+		name: "Discord",
 		href: "https://discord.gg/vnqfVX4frH",
 		content: {
 			pluses: [
@@ -22,7 +22,7 @@ export const CONTACTS_LIST: ContactsListProps[] = [
 		}
 	},
 	{
-		name: "Телеграмм",
+		name: "Telegram",
 		href: "https://t.me/fasberry",
 		content: {
 			pluses: [
@@ -34,6 +34,19 @@ export const CONTACTS_LIST: ContactsListProps[] = [
 				"скудная активность в комментариях (100%)",
 				"самым первым узнавать новости ты можешь и в дискорде проекта",
 			],
+		}
+	},
+	{
+		name: "VK",
+		href: "https://discord.gg/vnqfVX4frH",
+		content: {
+			pluses: [
+				"общение напрямую с челами в чатике",
+				"самым первым узнаёшь новости о проекте",
+				"я ЛИЧНО скажу тебе СПАСИБО на сервере",
+				"ты 1% счастливчиков, кто выполняет просьбы, прочитав их",
+			],
+			minuses: ["самым первым узнавать новости ты можешь и в телеге проекта"],
 		}
 	},
 ];

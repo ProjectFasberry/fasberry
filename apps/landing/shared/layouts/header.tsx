@@ -1,11 +1,12 @@
 import { Link } from "@/shared/components/config/Link";
 import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
 import { usePageContext } from "vike-react/usePageContext";
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@repo/ui/dropdown-menu";
 import { reatomComponent } from "@reatom/npm-react";
-import { HeaderSheet } from "./header-mobile";
+
+const HeaderSheet = lazy(() => import("./header-mobile").then(m => ({ default: m.HeaderSheet })))
 
 const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   const pathname = usePageContext().urlParsed.pathname;
@@ -36,7 +37,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
             <p
               data-href={href}
               data-state={isActive}
-              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8] data-[href=/store]:text-gold"
+              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8]"
             >
               {name}
             </p>
@@ -55,7 +56,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
             <p
               data-href={href}
               data-state={isActive}
-              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8] data-[href=/store]:text-gold"
+              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8]"
             >
               {name}
             </p>
@@ -100,7 +101,7 @@ export const Header = reatomComponent(({ ctx }) => {
       <Link href="/" className="bg-transparent cursor-pointer relative md:-right-[40px] top-3 xl:-right-[60px]">
         <img src="/images/fasberry_logo.webp" width={224} height={64} title="Fasberry" alt="Fasberry" />
       </Link>
-      <div className="hidden xl:flex gap-x-4 items-center justify-start pr-[132px]">
+      <div className="hidden xl:flex gap-5 items-center justify-start pr-[132px]">
         {MAIN_HEADER.map(item => (
           <HeaderItemMenu key={item.name} childs={item.childs} name={item.name} href={item.href} />
         ))}

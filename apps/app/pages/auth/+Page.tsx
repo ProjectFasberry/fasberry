@@ -1,10 +1,10 @@
 import { AuthError, LoginForm, RegisterForm, SubmitAuth } from "@/shared/components/app/auth/components/auth";
 import { typeAtom } from "@/shared/components/app/auth/models/auth.model";
-import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { reatomComponent } from "@reatom/npm-react";
 import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { Typography } from "@repo/ui/typography";
 import { AtomState } from "@reatom/core";
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 
 const Auth = reatomComponent(({ ctx }) => {
   const type = ctx.spy(typeAtom)

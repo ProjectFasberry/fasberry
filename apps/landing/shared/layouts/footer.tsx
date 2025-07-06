@@ -41,7 +41,7 @@ export const Footer = () => {
       </div>
       <div className="flex flex-col justify-center gap-2 responsive mx-auto">
         <p className="text-center text-white">
-          Оригинальные права принадлежат Mojang AB.
+          Fasberry Project. Оригинальные права принадлежат Mojang AB.
         </p>
       </div>
     </footer>
