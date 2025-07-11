@@ -1,8 +1,9 @@
-import { ratingFilterAtom } from "./rating-filter.model";
+import { ratingByAtom, ratingFilterAtom } from "./rating-filter.model";
 import { reatomAsync, withStatusesAtom } from "@reatom/async";
 import { atom } from "@reatom/core";
 import { createSearchParams } from '@/shared/lib/create-search-params';
 import { BASE } from '@/shared/api/client';
+import { withReset } from "@reatom/framework";
 
 export type RatingData =
   | RatingPlaytime[]
@@ -45,7 +46,7 @@ export type RatingParkour = {
 
 export type RatingBelkoin = {
   nickname: string;
-  points: number | null;
+  balance: number
 }
 
 export type RatingCharism = {
@@ -83,7 +84,7 @@ export type GetRatings = {
 
 export async function getRatings({
   by, cursor, ascending, signal, limit = 50
-}: GetRatings & { signal?: AbortSignal }) {
+}: GetRatings & RequestInit) {
   const searchParams = createSearchParams({ by, limit: limit.toString(), cursor, ascending })
 
   const res = await BASE("server/rating", { searchParams, throwHttpErrors: false, signal })
@@ -94,13 +95,23 @@ export async function getRatings({
   return data.data.length >= 1 ? data : null
 }
 
-export const ratingDataAtom = atom<RatingData | null>(null, "ratingData")
-export const ratingMetaAtom = atom<RatingMeta | null>(null, "ratingMeta")
+export const ratingDataAtom = atom<RatingData | null>(null, "ratingData").pipe(withReset())
+export const ratingMetaAtom = atom<RatingMeta | null>(null, "ratingMeta").pipe(withReset())
+
+ratingByAtom.onChange((ctx, target) => {
+  const prev = ctx.get(ratingByAtom.history)[1]
+
+  if (prev !== target) {
+    ratingMetaAtom.reset(ctx)
+    ratingDataAtom.reset(ctx)
+  }
+})
 
 export const ratingAction = reatomAsync(async (ctx) => {
   const filter = ctx.get(ratingFilterAtom)
+  const by = ctx.get(ratingByAtom)
 
-  return await ctx.schedule(() => getRatings(filter))
+  return await ctx.schedule(() => getRatings({ ...filter, by }))
 }, {
   name: "ratingAction",
   onFulfill: (ctx, res) => {
@@ -108,6 +119,5 @@ export const ratingAction = reatomAsync(async (ctx) => {
 
     ratingDataAtom(ctx, res.data)
     ratingMetaAtom(ctx, res.meta)
-    ratingFilterAtom(ctx, (state) => ({ ...state, cursor: res.meta?.endCursor }))
   }
 }).pipe(withStatusesAtom())

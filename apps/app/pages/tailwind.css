@@ -6,7 +6,6 @@
 
 :root {
   --bprogress-color: #00AA00;
-  --bprogress-spinner-size: 0px;
 }
 
 @layer base {
@@ -28,6 +27,8 @@
   }
 
   #page-content {
+    @apply pb-20 md:p-0;
+
     opacity: 1;
     transition: opacity 0.3s ease-in-out;
   }
@@ -43,7 +44,7 @@
   }
 
   .responsive {
-    @apply w-full max-w-[clamp(420px,80vw,1400px)] sm:px-0 px-2;
+    @apply w-full max-w-[clamp(420px,80vw,1200px)] sm:px-0 px-2;
   }
 
   .windows-loading-spinner {

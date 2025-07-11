@@ -1,7 +1,8 @@
+import { abortablePromiseAll } from "#/helpers/abortable"
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { USER_REFERAL_REWARD_SUBJECT } from "#/shared/nats/nats-subjects"
+import { logger } from "#/utils/config/logger"
 import { callServerCommand } from "#/utils/server/call-command"
-import { natsLogger } from "@repo/lib/logger"
 
 type ReferalRewardPayload = {
   referrer: string,
@@ -11,26 +12,27 @@ type ReferalRewardPayload = {
 export const subscribeReferalReward = () => {
   const nc = getNatsConnection()
 
-  console.log("Subscribed to referal reward")
+  logger.success("Subscribed to referal reward")
 
   return nc.subscribe(USER_REFERAL_REWARD_SUBJECT, {
-    callback: async (err, msg) => {
-      if (err) {
-        console.error(err);
+    callback: async (e, msg) => {
+      if (e) {
+        logger.error(e.message);
         return;
       }
 
       const payload = msg.json<ReferalRewardPayload>()
-
       if (!payload) return;
 
+      const controller = new AbortController()
+
       try {
-        await Promise.all([
-          callServerCommand({ parent: "cmi", value: `money give ${payload.referral} 50` }),
-          callServerCommand({ parent: "p", value: `give ${payload.referrer} 1` })
-        ])
+        await abortablePromiseAll([
+          (signal) => callServerCommand({ parent: "cmi", value: `money give ${payload.referral} 50` }, { signal }),
+          (signal) => callServerCommand({ parent: "p", value: `give ${payload.referrer} 1` }, { signal })
+        ], controller)
       } catch (e) {
-        console.error(e);
+        logger.error(e);
       }
     }
   })

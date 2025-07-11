@@ -11,9 +11,10 @@ type SetCookie = Properties & {
   expires: Date
 }
 
+export const DOMAIN = ".fasberry.su"
+
 export function setCookie({ cookie, key, expires, value }: SetCookie) {
-  console.log(isProduction, process.env.NODE_ENV)
-  cookie[key].domain = isProduction ? ".fasberry.su" : "localhost"
+  cookie[key].domain = isProduction ? DOMAIN : "localhost"
   cookie[key].value = value
   cookie[key].expires = expires
   cookie[key].httpOnly = true
@@ -22,7 +23,7 @@ export function setCookie({ cookie, key, expires, value }: SetCookie) {
 }
 
 export function unsetCookie({ cookie, key }: Properties) {
-  cookie[key].domain = isProduction ? ".fasberry.su" : "localhost"
+  cookie[key].domain = isProduction ? DOMAIN : "localhost"
   cookie[key].value = ""
   cookie[key].expires = new Date(0)
   cookie[key].path = "/"

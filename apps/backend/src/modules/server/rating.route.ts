@@ -7,7 +7,7 @@ import { lobby } from "#/shared/database/lobby-db";
 import { playerPoints } from "#/shared/database/playerpoints-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { reputation } from "#/shared/database/reputation-db";
-import { cacheSetup } from "#/lib/middlewares/cache-control";
+import { cachePlugin } from "#/lib/middlewares/cache-control";
 
 const ratingSchema = t.Object({
   by: t.UnionEnum(["charism", "belkoin", "lands_chunks", "reputation", "playtime", "parkour"]),
@@ -223,7 +223,7 @@ async function getRatingBy({
 }
 
 export const ratingBy = new Elysia()
-  .use(cacheSetup())
+  .use(cachePlugin())
   .get("/rating", async (ctx) => {
     const { by, limit, cursor, ascending } = ctx.query;
 

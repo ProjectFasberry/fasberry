@@ -73,7 +73,9 @@ onConnect(skinAction.dataAtom, (ctx) => {
 })
 
 export const ProfileSkinRender = reatomComponent(({ ctx }) => {
-  const skin = ctx.spy(skinAction.dataAtom)!
+  const skin = ctx.spy(skinAction.dataAtom)
+
+  if (!skin) return null;
 
   if (ctx.spy(skinAction.statusesAtom).isPending) {
     return <Skeleton className="w-full h-full" />;

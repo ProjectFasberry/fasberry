@@ -1,24 +1,34 @@
 import { BASE } from "@/shared/api/client"
-import { currentUserAtom, getMe } from "@/shared/api/global.model"
+import { currentUserAtom } from "@/shared/api/global.model"
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
-import { action, atom } from "@reatom/core"
+import { action, atom, Ctx } from "@reatom/core"
 import { sleep, withAssign, withReset } from "@reatom/framework"
 import { toast } from "sonner"
-import { navigate } from "vike/client/router"
 
 type TypeAtom = "register" | "login"
 type ErrorType = "nickname" | "password" | "findout"
 
-export const typeAtom = atom<TypeAtom>("login", "type").pipe(withReset(), withHistory())
+export const typeAtom = atom<TypeAtom>("login", "type").pipe(withHistory())
 export const nicknameAtom = atom<string>("", "nicknameAtom").pipe(withReset())
 export const passwordAtom = atom<string>("", "passwordAtom").pipe(withReset())
 export const findoutAtom = atom<string>("", "findoutAtom").pipe(withReset())
 export const referrerAtom = atom<string>("", "referrerAtom").pipe(withReset())
 export const tokenAtom = atom<string>("test", "tokenAtom").pipe(withReset())
-export const acceptRulesAtom = atom(false, "acceptRules")
+export const acceptRulesAtom = atom(false, "acceptRules").pipe(withReset())
 export const globalErrorAtom = atom("", "globalError").pipe(withReset())
 export const errorTypeAtom = atom<ErrorType[]>([], "errorType").pipe(withReset())
+
+function resetAuth(ctx: Ctx) {
+  nicknameAtom.reset(ctx)
+  passwordAtom.reset(ctx)
+  findoutAtom.reset(ctx)
+  referrerAtom.reset(ctx)
+  tokenAtom.reset(ctx)
+  acceptRulesAtom.reset(ctx)
+  globalErrorAtom.reset(ctx)
+  errorTypeAtom.reset(ctx)
+}
 
 typeAtom.onChange((ctx, target) => {
   const prev = ctx.get(typeAtom.history)[1]
@@ -68,101 +78,95 @@ type ValidationResponse = {
 }
 
 export const authorize = reatomAsync(async (ctx) => {
-    const type = ctx.get(typeAtom)
-    const nickname = ctx.get(nicknameAtom)
-    const password = ctx.get(passwordAtom)
-    const findout = ctx.get(findoutAtom)
-    const referrer = ctx.get(referrerAtom)
-    const token = ctx.get(tokenAtom)
+  const type = ctx.get(typeAtom)
+  const nickname = ctx.get(nicknameAtom)
+  const password = ctx.get(passwordAtom)
+  const findout = ctx.get(findoutAtom)
+  const referrer = ctx.get(referrerAtom)
+  const token = ctx.get(tokenAtom)
 
-    if (type === 'register') {
-      const accept = ctx.get(acceptRulesAtom)
+  if (type === 'register') {
+    const accept = ctx.get(acceptRulesAtom)
 
-      if (!accept) {
-        toast.error("Вы должны принять правила")
-        return;
-      }
+    if (!accept) {
+      toast.error("Вы должны принять правила")
+      return;
+    }
+  }
+
+  return await ctx.schedule(async () => {
+    await sleep(200)
+
+    const res = await BASE.post(`auth/${type}`, {
+      json: {
+        nickname, password, findout, referrer, token
+      },
+      signal: ctx.controller.signal,
+      throwHttpErrors: false
+    })
+
+    const data = await res.json<WrappedResponse<{ id: string, nickname: string }> | ValidationResponse>()
+
+    if ("error" in data) {
+      throw new Error(data.error)
     }
 
-    return await ctx.schedule(async () => {
-      await sleep(200)
+    return data;
+  })
+}, {
+  name: "authorize",
+  onFulfill: async (ctx, res) => {
+    if (!res) return
 
-      const res = await BASE.post(`auth/${type}`, {
-        json: {
-          nickname, password, findout, referrer, token
-        },
-        signal: ctx.controller.signal,
-        throwHttpErrors: false
-      })
+    if ("property" in res) {
+      const target = res as ValidationResponse
 
-      const data = await res.json<{ data: { id: string, nickname: string } } | { error: string } | ValidationResponse>()
+      const property = target.property.slice(1) as ErrorType
+      const message = target.errors[0].schema.errorMessage.pattern
 
-      return data;
-    })
-  }, {
-    name: "authorize",
-    onFulfill: async (ctx, res) => {
-      if (!res) return
+      globalErrorAtom(ctx, message)
+      errorTypeAtom(ctx, state => [...state, property])
 
-      if ("error" in res) {
-        toast.error(res.error)
-        globalErrorAtom(ctx, res.error)
+      return;
+    }
 
-        if (res.error.includes("password")) {
-          errorTypeAtom(ctx, state => [...state, 'password'])
-        }
-
-        if (res.error.includes("nickname")) {
-          errorTypeAtom(ctx, state => [...state, 'nickname'])
-        }
-
-        return;
-      }
-
-      if ("property" in res) {
-        const target = res as ValidationResponse
-
-        const property = target.property.slice(1) as ErrorType
-        const message = target.errors[0].schema.errorMessage.pattern
-
-        globalErrorAtom(ctx, message)
-        errorTypeAtom(ctx, state => [...state, property])
-
-        return;
-      }
-
+    if (res.data) {
       const type = ctx.get(typeAtom)
 
-      if (res.data) {
-        if (type === 'register') {
-          findoutAtom.reset(ctx)
-          referrerAtom.reset(ctx)
-        }
+      resetAuth(ctx)
 
-        passwordAtom.reset(ctx)
-        nicknameAtom.reset(ctx)
-
-        ctx.schedule(() => navigate(`/player/${res.data.nickname}`))
-
-        const user = await ctx.schedule(() => getMe())
-        currentUserAtom(ctx, user)
+      if (type === 'register') {
+        toast.success("Всё ок! Теперь войдите в аккаунт")
+        typeAtom(ctx, "login")
       }
-    },
-    onReject: (ctx, e) => {
-      if (e instanceof Error) {
-        globalErrorAtom(ctx, e.message)
+
+      if (type === 'login') {
+        window.location.reload();
       }
     }
-  }).pipe(
-    withStatusesAtom(),
-    withAssign(((target) => ({
-      isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
-    }))))
+  },
+  onReject: (ctx, e) => {
+    if (e instanceof Error) {
+      globalErrorAtom(ctx, e.message)
+
+      if (e.message.includes("password")) {
+        errorTypeAtom(ctx, state => [...state, 'password'])
+      }
+
+      if (e.message.includes("nickname")) {
+        errorTypeAtom(ctx, state => [...state, 'nickname'])
+      }
+    }
+  }
+}).pipe(
+  withStatusesAtom(),
+  withAssign(((target) => ({
+    isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
+  }))))
 
 export const logout = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
     const res = await BASE.post("auth/invalidate-session", { signal: ctx.controller.signal })
-
     const data = await res.json<{ status: string } | { error: string }>()
 
     return data;
@@ -181,7 +185,8 @@ export const logout = reatomAsync(async (ctx) => {
     currentUserAtom.reset(ctx);
 
     ctx.schedule(() => window.location.reload())
-  }
+  },
+  onReject: (_, e) => e instanceof Error && toast.error(e.message)
 }).pipe(
   withStatusesAtom(),
   withAssign(((target) => ({

@@ -26,14 +26,14 @@
     scroll-behavior: smooth;
     height: 100%;
     word-break: keep-all;
+    font-family: 'Minecraft', sans-serif;
+    font-style: normal;
+    font-weight: 400;
   }
 
   body {
     @apply bg-background-dark text-neutral-50;
 
-    font-family: 'Minecraft', sans-serif;
-    font-style: normal;
-    font-weight: 400;
     overflow-x: hidden;
     letter-spacing: normal;
   }

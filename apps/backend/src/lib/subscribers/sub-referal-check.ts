@@ -1,44 +1,46 @@
+import { abortablePromiseAll } from "#/helpers/abortable";
 import { sqlite } from "#/shared/database/sqlite-db";
 import { getNatsConnection } from "#/shared/nats/nats-client";
 import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/nats-subjects";
+import { logger } from "#/utils/config/logger";
 import { callServerCommand } from "#/utils/server/call-command";
 import { validateReferal } from "#/utils/server/validate-referal";
-import { natsLogger } from "@repo/lib/logger";
 
 export const subscribeRefferalCheck = () => {
   const nc = getNatsConnection()
 
-  console.log("Subscribed to refferal check")
+  logger.success("Subscribed to refferal check")
 
   return nc.subscribe(USER_REFERAL_CHECK_SUBJECT, {
-    callback: async (err, msg) => {
-      if (err) {
-        console.error(err);
+    callback: async (e, msg) => {
+      if (e) {
+        logger.error(e);
         return;
       }
 
       const nickname: string = new TextDecoder().decode(msg.data)
-
       if (!nickname) return;
 
       try {
         const result = await validateReferal(nickname)
-
         if (!result) return;
 
+        const controller = new AbortController()
+
         await sqlite.transaction().execute(async (trx) => {
-          await Promise.all([
+          await abortablePromiseAll([
             // for initiator
-            callServerCommand({ parent: "cmi", value: `money give ${result.initiator} 60` }),
-            callServerCommand({ parent: "p", value: `give ${result.initiator} 5` }),
+            (signal) => callServerCommand({ parent: "cmi", value: `money give ${result.initiator} 60` }, { signal }),
+            (signal) => callServerCommand({ parent: "p", value: `give ${result.initiator} 5` }, { signal }),
+
             // for recipient
-            callServerCommand({ parent: "cmi", value: `money give ${result.recipient} 30` }),
-            callServerCommand({ parent: "p", value: `give ${result.recipient} 1` })
-          ])
+            (signal) => callServerCommand({ parent: "cmi", value: `money give ${result.recipient} 30` }, { signal }),
+            (signal) => callServerCommand({ parent: "p", value: `give ${result.recipient} 1` }, { signal })
+          ], controller)
 
           const update = await trx
-            .updateTable("refferals")
-            .set({ completed: true })
+            .updateTable("referrals")
+            .set({ completed: 1 })
             .where(eb =>
               eb.and([
                 eb("initiator", "=", result.initiator),
@@ -47,10 +49,10 @@ export const subscribeRefferalCheck = () => {
             )
             .executeTakeFirstOrThrow()
 
-          console.log(update.numUpdatedRows > 0 ? "updated" : "not updated")
+          logger.log(update.numUpdatedRows > 0 ? "updated" : "not updated")
         })
       } catch (e) {
-        console.error(e)
+        logger.error(e)
       }
     }
   })

@@ -2,6 +2,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { EVENTS, eventsAction } from "../models/events.model";
 import { Skeleton } from "@repo/ui/skeleton";
+import { MainWrapperPage } from "@/shared/components/config/wrapper";
 
 const EVENTS_TITLE_MAP: Record<(typeof EVENTS)[number]["type"], string> = {
   "register": "Регистрация",
@@ -31,18 +32,20 @@ export const Events = reatomComponent(({ ctx }) => {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <Typography className="text-3xl font-semibold">
-        Последние события
-      </Typography>
-      <div className="flex overflox-x-auto gap-2 pb-2 overflow-y-hidden w-full">
-        {ctx.spy(eventsAction.statusesAtom).isPending ? (
-          <>
-            <Skeleton className="h-[80px] w-full" />
-            <Skeleton className="h-[80px] w-full" />
-          </>
-        ) : <List />}
+    <>
+      <div className="flex flex-col gap-4 w-full h-full">
+        <Typography className="text-3xl font-semibold">
+          Последние события
+        </Typography>
+        <div className="flex overflox-x-auto gap-2 pb-2 overflow-y-hidden w-full">
+          {ctx.spy(eventsAction.statusesAtom).isPending ? (
+            <>
+              <Skeleton className="h-[80px] w-full" />
+              <Skeleton className="h-[80px] w-full" />
+            </>
+          ) : <List />}
+        </div>
       </div>
-    </div>
+    </>
   )
 }, "Events")

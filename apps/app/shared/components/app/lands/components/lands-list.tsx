@@ -1,104 +1,108 @@
 import { Skeleton } from "@repo/ui/skeleton"
 import { landsResource } from "../models/lands.model"
-import Looking from '@repo/assets/images/looking.jpg'
-import BottleEnchating from "@repo/assets/images/minecraft/bottle_enchanting.webp"
-import Charism from "@repo/assets/images/minecraft/charism_wallet.png"
-import SteveHead from "@repo/assets/images/minecraft/steve_head.jpg"
 import { reatomComponent } from "@reatom/npm-react"
-import { Link } from "@/shared/components/config/Link"
-import { Button } from '@repo/ui/button'
-import { currentUserAtom } from '@/shared/api/global.model'
+import { createLink, Link } from "@/shared/components/config/Link"
 import { tv } from 'tailwind-variants'
 import { Typography } from '@repo/ui/typography'
+import { useMemo } from "react"
+import { FormattedText } from "../../land/components/land-title"
+import { DefaultBanner } from "../../land/components/land-banner"
+import { Avatar } from "../../avatar/components/avatar"
+import { IconCircleFilled } from "@tabler/icons-react"
+import { MasonryGrid } from "@repo/ui/masonry-grid"
+import { Land } from "@repo/shared/types/entities/land"
 
-type LandCard = {
-  balance: number,
-  level: number,
-  members: {},
-  title: string,
-  ulid: string,
-  name: string
-}
+type LandCard = Pick<Land, "ulid" | "name" | "members" | "level" | "title" | "balance">
 
 const landCardVariants = tv({
-  base: "relative bg-neutral-900 w-full border-b-2 rounded-lg p-3 sm:p-4",
-  variants: {
-    variant: {
-      default: "border-neutral-800",
-      selected: "border-green-500/40"
-    }
+  base: `flex items-start justify-between gap-6 duration-150 relative w-full rounded-lg p-3 sm:p-4 lg:p-6 border 
+    border-neutral-800 hover:bg-neutral-800`,
+  slots: {
+    child: "flex flex-col gap-3 overflow-hidden",
+    stat: "inline-flex items-center gap-2 text-base"
   }
 })
 
-const LandCard = reatomComponent<LandCard>(({ ctx, balance, level, members, name, title, ulid }) => {
-  const currentUser = ctx.spy(currentUserAtom)
-
-  const isOwner = Object.keys(members)[0] === currentUser?.uuid
-
+const LandCard = ({ level, members, name, title, ulid }: LandCard) => {
   return (
-    <div className={landCardVariants({ variant: isOwner ? "selected" : "default" })}>
-      <div className="flex items-center gap-4 overflow-hidden rounded-md">
-        <img
-          src={Looking}
-          alt=""
-          width={100}
-          draggable={false}
-          height={100}
-          className="rounded-md select-none max-h-[86px] max-w-[86px] sm:max-h-[100px] sm:max-w-[100px]"
-        />
-        <div className="flex flex-col gap-1 sm:gap-2 w-full">
-          <div className="flex items-center gap-2 w-full">
-            <Typography className="text-xl truncate font-semibold">
-              {name}
-            </Typography>
-            {/* {title && <ColoredText text={title} />} */}
-          </div>
-          <div className="flex select-none items-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-1">
-              <img src={BottleEnchating} draggable={false} alt="lvl" width={16} height={16} />
-              <Typography className="text-base">
-                {level}
-              </Typography>
-            </div>
-            <div className="flex items-center gap-1">
-              <img src={Charism} draggable={false} alt="charism" width={16} height={16} />
-              <Typography className="text-base">
-                {balance}
-              </Typography>
-            </div>
-            <div className="flex items-center gap-1">
-              <img src={SteveHead} draggable={false} alt="members" width={16} height={16} />
-              <Typography className="text-base">
-                {Object.keys(members).length}
-              </Typography>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href={`/land/${ulid}`}>
-              <Button className="py-1 sm:py-2 bg-neutral-50">
-                <Typography color="black" className="font-semibold text-base">
-                  Перейти
-                </Typography>
-              </Button>
-            </Link>
-          </div>
+    <Link href={createLink("land", ulid)} className={landCardVariants().base()}>
+      <div className={landCardVariants().child()}>
+        <div className="flex items-center gap-2 w-full">
+          <Avatar
+            nickname={"distribate"}
+            propWidth={26}
+            propHeight={26}
+            className="min-w-[26px] min-h-[26px]"
+          />
+          <Typography className="text-lg truncate">
+            {"distribate"}
+          </Typography>
+        </div>
+        <Typography className="text-xl truncate font-semibold">
+          {name}
+        </Typography>
+        {title && <FormattedText text={title} />}
+        <div className="flex flex-col select-none gap-1">
+          <Typography className={landCardVariants().stat()}>
+            <IconCircleFilled size={8} />
+            {Object.keys(members).length} участников
+          </Typography>
+          <Typography className={landCardVariants().stat()}>
+            <IconCircleFilled size={8} />
+            {level} уровень
+          </Typography>
         </div>
       </div>
-    </div>
+      <DefaultBanner banner={null} variant="small" />
+    </Link >
   )
-}, "LandCard")
+}
+
+const masonryOpts = {
+  columnConfig: {
+    default: 1, 
+    640: 2, 
+    1024: 3, 
+    1280: 3,
+  },
+  columnGap: 6,
+  rowGap: 6
+}
+
+const LandsSkeleton = () => {
+  const SKELETON_HEIGHTS = ['h-32', 'h-44', 'h-36', 'h-40', 'h-56', 'h-64', 'h-72'];
+  const SKELETON_COUNT = 12;
+
+  const randomHeights = useMemo(() => {
+    return Array.from({ length: SKELETON_COUNT }).map(() => {
+      const randomIndex = Math.floor(Math.random() * SKELETON_HEIGHTS.length);
+      return SKELETON_HEIGHTS[randomIndex];
+    });
+  }, []);
+
+  return (
+    <MasonryGrid
+      {...masonryOpts}
+      items={randomHeights}
+      renderItem={((height, idx) => <Skeleton key={idx} className={`${height} w-full`} />)}
+    />
+  )
+}
 
 export const LandsList = reatomComponent(({ ctx }) => {
   const data = ctx.spy(landsResource.dataAtom)
 
-  if (ctx.spy(landsResource.statusesAtom).isPending) return (
-    <>
-      <Skeleton className="h-24 w-full" />
-      <Skeleton className="h-24 w-full" />
-    </>
-  )
+  if (ctx.spy(landsResource.statusesAtom).isPending) {
+    return <LandsSkeleton />
+  }
 
   if (!data) return null;
 
-  return data.data.map((land) => <LandCard key={land.ulid} {...land} />)
+  return (
+    <MasonryGrid
+      {...masonryOpts}
+      items={data.data}
+      renderItem={(land) => <LandCard key={land.ulid} {...land} />}
+    />
+  )
 }, "LandsList")

@@ -159,5 +159,20 @@ services:
     command: server /data --console-address ":9001"
     restart: unless-stopped
 
+  redis:
+    image: 'redis:8.0.3'
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./data/fasberry/redis/data:/data 
+      - ./config/redis/redis.conf.tpl:/redis.conf.tpl:ro
+      - ./config/redis/entrypoint.sh:/entrypoint.sh:ro
+    environment:
+      - REDIS_USER_NAME=${REDIS_USER_NAME}
+      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+    entrypoint: /entrypoint.sh
+    restart: always
+
 volumes:
   acme_data:

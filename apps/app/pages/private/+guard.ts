@@ -3,7 +3,7 @@ import { redirect } from "vike/abort";
 import { validatePrivate } from "@/shared/api/validators";
 
 export const guard: GuardAsync = async (pageContext) => {
-  const isValid = await validatePrivate(pageContext.headers ?? undefined)
+  const isValid = await validatePrivate({ headers: pageContext.headers ?? undefined })
 
   if (!isValid) {
     throw redirect("/")

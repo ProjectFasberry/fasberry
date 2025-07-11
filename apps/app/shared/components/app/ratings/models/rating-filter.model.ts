@@ -1,6 +1,6 @@
 import { atom } from "@reatom/core"
 import { GetRatings } from "./ratings.model"
+import { withHistory } from "@/shared/lib/reatom-helpers"
 
-export type RatingFilterQuery = Omit<GetRatings, "limit">
-
-export const ratingFilterAtom = atom<RatingFilterQuery>({ by: "playtime", ascending: false }, "ratingFilter")
+export const ratingByAtom = atom<GetRatings["by"]>("playtime", "ratingBy").pipe(withHistory(1))
+export const ratingFilterAtom = atom<{ ascending: boolean }>({ ascending: false }, "ratingFilter")

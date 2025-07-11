@@ -5,8 +5,8 @@ import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
 import { CacheControl } from "elysiajs-cdn-cache";
-import { cacheSetup } from "#/lib/middlewares/cache-control";
-import { ipSetup } from "#/lib/middlewares/ip";
+import { cachePlugin } from "#/lib/middlewares/cache-control";
+import { ipPlugin } from "#/lib/middlewares/ip";
 import { getStaticObject } from "#/shared/minio/init";
 
 const newsSchema = t.Object({
@@ -49,7 +49,7 @@ async function createNewsViews(target: { ids: number[], ip: string }) {
 }
 
 export const soloNews = new Elysia()
-  .use(cacheSetup())
+  .use(cachePlugin())
   .get("/news/:id", async (ctx) => {
     const id = ctx.params.id
 
@@ -84,8 +84,8 @@ export const soloNews = new Elysia()
   })
 
 export const news = new Elysia()
-  .use(cacheSetup())
-  .use(ipSetup())
+  .use(cachePlugin())
+  .use(ipPlugin())
   .get("/news", async (ctx) => {
     try {
       const { ascending, limit, cursor, search } = ctx.query;

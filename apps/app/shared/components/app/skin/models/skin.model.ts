@@ -1,13 +1,11 @@
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { isChanged } from '@/shared/lib/reatom-helpers';
 import { take } from '@reatom/framework';
-import { userParam } from '@/shared/api/global.model';
 import { getObjectUrl } from "@/shared/lib/volume-helpers";
 import { BASE } from "@/shared/api/client";
+import { userParam } from "../../player/models/player.model";
 
 userParam.onChange((ctx, state) => {
-  console.log("target ->", state)
-
   isChanged(ctx, userParam, state, () => {
     skinAction.dataAtom.reset(ctx)
   })

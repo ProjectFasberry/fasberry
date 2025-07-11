@@ -15,6 +15,21 @@ export interface Admins {
   nickname: string;
 }
 
+export interface Currencies {
+  id: Generated<number | null>;
+  imageUrl: string;
+  isAvailable: Generated<number>;
+  isPublic: Generated<number>;
+  title: string;
+  value: string;
+}
+
+export interface Findout {
+  findout: string | null;
+  id: Generated<number | null>;
+  nickname: string;
+}
+
 export interface IpList {
   id: Generated<number | null>;
   ip: string;
@@ -26,6 +41,18 @@ export interface Likes {
   id: Generated<number | null>;
   initiator: string;
   recipient: string;
+}
+
+export interface MinecraftFacts {
+  fact: string;
+  id: Generated<number | null>;
+}
+
+export interface MinecraftItems {
+  description: string | null;
+  id: Generated<number | null>;
+  image: string;
+  title: string;
 }
 
 export interface MinecraftNews {
@@ -56,6 +83,14 @@ export interface NewsViews {
   news_id: number;
 }
 
+export interface Referrals {
+  completed: Generated<number>;
+  created_at: Generated<string>;
+  id: Generated<number | null>;
+  initiator: string;
+  recipient: string;
+}
+
 export interface RulesContent {
   description: string | null;
   id: Generated<number | null>;
@@ -71,13 +106,25 @@ export interface RulesTermins {
   id: Generated<number | null>;
 }
 
+export interface VotedUsers {
+  created_at: Generated<string>;
+  id: Generated<number | null>;
+  nickname: string;
+}
+
 export interface DB {
   admins: Admins;
+  currencies: Currencies;
+  findout: Findout;
   ip_list: IpList;
   likes: Likes;
+  minecraft_facts: MinecraftFacts;
+  minecraft_items: MinecraftItems;
   minecraft_news: MinecraftNews;
   modpacks: Modpacks;
   news_views: NewsViews;
+  referrals: Referrals;
   rules_content: RulesContent;
   rules_termins: RulesTermins;
+  voted_users: VotedUsers;
 }

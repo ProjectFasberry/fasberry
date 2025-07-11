@@ -10,7 +10,7 @@ import ky from "ky";
 //   console.log(data)
 // })
 
-const URL = process.env.NODE_ENV === 'development' ? "http://localhost:4104/minecraft/v2" : "https://api.fasberry.su/minecraft/v2"
+const URL = process.env.NODE_ENV === 'development' ? "http://localhost:4104/minecraft/" : "https://api.fasberry.su/minecraft/"
 
 export const BASE = ky.extend({
   prefixUrl: URL,

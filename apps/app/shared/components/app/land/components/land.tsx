@@ -1,170 +1,178 @@
 import { reatomComponent } from "@reatom/npm-react"
-import { landAtom, landOwnerAtom } from "../models/land.model"
-import dayjs from "dayjs"
-import { LandMembers } from "./land-members"
-import Looking from '@repo/assets/images/looking.jpg'
-import { AnotherLandsByOwner } from "./another-lands"
-import { MINECRAFT_MAP_SITE_DOMAIN } from "@repo/shared/constants/origin-list"
-import { Avatar } from "@/shared/components/app/avatar/avatar"
-import { Skeleton } from "@repo/ui/skeleton"
-import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@repo/ui/tabs"
+import { landAtom, landBannerAtom, landGalleryAtom, landIsOwnerAtom, landOwnerAtom } from "../models/land.model"
+import { Avatar } from "@/shared/components/app/avatar/components/avatar"
 import { Typography } from "@repo/ui/typography"
+import { createLink, Link } from "@/shared/components/config/Link"
+import useEmblaCarousel from 'embla-carousel-react'
+import { FormattedText } from "./land-title"
+import { IconCircleFilled, IconCrown, IconLink } from "@tabler/icons-react"
 import { Button } from "@repo/ui/button"
+import { navigate } from "vike/client/router"
+import { changesIsExist, landMode, saveChanges } from "../models/edit-land.model"
+import { LandBanner } from "./land-banner"
 
-const LandLoading = () => {
+const LandGallery = reatomComponent(({ ctx }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" })
+  const landGallery = ctx.spy(landGalleryAtom)
+
   return (
-    <div className="flex flex-col gap-4 w-3/5">
-      <div className="flex items-start flex-col w-full">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-      </div>
-      <div className="flex flex-col pt-2 gap-2 w-full h-full">
-        <Skeleton className="h-48 w-full" />
+    <div
+      id="gallery"
+      ref={emblaRef}
+      className="flex w-full items-center rounded-xl overflow-hidden h-[200px] sm:h-[350px]"
+    >
+      <div className="flex gap-4 w-full px-4 h-full py-0">
+        {landGallery.map((image, idx) => (
+          <div
+            key={idx}
+            className="flex-[0_0_70%] sm:flex-[0_0_60%] rounded-xl overflow-hidden min-w-0 w-full"
+          >
+            <img
+              src={image}
+              draggable={false}
+              className="w-full h-[200px] sm:h-[350px] select-none object-cover"
+              width={1920}
+              height={1080}
+              loading="lazy"
+              alt=""
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
-}
+}, "LandGallery")
 
-const Main = reatomComponent(({ ctx }) => {
+const LandToggleMode = reatomComponent(({ ctx }) => {
+  return (
+    <div className="flex flex-col gap-2 w-full h-fit">
+      <Button
+        name="Toggle mode"
+        className="bg-neutral-50 px-2"
+        onClick={() => landMode.toggle(ctx)}
+        disabled={ctx.spy(saveChanges.statusesAtom).isPending}
+      >
+        <Typography className='text-neutral-950 font-semibold text-nowrap truncate'>
+          {ctx.spy(landMode) === 'watch' ? "Режим редактирования" : "Режим просмотра"}
+        </Typography>
+      </Button>
+      {ctx.spy(changesIsExist) && (
+        <Button
+          name="Save"
+          className="bg-green-700"
+          onClick={() => saveChanges(ctx)}
+          disabled={ctx.spy(saveChanges.statusesAtom).isPending}
+        >
+          <Typography className="font-semibold text-nowrap truncate">
+            Сохранить изменения
+          </Typography>
+        </Button>
+      )}
+    </div>
+  )
+}, "LandToggleMode")
+
+export const Land = reatomComponent(({ ctx }) => {
   const land = ctx.spy(landAtom)
+  const landOwner = ctx.spy(landOwnerAtom)
+  const landGallery = ctx.spy(landGalleryAtom)
 
-  if (!land) return null;
+  if (!land || !landOwner) return null;
+
+  const { area, members, balance, stats, level, created_at } = land
 
   return (
-    <div className="flex order-last bg-neutral-900 rounded-md p-2 md:order-first flex-col gap-4 md:w-3/5 w-full">
-      <Tabs defaultValue="general" className="flex items-start flex-col w-full">
-        <TabsList className="gap-2 justify-start overflow-x-auto w-full">
-          <TabsTrigger value="general">
-            <p>Основное</p>
-          </TabsTrigger>
-          <TabsTrigger value="members">
-            <p>
-              Участники
-            </p>
-          </TabsTrigger>
-          <TabsTrigger value="stats">
-            <p>Статистика</p>
-          </TabsTrigger>
-          <TabsTrigger value="chunks">
-            <p>Территории</p>
-          </TabsTrigger>
-        </TabsList>
-        <TabsContents>
-          <TabsContent value="general" className="flex flex-col pt-2 gap-2 w-full h-full">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <p className="text-[24px] font-semibold">
-                  {land.name}
-                </p>
-                {/* {land.title && <ColoredText text={land.title} />} */}
-              </div>
-            </div>
-            <div className="flex flex-col gap-4 h-full w-full">
-              <Typography className="text-lg">
-                Создана: {dayjs(land.created_at).format('DD.MM.YYYY HH:mm')}
+    <div className="flex flex-col lg:flex-row items-start gap-8 w-full h-full relative">
+      <div className="flex flex-col gap-6 w-full h-full">
+        <div className="flex items-start gap-6 w-full h-full">
+          <LandBanner />
+          <div className="flex flex-col gap-2 w-full h-full">
+            <Typography className="text-2xl xl:text-3xl font-semibold">
+              {land.name}
+            </Typography>
+            {land.title && <FormattedText as="span" text={land.title} />}
+            <div id="details" className="flex flex-col sm:flex-row mt-2 items-start sm:items-center gap-1 sm:gap-2 w-full">
+              <Typography>
+                {members.length} {members.length === 1 ? "участник" : "участников"}
               </Typography>
-              <p className="text-lg">Тип: {land.type}</p>
+              <IconCircleFilled size={10} />
+              <Typography onClick={() => navigate("#points", { overwriteLastHistoryEntry: false })}>
+                1 метка
+              </Typography>
+              <IconCircleFilled size={10} />
+              <Typography>
+                Нет дискорд сервера
+              </Typography>
             </div>
-          </TabsContent>
-          <TabsContent value="members" className="flex flex-col pt-2 gap-4 w-full">
-            <p className="text-lg text-neutral-400" >
-              Участники территории
-            </p>
-            <LandMembers />
-          </TabsContent>
-          <TabsContent value="chunks" className="flex flex-col pt-2 gap-4 w-full">
-            <p className="text-lg text-neutral-400">
-              Здесь отображается количество чанков и созданных областей внутри
-              территории
-            </p>
-            <div className="flex flex-col gap-2 w-full h-full">
-              <p className="text-lg">
-                Чанков захвачено: {land.chunks_amount}
-              </p>
-              <p className="text-lg">
-                Областей внутри территории: {land.areas_amount}
-              </p>
+          </div>
+        </div>
+        {landGallery.length >= 1 && <LandGallery />}
+        <div id="description" className="flex w-full">
+
+        </div>
+        <div id="points" className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 w-full">
+            <Typography className="text-2xl xl:text-3xl font-semibold">
+              Метки
+            </Typography>
+            <div className="flex items-center justify-center bg-neutral-800 h-8 w-10 rounded-xl p-1">
+              <span className="font-semibold text-lg">1</span>
             </div>
-            <div className="flex items-center gap-4 w-full h-full">
-              <a target="_blank" href={MINECRAFT_MAP_SITE_DOMAIN} rel="noreferrer">
-                <Button className="bg-neutral-50 w-fit">
-                  <Typography color="black" className="font-semibold">
-                    Перейти к карте территории
-                  </Typography>
-                </Button>
+          </div>
+          <div className="grid grid-cols-2 w-full h-full gap-4">
+            <div className="flex flex-col p-4 rounded-lg border border-neutral-800">
+              <Typography>
+                #1
+              </Typography>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-6 w-full lg:w-1/4 sticky h-fit">
+        {ctx.spy(landBannerAtom) && (
+          <div id="links" className="flex flex-col gap-2">
+            <Typography className="text-2xl xl:text-3xl font-semibold">
+              Ссылки
+            </Typography>
+            <div className="flex flex-col gap-1">
+              <a target="_blank" href={ctx.spy(landBannerAtom)} className="flex items-center gap-2 text-blue-500">
+                <Typography className="text-xl">
+                  Баннер
+                </Typography>
+                <IconLink size={26} />
               </a>
             </div>
-          </TabsContent>
-          <TabsContent value="stats" className="flex flex-col pt-2 gap-4 w-full h-full">
-            <p className="text-[19px] text-neutral-400">
-              Здесь отображается основная статистика территории
-            </p>
-            <div className="flex flex-col gap-2 w-full h-full">
-              <p className="text-lg">
-                Убийств: {land.stats.kills}
-              </p>
-              <p className="text-lg">
-                Смертей: {land.stats.deaths}
-              </p>
-              <p className="text-lg">
-                Побед: {land.stats.wins}
-              </p>
-              <p className="text-lg">
-                Захватов: {land.stats.captures}
-              </p>
-              <p className="text-lg">
-                Поражений: {land.stats.defeats}
-              </p>
+          </div>
+        )}
+        <div id="members" className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 w-full">
+            <Typography className="text-2xl xl:text-3xl font-semibold">
+              Участники
+            </Typography>
+            <div className="flex items-center justify-center bg-neutral-800 h-8 w-10 rounded-xl p-1">
+              <span className="font-semibold text-lg">{members.length}</span>
             </div>
-          </TabsContent>
-        </TabsContents>
-      </Tabs>
+          </div>
+          <div className="flex flex-col gap-1 w-full">
+            {members.map((member, idx) => (
+              <Link
+                href={createLink("player", member.nickname)}
+                key={member.nickname}
+                className="flex items-center gap-2 w-full"
+              >
+                <Avatar nickname={member.nickname} className="min-h-[40px] min-w-[40px]" propHeight={40} propWidth={40} />
+                {idx === 0 && (
+                  <IconCrown size={28} className='text-gold' />
+                )}
+                <Typography className="text-lg">
+                  {member.nickname}
+                </Typography>
+              </Link>
+            ))}
+          </div>
+        </div>
+        {ctx.spy(landIsOwnerAtom) && <LandToggleMode />}
+      </div>
     </div>
   )
 }, "Main")
-
-const Panel = reatomComponent(({ ctx }) => {
-  const land = ctx.spy(landAtom)
-  const landOwner = ctx.spy(landOwnerAtom)
-
-  if (!land || !landOwner) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col items-center overflow-hidden justify-start gap-4 w-full md:w-2/5 md:h-full">
-      <div className="flex flex-col rounded-md items-center overflow-hidden justify-end relative gap-4 w-full">
-        <div
-          className="absolute h-1/3 bg-gradient-to-t rounded-md from-black/40 z-[1] via-black/40 
-            to-transparent backdrop-blur-sm w-full bottom-0"
-        />
-        <img
-          src={Looking}
-          width={600}
-          height={600}
-          alt=""
-          loading="lazy"
-          className="absolute w-full rounded-md h-[400px] object-cover"
-        />
-        <div className="flex flex-col items-center justify-end gap-2 z-[2] pb-2 w-full h-[300px]">
-          <Avatar nickname={landOwner} propWidth={128} propHeight={128} />
-          <Typography color="white" className="text-xl lg:text-2xl font-semibold">
-            {land.name}
-          </Typography>
-        </div>
-      </div>
-      <AnotherLandsByOwner />
-    </div >
-  )
-}, "Panel")
-
-export const Land = () => {
-  return (
-    <div className="flex md:flex-row flex-col gap-6 w-full h-full">
-      <Main />
-      <Panel />
-    </div>
-  )
-}

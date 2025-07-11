@@ -1,24 +1,14 @@
 import { reatomComponent } from "@reatom/npm-react";
-import dayjs from "dayjs";
 import { HTMLAttributes } from "react";
-import { Link } from "@/shared/components/config/Link";
-import { Avatar } from "@/shared/components/app/avatar/avatar";
+import { createLink, Link } from "@/shared/components/config/Link";
+import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { tv, VariantProps } from "tailwind-variants";
 import { currentUserAtom } from "@/shared/api/global.model";
 import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model";
-import relativeTime from "dayjs/plugin/relativeTime";
-import localeData from "dayjs/plugin/localeData";
-import duration from "dayjs/plugin/duration";
 import "dayjs/locale/ru";
-import localizedFormat from "dayjs/plugin/localizedFormat";
 import { Typography } from "@repo/ui/typography";
 import { atom } from "@reatom/core";
-
-dayjs.extend(relativeTime);
-dayjs.extend(localeData);
-dayjs.extend(duration);
-dayjs.extend(localizedFormat);
-dayjs.locale("ru");
+import dayjs from "@/shared/lib/create-dayjs"
 
 const ratingCardVariants = tv({
   base: `grid select-none grid-rows-1 gap-2 w-full p-2 rounded-lg`,
@@ -55,7 +45,7 @@ type RatingInitial = { idx: number }
 const UserHead = ({ nickname }: { nickname: string }) => {
   return (
     <div className="flex items-center gap-2">
-      <Link href={`/player/${nickname}`}>
+      <Link href={createLink("player", nickname)}>
         <Avatar
           nickname={nickname}
           propHeight={42}
@@ -63,14 +53,14 @@ const UserHead = ({ nickname }: { nickname: string }) => {
           className="h-[36px] w-[36px] max-h-[36px] max-w-[36px] sm:w-[36px] sm:h-[36px] sm:max-h-[42px] sm:max-w-[42px]"
         />
       </Link>
-      <Link href={`/player/${nickname}`}>
+      <Link href={createLink("player", nickname)}>
         <p className="text-base sm:text-lg truncate">{nickname}</p>
       </Link>
     </div>
   )
 }
 
-const CardIndex = ({ idx }: { idx: number }) => {
+const CardIndex = ({ idx }: RatingInitial) => {
   return (
     <div className="flex items-center justify-center">
       <Typography className="text-base sm:text-lg font-semibold">{idx + 1}</Typography>
@@ -93,7 +83,7 @@ export const RatingLandsCard = reatomComponent<RatingLands & RatingInitial>(({
     <RatingCard variant={isOwner ? "selected" : "default"} type="lands_chunks">
       <CardIndex idx={idx} />
       <div className="flex items-center gap-2">
-        <Link href={`/land/${land}`}>
+        <Link href={createLink("land", land)}>
           <Typography className="text-base sm:text-lg">
             {name}
           </Typography>
@@ -150,7 +140,7 @@ export const RatingCharismCard = reatomComponent<RatingCharism & RatingInitial>(
 }, "RatingCharismCard")
 
 export const RatingBelkoinCard = reatomComponent<RatingBelkoin & RatingInitial>(({
-  points, nickname, idx, ctx
+  balance, nickname, idx, ctx
 }) => {
   const isOwner = ctx.spy(isOwnerAtom(nickname))
 
@@ -160,7 +150,7 @@ export const RatingBelkoinCard = reatomComponent<RatingBelkoin & RatingInitial>(
       <UserHead nickname={nickname} />
       <div className="flex items-center justify-start relative">
         <Typography className="text-base sm:text-lg">
-          {Math.floor(points ?? 0)}
+          {Math.floor(balance ?? 0)}
         </Typography>
       </div>
     </RatingCard>

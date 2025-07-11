@@ -6,7 +6,9 @@ import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import ky from "ky";
 import { CacheControl } from 'elysiajs-cdn-cache';
-import { cacheSetup } from "#/lib/middlewares/cache-control";
+import { cachePlugin } from "#/lib/middlewares/cache-control";
+import { logger } from "#/utils/config/logger";
+import { isProduction } from "#/helpers/is-production";
 
 type ServerStatus = {
   online: boolean;
@@ -53,10 +55,6 @@ type ServerStatus = {
   } | null;
 };
 
-const STATUS_API = ky.extend({
-  prefixUrl: "https://api.mcstatus.io/v2/status/java",
-})
-
 const initial = {
   status: "offline",
   online: 0,
@@ -77,16 +75,24 @@ type StatusPayload = {
 }
 
 async function getProxyStats(): Promise<ServerStatus | null> {
-  const { ip } = await sqlite
+  let ip: string = "play.fasberry.su";
+
+  const query = await sqlite
     .selectFrom("ip_list")
     .select("ip")
     .where("name", "=", "server_proxy")
-    .executeTakeFirstOrThrow()
+    .executeTakeFirst()
 
-  const res = await STATUS_API.get(`${ip}:25565`, { searchParams: { timeout: 1.0 } })
-  if (!res.ok) return null;
+  if (query?.ip) {
+    ip = query.ip
+  }
 
+  const res = await ky.get(`https://api.mcstatus.io/v2/status/java/${ip}:25565`, { 
+    searchParams: { timeout: 1.0 }, throwHttpErrors: false 
+  })
+  
   const data = await res.json<ServerStatus>()
+
   return data
 }
 
@@ -94,7 +100,7 @@ async function getBisquiteStats(): Promise<StatusPayload | null> {
   const nc = getNatsConnection()
 
   const res = await nc.request(
-    SERVER_USER_EVENT_SUBJECT, JSON.stringify({ event: "getServerStats" }), { timeout: 500 }
+    SERVER_USER_EVENT_SUBJECT, JSON.stringify({ event: "getServerStats" }), { timeout: 300 }
   )
 
   if (!res) return null;
@@ -107,7 +113,7 @@ async function getBisquiteStats(): Promise<StatusPayload | null> {
 }
 
 export const status = new Elysia()
-  .use(cacheSetup())
+  .use(cachePlugin())
   .get("/status", async (ctx) => {
     const type = ctx.query.type;
 
@@ -124,7 +130,14 @@ export const status = new Elysia()
           return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
         }
 
-        const rawBisquite = await getBisquiteStats()
+        let rawBisquite: StatusPayload | null = null;
+
+        try {
+          rawBisquite = await getBisquiteStats()
+        } catch (e) {
+          !isProduction && e instanceof Error && logger.warn(e.message, e.stack)
+        }
+
         const proxy = rawProxy as ServerStatus
 
         const bisquite = (rawBisquite && "players" in rawBisquite) ? {

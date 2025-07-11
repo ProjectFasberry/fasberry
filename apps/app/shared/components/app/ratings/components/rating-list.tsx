@@ -1,12 +1,13 @@
 import { RatingBelkoinCard, RatingCharismCard, RatingLandsCard, RatingParkourCard, RatingPlaytimeCard, RatingReputationCard } from "./rating-cards";
-import { ratingAction, RatingBelkoin, RatingCharism, ratingDataAtom, ratingMetaAtom, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model"
+import { GetRatings, ratingAction, RatingBelkoin, RatingCharism, ratingDataAtom, RatingLands, ratingMetaAtom, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model"
 import Events from '@repo/assets/gifs/minecraft-boime.gif'
 import { useInView } from "react-intersection-observer";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { ratingFilterAtom } from "../models/rating-filter.model";
+import { ratingByAtom, ratingFilterAtom } from "../models/rating-filter.model";
 import { updateRatingAction } from "../models/update-ratings.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { tv } from "tailwind-variants";
+import { ReactNode } from "react";
 
 const RatingsListSkeleton = () => {
   return (
@@ -148,90 +149,151 @@ const Viewer = reatomComponent(({ ctx }) => {
       <div ref={ref} className="h-[1px] border-transparent w-full" />
     </>
   )
-})
+}, "Viewer")
 
-export const RatingList = reatomComponent(({ ctx }) => {
-  const ratingData = ctx.spy(ratingDataAtom)
-  const by = ctx.spy(ratingFilterAtom).by
-
-  const isLoadingUpdated = ctx.spy(updateRatingAction.statusesAtom).isPending;
-
-  if (ctx.spy(ratingAction.statusesAtom).isPending) {
-    return <RatingsSkeleton />
-  }
-
-  if (ctx.spy(ratingAction.statusesAtom).isRejected || !ratingData) {
-    return <RatingIsEmpty />;
-  }
+const RatingsParkour = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingParkour[]
+  if (!data) return null;
 
   return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      <RatingListParkourHeader />
+      {data.map((item, idx) => (
+        <RatingParkourCard
+          key={idx}
+          idx={idx}
+          area={item.area}
+          gamesplayed={item.gamesplayed}
+          nickname={item.nickname}
+          player={item.player}
+          score={item.score}
+        />
+      ))}
+    </div>
+  )
+}, "RatingParkour")
+
+const RatingsBelkoin = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingBelkoin[]
+  if (!data) return null;
+
+  return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      <RatingListBelkoinHeader />
+      {data.map((item, idx) => (
+        <RatingBelkoinCard
+          key={idx}
+          idx={idx}
+          balance={item.balance}
+          nickname={item.nickname}
+        />
+      ))}
+    </div>
+  )
+}, "RatingBelkoin")
+
+const RatingsReputation = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingReputation[]
+  if (!data) return null;
+
+  return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      <RatingListReputationHeader />
+      {data.map((item, idx) => (
+        <RatingReputationCard
+          key={idx}
+          idx={idx}
+          reputation={item.reputation}
+          uuid={item.uuid}
+          nickname={item.nickname}
+        />
+      ))}
+    </div>
+  )
+}, "RatingReputation")
+
+const RatingsCharism = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingCharism[]
+  if (!data) return null;
+
+  return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      <RatingListReputationHeader />
+      {data.map((item, idx) => (
+        <RatingCharismCard
+          key={idx}
+          idx={idx}
+          balance={item.balance}
+          nickname={item.nickname}
+        />
+      ))}
+    </div>
+  )
+}, "RatingCharism")
+
+const RatingsPlaytime = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingPlaytime[]
+  if (!data) return null;
+
+  return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      <RatingListPlaytimeHeader />
+      {data.map((item, idx) => (
+        <RatingPlaytimeCard
+          key={idx}
+          idx={idx}
+          total={item.total}
+          nickname={item.nickname}
+        />
+      ))}
+    </div>
+  )
+}, "RatingPlaytime")
+
+const RatingsLands = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingLands[]
+  if (!data) return null;
+
+  return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      <RatingListLandsHeader />
+      {data.map((item, idx) => (
+        <RatingLandsCard
+          key={idx}
+          idx={idx}
+          type={item.type}
+          blocks={item.blocks}
+          chunks_amount={item.chunks_amount}
+          land={item.land}
+          members={item.members}
+          name={item.name}
+        />
+      ))}
+    </div>
+  )
+}, "RatingLands")
+
+const COMPONENTS: Record<GetRatings["by"], ReactNode> = {
+  "parkour": <RatingsParkour />,
+  "lands_chunks": <RatingsLands />,
+  "playtime": <RatingsPlaytime />,
+  "belkoin": <RatingsBelkoin />,
+  "reputation": <RatingsReputation />,
+  "charism": <RatingsCharism />
+}
+
+const List = reatomComponent(({ ctx }) => {
+  const by = ctx.spy(ratingByAtom)
+
+  return COMPONENTS[by]
+}, "List")
+
+export const RatingList = reatomComponent(({ ctx }) => {
+  return (
     <div className="flex flex-col gap-2 h-fit w-full">
-      {isLoadingUpdated && <RatingsSkeleton />}
-      {!isLoadingUpdated && (
-        <>
-          {by === 'parkour' && (
-            <div className="flex flex-col gap-2 w-full h-full">
-              <RatingListParkourHeader />
-              {(ratingData as RatingParkour[]).map((item, idx) => (
-                <RatingParkourCard
-                  key={idx}
-                  idx={idx}
-                  area={item.area}
-                  gamesplayed={item.gamesplayed}
-                  nickname={item.nickname}
-                  player={item.player}
-                  score={item.score}
-                />
-              ))}
-            </div>
-          )}
-          {by === 'belkoin' && (
-            <div className="flex flex-col gap-2 w-full h-full">
-              <RatingListBelkoinHeader />
-              {(ratingData as RatingBelkoin[]).map((item, idx) => (
-                <RatingBelkoinCard key={idx} idx={idx} points={item.points} nickname={item.nickname} />
-              ))}
-            </div>
-          )}
-          {by === 'reputation' && (
-            <div className="flex flex-col gap-2 w-full h-full">
-              <RatingListReputationHeader />
-              {(ratingData as RatingReputation[]).map((item, idx) => (
-                <RatingReputationCard key={idx} idx={idx} reputation={item.reputation} uuid={item.uuid} nickname={item.nickname} />
-              ))}
-            </div>
-          )}
-          {by === 'charism' && (
-            <div className="flex flex-col gap-2 w-full h-full">
-              <RatingListCharismHeader />
-              {(ratingData as RatingCharism[]).map((item, idx) => (
-                <RatingCharismCard key={idx} idx={idx} balance={item.balance} nickname={item.nickname} />
-              ))}
-            </div>
-          )}
-          {by === 'playtime' && (
-            <div className="flex flex-col gap-2 w-full h-full">
-              <RatingListPlaytimeHeader />
-              {(ratingData as RatingPlaytime[]).map((item, idx) => (
-                <RatingPlaytimeCard key={idx} idx={idx} total={item.total} nickname={item.nickname} />
-              ))}
-            </div>
-          )}
-          {by === 'lands_chunks' && (
-            <div className="flex flex-col gap-2 w-full h-full">
-              <RatingListLandsHeader />
-              {/* @ts-ignore */}
-              {(ratingData as RatingLandsCardProps[]).map((item, idx) => (
-                <RatingLandsCard
-                  type={item.type} blocks={item.blocks} key={idx} idx={idx} chunks_amount={item.chunks_amount}
-                  land={item.land} members={item.members} name={item.name}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
-      {isLoadingUpdated && <RatingsListSkeleton />}
+      {ctx.spy(updateRatingAction.statusesAtom).isPending && <RatingsSkeleton />}
+      <List />
+      {ctx.spy(updateRatingAction.statusesAtom).isPending && <RatingsListSkeleton />}
       <Viewer />
     </div>
   )

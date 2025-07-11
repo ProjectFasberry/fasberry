@@ -5,11 +5,10 @@ import UnsafePasswords from "@repo/assets/configs/unsafe_passwords.txt"
 import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
 import ky from "ky";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { auth } from "#/shared/database/auth-db";
-import { ipSetup } from "#/lib/middlewares/ip";
-import { cookieSetup } from "#/lib/middlewares/cookie";
+import { ipPlugin } from "#/lib/middlewares/ip";
+import { sessionDerive } from "#/lib/middlewares/session";
 import { logger } from "#/utils/config/logger";
-import { getExistSession } from "../private/validation.route";
+import { userDerive } from "#/lib/middlewares/user";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -58,8 +57,9 @@ async function getUserUUID(nickname: string) {
 }
 
 export const register = new Elysia()
-  .use(ipSetup())
-  .use(cookieSetup())
+  .use(ipPlugin())
+  .use(sessionDerive())
+  .use(userDerive())
   .post("/register", async (ctx) => {
     const { findout, nickname, password, token: cfToken, referrer } = ctx.body
 
@@ -101,15 +101,9 @@ export const register = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    beforeHandle: async ({ session, ...ctx }) => {
-      if (session) {
-        const existsSession = await getExistSession(session)
-
-        if (existsSession && Number(existsSession.count)) {
-          return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("Authorized"))
-        }
-        
-        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
+    beforeHandle: async ({ nickname, ...ctx }) => {
+      if (nickname) {
+        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("Authorized"))
       }
     },
     body: registerSchema

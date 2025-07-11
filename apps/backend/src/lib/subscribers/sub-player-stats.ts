@@ -1,8 +1,7 @@
 import { bisquite } from "#/shared/database/bisquite-db"
 import { reputation } from "#/shared/database/reputation-db"
 import { getNatsConnection } from "#/shared/nats/nats-client"
-// import { USER_GET_STATS_SUBJECT } from "#/shared/nats/nats-subjects"
-import { natsLogger } from "@repo/lib/logger"
+import { logger } from "#/utils/config/logger"
 
 type PlayerStats = {
   charism: number
@@ -14,6 +13,10 @@ type PlayerStats = {
 }
 
 async function getPlayerStats(nickname: string): Promise<PlayerStats> {
+  let initial: PlayerStats = {
+    charism: 0, meta: null, belkoin: 0, reputation: 0, displayName: null, totalPlaytime: 0
+  }
+
   const main = await bisquite
     .selectFrom("CMI_users")
     .leftJoin("playerpoints_username_cache", "CMI_users.username", "playerpoints_username_cache.username")
@@ -30,9 +33,7 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
     .executeTakeFirst()
 
   if (!main) {
-    return {
-      charism: 0, meta: null, belkoin: 0, reputation: 0, displayName: null, totalPlaytime: 0
-    }
+    return initial
   }
 
   const result = await reputation
@@ -41,7 +42,7 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
     .where("reputation.uuid", "=", main.player_uuid)
     .executeTakeFirst()
 
-  return {
+  initial = {
     charism: main.Balance ? Number(main.Balance.toFixed(2)) : 0,
     meta: main.UserMeta,
     belkoin: main.points ? Number(main.points.toFixed(2)) : 0,
@@ -49,19 +50,20 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
     displayName: main.DisplayName,
     totalPlaytime: main.TotalPlayTime ?? 0
   }
+
+  return initial
 }
 
 export const subscribePlayerStats = () => {
   const nc = getNatsConnection()
 
-  console.log("Subscribed to player stats")
+  logger.success("Subscribed to player stats")
 
   try {
-    // todo: replace to real subject
     return nc.subscribe("todo" + ".*", {
-      callback: async (err, msg) => {
-        if (err) {
-          console.error(err)
+      callback: async (e, msg) => {
+        if (e) {
+          logger.error(e.message)
           return
         }
 
@@ -69,19 +71,13 @@ export const subscribePlayerStats = () => {
         const nickname = subject.split(".")[3]
 
         if (!nickname) {
-          return msg.respond(JSON.stringify({
-            error: "Invalid nickname"
-          }))
+          const payload = JSON.stringify({ error: "Invalid nickname" });
+
+          return msg.respond(payload)
         }
 
         try {
-          const start = performance.now();
-
           const stats = await getPlayerStats(nickname)
-
-          const end = performance.now();
-
-          console.log(`Request time: ${end - start}ms`)
 
           return msg.respond(JSON.stringify(stats))
         } catch (e) {
@@ -90,7 +86,8 @@ export const subscribePlayerStats = () => {
       }
     })
   } catch (e) {
-    // @ts-expect-error
-    natsLogger.error(e.message)
+    if (e instanceof Error) {
+      logger.error(e.message)
+    }
   }
 }

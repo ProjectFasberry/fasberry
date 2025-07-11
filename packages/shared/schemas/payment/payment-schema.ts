@@ -2,7 +2,7 @@ import { z } from 'zod/v4';
 import { donateSchema } from '../entities/donate-schema';
 import { currencyCryptoSchema, currencyFiatSchema } from '../entities/currencies-schema';
 
-export const paymentFiatMethodSchema = z.enum(["creditCard", "sbp"])
+export const paymentFiatMethodSchema = z.enum(["card", "sbp"])
 export const paymentTypeSchema = z.enum(['donate', 'belkoin', 'charism', 'item', 'event']);
 export const paymentCurrencySchema = z.union([currencyFiatSchema, currencyCryptoSchema]);
 export const paymentStatusSchema = z.enum(['created', 'received', 'captured', 'cancelled', 'failed']);

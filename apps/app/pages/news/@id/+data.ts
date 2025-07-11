@@ -1,12 +1,15 @@
 import { BASE } from "@/shared/api/client";
 import { News } from "@/shared/components/app/news/components/news";
+import { wrapTitle } from "@/shared/lib/wrap-title";
+import { useConfig } from "vike-react/useConfig";
+import { render } from "vike/abort";
 import { PageContextServer } from "vike/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getNews(id: string) {
-  const res = await BASE(`shared/news/${id}`)
-  const data = await res.json<{ data: News } | { error: string }>()
+async function getNews({ id, ...args }: { id: string } & RequestInit) {
+  const res = await BASE(`shared/news/${id}`, { ...args })
+  const data = await res.json<WrappedResponse<News>>()
 
   if (!data || 'error' in data) return null
 
@@ -14,13 +17,26 @@ async function getNews(id: string) {
 }
 
 export async function data(pageContext: PageContextServer) {
+  const config = useConfig()
+
   let news: News | null = null;
 
   try {
-    news = await getNews(pageContext.routeParams.id)
+    news = await getNews({ 
+      id: pageContext.routeParams.id, headers: pageContext.headers ?? undefined 
+    })
   } catch (e) {
     console.error(e)
   }
+
+  if (!news) {
+    throw render("/not-exist")
+  }
+
+  config({
+    title: wrapTitle(news.title),
+    description: news.description.slice(0, 256)
+  })
 
   return {
     id: pageContext.routeParams.id,

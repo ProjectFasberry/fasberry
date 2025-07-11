@@ -3,11 +3,11 @@ import Elysia, { t } from 'elysia';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { getPlayerAvatar, getRawSkin, getSkin } from './skin.model';
 import { CacheControl } from 'elysiajs-cdn-cache';
-import { cacheSetup } from '#/lib/middlewares/cache-control';
+import { cachePlugin } from '#/lib/middlewares/cache-control';
 
 const download = new Elysia()
   .get('/download/:nickname', async (ctx) => {
-    const { nickname } = ctx.params
+    const nickname = ctx.params.nickname
 
     try {
       const skin = await getRawSkin(nickname)
@@ -26,7 +26,7 @@ const skinSchema = t.Object({
 })
 
 const skin = new Elysia()
-  .use(cacheSetup())
+  .use(cachePlugin())
   .get('/:nickname', async (ctx) => {
     const nickname = ctx.params.nickname
     const type = ctx.query.type;

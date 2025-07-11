@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mc.fasberry.su/sitemap.xml
+Sitemap: https://app.fasberry.su/sitemap.xml

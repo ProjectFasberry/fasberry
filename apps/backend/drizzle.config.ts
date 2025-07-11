@@ -5,6 +5,7 @@ export default defineConfig({
   schema: "./src/drizzle/schema.ts",
   out: "./src/drizzle",
   dialect: "sqlite",
+  // dialect: "postgresql",
   // dialect: 'postgresql',
   dbCredentials: {
     // url: process.env.AUTHORIZATION_POSTGRES_DB_URL,

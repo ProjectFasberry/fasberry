@@ -6,6 +6,8 @@ type LinkProps = HTMLAttributes<HTMLAnchorElement> & {
   href: string
 }
 
+export const createLink = (type: "land" | "player" | "news", target: string) => `/${type}/${target}`
+
 export function Link({ href, className, ...props }: LinkProps) {
   const pathname = usePageContext().urlPathname;
 

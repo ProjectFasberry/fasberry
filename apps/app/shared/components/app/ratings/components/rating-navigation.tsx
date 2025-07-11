@@ -1,9 +1,10 @@
 import { reatomComponent } from "@reatom/npm-react"
 import { GetRatings } from "../models/ratings.model"
-import { ratingFilterAtom, RatingFilterQuery } from "../models/rating-filter.model"
+import { ratingByAtom } from "../models/rating-filter.model"
 import { updateRatingAction } from "../models/update-ratings.model"
 import { HTMLAttributes } from "react";
 import { Typography } from "@repo/ui/typography";
+import { action, atom } from "@reatom/core";
 
 interface NavigationBadgeProps extends HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -37,25 +38,29 @@ const RATING_NAVIGATION: { title: string, by: GetRatings["by"] }[] = [
   { title: "Репутация", by: "reputation" }
 ]
 
+const changeBy = action((ctx, target: GetRatings["by"]) => {
+  const currentType = ctx.get(ratingByAtom)
+
+  if (target === currentType) return
+
+  ratingByAtom(ctx, target)
+  updateRatingAction(ctx, "update-filter")
+}, "changeBy")
+
+const isActive = (target: string) => atom((ctx) => {
+  const currentType = ctx.spy(ratingByAtom)
+  return currentType === target;
+}, "isActive")
+
 export const RatingNavigation = reatomComponent(({ ctx }) => {
-  const currentType = ctx.spy(ratingFilterAtom).by
-
-  const changeRatingType = (by: RatingFilterQuery["by"]) => {
-    if (by === currentType) return
-
-    ratingFilterAtom(ctx, (state) => ({ ...state, by }))
-
-    updateRatingAction(ctx, "update-filter")
-  }
-
   return (
     <div className="flex overflow-x-auto overflow-y-hidden gap-2 w-full pb-2">
       {RATING_NAVIGATION.map(rating => (
         <NavigationBadge
           key={rating.by}
-          data-state={currentType === rating.by ? "active" : "inactive"}
+          data-state={ctx.spy(isActive(rating.by)) ? "active" : "inactive"}
           title={rating.title}
-          onClick={() => changeRatingType(rating.by)}
+          onClick={() => changeBy(ctx, rating.by)}
         />
       ))}
     </div>

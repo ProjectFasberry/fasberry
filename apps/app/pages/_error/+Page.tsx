@@ -20,7 +20,7 @@ export default function Page() {
           </Typography>
           <Link href="/">
             <Button
-              className="md:w-max bg-neutral-600 text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
+              className="md:w-max text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
             >
               Вернуться в безопасное место
             </Button>
@@ -40,7 +40,7 @@ export default function Page() {
         </Typography>
         <Link href="/">
           <Button
-            className="bg-neutral-600 md:w-max text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
+            className="md:w-max text-neutral-50 text-center text-base md:text-xl py-1 px-4 md:px-6"
           >
             Вернуться в безопасное место
           </Button>

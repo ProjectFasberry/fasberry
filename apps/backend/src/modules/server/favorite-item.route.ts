@@ -21,7 +21,7 @@ async function getFavoriteItem(favoriteId: string) {
 
 export const favoriteItem = new Elysia()
   .get("/favorite-item/:nickname", async (ctx) => {
-    const { nickname } = ctx.params
+    const nickname = ctx.params.nickname
 
     try {
       const favoriteItem = await getFavoriteItem(nickname)

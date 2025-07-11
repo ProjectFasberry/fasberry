@@ -1,20 +1,23 @@
-import { IconBasket, IconCategory, IconMenu2, IconStars, IconUsersGroup } from "@tabler/icons-react";
-import { Link } from '@/shared/components/config/Link';
+import { IconBasket, IconCategory, IconStars, IconUsersGroup, IconX } from "@tabler/icons-react";
+import { createLink, Link } from '@/shared/components/config/Link';
 import { reatomComponent } from "@reatom/npm-react";
 import { currentUserAtom } from "../api/global.model";
-import { Avatar } from "../components/app/avatar/avatar";
+import { Avatar } from "../components/app/avatar/components/avatar";
 import { Button } from "@repo/ui/button";
 import { navigate } from "vike/client/router";
+import { Typography } from "@repo/ui/typography";
+import { usePageContext } from "vike-react/usePageContext";
+import { BasketTrigger } from "../components/app/shop/components/store-basket";
 
-const createLink = (type: "player" | "land", value: string) => `/${type}/${value}`
-
-export const AuthorizeButton = reatomComponent(({ ctx }) => {
+export const AuthorizeButton = () => {
   return (
-    <Button onClick={() => navigate("/auth")} className="bg-green-700 rounded-lg font-semibold text-neutral-50">
-      Авторизоваться
+    <Button onClick={() => navigate("/auth")} className="bg-green-700 rounded-lg ">
+      <Typography className="font-semibold text-neutral-50 text-md sm:text-base">
+        Авторизоваться
+      </Typography>
     </Button>
   )
-}, "AuthorizeButton")
+}
 
 const HeaderUser = reatomComponent(({ ctx }) => {
   const currentUser = ctx.spy(currentUserAtom)
@@ -24,9 +27,14 @@ const HeaderUser = reatomComponent(({ ctx }) => {
   return (
     <Link
       href={createLink("player", currentUser.nickname)}
-      className="w-[38px] h-[38px] overflow-hidden rounded-md border border-neutral-400"
+      className="w-[38px] h-[38px] overflow-hidden rounded-md"
     >
-      <Avatar nickname={currentUser.nickname} propHeight={38} propWidth={38} className="min-w-[38px] min-h-[38px] w-[38px] h-[38px]" />
+      <Avatar
+        nickname={currentUser.nickname}
+        propHeight={38}
+        propWidth={38}
+        className="min-w-[38px] min-h-[38px] w-[38px] h-[38px]"
+      />
     </Link>
   )
 }, "HeaderUser")
@@ -60,13 +68,14 @@ const LINKS = [
 
 const MobileBottomBar = () => {
   return (
-    <div className="md:hidden z-[20] fixed flex items-center justify-center bottom-0 px-6 rounded-t-md bg-neutral-800 h-16 w-full">
-      <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-400 *:data-[state=active]:text-green-500">
+    <div className="md:hidden z-[20] fixed flex items-center justify-center bottom-0 px-4 border-t border-neutral-700 bg-neutral-800 h-20 w-full">
+      <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-50 *:data-[state=active]:text-green-500">
         {LINKS.map(link => (
           <Link key={link.title} aria-label={link.label} href={link.href}>
             <div className="flex items-center justify-center">
-              <link.icon size={34} />
+              <link.icon size={30} />
             </div>
+            <span className="font-semibold text-[13px]">{link.title}</span>
           </Link>
         ))}
       </div>
@@ -75,14 +84,21 @@ const MobileBottomBar = () => {
 }
 
 export const Header = () => {
+  const pathname = usePageContext().urlPathname;
+
   return (
     <>
       <MobileBottomBar />
       <div className="flex items-center justify-start w-full border-b border-neutral-800 z-[20] h-20 top-0">
         <div className="flex items-center justify-between px-2 sm:px-6 w-full">
-          <Link aria-label="Перейти на главную" href="/" className="w-1/5 bg-transparent relative">
-            <img src="/favicon.ico" width={52} height={52} alt="" />
-          </Link>
+          <div className="w-1/5 bg-transparent relative">
+            <Link aria-label="Перейти на главную" href="/" className="flex items-center gap-4">
+              <img src="/favicon.ico" width={48} height={48} alt="" />
+              <Typography className="font-semibold text-xl">
+                Fasberry
+              </Typography>
+            </Link>
+          </div>
           <div
             className="hidden md:flex w-3/5 justify-center items-center h-20 text-neutral-400
             *:flex *:items-center *:justify-center *:border-b *:h-full *:px-6 
@@ -94,7 +110,8 @@ export const Header = () => {
               </Link>
             ))}
           </div>
-          <div className="flex items-center w-full md:w-1/5 justify-end">
+          <div className="flex gap-2 items-center w-full md:w-1/5 justify-end">
+            {pathname.includes("/store") && <BasketTrigger />}
             <HeaderUser />
           </div>
         </div>

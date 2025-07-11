@@ -18,4 +18,6 @@ export const eventsAction = reatomAsync(async (ctx) => {
 
     return EVENTS
   })
+}, {
+  name: "eventsAction"
 }).pipe(withDataAtom(), withStatusesAtom())

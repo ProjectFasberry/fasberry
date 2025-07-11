@@ -8,6 +8,8 @@ import { usePageContext } from "vike-react/usePageContext";
 import { useUpdate } from "@reatom/npm-react";
 import { Toaster } from "./toaster";
 import { pageContextAtom } from "../api/global.model";
+import { Footer } from './footer';
+import { Widgets } from './widgets';
 
 const SyncPageContext = () => {
   const pageContext = usePageContext()
@@ -17,15 +19,17 @@ const SyncPageContext = () => {
 
 export default function LayoutDefault({ children }: PropsWithChildren) {
   return (
-    <div id="page-container">
-      <ReatomProvider>
-        <Toaster />
-        <SyncPageContext />
+    <ReatomProvider>
+      <SyncPageContext />
+      <Toaster />
+      <div id="page-container">
         <Header />
         <div id="page-content">
           {children}
+          <Footer />
         </div>
-      </ReatomProvider>
-    </div>
+        <Widgets />
+      </div>
+    </ReatomProvider>
   );
 }

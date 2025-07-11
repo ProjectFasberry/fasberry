@@ -1,51 +1,17 @@
 import { throwError } from "#/helpers/throw-error";
-import { auth } from "#/shared/database/auth-db";
-import { encodeHexLowerCase } from "@oslojs/encoding";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { sha256 } from "@oslojs/crypto/sha2";
 import { unsetCookie } from "#/helpers/cookie";
-
-export const deleteSession = async (sessionId: string) => {
-  return auth
-    .deleteFrom("sessions")
-    .where("token", "=", sessionId)
-    .executeTakeFirstOrThrow();
-}
-
-export async function invalidateSession(token: string) {
-  const query = await auth
-    .selectFrom("sessions")
-    .select(auth.fn.countAll().as("count"))
-    .where("token", "=", token)
-    .$castTo<{ count: number }>()
-    .executeTakeFirstOrThrow();
-
-  if (!query.count) {
-    throw new Error("Session not found");
-  }
-
-  return deleteSession(token);
-}
+import { sessionDerive } from "#/lib/middlewares/session";
+import { deleteSession } from "./auth.model";
+import { userDerive } from "#/lib/middlewares/user";
 
 export const invalidate = new Elysia()
-  .post("/invalidate-session", async ({ cookie, ...ctx }) => {
-    if (!cookie) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, { error: "s" })
-    }
-
-    const sessionToken = cookie.session.value
-
-    if (!sessionToken) {
-      return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Session token not found"))
-    }
-
+  .use(sessionDerive())
+  .use(userDerive())
+  .post("/invalidate-session", async ({ cookie, session, ...ctx }) => {
     try {
-      const sessionId = encodeHexLowerCase(
-        sha256(new TextEncoder().encode(sessionToken))
-      );
-
-      const result = await invalidateSession(sessionToken);
+      const result = await deleteSession(session!);
 
       if (!result) {
         return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Internal Server Error"))
@@ -57,5 +23,11 @@ export const invalidate = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null, status: "success" })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+    }
+  }, {
+    beforeHandle: async ({ nickname, session, ...ctx }) => {
+      if (!nickname || !session) {
+        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Session token not found"))
+      }
     }
   })

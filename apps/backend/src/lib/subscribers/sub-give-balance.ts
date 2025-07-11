@@ -1,19 +1,19 @@
 
 import { playerPoints } from "#/shared/database/playerpoints-db"
 import { getNatsConnection } from "#/shared/nats/nats-client"
-import { natsLogger } from "@repo/lib/logger"
+import { logger } from "#/utils/config/logger"
 import { sql } from "kysely"
 
 export const subscribeGiveBalance = () => {
   const nc = getNatsConnection()
 
-  console.log("Subscribed to give balance")
+  logger.success("Subscribed to give balance")
   
   return nc.subscribe("give.balance", {
-    callback: async (err, msg) => {
-      if (err) {
-        console.error(err)
-        return
+    callback: async (e, msg) => {
+      if (e) {
+        logger.error(e.message)
+        return;
       }
 
       const nickname: string = msg.data.toString()
@@ -31,12 +31,18 @@ export const subscribeGiveBalance = () => {
           .executeTakeFirstOrThrow()
 
         if (res.numUpdatedRows) {
-          return msg.respond(JSON.stringify({ result: "ok" }))
+          const payload = JSON.stringify({ result: "ok" });
+
+          return msg.respond(payload)
         }
 
-        return msg.respond(JSON.stringify({ error: "not updated" }))
+        return msg.respond(
+          JSON.stringify({ error: "not updated" })
+        )
       } catch (e) {
-        console.error(e)
+        if (e instanceof Error) {
+          logger.error(e.message)
+        }
       }
     }
   })

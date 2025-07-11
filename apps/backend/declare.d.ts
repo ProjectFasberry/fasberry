@@ -44,6 +44,12 @@ declare global {
       MINIO_ACCESS_KEY: string;
       MINIO_SECRET_KEY: string;
       MINIO_ENDPOINT: string;
+
+      CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
+
+      REDIS_HOST: string;
+      REDIS_USER_PASSWORD: string;
+      REDIS_USER: string;
     }
   }
 

@@ -1,14 +1,14 @@
-import { LandsList } from "@/shared/components/app/lands/components/lands-list"
-import LandsPreview from "@repo/assets/images/clan-preview.jpg"
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography"
+import { LandsList } from "@/shared/components/app/lands/components/lands-list";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const LandsPreviewImage = () => {
   return (
     <div className="flex select-none flex-col items-center justify-end relative overflow-hidden h-[180px] rounded-lg w-full">
       <img
         draggable={false}
-        src={LandsPreview}
+        src={getStaticImage("arts/clan-preview.jpg")}
         alt=""
         loading="lazy"
         width={800}
@@ -29,9 +29,7 @@ export default function LandsPage() {
           <Typography color="white" className="font-semibold text-2xl">
             Территории сервера
           </Typography>
-          <div className="flex flex-col gap-2 h-fit w-full">
-            <LandsList />
-          </div>
+          <LandsList/>
         </div>
       </div>
     </MainWrapperPage>

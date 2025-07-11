@@ -11,7 +11,7 @@ const modernLayoutVars = tv({
       default: "responsive mx-auto",
     },
     padding: {
-      default: "py-24 lg:py-36",
+      default: "py-8 lg:py-12",
       small: "py-8"
     }
   },
@@ -22,7 +22,7 @@ const modernLayoutVars = tv({
 });
 
 export const MainWrapperPage = ({
-  className, variant, ...props
+  className, variant, padding, ...props
 }: LayoutVariantsProps) => {
-  return <div className={modernLayoutVars({ variant, className })} {...props} />
+  return <div className={modernLayoutVars({ variant, padding, className })} {...props} />
 }

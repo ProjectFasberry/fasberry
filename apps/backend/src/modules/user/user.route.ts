@@ -7,27 +7,15 @@ import { getPlayerAvatar } from "../server/skin.model";
 import type { User } from "@repo/shared/types/entities/user"
 import dayjs from "dayjs"
 import { Donate } from "@repo/shared/types/entities/donate-type";
-import { cookieSetup } from "#/lib/middlewares/cookie";
+import { sessionDerive } from "#/lib/middlewares/session";
 import { sqlite } from "#/shared/database/sqlite-db";
+import { userDerive } from "#/lib/middlewares/user";
 
 export const user = new Elysia()
-  .use(cookieSetup())
-  .get("/user/:nickname", async (ctx) => {
+  .use(sessionDerive())
+  .use(userDerive())
+  .get("/user/:nickname", async ({ nickname: initiator, ...ctx }) => {
     const recipient = ctx.params.nickname;
-
-    let initiator: string | null = null
-
-    if (ctx.session) {
-      const query = await auth
-        .selectFrom("sessions")
-        .select("nickname")
-        .where('token', "=", ctx.session)
-        .executeTakeFirst()
-
-      if (query?.nickname) {
-        initiator = query.nickname
-      }
-    }
 
     async function getDonate() {
       const query = await luckperms

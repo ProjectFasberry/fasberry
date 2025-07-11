@@ -35,9 +35,7 @@ async function getUserBalance(nickname: string) {
 }
 
 export const playerBalance = new Elysia()
-  .get("/player-balance", async (ctx) => {
-    const nickname = "test"
-
+  .get("/player-balance", async ({ nickname, ...ctx }) => {
     try {
       const balance = await getUserBalance(nickname)
 
@@ -170,7 +168,7 @@ type SkillsData = {
 
 export const playerSkills = new Elysia()
   .get("/player-skills/:nickname", async (ctx) => {
-    const { nickname } = ctx.params
+    const nickname = ctx.params.nickname
 
     try {
       let skills = await getSkills(nickname)
@@ -236,7 +234,7 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
 
 export const playerStats = new Elysia()
   .get("/player-stats/:nickname", async (ctx) => {
-    const { nickname } = ctx.params
+    const nickname = ctx.params.nickname
 
     try {
       const stats = await getPlayerStats(nickname)

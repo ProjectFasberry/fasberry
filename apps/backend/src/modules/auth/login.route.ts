@@ -1,21 +1,27 @@
 import { UAParser } from 'ua-parser-js';
 import Elysia from "elysia"
-import { auth } from "#/shared/database/auth-db"
 import bcrypt from 'bcryptjs';
 import { throwError } from '#/helpers/throw-error';
-import { authSchema, createSession, DEFAULT_SESSION_EXPIRE, getExistsUser } from './auth.model';
-import { generateSessionToken } from '#/utils/auth/generate-session-token';
+import { authSchema, createSession, getExistsUser } from './auth.model';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { setCookie } from '#/helpers/cookie';
-import { ipSetup } from '#/lib/middlewares/ip';
-import { cookieSetup } from '#/lib/middlewares/cookie';
-import { getExistSession } from '../private/validation.route';
+import { ipPlugin } from '#/lib/middlewares/ip';
+import { sessionDerive } from '#/lib/middlewares/session';
+import { userDerive } from '#/lib/middlewares/user';
+import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding";
 
 const loginSchema = authSchema
 
+function generateSessionToken(): string {
+  const bytes = new Uint8Array(20);
+  crypto.getRandomValues(bytes);
+  return encodeBase32LowerCaseNoPadding(bytes);
+}
+
 export const login = new Elysia()
-  .use(ipSetup())
-  .use(cookieSetup())
+  .use(ipPlugin())
+  .use(userDerive())
+  .use(sessionDerive())
   .post("/login", async ({ cookie, ...ctx }) => {
     const { nickname, password, token: cfToken } = ctx.body;
 
@@ -44,31 +50,21 @@ export const login = new Elysia()
       const token = generateSessionToken()
       const ua = UAParser(ctx.headers["user-agent"])
 
-      const expires_at = new Date(Date.now() + DEFAULT_SESSION_EXPIRE);
+      const result = await createSession({ token, nickname, info: { ...ua, ip: ctx.ip } })
 
-      const result = await createSession({
-        token, nickname, expires_at, info: { ...ua, ip: ctx.ip }
-      })
+      setCookie({ cookie, key: "session", expires: result.expires_at, value: token })
+      setCookie({ cookie, key: "logged_nickname", expires: result.expires_at, value: nickname })
 
-      setCookie({ cookie, key: "session", expires: expires_at, value: token })
-      setCookie({ cookie, key: "logged_nickname", expires: expires_at, value: nickname })
-
-      const data = { id: result.id, nickname: result.nickname }
+      const data = { nickname: result.nickname }
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    beforeHandle: async ({ session, ...ctx }) => {
-      if (session) {
-        const existsSession = await getExistSession(session)
-
-        if (existsSession && Number(existsSession.count)) {
-          return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("Authorized"))
-        }
-
-        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
+    beforeHandle: async ({ nickname, ...ctx }) => {
+      if (nickname) {
+        return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError("Authorized"))
       }
     },
     body: loginSchema

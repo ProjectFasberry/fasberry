@@ -5,13 +5,13 @@ import { redirect } from "vike/abort";
 import { useConfig } from "vike-react/useConfig";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { DONATE_TITLE } from "@repo/shared/constants/donate-aliases";
-import dayjs from "dayjs"
+import dayjs from "@/shared/lib/create-dayjs"
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getUser({ headers, nickname }: { nickname: string, headers?: Record<string, string> }) {
-  const res = await BASE(`server/user/${nickname}`, { headers, throwHttpErrors: false })
-  const data = await res.json<{ data: User } | { error: string }>()
+async function getUser({ nickname, ...args }: { nickname: string } & RequestInit) {
+  const res = await BASE(`server/user/${nickname}`, { throwHttpErrors: false, ...args })
+  const data = await res.json<WrappedResponse<User>>()
 
   if (!data || 'error' in data) return null
 
@@ -24,7 +24,9 @@ export async function data(pageContext: PageContextServer) {
   let user: User | null = null;
 
   try {
-    user = await getUser({ headers: pageContext.headers ?? undefined, nickname: pageContext.routeParams.nickname })
+    user = await getUser({
+      headers: pageContext.headers ?? undefined, nickname: pageContext.routeParams.nickname
+    })
   } catch (e) {
     console.error(e)
   }
@@ -50,8 +52,6 @@ export async function data(pageContext: PageContextServer) {
         <meta property="og:type" content="website" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:site" content="@твоя_учетка" />
-        <meta name="twitter:creator" content="@твоя_учетка" />
         <link rel="preload" as="image" href={user.avatar} imageSrcSet="" imageSizes="" />
         <meta name="keywords" content={`${user.nickname}, fasberry, fasberry page, профиль ${user.nickname}`} />
       </>

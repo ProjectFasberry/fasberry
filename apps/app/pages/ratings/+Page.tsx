@@ -4,7 +4,7 @@ import { ratingAction, ratingDataAtom } from "@/shared/components/app/ratings/mo
 import { onConnect } from "@reatom/framework";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
-import RatingsPreview from "@repo/assets/images/sand-camel.jpg"
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 onConnect(ratingDataAtom, ratingAction)
 
@@ -13,9 +13,8 @@ const RatingsPreviewImage = () => {
     <div className="flex select-none flex-col items-center justify-end relative overflow-hidden h-[180px] rounded-lg w-full">
       <img
         draggable={false}
-        src={RatingsPreview}
+        src={getStaticImage("arts/sand-camel.jpg")}
         alt=""
-        loading="lazy"
         width={800}
         height={800}
         className="absolute w-full h-[210px] rounded-lg object-cover"

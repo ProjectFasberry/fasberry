@@ -1,5 +1,3 @@
-import { Context } from "elysia";
-
 export function throwError(e: unknown): { error: string } {
   let error = 'Internal Server Error';
 

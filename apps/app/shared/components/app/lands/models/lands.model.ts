@@ -1,15 +1,22 @@
 import { BASE } from "@/shared/api/client";
-import { Lands } from "@/shared/components/app/land/models/land.model";
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { sleep } from "@reatom/framework";
+import { Land } from "@repo/shared/types/entities/land";
+import { toast } from "sonner";
 
 export const landsResource = reatomResource(async (ctx) => {
+  await sleep(200);
+
   return await ctx.schedule(async () => {
-    const res = await BASE("server/lands", { signal: ctx.controller.signal })
+    const res = await BASE("server/lands", { signal: ctx.controller.signal, throwHttpErrors: false })
+    const data = await res.json<{ data: Array<Land>, meta: PaginatedMeta } | { error: string }>()
 
-    const data = await res.json<{ data: Lands, meta: PaginatedMeta }>()
-
-    if (!data || 'error' in data) return null
+    if ('error' in data) return null
 
     return data
   })
-}).pipe(withDataAtom(), withCache(), withStatusesAtom())
+}, "landsResource").pipe(withDataAtom(), withCache(), withStatusesAtom())
+
+landsResource.onReject.onCall((_, e) => {
+  if (e instanceof Error) toast(e.message)
+})

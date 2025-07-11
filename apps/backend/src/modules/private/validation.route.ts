@@ -1,5 +1,6 @@
 import { throwError } from "#/helpers/throw-error";
-import { cookieSetup } from "#/lib/middlewares/cookie";
+import { sessionDerive } from "#/lib/middlewares/session";
+import { userDerive } from "#/lib/middlewares/user";
 import { auth } from "#/shared/database/auth-db";
 import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia from "elysia";
@@ -14,23 +15,14 @@ export async function getExistSession(token: string) {
 }
 
 export const privateValidate = new Elysia()
-  .use(cookieSetup())
-  .get('/validate', async (ctx) => {
-    const token = ctx.session!;
-
-    const query = await auth
-      .selectFrom("sessions")
-      .select("nickname")
-      .where("token", "=", token)
-      .executeTakeFirst()
-
-    if (!query) return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, { data: false })
-
+  .use(sessionDerive())
+  .use(userDerive())
+  .get('/validate', async ({ nickname, ...ctx }) => {
     try {
       const result = await sqlite
         .selectFrom("admins")
         .select("id")
-        .where("nickname", "=", query.nickname)
+        .where("nickname", "=", nickname)
         .executeTakeFirst()
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: Boolean(result?.id) })
@@ -38,14 +30,8 @@ export const privateValidate = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    beforeHandle: async ({ session, ...ctx }) => {
-      if (!session) {
-        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
-      }
-
-      const existsSession = await getExistSession(session)
-
-      if (!existsSession || !Number(existsSession.count)) {
+    beforeHandle: async ({ nickname, ...ctx }) => {
+      if (!nickname) {
         return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
       }
     },

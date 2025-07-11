@@ -14,7 +14,7 @@ let nc: NatsConnection | null = null;
 export async function initNats() {
   try {
     nc = await connect(NATS_CONFIG);
-    logger.log(`Connected to ${NATS_CONFIG.servers}`)
+    logger.success(`Connected to ${NATS_CONFIG.servers}`)
   } catch (err) {
     throw new Error('NATS connection failed');
   }
@@ -33,8 +33,8 @@ export async function closeNatsConnection() {
 
   try {
     await nc.drain();
-    console.log('NATS connection closed.')
+    logger.log('NATS connection closed.')
   } catch (err) {
-    console.error('Error closing NATS connection:', err)
+    logger.error('Error closing NATS connection:', err)
   }
 }

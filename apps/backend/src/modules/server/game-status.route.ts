@@ -51,7 +51,7 @@ async function getPlayerStatus(nickname: string) {
 
 export const userGameStatus = new Elysia()
   .get("/user-game-status/:nickname", async (ctx) => {
-    const { nickname } = ctx.params;
+    const nickname = ctx.params.nickname;
 
     try {
       const payload = await getPlayerStatus(nickname);

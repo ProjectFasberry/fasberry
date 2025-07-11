@@ -21,9 +21,7 @@ pageContextAtom.onChange((ctx, state) => {
 export default function LandPage() {
   return (
     <MainWrapperPage>
-      <div className="flex items-start gap-4 w-full">
-        <Land />
-      </div>
+      <Land />
     </MainWrapperPage>
   )
 }

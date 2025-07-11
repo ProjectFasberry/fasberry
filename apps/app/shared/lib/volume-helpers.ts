@@ -1,6 +1,2 @@
-export function getObjectUrl(bucket: string, key: string) {
-  return `https://volume.fasberry.su/${bucket}/${key}`
-}
-
-export const getSkinDestination = (key: string) => `skin-${key}.png`
-export const getAvatarDestination = (key: string) => `avatar-${key}.png`
+export const getStaticImage = (target: string) => `https://volume.fasberry.su/static/${target}`
+export const getObjectUrl = (bucket: string, key: string) => `https://volume.fasberry.su/${bucket}/${key}`

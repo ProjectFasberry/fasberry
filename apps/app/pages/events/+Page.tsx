@@ -1,16 +1,12 @@
-import FishingRod from "@repo/assets/images/minecraft/fishing_rod.webp"
-import CharismIcon from "@repo/assets/images/minecraft/charism_wallet.png"
-import Events from "@repo/assets/images/looking.jpg"
 import { Typography } from "@repo/ui/typography"
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog"
 import { Button } from "@repo/ui/button"
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 
 const EventsNotFound = () => {
   return (
     <div className="flex w-full items-center justify-center h-full gap-12 px-12 py-6 relative">
       <div className="flex flex-col items-center gap-y-4">
-        <img src={Events} alt="" width={256} height={256} />
+        <img src="https://volume.fasberry.su/static/arts/looking.jpg" alt="" width={256} height={256} />
         <Typography className="text-xl font-bold text-shark-50">
           Ивентов пока нет
         </Typography>
@@ -22,7 +18,7 @@ const EventsNotFound = () => {
 const Charism = ({ amount }: { amount: number }) => {
   return (
     <div className="flex items-center gap-1">
-      <img src={CharismIcon} alt="" width={32} height={32} />
+      <img src="https://volume.fasberry.su/static/charism_wallet.png" alt="" width={32} height={32} />
       <Typography className="text-base">
         {amount}
       </Typography>
@@ -34,7 +30,7 @@ const ExampleEvent = () => {
   return (
     <div className="flex flex-col items-center 2xl:aspect-square gap-4 w-full rounded-md p-2 bg-shark-950">
       <div className="border border-shark-700 w-full flex items-center justify-center rounded-md p-4">
-        <img src={FishingRod} alt="" width={96} height={96} />
+        <img src="https://volume.fasberry.su/static/arts/fishing_rod.webp" alt="" width={96} height={96} />
       </div>
       <div className="flex flex-col justify-start w-full">
         <Typography className="font-semibold text-lg">
@@ -78,7 +74,6 @@ const ExampleEvent = () => {
     </div>
   )
 }
-
 export default function EventsPage() {
   return (
     <div className="flex lg:flex-row flex-col w-full min-h-dvh gap-2">

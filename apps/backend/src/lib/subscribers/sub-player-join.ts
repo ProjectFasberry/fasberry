@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { SERVER_USER_EVENT_SUBJECT, USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/nats-subjects"
-import { natsLogger } from "@repo/lib/logger"
 import { z } from "zod/v4"
+import { logger } from '#/utils/config/logger';
 
 const userJoinSchema = z.object({
   date: z.string(),
@@ -13,12 +13,12 @@ const userJoinSchema = z.object({
 export const subscribePlayerJoin = () => {
   const nc = getNatsConnection()
 
-  console.log("Subscribed to player join")
+  logger.success("Subscribed to player join")
   
   return nc.subscribe(SERVER_USER_EVENT_SUBJECT, {
-    callback: async (err, msg) => {
-      if (err) {
-        console.error(err);
+    callback: async (e, msg) => {
+      if (e) {
+        logger.error(e.message);
         return;
       }
 
@@ -47,7 +47,9 @@ export const subscribePlayerJoin = () => {
             break;
         }
       } catch (e) {
-        console.error(e)
+        if (e instanceof Error) {
+          logger.error(e)
+        }
       }
     }
   })

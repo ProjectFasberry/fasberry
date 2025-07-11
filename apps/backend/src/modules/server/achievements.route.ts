@@ -98,7 +98,7 @@ export const achievementsMeta = new Elysia()
 
 export const achievements = new Elysia()
   .get("/achievements/:nickname", async (ctx) => {
-    const { nickname } = ctx.params
+    const nickname = ctx.params.nickname
 
     try {
       const achievements = await getAchievements(nickname)

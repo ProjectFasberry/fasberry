@@ -3,7 +3,7 @@ import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { CacheControl } from "elysiajs-cdn-cache";
-import { cacheSetup } from "#/lib/middlewares/cache-control";
+import { cachePlugin } from "#/lib/middlewares/cache-control";
 import { getStaticObject } from "#/shared/minio/init";
 
 async function getModpacks() {
@@ -24,7 +24,7 @@ async function getModpacks() {
 }
 
 export const modpack = new Elysia()
-  .use(cacheSetup())
+  .use(cachePlugin())
   .get('/modpacks', async (ctx) => {
     try {
       const modpacks = await getModpacks()

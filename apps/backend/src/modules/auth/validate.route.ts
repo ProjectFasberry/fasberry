@@ -1,65 +1,29 @@
-import { isProduction } from "#/helpers/is-production";
-import { throwError } from "#/helpers/throw-error";
-import { validateSessionToken } from "#/utils/auth/validate-session-token";
 import Elysia from "elysia";
+import { throwError } from "#/helpers/throw-error";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { auth } from "#/shared/database/auth-db";
-import { cookieSetup } from "#/lib/middlewares/cookie";
-
-export const SESSION_DOMAIN = "mc.fasberry.su"
-export const SESSION_KEY = "session"
-
-export async function getUserSession(token: string) {
-  return auth
-    .selectFrom("sessions")
-    .select("nickname")
-    .where("token", "=", token)
-    .executeTakeFirst();
-}
+import { sessionDerive } from "#/lib/middlewares/session";
+import { userDerive } from "#/lib/middlewares/user";
+import { getIsExistsSession } from "./auth.model";
 
 export const validate = new Elysia()
-  .use(cookieSetup())
-  .get("/validate-session", async ({ cookie, ...ctx }) => {
-    const token = cookie.session.value
-    // const nickname = ctx.store.nickname
+  .use(sessionDerive())
+  .use(userDerive())
+  .get("/validate-session", async ({ cookie, nickname, session, ...ctx }) => {
+    const token = session;
 
-    const nickname = "Test"
-    
+    if (!token) return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
+
     try {
-      // const nickname = await getNicknameByTokenFromKv(token);
+      const data = await getIsExistsSession(token);
 
-      if (!nickname || !token) {
-        const session = await validateSessionToken(token as string);
-
-        if (!session) {
-          return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Invalid session token"))
-        }
-
-        cookie.session.httpOnly = true
-        cookie.session.sameSite = "lax"
-        cookie.session.domain = SESSION_DOMAIN
-        cookie.session.secure = isProduction
-        cookie.session.expires = new Date(session.expires_at)
-        cookie.session.path = "/"
-        cookie.session.value = token
-      }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: true, status: "success" })
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    beforeHandle: async (ctx) => {
-      const token = ctx.cookie["session"].value
-
-      if (!token) {
-        return throwError("Unauthorized")
-      }
-
-      const session = await getUserSession(token)
-
+    beforeHandle: async ({ session, ...ctx }) => {
       if (!session) {
-        return throwError("Unauthorized")
+        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: false })
       }
     }
   })

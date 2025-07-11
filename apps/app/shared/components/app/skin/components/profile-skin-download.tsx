@@ -2,7 +2,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
 import { Button } from "@repo/ui/button";
-import { userParam } from "@/shared/api/global.model";
+import { userParam } from "../../player/models/player.model";
 
 export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -10,7 +10,7 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const nickname = ctx.spy(userParam)
   if (!nickname) return null;
 
-  const downloadUrl = `https://api.fasberry.su/minecraft/skin/download-skin/${nickname}`
+  const downloadUrl = `https://api.fasberry.su/minecraft/server/skin/download/${nickname}`
 
   return (
     <Dialog open={dialogOpen} onOpenChange={v => setDialogOpen(v)}>
@@ -25,9 +25,9 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
         <DialogTitle>Скачать скин?</DialogTitle>
         <div className="flex items-center justify-end gap-2 w-full">
           <DialogClose>
-            <button className="btn">
+            <Button className="font-semibold bg-red-700 hover:bg-red-800">
               Отмена
-            </button>
+            </Button>
           </DialogClose>
           <a
             href={downloadUrl}
@@ -35,11 +35,12 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
             target="_blank"
             rel="noopener noreferrer"
             download
-            className="btn bg-neutral-50 py-2 flex items-center px-6 justify-center"
           >
-            <p className="text-neutral-950 text-base font-medium">
-              Скачать
-            </p>
+            <Button className="flex bg-neutral-50 items-center justify-center">
+              <p className="font-semibold text-neutral-950 text-base">
+                Скачать
+              </p>
+            </Button>
           </a>
         </div>
       </DialogContent>

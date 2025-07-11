@@ -1,5 +1,12 @@
-import { callServerCommand } from "./call-command";
+import { AbortableCommandArgs, callServerCommand } from "./call-command";
 
-export async function callBroadcast(v: string): Promise<boolean> {
-  return callServerCommand({ parent: "cmi", value: `broadcast ${v}` })
+type CallBroadcast = { message: string }
+
+export async function callBroadcast(
+  { message }: CallBroadcast,
+  { signal }: AbortableCommandArgs
+) {
+  const payload = { parent: "cmi", value: `broadcast ${message}` }
+
+  return callServerCommand(payload, { signal })
 }
