@@ -1,4 +1,4 @@
-import { Link } from '@/shared/components/config/Link';
+import { Link } from '@/shared/components/config/link';
 import { Fragment } from 'react';
 
 const FOOTER_LINKS = [

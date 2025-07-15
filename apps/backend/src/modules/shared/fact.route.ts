@@ -11,7 +11,7 @@ export const fact = new Elysia()
 
     try {
       const fact = await sqlite
-        .selectFrom("facts")
+        .selectFrom("minecraft_facts")
         .select("fact")
         .where("id", "=", randomId)
         .executeTakeFirst();

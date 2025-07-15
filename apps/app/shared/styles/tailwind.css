@@ -1,0 +1,238 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@source "../../../../apps/frontend/**/*.{ts,tsx}";
+@source "../../../../packages/ui/**/*.{ts,tsx}";
+
+:root {
+  --bprogress-color: #00AA00;
+}
+
+@layer base {
+  * {
+    font-family: "Golos Text", sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    height: 100%;
+    word-break: keep-all;
+  }
+
+  body {
+    @apply bg-background-dark text-neutral-50;
+
+    overflow-x: hidden;
+    letter-spacing: normal;
+  }
+
+  #page-content {
+    @apply pb-20 md:p-0;
+
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  body.page-is-transitioning #page-content {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .full-screen-section {
+    @apply relative;
+  }
+
+  .responsive {
+    @apply w-full max-w-[clamp(420px,80vw,1200px)] sm:px-0 px-2;
+  }
+
+  .windows-loading-spinner {
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 2px;
+    overflow: visible;
+  }
+
+  .windows-loading-spinner>circle {
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2px;
+    stroke-linecap: round;
+    transform-origin: 50% 50%;
+    transition: all 0.2s ease-in-out 0s;
+    animation: 2s linear 0s infinite normal none running loading-spinner;
+  }
+
+  @keyframes loading-spinner {
+    0% {
+      stroke-dasharray: 0.01px, 43.97px;
+      transform: rotate(0);
+    }
+
+    50% {
+      stroke-dasharray: 21.99px, 21.99px;
+      transform: rotate(450deg);
+    }
+
+    100% {
+      stroke-dasharray: 0.01px, 43.97px;
+      transform: rotate(1080deg);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+@theme {
+
+  --color-dark-blue: oklch(19.6% 0.99 306);
+  --color-dark-green: oklch(60.6% 0.88 136);
+  --color-dark-aqua: oklch(63.1% 0.37 196);
+  --color-dark-red: oklch(35.1% 0.77 40);
+  --color-dark-purple: oklch(40.3% 0.85 328);
+  --color-dark-gray: oklch(36.1% 0.00 297);
+
+  --color-wool-orange: oklch(61.7% 0.61 62);
+  --color-wool-magenta: oklch(51.4% 0.82 319);
+  --color-wool-light-blue: oklch(62.1% 0.37 271);
+  --color-wool-yellow: oklch(88.4% 0.81 103);
+  --color-wool-lime: oklch(74.7% 0.86 124);
+  --color-wool-pink: oklch(67.1% 0.48 0);
+  --color-wool-gray: oklch(32.3% 0.00 297);
+  --color-wool-light-gray: oklch(63.2% 0.00 297);
+  --color-wool-cyan: oklch(50.7% 0.22 243);
+  --color-wool-purple: oklch(40.1% 0.70 314);
+  --color-wool-blue: oklch(36.2% 0.63 294);
+  --color-wool-brown: oklch(34.5% 0.21 69);
+  --color-wool-green: oklch(49.8% 0.43 120);
+  --color-wool-red: oklch(36.7% 0.49 29);
+  --color-wool-black: oklch(8.8% 0.00 297);
+
+  --color-grass-DEFAULT: oklch(71.2% 0.60 133);
+  --color-grass-jungle: oklch(72.4% 0.81 135);
+  --color-grass-dark-forest: oklch(46.8% 0.44 129);
+  --color-grass-swamp-green: oklch(45.4% 0.38 134);
+  --color-grass-plains: oklch(71.6% 0.55 124);
+  --color-grass-forest: oklch(71.2% 0.60 133);
+  --color-grass-birch-forest: oklch(70.7% 0.49 131);
+  --color-grass-ocean: oklch(70.6% 0.42 131);
+  --color-grass-meadow: oklch(70.5% 0.47 134);
+  --color-grass-tiaga: oklch(69.9% 0.34 141);
+  --color-grass-snowy: oklch(69.1% 0.25 158);
+  --color-grass-swamp: oklch(45.6% 0.32 111);
+  --color-grass-badlands: oklch(54.2% 0.30 93);
+  --color-grass-desert: oklch(73.3% 0.51 101);
+
+  --color-foilage-DEFAULT: oklch(63.8% 0.72 132);
+  --color-foilage-jungle: oklch(66.7% 0.91 134);
+  --color-foilage-dark-forest: oklch(46.8% 0.44 129);
+  --color-foilage-swamp-green: oklch(45.4% 0.38 134);
+  --color-foilage-plains: oklch(64.4% 0.66 123);
+  --color-foilage-forest: oklch(63.8% 0.72 132);
+  --color-foilage-birch-forest: oklch(63.2% 0.60 130);
+  --color-foilage-ocean: oklch(63.1% 0.53 130);
+  --color-foilage-meadow: oklch(62.9% 0.59 133);
+  --color-foilage-tiaga: oklch(62.0% 0.42 140);
+  --color-foilage-snowy: oklch(61.1% 0.32 156);
+  --color-foilage-swamp: oklch(45.6% 0.32 111);
+  --color-foilage-badlands: oklch(55.6% 0.32 82);
+  --color-foilage-desert: oklch(66.3% 0.61 99);
+
+  --color-water-DEFAULT: oklch(68.4% 0.44 260);
+  --color-water-meadow: oklch(37.9% 0.78 295);
+  --color-water-river: oklch(55.8% 0.71 283);
+  --color-water-mountain-gravel: oklch(41.1% 0.45 276);
+  --color-water-mountain: oklch(52.8% 0.72 285);
+  --color-water-beach: oklch(48.9% 0.34 252);
+  --color-water-beach-snowy: oklch(40.9% 0.42 273);
+  --color-water-stone-shore: oklch(43.3% 0.52 279);
+  --color-water-jungle: oklch(61.7% 0.35 232);
+  --color-water-jungle-hills: oklch(61.3% 0.41 252);
+  --color-water-tiaga: oklch(43.7% 0.23 226);
+  --color-water-tiaga-hills: oklch(40.1% 0.25 246);
+  --color-water-tiaga-snowy: oklch(37.8% 0.27 256);
+  --color-water-savanna: oklch(53.4% 0.27 218);
+  --color-water-savanna-plateau: oklch(55.2% 0.30 225);
+  --color-water-desert: oklch(61.5% 0.35 184);
+  --color-water-desert-hills: oklch(47.9% 0.31 246);
+  --color-water-badlands: oklch(50.0% 0.17 202);
+  --color-water-badlands-plateau: oklch(51.7% 0.22 253);
+  --color-water-swamp: oklch(40.5% 0.13 163);
+  --color-water-swamp-hills: oklch(39.2% 0.11 161);
+  --color-water-mushroom: oklch(57.6% 0.08 294);
+  --color-water-mushroom-shore: oklch(54.5% 0.10 291);
+  --color-water-end: oklch(39.7% 0.47 303);
+  --color-water-nether: oklch(43.9% 0.25 26);
+
+  --color-link: #aaaaff;
+  --color-panel: #C6C6C6;
+  --color-panel-dark: #373737;
+  --color-gold: #FFAA00;
+  --color-gray: #AAAAAA;
+  --color-blue: #5555FF;
+  --color-green: #55FF55;
+  --color-aqua: #55FFFF;
+  --color-red: #55FF55;
+  --color-light-purple: #55FF55;
+  --color-yellow: #55FF55;
+  --color-discord-color: #7289da;
+  --color-discord-server-color: #68FBAC;
+  --color-blue-server-color: #C2CBFB;
+  --color-green-server-color: #8FFD8F;
+  --color-red-server-color: #FB3E3E;
+  --color-muffin-server-color: #FFC0CB;
+  --color-bisquite-server-color: #BEABF6;
+  --color-project-color: #00cdb0;
+  --color-project-color-pink: #fabbfb;
+  --color-background-dark: #0D0D0D;
+  --color-background-light: #dcdcdc;
+
+  --color-dark-blue: #0000AA;
+  --color-dark-green: #00AA00;
+  --color-dark-aqua: #00AAAA;
+  --color-dark-red: #AA0000;
+  --color-dark-purple: #AA00AA;
+  --color-dark-gray: #555555;
+
+  --color-wool-orange: #B24CD8;
+  --color-wool-magenta: #00AA00;
+  --color-wool-light-blue: #6699D8;
+  --color-wool-yellow: #E5E533;
+  --color-wool-lime: #7FCC19;
+  --color-wool-pink: #F27FA5;
+
+  --color-grass-DEFAULT: #79C05A;
+  --color-grass-jungle: #59C93C;
+  --color-grass-dark-forest: #507A32;
+  --color-grass-swamp-green: #4C763C;
+  --color-grass-plains: #91BD59;
+  --color-grass-forest: #79C05A;
+  --color-grass-birch-forest: #88BB67;
+  --color-grass-ocean: #8EB971;
+  --color-grass-meadow: #83BB6D;
+  --color-grass-tiaga: #86B783;
+  --color-grass-snowy: #80B497;
+  --color-grass-swamp: #6A7039;
+  --color-grass-badlands: #90814D;
+  --color-grass-desert: #BFB755;
+}

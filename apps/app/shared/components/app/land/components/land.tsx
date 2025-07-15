@@ -2,7 +2,7 @@ import { reatomComponent } from "@reatom/npm-react"
 import { landAtom, landBannerAtom, landGalleryAtom, landIsOwnerAtom, landOwnerAtom } from "../models/land.model"
 import { Avatar } from "@/shared/components/app/avatar/components/avatar"
 import { Typography } from "@repo/ui/typography"
-import { createLink, Link } from "@/shared/components/config/Link"
+import { createLink, Link } from "@/shared/components/config/link"
 import useEmblaCarousel from 'embla-carousel-react'
 import { FormattedText } from "./land-title"
 import { IconCircleFilled, IconCrown, IconLink } from "@tabler/icons-react"

@@ -1,5 +1,5 @@
 import { reatomComponent } from "@reatom/npm-react"
-import { createLink, Link } from "@/shared/components/config/Link"
+import { createLink, Link } from "@/shared/components/config/link"
 import { Avatar } from "@/shared/components/app/avatar/components/avatar"
 import { Skeleton } from "@repo/ui/skeleton"
 import { anotherLandsByOwnerAction } from "../models/land.model"

@@ -1,4 +1,4 @@
-import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { reatomResource, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { sleep } from "@reatom/framework";
 
 export const EVENTS = [
@@ -12,12 +12,10 @@ export const EVENTS = [
   },
 ] as const;
 
-export const eventsAction = reatomAsync(async (ctx) => {
+export const eventsAction = reatomResource(async (ctx) => {
   return await ctx.schedule(async () => {
     await sleep(120);
 
     return EVENTS
   })
-}, {
-  name: "eventsAction"
-}).pipe(withDataAtom(), withStatusesAtom())
+}, "eventsAction").pipe(withDataAtom(), withStatusesAtom())

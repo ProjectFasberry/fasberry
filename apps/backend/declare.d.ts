@@ -47,9 +47,11 @@ declare global {
 
       CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
 
+      BOT_TOKEN: string;
       REDIS_HOST: string;
       REDIS_USER_PASSWORD: string;
       REDIS_USER: string;
+      REDIS_PORT: number;
     }
   }
 

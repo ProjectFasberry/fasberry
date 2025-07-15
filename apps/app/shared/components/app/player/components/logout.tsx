@@ -1,4 +1,4 @@
-import { currentUserAtom } from "@/shared/api/global.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";

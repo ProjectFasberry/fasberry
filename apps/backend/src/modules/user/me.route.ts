@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { throwError } from "#/helpers/throw-error";
-import { auth } from "#/shared/database/auth-db";
+import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { sessionDerive } from '#/lib/middlewares/session';
@@ -11,7 +11,7 @@ export const me = new Elysia()
   .use(userDerive())
   .get("/get-me", async ({ nickname, ...ctx }) => {
     try {
-      const query = await auth
+      const query = await main
         .selectFrom("AUTH")
         .select([
           "AUTH.NICKNAME as nickname",

@@ -1,6 +1,6 @@
 import NetheriteSword from "@repo/assets/images/minecraft/netherite_sword.webp"
 import WildArmor from "@repo/assets/images/minecraft/wild_armor_trim_ыmithing_еemplate.webp"
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { serverStatusResource } from "./server-status";
 import { reatomComponent } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";

@@ -1,4 +1,4 @@
-import { pageContextAtom } from "@/shared/api/global.model";
+import { pageContextAtom } from "@/shared/models/global.model";
 import { PageContext } from "vike/types";
 import { Data } from "./+data";
 import { atom } from "@reatom/core";
@@ -7,11 +7,11 @@ import { Typography } from "@repo/ui/typography";
 import dayjs from "dayjs";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { IconEye } from "@tabler/icons-react";
-import { News } from "@/shared/components/app/news/components/news";
+import { NewsType } from "@/shared/components/app/news/components/news";
 
 const getNewsUrl = (id: string) => `/news/${id}`
 
-const newsAtom = atom<News | null>(null, "news")
+const newsAtom = atom<NewsType | null>(null, "news")
 
 pageContextAtom.onChange((ctx, state) => {
   if (!state) return;

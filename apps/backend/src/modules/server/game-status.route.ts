@@ -1,9 +1,9 @@
 import { throwError } from '#/helpers/throw-error';
 import { getNatsConnection } from '#/shared/nats/nats-client';
 import { SERVER_EVENT_CHECK_PLAYER_STATUS, SERVER_USER_EVENT_SUBJECT } from '#/shared/nats/nats-subjects';
-import { sqlite } from '#/shared/database/sqlite-db';
 import Elysia from 'elysia';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
+import { main } from '#/shared/database/main-db';
 
 type PlayerStatus = {
   nickname: string;
@@ -11,7 +11,7 @@ type PlayerStatus = {
 }
 
 export async function getUserLastVisitTime(nickname: string) {
-  return sqlite
+  return main
     .selectFrom("game_status")
     .select(["quited", "joined"])
     .where("nickname", "=", nickname)
@@ -28,7 +28,7 @@ async function getPlayerStatus(nickname: string) {
     nickname
   }
 
-  const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 7000 })
+  const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 4000 })
 
   if (res) {
     const status = res.json<PlayerStatus>();

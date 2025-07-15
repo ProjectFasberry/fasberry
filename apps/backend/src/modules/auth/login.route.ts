@@ -4,11 +4,11 @@ import bcrypt from 'bcryptjs';
 import { throwError } from '#/helpers/throw-error';
 import { authSchema, createSession, getExistsUser } from './auth.model';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
-import { setCookie } from '#/helpers/cookie';
 import { ipPlugin } from '#/lib/middlewares/ip';
 import { sessionDerive } from '#/lib/middlewares/session';
 import { userDerive } from '#/lib/middlewares/user';
 import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding";
+import { CROSS_SESSION_KEY, SESSION_KEY, setCookie } from '#/utils/auth/cookie';
 
 const loginSchema = authSchema
 
@@ -51,9 +51,9 @@ export const login = new Elysia()
       const ua = UAParser(ctx.headers["user-agent"])
 
       const result = await createSession({ token, nickname, info: { ...ua, ip: ctx.ip } })
-
-      setCookie({ cookie, key: "session", expires: result.expires_at, value: token })
-      setCookie({ cookie, key: "logged_nickname", expires: result.expires_at, value: nickname })
+      
+      setCookie({ cookie, key: SESSION_KEY, expires: result.expires_at, value: token })
+      setCookie({ cookie, key: CROSS_SESSION_KEY, expires: result.expires_at, value: nickname })
 
       const data = { nickname: result.nickname }
 

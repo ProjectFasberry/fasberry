@@ -1,21 +1,21 @@
 import { PaymentDonateType, PaymentMeta } from "#/lib/publishers/pub-payment-notify";
-import { payments } from "#/shared/database/payments-db";
+import { main } from "#/shared/database/main-db";
 
 type PaymentDetails =
   | { title: string, price: string, description: string, origin: PaymentDonateType }
   | { title: string }
 
 async function getDonateDetails(value: PaymentDonateType) {
-  return payments
-    .selectFrom("donate")
+  return main
+    .selectFrom("store_donates")
     .select(["title", "price", "description", "origin"])
     .where("origin", "=", value)
     .executeTakeFirst()
 }
 
 async function getWalletDetails(value: "charism" | "belkoin") {
-  return payments
-    .selectFrom("economy")
+  return main
+    .selectFrom("store_economy")
     .select(["title"])
     .where("type", "=", value)
     .executeTakeFirst()

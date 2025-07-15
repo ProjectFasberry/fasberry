@@ -1,6 +1,6 @@
 import { reatomComponent } from "@reatom/npm-react"
 import { landAtom } from "../models/land.model";
-import { createLink, Link } from "@/shared/components/config/Link";
+import { createLink, Link } from "@/shared/components/config/link";
 import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 
 export const LandMembers = reatomComponent(({ ctx }) => {

@@ -28,6 +28,7 @@
     "elysia-rate-limit": "4.4.0",
     "elysiajs-cdn-cache": "0.0.13",
     "gramio": "0.4.9",
+    "ioredis": "5.6.1",
     "ky": "1.8.1",
     "kysely": "0.28.2",
     "kysely-bun-sqlite": "0.4.0",
@@ -37,6 +38,7 @@
     "nats": "2.29.3",
     "pg": "8.13.1",
     "sharp": "0.34.2",
+    "transliteration": "^2.3.5",
     "ua-parser-js": "2.0.4",
     "zod": "3.25.67",
     "zod-validation-error": "3.0.0"

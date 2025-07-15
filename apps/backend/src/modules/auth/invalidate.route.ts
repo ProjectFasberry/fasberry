@@ -1,10 +1,10 @@
 import { throwError } from "#/helpers/throw-error";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { unsetCookie } from "#/helpers/cookie";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { deleteSession } from "./auth.model";
 import { userDerive } from "#/lib/middlewares/user";
+import { CROSS_SESSION_KEY, SESSION_KEY, unsetCookie } from "#/utils/auth/cookie";
 
 export const invalidate = new Elysia()
   .use(sessionDerive())
@@ -17,8 +17,8 @@ export const invalidate = new Elysia()
         return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Internal Server Error"))
       }
 
-      unsetCookie({ cookie, key: "session" })
-      unsetCookie({ cookie, key: "logged_nickname" })
+      unsetCookie({ cookie, key: SESSION_KEY })
+      unsetCookie({ cookie, key: CROSS_SESSION_KEY })
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null, status: "success" })
     } catch (e) {

@@ -6,11 +6,11 @@ import { rateUser } from "../models/rate.model"
 import { isIdentityAtom } from "../models/player.model"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@repo/ui/hover-card"
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
-import { BASE } from "@/shared/api/client"
+import { client } from "@/shared/api/client"
 import { Typography } from "@repo/ui/typography"
-import { createLink, Link } from "@/shared/components/config/Link"
+import { createLink, Link } from "@/shared/components/config/link"
 import { onConnect } from "@reatom/framework"
-import { currentUserAtom } from "@/shared/api/global.model"
+import { currentUserAtom } from "@/shared/models/current-user.model"
 import { Avatar } from "../../avatar/components/avatar"
 import dayjs from "@/shared/lib/create-dayjs"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog"
@@ -63,7 +63,7 @@ const rateList = reatomResource(async (ctx) => {
   if (!currentUser) return;
 
   return await ctx.schedule(async () => {
-    const res = await BASE(`rates/${currentUser.nickname}`, {
+    const res = await client(`rates/${currentUser.nickname}`, {
       signal: ctx.controller.signal, throwHttpErrors: false
     })
 

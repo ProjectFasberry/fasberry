@@ -15,13 +15,11 @@ export async function showMinio() {
     const buckets = await minio.listBuckets()
     const lines = buckets.map(bucket => `${bucket.name} - ${bucket.creationDate}`).join('\n')
 
-    logger.box(`
-      Buckets:
-      ${lines}
+    logger.box(`Buckets:
+${lines}
     `)
-
   } catch (e) {
-    console.error(e)
+    logger.error("Minio ", e)
   }
 }
 

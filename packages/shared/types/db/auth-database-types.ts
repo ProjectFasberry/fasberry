@@ -27,14 +27,20 @@ export interface AUTH {
   UUID: string | null;
 }
 
-export interface Sessions {
-  browser: string;
-  created_at: Generated<Timestamp>;
-  expires_at: Timestamp;
+export interface Events {
+  created_at: Generated<Timestamp | null>;
+  description: string;
   id: Generated<number>;
-  ip: string;
+  origin: string;
+  reward: string | null;
+  title: string;
+}
+
+export interface GameStatus {
+  id: Generated<number>;
+  joined: Timestamp | null;
   nickname: string;
-  token: string;
+  quited: Timestamp | null;
 }
 
 export interface SOCIAL {
@@ -47,8 +53,43 @@ export interface SOCIAL {
   VK_ID: Int8 | null;
 }
 
+export interface StoreDonates {
+  commands: string[];
+  description: string;
+  id: Generated<number>;
+  imageUrl: string;
+  origin: string;
+  price: Int8;
+  rating: number;
+  title: string;
+}
+
+export interface StoreEconomy {
+  description: string;
+  id: Generated<number>;
+  imageUrl: string;
+  title: string;
+  type: string;
+  value: string;
+}
+
+export interface StoreEvents {
+  description: string;
+  id: Generated<number>;
+  imageUrl: string | null;
+  origin: string;
+  price: number;
+  title: string;
+  type: string;
+  wallet: string;
+}
+
 export interface DB {
   AUTH: AUTH;
-  sessions: Sessions;
+  events: Events;
+  game_status: GameStatus;
   SOCIAL: SOCIAL;
+  store_donates: StoreDonates;
+  store_economy: StoreEconomy;
+  store_events: StoreEvents;
 }

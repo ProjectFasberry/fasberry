@@ -1,3 +1,5 @@
 import { Bot } from "gramio";
 
-export const bot = new Bot(Bun.env.BOT!).onStart(console.log)
+const token = Bun.env.BOT_TOKEN
+
+export const bot = new Bot(token).onStart(() => console.log("Bot started"))

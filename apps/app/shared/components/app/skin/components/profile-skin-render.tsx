@@ -5,6 +5,7 @@ import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { onConnect, withInit } from "@reatom/framework";
 import { Skeleton } from "@repo/ui/skeleton";
+import { Typography } from "@repo/ui/typography";
 
 const ReactSkinview3d = lazy(() => import("react-skinview3d").then(m => ({ default: m.default })))
 
@@ -74,7 +75,6 @@ onConnect(skinAction.dataAtom, (ctx) => {
 
 export const ProfileSkinRender = reatomComponent(({ ctx }) => {
   const skin = ctx.spy(skinAction.dataAtom)
-
   if (!skin) return null;
 
   if (ctx.spy(skinAction.statusesAtom).isPending) {
@@ -96,9 +96,9 @@ export const ProfileSkinRender = reatomComponent(({ ctx }) => {
         </Suspense>
       ) : (
         <div className="flex w-full px-2 py-6 items-center justify-center h-full">
-          <p className="text-lg text-neutral-400 truncate text-center whitespace-pre-wrap">
+          <Typography color="gray" className="text-lg truncate text-center whitespace-pre-wrap">
             Графическое аппаратное ускорение не включено.
-          </p>
+          </Typography>
         </div>
       )}
     </div>

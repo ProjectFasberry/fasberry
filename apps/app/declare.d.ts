@@ -1,5 +1,7 @@
 declare global {
   declare module "*.jpg"
+  declare module "*.png"
+  declare module "*.gif"
 
   type WrappedResponse<T> = { data: T } | { error: string }
 

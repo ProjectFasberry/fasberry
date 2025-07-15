@@ -4,9 +4,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "sourceMap": true,
     "strict": true,
-    "module": "ESNext",
+    "module": "esnext",
     "noEmit": true,
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
@@ -19,16 +18,12 @@
     ],
     "types": [
       "vite/client",
-      "vike-react",
-      "bun-types"
+      "vike-react"
     ],
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@backend": [
-        "../backend/src"
       ],
       "@repo/ui/*": [
         "../../packages/ui/src/*"
@@ -36,9 +31,10 @@
     }
   },
   "include": [
-    "."
+    ".",
   ],
   "exclude": [
-    "dist"
+    "dist",
+    "node_modules"
   ]
 }

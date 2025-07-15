@@ -1,179 +1,131 @@
-import { StoreSelectCurrency } from "@/shared/components/app/shop/components/store-footer";
-import { SelectedDonate } from "@/shared/components/app/shop/components/store-donates";
-import { SelectedWallet } from "@/shared/components/app/shop/components/store-wallets";
-import { StorePrice } from "@/shared/components/app/shop/components/store-price";
-import { createPaymentAction, paymentResult, paymentResultType, priceByCurrencyAction, storeCurrencyAtom, storeItem, storeTargetNickname } from "@/shared/components/app/shop/models/store.model";
+import { StorePrice } from "@/shared/components/app/shop/components/cart/store-price";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
-import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { IconArrowLeft } from "@tabler/icons-react";
-import EndCrystal from "@repo/assets/images/minecraft/end_crystal.webp"
-import Belkoin from "@repo/assets/images/minecraft/belkoin_wallet.png"
-import Elytra from "@repo/assets/images/minecraft/elytra.webp"
 import ExpActive from "@repo/assets/images/minecraft/exp-active.webp"
-import { z } from "zod/v4"
-import { ReactNode, useState } from 'react';
-import { Dialog, DialogContent, DialogTrigger } from '@repo/ui/dialog';
-import FutureChicken from "@repo/assets/images/minecraft/future_chicken_mini.png"
-import DiamondLoading from "@repo/assets/gifs/DiamondCoalloading2.gif"
-import { ShopAreaItem } from "@/shared/components/app/shop/components/store";
-import { StoreFinishedPreview } from "@/shared/components/app/shop/components/store-preview";
-import { StoreItemForm } from "@/shared/components/app/shop/components/store-item-form";
+import { cardDataSelectedAtom, cartDataAtom, cartIsValidAtom } from "@/shared/components/app/shop/models/store-cart.model";
+import { Link } from "@/shared/components/config/link";
+import { tv } from "tailwind-variants";
+import { CartItem } from "@/shared/components/app/shop/components/cart/basket-item";
+import { StoreSelectCurrency } from "@/shared/components/app/shop/components/cart/store-currency";
 
-const StartPayment = reatomComponent<{ trigger: ReactNode }>(({ ctx, trigger }) => {
-  const [open, setOpen] = useState(false)
-  const type = ctx.spy(paymentResultType)
-
-  const handleClose = (v: boolean) => {
-    if (!v) {
-      setOpen(false)
-
-      if (type === 'error') {
-        return paymentResult.reset(ctx)
-      }
-    } else {
-      setOpen(true)
-    }
-  }
-
-  const isCreatePaymentSuccess = type === 'created'
-  const isCreatePaymentError = type === 'error'
-  const isCreatePaymentProccessing = ctx.spy(createPaymentAction.statusesAtom).isPending
-
-  return (
-    <Dialog open={open} onOpenChange={v => handleClose(v)}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className="sm:min-w-[640px] bg-neutral-950 h-auto overflow-y-auto border-none gap-0">
-        {isCreatePaymentError && (
-          <ShopAreaItem image={FutureChicken}>
-            <Typography className="text-xl">
-              Произошла ошибка при создании заказа :/
-            </Typography>
-            <Typography className="text-neutral-300 text-lg">
-              Повторите попытку позже
-            </Typography>
-          </ShopAreaItem>
-        )}
-        {isCreatePaymentProccessing && (
-          <ShopAreaItem image={DiamondLoading}>
-            <Typography className="text-xl">
-              Платеж уже выполняется...
-            </Typography>
-          </ShopAreaItem>
-        )}
-        {(!isCreatePaymentSuccess && !isCreatePaymentProccessing && !isCreatePaymentError) && (
-          <div className="flex flex-col w-full gap-4">
-            <StoreFinishedPreview />
-            <StoreItemForm />
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}, "StartPayment")
-
-const UpdatePrice = reatomComponent(({ ctx }) => {
-  const currency = ctx.spy(storeCurrencyAtom)
-
-  const updatePrice = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    await priceByCurrencyAction(ctx, currency)
-  }
-
-  return (
-    <Button
-      disabled={currency === 'RUB'}
-      onClick={updatePrice}
-      className="btn rounded-lg bg-neutral-800 hover:bg-neutral-700"
-    >
-      <Typography color="white" className="text-[14px] lg:text-[16px]">
-        Обновить цену
-      </Typography>
-    </Button>
-  )
-}, "UpdatePrice")
-
-const ShopPreFooter = () => {
-  return (
-    <div className="flex flex-col gap-4 w-full h-full border-2 border-neutral-600/40 rounded-xl p-4">
-      <div className="flex flex-col sm:flex-row justify-between w-full lg:items-center gap-2">
-        <Typography color="white" className="text-base">
-          Метод оплаты
-        </Typography>
-        <div className="flex items-center gap-2 w-fit">
-          <StoreSelectCurrency />
-          <UpdatePrice />
-        </div>
-      </div>
-    </div>
-  )
-}
-const nicknameSchema = z.string()
-  .min(3, "Минимум 3 символа")
-  .max(16, "Максимум 16 символов")
-  .regex(/^[a-zA-Z0-9_]+$/, "Только латинские буквы, цифры и подчёркивание");
-
-const isValidAtom = atom<boolean>((ctx) => {
-  const shopItemState = ctx.spy(storeItem)
-  const nickname = ctx.spy(storeTargetNickname)
-
-  const isValid = (shopItemState.type !== null) && (shopItemState.value !== null)
-
-  return isValid && nicknameSchema.safeParse(nickname).success
+const sectionVariant = tv({
+  base: `bg-neutral-900 gap-4 p-2 sm:p-3 lg:p-4 rounded-lg w-full`
 })
 
+const CartContentData = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(cartDataAtom);
 
-const ShopStart = reatomComponent(({ ctx }) => {
   return (
-    <StartPayment
-      trigger={
-        <Button
-          disabled={!ctx.spy(isValidAtom)} className="hover:bg-[#05b458] bg-[#088d47]"
-        >
-          <Typography color="white" className="text-lg">Приобрести</Typography>
-        </Button>
-      }
-    />
+    <>
+      <Typography className="text-2xl font-semibold">
+        Содержимое
+      </Typography>
+      <div className="flex flex-col gap-4 w-full">
+        {data.map((item, idx) => (
+          <CartItem key={idx} {...item} />
+        ))}
+      </div>
+    </>
   )
-}, "ShopStart")
+}, "CartContentData")
 
-const ShopFooter = () => {
+const CartSummery = reatomComponent(({ ctx }) => {
+  const all = ctx.spy(cartDataAtom).length;
+  const selected = ctx.spy(cardDataSelectedAtom).length
+
   return (
-    <div
-      className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full h-full border-2 border-neutral-600/40 rounded-xl p-4"
-    >
-      <div className="flex items-center gap-2 justify-center w-fit rounded-lg">
-        <div className="flex items-center justify-center bg-neutral-600/40 p-2 rounded-lg">
-          <img src={ExpActive} loading="lazy" width={36} height={36} alt="" />
-        </div>
-        <div className="flex flex-col">
-          <Typography color="gray" className="text-base">Стоимость</Typography>
-          <StorePrice />
+    <div className="flex items-center justify-between w-full gap-2">
+      <Typography className="font-semibold">
+        Товаров: {all}
+      </Typography>
+      <Typography className="font-semibold">
+        Выбрано: {selected}
+      </Typography>
+    </div>
+  )
+}, "CartSummery")
+
+const CartActions = reatomComponent(({ ctx }) => {
+  const isDisabled = !ctx.spy(cartIsValidAtom);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Button
+        disabled={isDisabled}
+        className="bg-green-700 hover:bg-green-800 rounded-xl"
+      >
+        <Typography color="white" className="text-lg font-semibold">
+          Перейти к оформлению
+        </Typography>
+      </Button>
+      <div className="flex flex-col gap-4 w-full h-full">
+        <div className="flex justify-between w-full items-center gap-2">
+          <div className="flex flex-col">
+            <Typography color="white" className="text-lg font-semibold">
+              Способ оплаты
+            </Typography>
+            <Typography color="gray" className="leading-4 w-full text-wrap truncate">
+              Можно выбрать иной способ оплаты
+            </Typography>
+          </div>
+          <div className="flex items-center gap-2">
+            <StoreSelectCurrency />
+          </div>
         </div>
       </div>
-      <div className="flex items-center w-fit">
-        <ShopStart />
+      <div
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full h-full"
+      >
+        <div className="flex items-center gap-2 justify-center w-fit rounded-lg">
+          <div className="flex items-center justify-center bg-neutral-600/40 p-2 rounded-lg">
+            <img src={ExpActive} loading="lazy" width={32} height={32} alt="" />
+          </div>
+          <div className="flex flex-col justify-center">
+            <Typography color="gray" className="text-lg leading-6">Стоимость</Typography>
+            <StorePrice />
+          </div>
+        </div>
       </div>
     </div>
   )
-}
+}, "CartActions")
 
-const Basket = reatomComponent(({ ctx }) => {
-  const type = ctx.spy(storeItem).type
+const CartContent = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(cartDataAtom);
+
+  if (!data.length) {
+    return (
+      <div className={sectionVariant({ className: "flex gap-2 *:w-fit flex-col w-full" })}>
+        <Typography className='text-2xl font-semibold'>
+          Пусто
+        </Typography>
+        <Typography color="gray">
+          Перейдите в магазин, чтобы найти всё, что нужно.
+        </Typography>
+        <Link href="/store">
+          <Button className="bg-neutral-800 font-semibold">
+            В магазин
+          </Button>
+        </Link>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col gap-4 bg-neutral-900 border-none rounded-lg">
-      {type === 'donate' && <SelectedDonate />}
-      {(type === 'belkoin' || type === 'charism') && <SelectedWallet />}
-      <ShopPreFooter />
-      <ShopFooter />
+    <div className="flex flex-col lg:flex-row items-start w-full gap-6 h-fit">
+      <div className={sectionVariant({ className: "flex flex-col lg:w-2/3" })}>
+        <CartContentData />
+        <CartSummery />
+      </div>
+      <div className={sectionVariant({ className: "flex flex-col lg:w-1/3" })}>
+        <CartActions />
+      </div>
     </div>
   )
-}, "Basket")
+}, "CartContent")
 
 export default function StoreCard() {
   return (
@@ -181,7 +133,7 @@ export default function StoreCard() {
       <div className="flex flex-col gap-4 w-full h-full">
         <div className="flex items-center gap-2">
           <Button onClick={() => window.history.back()} className="px-2 gap-2 bg-neutral-800">
-            <IconArrowLeft size={24} className='text-neutral-400'/>
+            <IconArrowLeft size={24} className='text-neutral-400' />
             <Typography className="text-base font-semibold">
               Вернуться
             </Typography>
@@ -190,7 +142,7 @@ export default function StoreCard() {
             Корзина
           </Typography>
         </div>
-        <Basket />
+        <CartContent />
       </div>
     </MainWrapperPage>
   )

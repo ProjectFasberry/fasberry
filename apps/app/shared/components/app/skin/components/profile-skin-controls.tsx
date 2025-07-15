@@ -6,7 +6,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { tv, VariantProps } from "tailwind-variants";
 
 const profileSkinControlVariants = tv({
-  base: `flex items-center justify-center cursor-pointer border border-neutral-800 rounded-xl h-[46px] w-[46px]`,
+  base: `flex items-center justify-center cursor-pointer border border-neutral-800 rounded-xl h-12 w-12`,
   variants: {
     variant: {
       default: "bg-transparent",

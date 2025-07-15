@@ -1,5 +1,5 @@
 import { GuardAsync } from "vike/types";
-import { validateSession } from "@/shared/api/validators";
+import { validateSession } from "@/shared/lib/validators";
 import { redirect } from "vike/abort";
 
 export const guard: GuardAsync = async (pageContext) => {

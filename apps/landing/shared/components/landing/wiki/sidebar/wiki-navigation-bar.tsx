@@ -1,6 +1,6 @@
 import { WIKI_HEADERS } from "@repo/shared/wiki/data/configs"
 import { navigate } from "vike/client/router";
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { Typography } from "@repo/ui/typography";
 import { reatomComponent } from "@reatom/npm-react";
 import { wikiParamAtom } from "../content/wiki-content";

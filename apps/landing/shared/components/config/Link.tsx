@@ -1,15 +1,13 @@
-import { HTMLAttributes } from "react";
+import { AnchorHTMLAttributes } from "react";
 import { tv } from "tailwind-variants";
 import { usePageContext } from "vike-react/usePageContext";
 
-type LinkProps = HTMLAttributes<HTMLAnchorElement> & {
-  href: string
-}
+type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement>
 
 export function Link({ href, className, ...props }: LinkProps) {
   const pathname = usePageContext().urlPathname;
 
-  const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
+  const isActive = href ? href === "/" ? pathname === href : pathname.startsWith(href) : false;
 
   return (
     <a

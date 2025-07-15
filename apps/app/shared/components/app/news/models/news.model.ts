@@ -1,12 +1,12 @@
-import { BASE } from "@/shared/api/client"
+import { client } from "@/shared/api/client"
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
-import { News } from "../components/news"
+import { NewsType } from "../components/news"
 import { toast } from "sonner"
 
 export const newsAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
-    const res = await BASE("shared/news", { throwHttpErrors: false, signal: ctx.controller.signal })
-    const data = await res.json<{ data: News[], meta: PaginatedMeta } | { error: string }>()
+    const res = await client("shared/news", { throwHttpErrors: false, signal: ctx.controller.signal })
+    const data = await res.json<{ data: NewsType[], meta: PaginatedMeta } | { error: string }>()
 
     if ("error" in data) return null;
 

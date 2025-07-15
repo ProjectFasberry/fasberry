@@ -6,7 +6,9 @@ import { createPool } from "mysql2";
 const bisquiteDialect = ({
   user, password, port, database, host
 }: DatabaseConnection) => {
-  return new MysqlDialect({ pool: createPool({ database, host, user, password, port, connectionLimit: 10 }) });
+  return new MysqlDialect({ 
+    pool: createPool({ database, host, user, password, port, connectionLimit: 10 }) 
+  });
 };
 
 export const bisquite = new Kysely<bisquiteDBType>({

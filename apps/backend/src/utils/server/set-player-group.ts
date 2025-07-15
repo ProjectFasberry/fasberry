@@ -1,5 +1,5 @@
 import { publishUpdateGroup } from "#/lib/publishers/pub-update-group";
-import { luckperms } from "#/shared/database/lp-db";
+import { luckperms } from "#/shared/database/luckperms-db";
 
 export async function setPlayerGroup(nickname: string, permission: string) {
   try {

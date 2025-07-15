@@ -15,8 +15,8 @@ export async function initNats() {
   try {
     nc = await connect(NATS_CONFIG);
     logger.success(`Connected to ${NATS_CONFIG.servers}`)
-  } catch (err) {
-    throw new Error('NATS connection failed');
+  } catch (e) {
+    logger.error("NATS ", e)
   }
 }
 

@@ -1,9 +1,9 @@
-import { ratingByAtom, ratingFilterAtom } from "./rating-filter.model";
 import { reatomAsync, withStatusesAtom } from "@reatom/async";
 import { atom } from "@reatom/core";
 import { createSearchParams } from '@/shared/lib/create-search-params';
-import { BASE } from '@/shared/api/client';
+import { client } from '@/shared/api/client';
 import { withReset } from "@reatom/framework";
+import { withHistory } from "@/shared/lib/reatom-helpers";
 
 export type RatingData =
   | RatingPlaytime[]
@@ -87,7 +87,7 @@ export async function getRatings({
 }: GetRatings & RequestInit) {
   const searchParams = createSearchParams({ by, limit: limit.toString(), cursor, ascending })
 
-  const res = await BASE("server/rating", { searchParams, throwHttpErrors: false, signal })
+  const res = await client("server/rating", { searchParams, throwHttpErrors: false, signal })
   const data = await res.json<{ data: RatingData, meta: RatingMeta } | { error: string }>()
 
   if ("error" in data) return null
@@ -97,6 +97,9 @@ export async function getRatings({
 
 export const ratingDataAtom = atom<RatingData | null>(null, "ratingData").pipe(withReset())
 export const ratingMetaAtom = atom<RatingMeta | null>(null, "ratingMeta").pipe(withReset())
+
+export const ratingByAtom = atom<GetRatings["by"]>("playtime", "ratingBy").pipe(withHistory(1))
+export const ratingFilterAtom = atom<{ ascending: boolean }>({ ascending: false }, "ratingFilter")
 
 ratingByAtom.onChange((ctx, target) => {
   const prev = ctx.get(ratingByAtom.history)[1]

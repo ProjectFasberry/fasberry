@@ -1,14 +1,28 @@
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
-import { getRatings, RatingBelkoin, RatingCharism, ratingDataAtom, RatingLands, ratingMetaAtom, RatingParkour, RatingPlaytime, RatingReputation } from "./ratings.model"
-import { ratingByAtom, ratingFilterAtom } from "./rating-filter.model"
+import { 
+  getRatings, 
+  RatingBelkoin, 
+  ratingByAtom, 
+  RatingCharism, 
+  ratingDataAtom, 
+  ratingFilterAtom, 
+  RatingLands, 
+  ratingMetaAtom, 
+  RatingParkour, 
+  RatingPlaytime, 
+  RatingReputation 
+} from "./ratings.model"
 import { toast } from "sonner"
 
 const updateRatingActionVariablesAtom = atom<"update-filter" | "update-cursor" | null>(null, "updateRatingVariables")
 
 // todo: destructure onFulfill result;
 
-export const updateRatingAction = reatomAsync(async (ctx, type: "update-filter" | "update-cursor") => {
+export const updateRatingAction = reatomAsync(async (
+  ctx, 
+  type: "update-filter" | "update-cursor"
+) => {
   updateRatingActionVariablesAtom(ctx, type)
   
   const filtering = ctx.get(ratingFilterAtom)
@@ -100,7 +114,7 @@ export const updateRatingAction = reatomAsync(async (ctx, type: "update-filter" 
       return state;
     })
   },
-  onReject: (ctx, e) => {
-    if (e instanceof Error) toast.error(e.message)
+  onReject: (_, e) => {
+    e instanceof Error && toast.error(e.message)
   },
 }).pipe(withStatusesAtom())

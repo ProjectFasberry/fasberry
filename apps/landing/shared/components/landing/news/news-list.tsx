@@ -1,5 +1,5 @@
 import { reatomComponent, useUpdate } from '@reatom/npm-react';
-import { Link } from '@/shared/components/config/Link';
+import { Link } from '@/shared/components/config/link';
 import { Typography } from '@repo/ui/typography';
 import { News as NewsType, newsAction, newsDataAtom } from './news.model';
 import { NewsListSkeleton, NewsNotFound } from './news-page-list';

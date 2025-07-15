@@ -1,7 +1,7 @@
 import { Skeleton } from "@repo/ui/skeleton"
 import { landsResource } from "../models/lands.model"
 import { reatomComponent } from "@reatom/npm-react"
-import { createLink, Link } from "@/shared/components/config/Link"
+import { createLink, Link } from "@/shared/components/config/link"
 import { tv } from 'tailwind-variants'
 import { Typography } from '@repo/ui/typography'
 import { useMemo } from "react"

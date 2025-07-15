@@ -1,4 +1,4 @@
-import { BASE } from "@/shared/api/client";
+import { client } from "@/shared/api/client";
 import { reatomAsync, withStatusesAtom } from "@reatom/async";
 import { toast } from "sonner";
 import { isIdentityAtom, targetUserAtom } from "./player.model";
@@ -7,7 +7,7 @@ export const rateUser = reatomAsync(async (ctx, target: string) => {
   if (ctx.get(isIdentityAtom)) return;
 
   return await ctx.schedule(async () => {
-    const res = await BASE.post(`rate/${target}`, { throwHttpErrors: false, signal: ctx.controller.signal })
+    const res = await client.post(`rate/${target}`, { throwHttpErrors: false, signal: ctx.controller.signal })
     const data = await res.json<WrappedResponse<"rated" | "unrated">>()
 
     if ("error" in data) {

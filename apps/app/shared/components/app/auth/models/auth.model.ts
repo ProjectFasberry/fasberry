@@ -1,5 +1,5 @@
-import { BASE } from "@/shared/api/client"
-import { currentUserAtom } from "@/shared/api/global.model"
+import { client } from "@/shared/api/client"
+import { currentUserAtom } from "@/shared/models/current-user.model"
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
 import { action, atom, Ctx } from "@reatom/core"
@@ -97,7 +97,7 @@ export const authorize = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
     await sleep(200)
 
-    const res = await BASE.post(`auth/${type}`, {
+    const res = await client.post(`auth/${type}`, {
       json: {
         nickname, password, findout, referrer, token
       },
@@ -166,7 +166,7 @@ export const authorize = reatomAsync(async (ctx) => {
 
 export const logout = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
-    const res = await BASE.post("auth/invalidate-session", { signal: ctx.controller.signal })
+    const res = await client.post("auth/invalidate-session", { signal: ctx.controller.signal })
     const data = await res.json<{ status: string } | { error: string }>()
 
     return data;

@@ -1,4 +1,4 @@
-import { Link } from "../../config/Link";
+import { Link } from "../../config/link";
 import { Typography } from "@repo/ui/typography";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';

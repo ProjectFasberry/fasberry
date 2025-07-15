@@ -3,7 +3,7 @@ declare global {
     interface ProcessEnv {
       SKINS_DATABASE_URL: string;
       LANDS_DATABASE_URL: string;
-      AUTH_DATABASE_URL: string;
+      MAIN_DATABASE_URL: string;
       LUCKPERMS_DATABASE_URL: string;
       PAYMENTS_DATABASE_URL: string;
       CMI_DATABASE_URL: string;

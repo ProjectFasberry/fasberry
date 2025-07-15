@@ -1,9 +1,8 @@
 import { RatingBelkoinCard, RatingCharismCard, RatingLandsCard, RatingParkourCard, RatingPlaytimeCard, RatingReputationCard } from "./rating-cards";
-import { GetRatings, ratingAction, RatingBelkoin, RatingCharism, ratingDataAtom, RatingLands, ratingMetaAtom, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model"
+import { GetRatings, RatingBelkoin, ratingByAtom, RatingCharism, ratingDataAtom, RatingLands, ratingMetaAtom, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model"
 import Events from '@repo/assets/gifs/minecraft-boime.gif'
 import { useInView } from "react-intersection-observer";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { ratingByAtom, ratingFilterAtom } from "../models/rating-filter.model";
 import { updateRatingAction } from "../models/update-ratings.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { tv } from "tailwind-variants";
@@ -284,16 +283,17 @@ const COMPONENTS: Record<GetRatings["by"], ReactNode> = {
 
 const List = reatomComponent(({ ctx }) => {
   const by = ctx.spy(ratingByAtom)
-
   return COMPONENTS[by]
-}, "List")
+}, "RatingsList")
 
 export const RatingList = reatomComponent(({ ctx }) => {
+  const isLoading = ctx.spy(updateRatingAction.statusesAtom).isPending;
+
   return (
     <div className="flex flex-col gap-2 h-fit w-full">
-      {ctx.spy(updateRatingAction.statusesAtom).isPending && <RatingsSkeleton />}
+      {isLoading && <RatingsSkeleton />}
       <List />
-      {ctx.spy(updateRatingAction.statusesAtom).isPending && <RatingsListSkeleton />}
+      {isLoading && <RatingsListSkeleton />}
       <Viewer />
     </div>
   )

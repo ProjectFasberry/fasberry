@@ -1,4 +1,4 @@
-import { BASE } from "@/shared/api/client";
+import { client } from "@/shared/api/client";
 import { PageContextServer } from "vike/types";
 import type { User } from "@repo/shared/types/entities/user"
 import { redirect } from "vike/abort";
@@ -10,7 +10,7 @@ import dayjs from "@/shared/lib/create-dayjs"
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getUser({ nickname, ...args }: { nickname: string } & RequestInit) {
-  const res = await BASE(`server/user/${nickname}`, { throwHttpErrors: false, ...args })
+  const res = await client(`server/user/${nickname}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<User>>()
 
   if (!data || 'error' in data) return null

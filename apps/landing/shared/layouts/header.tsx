@@ -1,4 +1,4 @@
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
 import { usePageContext } from "vike-react/usePageContext";
 import { lazy, Suspense } from "react";

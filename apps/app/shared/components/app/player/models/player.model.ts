@@ -1,4 +1,4 @@
-import { currentUserAtom } from "@/shared/api/global.model"
+import { currentUserAtom } from "@/shared/models/current-user.model"
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"

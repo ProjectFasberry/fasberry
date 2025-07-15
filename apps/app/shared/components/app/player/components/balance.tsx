@@ -1,9 +1,9 @@
-import { currentUserAtom } from "@/shared/api/global.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { isIdentityAtom } from "../models/player.model";
 import { Button } from "@repo/ui/button";
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 
 export const PlayerBalance = reatomComponent(({ ctx }) => {
   const currentUser = ctx.spy(currentUserAtom)

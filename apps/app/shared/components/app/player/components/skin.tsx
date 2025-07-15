@@ -1,4 +1,4 @@
-import { isSsrAtom } from "@/shared/api/global.model";
+import { isClientAtom } from "@/shared/models/global.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";
 import { clientOnly } from "vike-react/clientOnly";
@@ -12,7 +12,7 @@ export const PlayerSkin = reatomComponent(({ ctx }) => {
 
   if (!user) return null;
 
-  if (ctx.spy(isSsrAtom)) {
+  if (ctx.spy(isClientAtom)) {
     return <Skeleton className="w-full lg:w-1/3 lg:border lg:h-[520px]" />
   }
 

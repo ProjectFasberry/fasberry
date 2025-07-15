@@ -1,5 +1,5 @@
 import { isProduction } from "#/helpers/is-production"
-import { auth } from "#/shared/database/auth-db";
+import { main } from "#/shared/database/main-db";
 import { logger } from "@repo/lib/logger";
 import ky from "ky"
 
@@ -39,9 +39,9 @@ export async function verifyAuth(token: string) {
 }
 
 async function validateIpRestricts(ip: string): Promise<boolean> {
-  const result = await auth
+  const result = await main
     .selectFrom("AUTH")
-    .select(auth.fn.countAll().as("count"))
+    .select(main.fn.countAll().as("count"))
     .where("IP", "=", ip)
     .$castTo<{ count: number }>()
     .executeTakeFirst();

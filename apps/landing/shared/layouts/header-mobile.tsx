@@ -1,7 +1,7 @@
 import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
 import { usePageContext } from 'vike-react/usePageContext';
 import { navigate } from 'vike/client/router';
-import { Link } from '@/shared/components/config/Link';
+import { Link } from '@/shared/components/config/link';
 import { atom } from '@reatom/core';
 import { reatomComponent } from '@reatom/npm-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@repo/ui/sheet';

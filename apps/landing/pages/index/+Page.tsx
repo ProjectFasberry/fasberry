@@ -1,4 +1,4 @@
-import { Link } from "@/shared/components/config/Link"
+import { Link } from "@/shared/components/config/link"
 import { IdeaMain } from "@/shared/components/landing/intro/idea-main";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { SpawnCarousel } from "@/shared/components/landing/gallery/spawn-carousel";

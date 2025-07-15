@@ -1,8 +1,8 @@
-import { auth } from "#/shared/database/auth-db";
+import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
-import { luckperms } from "#/shared/database/lp-db";
+import { luckperms } from "#/shared/database/luckperms-db";
 import { getPlayerAvatar } from "../server/skin.model";
 import type { User } from "@repo/shared/types/entities/user"
 import dayjs from "dayjs"
@@ -59,7 +59,7 @@ export const user = new Elysia()
     }
 
     async function getMain() {
-      const query = await auth
+      const query = await main
         .selectFrom("AUTH")
         .select([
           "NICKNAME as nickname",

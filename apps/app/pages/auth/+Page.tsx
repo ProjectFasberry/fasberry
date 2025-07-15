@@ -47,7 +47,7 @@ const Auth = reatomComponent(({ ctx }) => {
 export default function AuthPage() {
   return (
     <MainWrapperPage>
-      <form onSubmit={(e) => e.preventDefault()} className="flex items-center justify-center h-full w-full">
+      <form onSubmit={(e) => e.preventDefault()} className="flex items-center justify-center h-[60vh] w-full">
         <Auth />
       </form>
     </MainWrapperPage>

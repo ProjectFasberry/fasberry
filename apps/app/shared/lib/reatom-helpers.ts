@@ -15,17 +15,30 @@ export function withHistory<T extends Atom>(length = 2): (target: T) => T & {
     })
 }
 
-export const isChanged = (
+export function atomHasChanged<T>(
   ctx: Ctx,
-  param: Atom<string | null> & { history: Atom<[current: string | null, ...past: (string | null)[]]> },
-  target: string | null,
-  callback: Function
-) => {
-  if (!target) return;
+  atomWithHistory: Atom<T> & { history: Atom<[current: T, ...past: T[]]> },
+  options: {
+    compareWithIndex?: number,          
+    comparator?: (a: T, b: T) => boolean 
+    onChange?: () => void
+  } = {},
+): boolean {
+  const { 
+    compareWithIndex = 1, 
+    comparator = (a, b) => a !== b, 
+    onChange 
+  } = options;
 
-  const prev = ctx.get(param.history)[1]
+  const history = ctx.get(atomWithHistory.history);
+  const current = history[0];
+  const prev = history[compareWithIndex];
 
-  if (prev !== undefined && target !== prev) {
-    callback()
+  const changed = prev !== undefined && comparator(current, prev);
+
+  if (changed && onChange) {
+    onChange();
   }
+
+  return changed;
 }

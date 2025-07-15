@@ -14,7 +14,7 @@ import { rateLimitPlugin } from "./lib/middlewares/rate-limit";
 import { modpack } from "./modules/shared/modpack.route";
 import { rules } from "./modules/shared/rules.route";
 import { serverip } from "./modules/shared/server-ip.route";
-import { store } from "./modules/shared/donates.route";
+import { storeItems } from "./modules/store/donates.route";
 import { publicImage } from "./modules/shared/image.route";
 import { userLocation } from "./modules/server/location.route";
 import { favoriteItem } from "./modules/server/favorite-item.route";
@@ -46,13 +46,13 @@ import { initRedis } from "./shared/redis/init";
 import { sessionDerive } from "./lib/middlewares/session";
 import { userDerive } from "./lib/middlewares/user";
 import { refreshSession } from "./modules/auth/auth.model";
-import { isProduction } from "./helpers/is-production";
-import { getOrderRoute } from "./modules/payment/get-order.route";
-import { checkOrderRoute } from "./modules/payment/check-order.route";
-import { currencies } from "./modules/payment/currencies.route";
-import { createOrderRoute } from "./modules/payment/create-order.route";
-import { DOMAIN } from "./helpers/cookie";
+import { getOrderRoute } from "./modules/store/payment/get-order.route";
+import { checkOrderRoute } from "./modules/store/payment/check-order.route";
+import { currencies } from "./modules/store/payment/currencies.route";
+import { createOrderRoute } from "./modules/store/payment/create-order.route";
 import { restore } from "./modules/auth/restore.route";
+import { CROSS_SESSION_KEY, SESSION_KEY, setCookie } from "./utils/auth/cookie";
+import { storeItem } from "./modules/store/store-item.route";
 
 async function startNats() {
   await initNats()
@@ -66,13 +66,14 @@ async function startNats() {
   subscribePlayerStats()
 }
 
-await startNats()
-await showMinio()
-await initMinioBuckets()
-await initRedis()
+async function startMinio() {
+  await showMinio()
+  await initMinioBuckets()
+}
 
-const health = new Elysia()
-  .get("/health", ({ status }) => status(200))
+await startNats()
+await startMinio()
+await initRedis()
 
 const auth = new Elysia()
   .group("/auth", app =>
@@ -92,6 +93,13 @@ const payment = new Elysia()
     .use(currencies)
   )
 
+const store = new Elysia()
+  .group("/store", app => app
+    .use(payment)
+    .use(storeItem)
+    .use(storeItems)
+  )
+
 const shared = new Elysia()
   .group("/shared", app => app
     .use(news)
@@ -99,7 +107,6 @@ const shared = new Elysia()
     .use(modpack)
     .use(rules)
     .use(serverip)
-    .use(store)
     .use(publicImage)
   )
 
@@ -130,10 +137,14 @@ const server = new Elysia()
       .use(user)
   )
 
-export const SESSION_KEY = "session"
-
 const app = new Elysia({ prefix: "/minecraft" })
-  .use(swagger())
+  .use(swagger({
+    scalarConfig: {
+      spec: {
+        url: '/minecraft/swagger/json'
+      }
+    }
+  }))
   .use(rateLimitPlugin())
   .trace(async ({ onHandle, context: { path } }) => {
     onHandle(({ begin, onStop }) => {
@@ -144,7 +155,7 @@ const app = new Elysia({ prefix: "/minecraft" })
   .use(serverTiming())
   .use(loggerMiddleware())
   .use(ipPlugin())
-  .use(health)
+  .get("/health", ({ status }) => status(200))
   .use(sessionDerive())
   .onBeforeHandle(async ({ cookie, session: token, ...ctx }) => {
     if (!token) return;
@@ -152,19 +163,13 @@ const app = new Elysia({ prefix: "/minecraft" })
     const refreshResult = await refreshSession(token);
 
     if (refreshResult) {
-      cookie.session.httpOnly = true
-      cookie.session.sameSite = "lax"
-      cookie.session.domain = DOMAIN
-      cookie.session.secure = isProduction
-      cookie.session.expires = refreshResult.expires_at
-      cookie.session.path = "/"
-      cookie.session.value = token
-    } 
+      setCookie({ cookie, key: SESSION_KEY, expires: refreshResult.expires_at, value: token })
+      setCookie({ cookie, key: CROSS_SESSION_KEY, expires: refreshResult.expires_at, value: refreshResult.nickname })
+    }
     // else {
     //   const sessionExistsInRedis = (await redis.exists(`session:${sessionToken}`)) === 1;
 
     //   if (!sessionExistsInRedis) {
-    //     // Если cookie есть, а сессии в редисе нет - чистим cookie
     //     cookie.session.remove();
     //   }
     // }
@@ -174,7 +179,7 @@ const app = new Elysia({ prefix: "/minecraft" })
   .use(me)
   .use(shared)
   .use(server)
-  .use(payment)
+  .use(store)
   .use(validateGroup)
   .use(rateGroup)
   .use(hooks)
@@ -189,5 +194,7 @@ process.on('uncaughtException', handleFatalError);
 process.on('unhandledRejection', handleFatalError);
 
 export type App = typeof app
+
+export type Shared = typeof shared
 
 logger.success(`Server is running at ${app.server?.hostname}:${app.server?.port}`);

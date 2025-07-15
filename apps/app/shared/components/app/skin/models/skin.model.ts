@@ -1,13 +1,13 @@
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { isChanged } from '@/shared/lib/reatom-helpers';
-import { take } from '@reatom/framework';
+import { atomHasChanged } from '@/shared/lib/reatom-helpers';
+import { atom, take } from '@reatom/framework';
 import { getObjectUrl } from "@/shared/lib/volume-helpers";
-import { BASE } from "@/shared/api/client";
+import { client } from "@/shared/api/client";
 import { userParam } from "../../player/models/player.model";
 
-userParam.onChange((ctx, state) => {
-  isChanged(ctx, userParam, state, () => {
-    skinAction.dataAtom.reset(ctx)
+atom((ctx) => {
+  atomHasChanged(ctx, userParam, {
+    onChange: () => skinAction.dataAtom.reset(ctx)
   })
 })
 
@@ -21,7 +21,7 @@ export async function getSkinDetails({
     type === 'skin' ? "steve_skin.png" : "steve_head.png"
   )
 
-  const res = await BASE(`server/skin/${nickname}`, {
+  const res = await client(`server/skin/${nickname}`, {
     searchParams: {
       type: type === 'head' ? "head" : "full"
     }

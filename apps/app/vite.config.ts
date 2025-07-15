@@ -2,7 +2,6 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import vike from "vike/plugin";
-import path from 'path'; 
 
 export default defineConfig({
   plugins: [
@@ -17,7 +16,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
+          if (
+            id.includes('node_modules') && 
+            // solution to error when sentry tries to initiate variable access before .env assignment
+            // Uncaught ReferenceError: Cannot access '.env.dsn' before initialization
+            !id.includes("sentry")
+          ) {
             return id.toString().split('node_modules/')[1].split('/')[0].toString();
           }
         }

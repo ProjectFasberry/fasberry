@@ -14,7 +14,7 @@ const MIN_PLAYTIME_FOR_INITIATOR = 6 * 60 * 60 * 1000
 
 export async function validateReferal(nickname: string) {
   const queryRefferals = await sqlite
-    .selectFrom("refferals")
+    .selectFrom("referrals")
     .selectAll()
     .where(eb =>
       eb.or([
@@ -22,7 +22,7 @@ export async function validateReferal(nickname: string) {
         eb("recipient", "=", nickname)
       ])
     )
-    .where("completed", "=", false)
+    .where("completed", "=", 0)
     .executeTakeFirst()
 
   if (!queryRefferals) return null;

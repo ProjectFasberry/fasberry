@@ -1,9 +1,9 @@
 import { reatomComponent } from "@reatom/npm-react";
 import { HTMLAttributes } from "react";
-import { createLink, Link } from "@/shared/components/config/Link";
+import { createLink, Link } from "@/shared/components/config/link";
 import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { tv, VariantProps } from "tailwind-variants";
-import { currentUserAtom } from "@/shared/api/global.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
 import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model";
 import "dayjs/locale/ru";
 import { Typography } from "@repo/ui/typography";

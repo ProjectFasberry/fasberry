@@ -12,18 +12,23 @@ const likes = new Elysia()
     try {
       const query = await sqlite
         .selectFrom("likes")
-        .select([
+        .select(eb => [
           "initiator",
-          "created_at"
+          "created_at",
+          eb.fn.countAll().over().as('total_count')
         ])
         .where("recipient", "=", recipient)
         .limit(8)
         .orderBy("created_at", "desc")
         .execute()
 
+      const count = Number(query[0]?.total_count) ?? 0
+
       const data = {
         data: query.map(item => ({ initiator: item.initiator, created_at: item.created_at })),
-        meta: Number(query[0]?.count ?? 0)
+        meta: {
+          count
+        }
       }
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, data)

@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@r
 import { IconCategory } from "@tabler/icons-react";
 import { Typography } from "@repo/ui/typography";
 import { WIKI_HEADERS } from "@repo/shared/wiki/data/configs";
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { navigate } from "vike/client/router";
 import { wikiParamAtom } from "../content/wiki-content";
 import { reatomComponent } from "@reatom/npm-react";

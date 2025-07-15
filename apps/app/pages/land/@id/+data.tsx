@@ -1,4 +1,4 @@
-import { BASE } from "@/shared/api/client";
+import { client } from "@/shared/api/client";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { useConfig } from "vike-react/useConfig";
 import { render } from "vike/abort";
@@ -10,7 +10,7 @@ import { getStaticImage } from "@/shared/lib/volume-helpers";
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getLand({ ulid, ...args }: { ulid: string } & RequestInit) {
-  const res = await BASE(`server/land/${ulid}`, { throwHttpErrors: false, ...args })
+  const res = await client(`server/land/${ulid}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<Land>>()
 
   if (!data || 'error' in data) return null

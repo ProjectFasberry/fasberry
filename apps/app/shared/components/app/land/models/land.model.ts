@@ -1,9 +1,9 @@
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
-import { BASE } from "@/shared/api/client";
+import { client } from "@/shared/api/client";
 import { toast } from "sonner";
-import { currentUserAtom } from "@/shared/api/global.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
 import { withHistory } from "@/shared/lib/reatom-helpers";
 import type { Land } from "@repo/shared/types/entities/land"
 
@@ -62,7 +62,7 @@ export const anotherLandsByOwnerAction = reatomAsync(async (ctx, nickname: strin
   const exclude = ctx.get(landParamAtom)
 
   return await ctx.schedule(async () => {
-    const res = await BASE(`server/lands/${nickname}`, {
+    const res = await client(`server/lands/${nickname}`, {
       searchParams: { exclude }, throwHttpErrors: false, signal: ctx.controller.signal
     })
 

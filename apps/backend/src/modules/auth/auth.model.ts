@@ -1,5 +1,5 @@
 import { normalizeIp } from "#/helpers/normalize-ip"
-import { auth } from "#/shared/database/auth-db"
+import { main } from "#/shared/database/main-db"
 import { sqlite } from "#/shared/database/sqlite-db"
 import { getRedisClient } from "#/shared/redis/init"
 import { Static, t } from "elysia"
@@ -16,7 +16,7 @@ export const getUserSessionsKey = (nickname: string) => `user_sessions:${nicknam
 export const getUserKey = (token: string) => `session:${token}`
 
 export async function getExistsUser(nickname: string): Promise<{ hash: string | null, result: boolean }> {
-  const query = await auth
+  const query = await main
     .selectFrom("AUTH")
     .select("HASH")
     .where("NICKNAME", "=", nickname)
@@ -104,8 +104,6 @@ export async function createSession({ token, info, nickname }: CreateSession): P
     }
   }
 
-  const expires_at = new Date(Date.now() + DEFAULT_SESSION_EXPIRE);
-
   const creationPipeline = redis.multi();
 
   const { browser: { name }, ip: rawIp } = info
@@ -123,6 +121,10 @@ export async function createSession({ token, info, nickname }: CreateSession): P
   creationPipeline.expire(userSessionsKey, DEFAULT_SESSION_EXPIRE);
 
   await creationPipeline.exec();
+
+  const expires_at = new Date(
+    Date.now() + DEFAULT_SESSION_EXPIRE_MS
+  );
 
   return { token, nickname, expires_at, info }
 }
@@ -178,6 +180,7 @@ export async function refreshSession(token: string) {
 
     return {
       result: true,
+      nickname,
       expires_at: new Date(newExpiresAtTimestamp),
     };
   }
@@ -221,7 +224,7 @@ async function registerReferrer({ initiator, recipient }: { initiator: string, r
 export async function createUser({
   nickname, findout, password, referrer, uuid, ip
 }: CreateUser) {
-  return auth.transaction().execute(async (trx) => {
+  return main.transaction().execute(async (trx) => {
     const user = await trx
       .insertInto("AUTH")
       .values({

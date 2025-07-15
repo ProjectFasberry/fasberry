@@ -1,4 +1,4 @@
-import { Link } from "../../config/Link";
+import { Link } from "../../config/link";
 import { action, atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";

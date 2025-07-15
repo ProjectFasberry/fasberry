@@ -3,7 +3,7 @@ import { Skeleton } from "@repo/ui/skeleton"
 import { Typography } from "@repo/ui/typography"
 import { navigate } from "vike/client/router"
 import { Land } from "@repo/shared/types/entities/land"
-import { createLink } from "../../../config/Link"
+import { createLink } from "../../../config/link"
 import { userLands } from "../models/player-lands.model"
 
 const PlayerLand = ({ ulid, title, name, members, chunks_amount }: Land) => {

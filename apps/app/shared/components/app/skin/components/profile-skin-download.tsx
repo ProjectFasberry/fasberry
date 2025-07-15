@@ -3,22 +3,23 @@ import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
 import { Button } from "@repo/ui/button";
 import { userParam } from "../../player/models/player.model";
+import { Typography } from "@repo/ui/typography";
 
 export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
-  const nickname = ctx.spy(userParam)
-  if (!nickname) return null;
+  const target = ctx.spy(userParam)
+  if (!target) return null;
 
-  const downloadUrl = `https://api.fasberry.su/minecraft/server/skin/download/${nickname}`
+  const downloadUrl = `https://api.fasberry.su/minecraft/server/skin/download/${target}`
 
   return (
     <Dialog open={dialogOpen} onOpenChange={v => setDialogOpen(v)}>
       <DialogTrigger asChild className="w-full">
-        <Button className="bg-neutral-50 items-center justify-center h-[46px]">
-          <p className="text-md font-semibold text-neutral-900">
+        <Button className="bg-neutral-50 items-center justify-center h-12">
+          <Typography className="text-md font-semibold text-neutral-900">
             Скачать скин
-          </p>
+          </Typography>
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-neutral-900 border-none">
@@ -36,10 +37,10 @@ export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
             rel="noopener noreferrer"
             download
           >
-            <Button className="flex bg-neutral-50 items-center justify-center">
-              <p className="font-semibold text-neutral-950 text-base">
+            <Button className="flex bg-neutral-50 font-semibold items-center justify-center">
+              <Typography className="text-neutral-950 text-base">
                 Скачать
-              </p>
+              </Typography>
             </Button>
           </a>
         </div>

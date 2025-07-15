@@ -1,4 +1,5 @@
 import { throwError } from "#/helpers/throw-error";
+import { userDerive } from "#/lib/middlewares/user";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { playerPoints } from "#/shared/database/playerpoints-db";
 import { reputation } from "#/shared/database/reputation-db";
@@ -35,7 +36,12 @@ async function getUserBalance(nickname: string) {
 }
 
 export const playerBalance = new Elysia()
+  .use(userDerive())
   .get("/player-balance", async ({ nickname, ...ctx }) => {
+    if (!nickname) {
+      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
+    }
+
     try {
       const balance = await getUserBalance(nickname)
 
@@ -51,7 +57,9 @@ export const playerBalance = new Elysia()
 
 async function getSkills(nickname: string) {
   const query = await bisquite
+    // @ts-expect-error
     .selectFrom("ADAPT_DATA")
+    // @ts-expect-error
     .innerJoin("Players", "Players.UUID", "ADAPT_DATA.UUID")
     .select([
       "ADAPT_DATA.DATA"

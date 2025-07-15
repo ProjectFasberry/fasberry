@@ -51,7 +51,9 @@ const AvatarImage = reatomComponent<AvatarProps>(({
 
   return (
     <div
-      className={avatarVariants({ variant, className })} style={{ height: propHeight, width: propWidth }} {...props}
+      className={avatarVariants({ variant, className })}
+      style={{ height: propHeight, width: propWidth }}
+      {...props}
     >
       <img
         src={url}

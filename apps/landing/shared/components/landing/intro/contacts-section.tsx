@@ -1,5 +1,5 @@
 import { CONTACTS_LIST, ContactsListProps } from '@repo/shared/wiki/data/contacts/contacts-list';
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { Typography } from '@repo/ui/typography';
 
 const ContactItem = ({ content, name, href }: ContactsListProps) => {

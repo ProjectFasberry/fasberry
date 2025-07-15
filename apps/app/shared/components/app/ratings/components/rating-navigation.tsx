@@ -1,6 +1,5 @@
 import { reatomComponent } from "@reatom/npm-react"
-import { GetRatings } from "../models/ratings.model"
-import { ratingByAtom } from "../models/rating-filter.model"
+import { GetRatings, ratingByAtom } from "../models/ratings.model"
 import { updateRatingAction } from "../models/update-ratings.model"
 import { HTMLAttributes } from "react";
 import { Typography } from "@repo/ui/typography";

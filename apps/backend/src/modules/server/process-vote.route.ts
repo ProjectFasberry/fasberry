@@ -4,6 +4,7 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { sqlite } from "#/shared/database/sqlite-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { publishVoteNotify } from "#/lib/publishers/pub-vote-notify";
+import { main } from "#/shared/database/main-db";
 
 async function postVoted(nickname: string) {
   const result = await sqlite
@@ -16,7 +17,7 @@ async function postVoted(nickname: string) {
     return
   }
 
-  const { reward } = await sqlite
+  const { reward } = await main
     .selectFrom("events")
     .select("reward")
     .where("origin", "=", "vote-for-server")

@@ -1,6 +1,6 @@
 import { PaymentCryptoCurrency, PaymentDonateType, PaymentMeta } from "#/lib/publishers/pub-payment-notify";
 import { CRYPTO_PAY_API } from "#/shared/api/crypto-api";
-import { payments } from "#/shared/database/payments-db";
+import { main } from "#/shared/database/main-db";
 import { ExchangeRate } from "#/shared/types/payment/payment-types";
 
 type GetItemPrice = {
@@ -14,16 +14,16 @@ function getDiff(rubPrice: number, exchangeRate: number): number {
 }
 
 async function getDonatePrice(value: PaymentDonateType) {
-  return payments
-    .selectFrom("donate")
+  return main
+    .selectFrom("store_donates")
     .select("price")
     .where("origin", "=", value)
     .executeTakeFirst()
 }
 
 async function getWalletPrice(value: "charism" | "belkoin") {
-  return payments
-    .selectFrom("economy")
+  return main
+    .selectFrom("store_economy")
     .select("value")
     .where("type", "=", value)
     .executeTakeFirst()

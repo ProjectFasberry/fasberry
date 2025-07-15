@@ -1,4 +1,4 @@
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { Rules } from "@/shared/components/landing/rules/rules";
 import { Button } from "@repo/ui/button";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";

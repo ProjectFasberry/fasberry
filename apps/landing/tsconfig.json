@@ -27,9 +27,6 @@
       "@/*": [
         "./*"
       ],
-      "@/backend": [
-        "../minecraft-backend/src"
-      ],
       "@repo/ui/*": ["../../packages/ui/src/*"]
     }
   },

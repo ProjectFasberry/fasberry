@@ -1,5 +1,5 @@
 import { throwError } from "#/helpers/throw-error";
-import { luckperms } from "#/shared/database/lp-db";
+import { luckperms } from "#/shared/database/luckperms-db";
 import Elysia, { Static, t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 

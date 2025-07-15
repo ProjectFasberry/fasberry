@@ -1,17 +1,24 @@
-import { HTMLAttributes } from "react";
+import { AnchorHTMLAttributes } from "react";
 import { tv } from "tailwind-variants";
 import { usePageContext } from "vike-react/usePageContext";
 
-type LinkProps = HTMLAttributes<HTMLAnchorElement> & {
-  href: string
-}
+type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement>
 
-export const createLink = (type: "land" | "player" | "news", target: string) => `/${type}/${target}`
+type Links = "land" | "player" | "news" | "store"
+
+const LINKS = (target: string): Record<Links, string> => ({
+  "land": `/land/${target}`,
+  "player": `/player/${target}`,
+  "news": `/news/${target}`,
+  "store": `/store/i/${target}`
+})
+
+export const createLink = (type: Links, target: string) => LINKS(target)[type]
 
 export function Link({ href, className, ...props }: LinkProps) {
   const pathname = usePageContext().urlPathname;
 
-  const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
+  const isActive = href ? href === "/" ? pathname === href : pathname.startsWith(href) : false;
 
   return (
     <a

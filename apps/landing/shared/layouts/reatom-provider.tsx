@@ -25,8 +25,6 @@ export const useCreateCtx = (extension?: Fn<[Ctx]>) => {
 export const ReatomProvider = ({ children }: PropsWithChildren) => {
   const snapshot = usePageContext().snapshot
   
-  console.log("provider.snapshot", snapshot)
-
   const ctx = useCreateCtx((ctx) => {
     snapshotAtom(ctx, snapshot)
 

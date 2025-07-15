@@ -1,6 +1,6 @@
 import { skinAction } from "@/shared/components/app/skin/models/skin.model"
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
-import { pageContextAtom } from "@/shared/api/global.model"
+import { pageContextAtom } from "@/shared/models/global.model"
 import { PageContext } from "vike/types"
 import { Data } from "./+data"
 import { PlayerLands } from "@/shared/components/app/player/components/lands"

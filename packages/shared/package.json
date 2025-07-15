@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "auth-gen-types": "kysely-codegen --dialect postgres --url=env\\(AUTH_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
+    "main-gen-types": "kysely-codegen --dialect postgres --url=env\\(MAIN_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
     "sqlite-gen-types": "kysely-codegen --dialect sqlite --url=env\\(SQLITE_DATABASE_URL\\) --out-file=./types/db/sqlite-database-types.ts",
     "payments-gen-types": "kysely-codegen --dialect postgres --url=env\\(PAYMENTS_DATABASE_URL\\) --out-file=./types/db/payments-database-types.ts",
     "skins-gen-types": "kysely-codegen --dialect mysql --url=env\\(SKINS_DATABASE_URL\\) --out-file=./types/db/skins-database-types.ts",
@@ -16,8 +16,7 @@
     "luckperms-gen-types": "kysely-codegen --dialect postgres --url=env\\(LUCKPERMS_DATABASE_URL\\) --out-file=./types/db/luckperms-database-types.ts"
   },
   "dependencies": {
-    "@repo/assets": "workspace:*",
-    "ky": "1.8.1"
+    "@repo/assets": "workspace:*"
   },
   "devDependencies": {
     "@repo/config-typescript": "workspace:*",

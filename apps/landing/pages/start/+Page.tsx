@@ -1,4 +1,4 @@
-import { Link } from "@/shared/components/config/Link";
+import { Link } from "@/shared/components/config/link";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { toast } from "sonner";
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";

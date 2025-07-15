@@ -1,5 +1,5 @@
-import { BASE } from "@/shared/api/client";
-import { News } from "@/shared/components/app/news/components/news";
+import { client } from "@/shared/api/client";
+import { NewsType } from "@/shared/components/app/news/components/news";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { useConfig } from "vike-react/useConfig";
 import { render } from "vike/abort";
@@ -8,8 +8,8 @@ import { PageContextServer } from "vike/types";
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getNews({ id, ...args }: { id: string } & RequestInit) {
-  const res = await BASE(`shared/news/${id}`, { ...args })
-  const data = await res.json<WrappedResponse<News>>()
+  const res = await client(`shared/news/${id}`, { ...args })
+  const data = await res.json<WrappedResponse<NewsType>>()
 
   if (!data || 'error' in data) return null
 
@@ -19,7 +19,7 @@ async function getNews({ id, ...args }: { id: string } & RequestInit) {
 export async function data(pageContext: PageContextServer) {
   const config = useConfig()
 
-  let news: News | null = null;
+  let news: NewsType | null = null;
 
   try {
     news = await getNews({ 

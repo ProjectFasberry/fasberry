@@ -2,7 +2,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog";
 import { Typography } from "@repo/ui/typography";
-import { currentUserAtom } from "@/shared/api/global.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
 import { isIdentityAtom } from "../models/player.model";
 
 const ChangePassword = reatomComponent(({ ctx }) => {
