@@ -8,5 +8,6 @@ export async function callBroadcast(
 ) {
   const payload = { parent: "cmi", value: `broadcast ${message}` }
 
+  // @ts-expect-error
   return callServerCommand(payload, { signal })
 }

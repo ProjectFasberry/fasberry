@@ -1,27 +1,43 @@
 import { throwError } from "#/helpers/throw-error";
 import { main } from "#/shared/database/main-db";
 import { logger } from "#/utils/config/logger";
-import Elysia from "elysia";
+import { StoreItem } from "@repo/shared/types/entities/store";
+import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
+import { GAME_CURRENCIES, GameCurrency, processImageUrl } from "./store-items.route";
 
-async function getItem(id: string) {
-  const donates = await main
-    .selectFrom("store_donates")
-    .selectAll()
-    .where("origin", "=", id)
+export function definePrice(currency: string, price: string): number {
+  return GAME_CURRENCIES.includes(currency as GameCurrency) ? Number(price) : Number(price) / 100
+}
+
+async function getItem(id: number): Promise<StoreItem | null> {
+  const query = await main
+    .selectFrom("store_items")
+    .select([
+      "id",
+      "title",
+      "description",
+      "price",
+      "imageUrl",
+      "summary",
+      "type",
+      "value",
+      "currency"
+    ])
+    .where("id", "=", id)
     .executeTakeFirst()
 
-  if (donates) return donates;
+  if (!query) return null;
 
-  const events = await main
-    .selectFrom("store_events")
-    .selectAll()
-    .where("origin", "=", id)
-    .executeTakeFirst()
+  const imageUrl = processImageUrl(query.imageUrl)
 
-  if (events) return events;
+  const data = {
+    ...query,
+    imageUrl,
+    price: definePrice(query.currency, query.price),
+  }
 
-  return null
+  return data
 }
 
 export const storeItem = new Elysia()
@@ -31,11 +47,13 @@ export const storeItem = new Elysia()
     try {
       const data = await getItem(id)
 
-      console.log(data)
-
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       logger.error(e)
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
+  }, {
+    params: t.Object({
+      id: t.Number()
+    })
   })

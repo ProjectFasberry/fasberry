@@ -6,52 +6,58 @@ declare global {
 
   namespace NodeJS {
     interface ProcessEnv {
+      MYSQL_ROOT_PASSWORD: string;
+      MYSQL_USER: string;
       AUTHORIZATION_POSTGRES_DB_URL: string;
       AUTHORIZATION_POSTGRES_DB: string;
       AUTHORIZATION_POSTGRES_PASSWORD: string;
       AUTHORIZATION_POSTGRES_USER: string;
       AUTHORIZATION_POSTGRES_PORT: number;
       AUTHORIZATION_POSTGRES_HOST: string;
-
       PAYMENTS_POSTGRES_DB_URL: string;
       PAYMENTS_POSTGRES_DB: string;
       PAYMENTS_POSTGRES_PASSWORD: string;
       PAYMENTS_POSTGRES_USER: string;
       PAYMENTS_POSTGRES_PORT: number;
-      PAYMENT_BACKEND_PORT: number;
-
+      PAYMENTS_POSTGRES_HOST: string;
       LUCKPERMS_POSTGRES_DB_URL: string;
       LUCKPERMS_POSTGRES_DB: string;
       LUCKPERMS_POSTGRES_PASSWORD: string;
       LUCKPERMS_POSTGRES_USER: string;
       LUCKPERMS_POSTGRES_PORT: number;
-      LUCKPERMS_BACKEND_PORT: number;
-
+      LUCKPERMS_POSTGRES_HOST: string;
+      LOBBY_MYSQL_DB: string;
+      LOBBY_MYSQL_HOST: string;
+      LOBBY_MYSQL_PORT: number;
+      PLAYERPOINTS_MYSQL_DB: string;
+      PLAYERPOINTS_MYSQL_HOST: string;
+      PLAYERPOINTS_MYSQL_PORT: number;
+      REPUTATION_MYSQL_DB: string;
+      REPUTATION_MYSQL_HOST: string;
+      REPUTATION_MYSQL_PORT: number;
+      SKINS_MYSQL_DB: string;
+      SKINS_MYSQL_HOST: string;
       SKINS_MYSQL_PORT: number;
       SKINS_DATABASE_URL: string;
-
-      MYSQL_ROOT_PASSWORD: string;
-      MYSQL_USER: string;
-
+      BISQUITE_MYSQL_DB: string;
+      BISQUITE_MYSQL_HOST: string;
+      BISQUITE_MYSQL_PORT: number;
       SQLITE_DATABASE_URL: string;
-
-      PUBLIC_SUPABASE_URL: string;
-      SUPABASE_SERVICE_ROLE_KEY: string;
-
       NATS_HOST: string;
       NATS_AUTH_TOKEN: string;
-
       MINIO_ACCESS_KEY: string;
       MINIO_SECRET_KEY: string;
       MINIO_ENDPOINT: string;
-
-      CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
-
-      BOT_TOKEN: string;
+      CRYPTO_PAY_MAINNET_URL: string;
+      CRYPTO_PAY_TESTNET_URL: string;
+      CRYPTO_PAY_MAINNET_TOKEN: string;
+      CRYPTO_PAY_TESTNET_TOKEN: string;
       REDIS_HOST: string;
       REDIS_USER_PASSWORD: string;
       REDIS_USER: string;
       REDIS_PORT: number;
+      BOT_TOKEN: string;
+      CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
     }
   }
 

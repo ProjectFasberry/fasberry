@@ -7,7 +7,7 @@ import { Button } from "@repo/ui/button";
 import { navigate } from "vike/client/router";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
-import { MenuCartTrigger } from "../components/app/shop/components/cart/store-basket";
+import { CartMenu } from "../components/app/shop/components/cart/cart-menu";
 
 export const AuthorizeButton = () => {
   return (
@@ -111,7 +111,7 @@ export const Header = () => {
             ))}
           </div>
           <div className="flex gap-2 items-center w-full md:w-1/5 justify-end">
-            {pathname.includes("/store") && <MenuCartTrigger />}
+            {pathname.includes("/store") && <CartMenu />}
             <HeaderUser />
           </div>
         </div>

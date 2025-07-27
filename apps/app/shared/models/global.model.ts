@@ -3,7 +3,10 @@ import { PageContext } from "vike/types"
 
 export const pageContextAtom = atom<PageContext | null>(null, "pageContext")
 
-export const isClientAtom = atom((ctx) => {
+export const isSsrAtom = atom((ctx) => {
   const pageContext = ctx.spy(pageContextAtom)
-  return pageContext ? !pageContext.isClientSide : false
+
+  const isSsr = pageContext ? !!pageContext.Page : false
+
+  return !isSsr
 }, "isSsr")

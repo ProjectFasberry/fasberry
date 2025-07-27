@@ -2,19 +2,18 @@ import type { DB as reputationDBType } from "@repo/shared/types/db/reputation-da
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
-
-const reputationDialect = ({
-  user, password, port, database, host
-}: DatabaseConnection) => {
-  return new MysqlDialect({ pool: createPool({ database, host, user, password, port, connectionLimit: 10 }) });
-};
+import { poolOptsHooks } from "./lobby-db";
 
 export const reputation = new Kysely<reputationDBType>({
-  dialect: reputationDialect({
-    user: Bun.env.MYSQL_USER!,
-    password: Bun.env.MYSQL_ROOT_PASSWORD!,
-    port: Number(Bun.env.REPUTATION_MYSQL_PORT!),
-    database: "reputation",
-    host: "127.0.0.1"
+  dialect: new MysqlDialect({
+    pool: createPool({
+      host: Bun.env.REPUTATION_MYSQL_HOST,
+      user: Bun.env.MYSQL_USER!,
+      password: Bun.env.MYSQL_ROOT_PASSWORD!,
+      port: Number(Bun.env.REPUTATION_MYSQL_PORT!),
+      database: Bun.env.REPUTATION_MYSQL_DB,
+      connectionLimit: 10
+    }),
+    ...poolOptsHooks("Reputation")
   })
 });

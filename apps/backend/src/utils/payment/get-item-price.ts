@@ -13,11 +13,12 @@ function getDiff(rubPrice: number, exchangeRate: number): number {
   return parseFloat(priceInTargetCurrency.toFixed(8));
 }
 
-async function getDonatePrice(value: PaymentDonateType) {
+async function getDonatePrice(id: number) {
   return main
-    .selectFrom("store_donates")
+    .selectFrom("store_items")
     .select("price")
-    .where("origin", "=", value)
+    .where("id", "=", id)
+    .where("type", "=", "donate")
     .executeTakeFirst()
 }
 
@@ -35,7 +36,8 @@ export async function getItemPrice({  meta, currency }: GetItemPrice): Promise<n
   const { paymentType, paymentValue } = meta;
 
   if (paymentType === "donate") {
-    const donateQuery = await getDonatePrice(paymentValue as PaymentDonateType)
+    // todo: replace 1 to real value
+    const donateQuery = await getDonatePrice(1)
 
     if (!donateQuery) {
       throw new Error("Item not found")

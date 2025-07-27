@@ -11,18 +11,14 @@ const avatarVariants = tv({
       default: 'max-w-[68px] max-h-[68px]',
     }
   },
-});
+})
 
-interface Avatar {
+interface AvatarProps extends HTMLAttributes<HTMLDivElement>,
+  VariantProps<typeof avatarVariants> {
   withStatus?: boolean,
   propHeight?: number;
   propWidth?: number;
   nickname: string;
-}
-
-export interface AvatarProps
-  extends HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof avatarVariants>, Avatar {
 }
 
 const SyncAvatar = ({ nickname }: { nickname: string }) => {
@@ -37,7 +33,7 @@ export const Avatar = reatomComponent<AvatarProps>(({ ctx, ...values }) => {
       <AvatarImage {...values} />
     </>
   )
-}, "AvatarImage")
+}, "Avatar")
 
 const AvatarImage = reatomComponent<AvatarProps>(({
   ctx, className, children, withStatus, variant, propWidth, propHeight, nickname, ...props
@@ -65,4 +61,4 @@ const AvatarImage = reatomComponent<AvatarProps>(({
       />
     </div>
   );
-}, "Avatar")
+}, "AvatarImage")

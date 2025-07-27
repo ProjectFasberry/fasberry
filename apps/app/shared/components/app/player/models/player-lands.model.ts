@@ -13,9 +13,16 @@ type UserLands = {
   }
 }
 
+userParam.onChange((ctx, state) => {
+  console.log("userParam", state)
+})
+
 atom((ctx) => {
   atomHasChanged(ctx, userParam, {
-    onChange: () => userLands.dataAtom.reset(ctx)
+    onChange: () => {
+      console.log("changed to", userParam)
+      userLands.dataAtom.reset(ctx)
+    }
   })
 })
 

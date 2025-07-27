@@ -1,6 +1,6 @@
 import { throwError } from "#/helpers/throw-error";
+import { getStaticObject } from "#/helpers/volume";
 import { sqlite } from "#/shared/database/sqlite-db";
-import { getStaticObject } from "#/shared/minio/init";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 

@@ -44,24 +44,18 @@ export interface CronJobRunDetails {
   username: string | null;
 }
 
-export interface Donate {
-  commands: string[] | null;
+export interface Payments {
+  asset: string;
   created_at: Generated<Timestamp>;
-  description: string;
-  forum: string[] | null;
-  id: Generated<Int8>;
-  imageUrl: string;
-  origin: string;
-  price: Int8;
-  rating: Int8;
-  title: string;
-}
-
-export interface Economy {
-  id: Generated<Int8>;
-  title: string | null;
-  type: string;
-  value: Int8;
+  id: Generated<number>;
+  initiator: string;
+  invoice_id: number;
+  order_id: string;
+  pay_url: string;
+  payload: string;
+  price: string;
+  status: PaymentStatus;
+  unique_id: string;
 }
 
 export interface PaymentsCrypto {
@@ -90,8 +84,7 @@ export interface PaymentsFiat {
 export interface DB {
   "cron.job": CronJob;
   "cron.job_run_details": CronJobRunDetails;
-  donate: Donate;
-  economy: Economy;
+  payments: Payments;
   payments_crypto: PaymentsCrypto;
   payments_fiat: PaymentsFiat;
 }

@@ -2,9 +2,10 @@ import sharp from "sharp";
 import ky from "ky";
 import { Blob } from "buffer";
 import { skins } from "#/shared/database/skins-db";
-import { AVATARS_BUCKET, getAvatarDestination, getObjectUrl, getSkinDestination, minio, SKINS_BUCKET, STATIC_BUCKET } from "#/shared/minio/init";
+import { AVATARS_BUCKET, minio, SKINS_BUCKET, STATIC_BUCKET } from "#/shared/minio/init";
 import { ItemBucketMetadata } from "minio";
 import { blobToUint8Array, nodeToWebStream } from "#/helpers/streams";
+import { getAvatarDestination, getObjectUrl, getSkinDestination } from "#/helpers/volume";
 
 type Skin = {
   textures: {

@@ -7,7 +7,7 @@ import { executeWithCursorPagination } from "kysely-paginate";
 import { CacheControl } from "elysiajs-cdn-cache";
 import { cachePlugin } from "#/lib/middlewares/cache-control";
 import { ipPlugin } from "#/lib/middlewares/ip";
-import { getStaticObject } from "#/shared/minio/init";
+import { getStaticObject } from "#/helpers/volume";
 
 const newsSchema = t.Object({
   limit: t.Optional(

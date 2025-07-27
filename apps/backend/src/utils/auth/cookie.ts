@@ -22,6 +22,7 @@ export function setCookie({ cookie, key, expires, value }: SetCookie) {
   cookie[key].httpOnly = true
   cookie[key].path = "/"
   cookie[key].secure = isProduction
+  cookie[key].sameSite = "none"
 }
 
 export function unsetCookie({ cookie, key }: Properties) {

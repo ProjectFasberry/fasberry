@@ -1,12 +1,12 @@
-export type StoreItem = {
-  id: string | number,
+import { JsonValue } from "../db/auth-database-types"
+
+export type  StoreItem = {
+  id: number,
   title: string,
-  description: string | null,
+  description: JsonValue | null,
   imageUrl: string,
-  origin: string,
-  type: "donates" | string,
+  type: "donate" | "event" | string,
+  currency: string,
   price: number,
-  details: {
-    wallet: "real" | "charism" | "belkoin"
-  }
+  summary: string
 }

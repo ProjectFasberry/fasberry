@@ -1,13 +1,13 @@
 import { throwError } from "#/helpers/throw-error";
 import { userDerive } from "#/lib/middlewares/user";
 import { bisquite } from "#/shared/database/bisquite-db";
-import { playerPoints } from "#/shared/database/playerpoints-db";
+import { playerpoints } from "#/shared/database/playerpoints-db";
 import { reputation } from "#/shared/database/reputation-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
 async function getBelkoin(nickname: string) {
-  return playerPoints
+  return playerpoints
     .selectFrom("playerpoints_username_cache")
     .innerJoin("playerpoints_points", "playerpoints_points.uuid", "playerpoints_username_cache.uuid")
     .select("playerpoints_points.points")

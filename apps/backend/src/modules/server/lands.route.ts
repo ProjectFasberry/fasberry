@@ -7,8 +7,8 @@ import { executeWithCursorPagination } from "kysely-paginate";
 import type { Land } from "@repo/shared/types/entities/land"
 import { cachePlugin } from "#/lib/middlewares/cache-control";
 import { sessionDerive } from "#/lib/middlewares/session";
-import { getStaticObject } from "#/shared/minio/init";
 import { userDerive } from "#/lib/middlewares/user";
+import { getStaticObject } from "#/helpers/volume";
 
 async function getLand({
   id, initiator

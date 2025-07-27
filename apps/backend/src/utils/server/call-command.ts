@@ -1,6 +1,6 @@
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/nats-subjects"
-import { logger } from "../config/logger"
+import { withAbort } from "#/helpers/abortable"
 
 type CommandType =
   | "lp" // luckperms
@@ -9,7 +9,7 @@ type CommandType =
   | "p" // player points
 
 type CallServerCommand = {
-  parent: CommandType | string,
+  parent: CommandType,
   value: string
 }
 
@@ -20,34 +20,25 @@ type ResponseMsg = {
 }
 
 export type AbortableCommandArgs = {
-  signal?: AbortSignal
+  signal: AbortSignal
 }
 
-export const callServerCommand = async (
+const timeout = 5000
+
+export async function callServerCommand(
   { parent, value }: CallServerCommand,
   { signal }: AbortableCommandArgs
-): Promise<{ result: "success" | "error" }> => {
+): Promise<{ result: "success" }> {
   const nc = getNatsConnection()
 
   try {
-    const timeout = 1000
-
-    const abortPromise = new Promise<never>((_, reject) => {
-      if (!signal) return;
-
-      signal.addEventListener("abort", () => {
-        reject(new Error("Aborted by signal"))
-      });
-    });
-
     const message = { event: "executeCommand", command: `${parent} ${value}` }
-    const payload = JSON.stringify(message)
 
-    const res = await Promise.race([
-      nc.request(SERVER_USER_EVENT_SUBJECT, payload, { timeout }),
-      abortPromise,
-    ]);
+    const natsRequest = nc.request(
+      SERVER_USER_EVENT_SUBJECT, JSON.stringify(message), { timeout }
+    );
 
+    const res = await withAbort(natsRequest, signal);
     const msg = res.json<ResponseMsg>()
 
     if ("error" in msg) {
@@ -56,7 +47,6 @@ export const callServerCommand = async (
 
     return { result: "success" }
   } catch (e) {
-    logger.error(e)
-    return { result: "error" }
+    throw e
   }
 }

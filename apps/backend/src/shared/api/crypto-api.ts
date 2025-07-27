@@ -1,8 +1,9 @@
+import { isProduction } from "#/helpers/is-production";
 import ky from "ky";
 
-export const CRYPTO_PAY_API = ky.extend({
-  prefixUrl: Bun.env.CRYPTO_PAY_MAINNET_URL,
+export const CRYPTO_PAY_API = ky.create({
+  prefixUrl: isProduction ? Bun.env.CRYPTO_PAY_MAINNET_URL : Bun.env.CRYPTO_PAY_TESTNET_URL,
   headers: {
-    "Crypto-Pay-API-Token": Bun.env.CRYPTO_PAY_MAINNET_TOKEN,
+    "Crypto-Pay-API-Token": isProduction ? Bun.env.CRYPTO_PAY_MAINNET_TOKEN : Bun.env.CRYPTO_PAY_TESTNET_TOKEN,
   }
 })

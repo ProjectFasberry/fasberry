@@ -1,62 +1,58 @@
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent } from "@reatom/npm-react";
-import { Donate } from "@repo/shared/types/db/payments-database-types";
 import { useData } from "vike-react/useData"
-import { Selectable } from "kysely"
 import { Typography } from "@repo/ui/typography";
 import { Data } from "./+data";
+import { ItemPrice, ItemSelectToCart } from "@/shared/components/app/shop/components/items/store-list";
 
 const SelectedDonate = reatomComponent(({ ctx }) => {
-  // @ts-expect-error
-  const data = useData<Data>().item as Selectable<Donate>
+  const data = useData<Data>().item
+
+  const desc = data.description ? data.description as [] : []
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <div className="flex flex-col w-full items-center justify-center">
-        <Typography className="text-lg md:text-xl lg:text-2xl">
-          {data.title}
-        </Typography>
-        <Typography color="gray" className="text-center text-sm md:text-base lg:text-lg">
-          {data.description}
-        </Typography>
+    <div className="flex flex-col sm:flex-row items-start gap-8 w-full justify-center h-full">
+      <div className="flex w-full items-center justify-center sm:w-1/4 bg-neutral-800/40 p-4 rounded-3xl">
+        <img src={data.imageUrl} width={256} height={256} alt={data.title}/>
       </div>
-      <div className="flex flex-col w-full gap-4 items-center overflow-auto max-h-[260px] justify-start border-2 border-neutral-600/40 rounded-xl p-4">
-        <div className="flex flex-col w-full">
-          <Typography className="text-[20px]">
-            ⭐ Возможности на сервере:
+      <div className="flex flex-col gap-4 w-full sm:w-3/4 h-full">
+        <div className="flex flex-col w-full ">
+          <Typography className="text-lg font-semibold md:text-xl lg:text-2xl">
+            {data.title}
           </Typography>
-          <div className="flex flex-col w-full">
-            {data.commands?.map((feature, idx) => (
-              <Typography key={idx} className="text-base">
-                ⏹ {feature}
+          <Typography color="gray" className="text-sm md:text-base lg:text-lg">
+            {data.summary}
+          </Typography>
+        </div>
+        {(desc && (desc.length >= 1 && typeof desc[0] === 'string')) && (
+          <div className="flex flex-col w-full gap-4 items-center overflow-auto max-h-[260px] justify-start rounded-xl">
+            <div className="flex flex-col w-full">
+              <Typography className="text-xl font-semibold">
+                Возможности
               </Typography>
-            ))}
+              <div className="flex flex-col w-full">
+                {desc.map((feature, idx) => (
+                  <Typography key={idx} className="text-base">
+                    {`-`} {feature}
+                  </Typography>
+                ))}
+              </div>
+            </div>
           </div>
+        )}
+        <div className="flex flex-col items-start gap-4 w-fit">
+          <ItemPrice currency={data.currency} price={data.price} />
+          <ItemSelectToCart id={data.id}/>
         </div>
       </div>
     </div>
   )
 }, "SelectedDonate")
 
-const Item = () => {
-  const data = useData<Data>().item
-
-  return (
-    <div>
-      <Typography className="text-lg font-semibold md:text-xl lg:text-2xl">
-        {data.title}
-      </Typography>
-    </div>
-  )
-}
-
 export default function StoreItem() {
-  const data = useData<Data>().item
-  if (!data) return null;
-
   return (
     <MainWrapperPage>
-      {"commands" in data ? <SelectedDonate /> : <Item />}
+      <SelectedDonate />
     </MainWrapperPage>
   )
 }

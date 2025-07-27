@@ -7,6 +7,6 @@ const database = new Database(Bun.env.SQLITE_DATABASE_URL)
 
 database.exec("PRAGMA journal_mode = WAL;");
 
-const dialect = new BunSqliteDialect({ database })
-
-export const sqlite = new Kysely<sqliteDBType>({ dialect })
+export const sqlite = new Kysely<sqliteDBType>({ 
+  dialect: new BunSqliteDialect({ database })
+})

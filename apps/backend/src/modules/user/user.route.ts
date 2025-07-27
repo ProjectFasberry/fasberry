@@ -6,7 +6,7 @@ import { luckperms } from "#/shared/database/luckperms-db";
 import { getPlayerAvatar } from "../server/skin.model";
 import type { User } from "@repo/shared/types/entities/user"
 import dayjs from "dayjs"
-import { Donate } from "@repo/shared/types/entities/donate-type";
+import { Donate } from "@repo/shared/types/entities/donate";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { sqlite } from "#/shared/database/sqlite-db";
 import { userDerive } from "#/lib/middlewares/user";

@@ -4,7 +4,7 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
 import { CacheControl } from "elysiajs-cdn-cache";
 import { lobby } from "#/shared/database/lobby-db";
-import { playerPoints } from "#/shared/database/playerpoints-db";
+import { playerpoints } from "#/shared/database/playerpoints-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { reputation } from "#/shared/database/reputation-db";
 import { cachePlugin } from "#/lib/middlewares/cache-control";
@@ -82,7 +82,7 @@ async function getRatingBy({
         }
       }
     case "belkoin":
-      const belkoinQuery = playerPoints
+      const belkoinQuery = playerpoints
         .selectFrom("playerpoints_points")
         .innerJoin("playerpoints_username_cache", "playerpoints_points.uuid", "playerpoints_username_cache.uuid")
         .select([

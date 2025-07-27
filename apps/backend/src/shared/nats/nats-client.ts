@@ -1,12 +1,13 @@
 import { logger } from "#/utils/config/logger";
 import { connect, ConnectionOptions, type NatsConnection } from "nats"; 
 
+const servers = `nats://${Bun.env.NATS_HOST ?? "localhost:4223"}`
+
 const NATS_CONFIG: ConnectionOptions = {
-  servers: `nats://${Bun.env.NATS_HOST ?? "localhost:4223"}`,
+  servers,
   token: Bun.env.NATS_AUTH_TOKEN,
   reconnect: true,
-  maxReconnectAttempts: -1,
-  reconnectTimeWait: 2000,
+  maxReconnectAttempts: -1
 }
 
 let nc: NatsConnection | null = null;
@@ -21,10 +22,7 @@ export async function initNats() {
 }
 
 export function getNatsConnection(): NatsConnection {
-  if (!nc) {
-    throw new Error('NATS client is not initialized');
-  }
-
+  if (!nc) throw new Error('NATS client is not initialized');
   return nc;
 }
 

@@ -5,11 +5,12 @@ type PaymentDetails =
   | { title: string, price: string, description: string, origin: PaymentDonateType }
   | { title: string }
 
-async function getDonateDetails(value: PaymentDonateType) {
+async function getDonateDetails(id: number) {
   return main
-    .selectFrom("store_donates")
-    .select(["title", "price", "description", "origin"])
-    .where("origin", "=", value)
+    .selectFrom("store_items")
+    .select(["title", "price", "description", "currency", "summary"])
+    .where("id", "=", id)
+    .where("type", "=", "donate")
     .executeTakeFirst()
 }
 
@@ -26,7 +27,8 @@ export async function getPaymentDetails({
 }: Omit<PaymentMeta, "nickname">): Promise<PaymentDetails | null> {
   switch (paymentType) {
     case "donate":
-      const query = await getDonateDetails(paymentValue as PaymentDonateType)
+      // todo: replace 1 to real value
+      const query = await getDonateDetails(1)
 
       if (!query) {
         return null;

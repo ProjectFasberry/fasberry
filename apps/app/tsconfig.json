@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "strict": true,
     "module": "esnext",
+    "noPropertyAccessFromIndexSignature": false,
     "noEmit": true,
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",

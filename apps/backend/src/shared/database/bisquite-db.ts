@@ -2,21 +2,18 @@ import type { DB as bisquiteDBType } from "@repo/shared/types/db/bisquite-databa
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
-
-const bisquiteDialect = ({
-  user, password, port, database, host
-}: DatabaseConnection) => {
-  return new MysqlDialect({ 
-    pool: createPool({ database, host, user, password, port, connectionLimit: 10 }) 
-  });
-};
+import { poolOptsHooks } from "./lobby-db";
 
 export const bisquite = new Kysely<bisquiteDBType>({
-  dialect: bisquiteDialect({
-    user: Bun.env.MYSQL_USER!,
-    password: Bun.env.MYSQL_ROOT_PASSWORD!,
-    port: Number(Bun.env.BISQUITE_MYSQL_PORT!),
-    database: "bisquite",
-    host: "127.0.0.1"
+  dialect: new MysqlDialect({
+    pool: createPool({
+      host: Bun.env.BISQUITE_MYSQL_HOST,
+      user: Bun.env.MYSQL_USER,
+      password: Bun.env.MYSQL_ROOT_PASSWORD,
+      port: Number(Bun.env.BISQUITE_MYSQL_PORT),
+      database: Bun.env.BISQUITE_MYSQL_DB, 
+      connectionLimit: 10
+    }),
+    ...poolOptsHooks("Bisquite")
   })
 }); 

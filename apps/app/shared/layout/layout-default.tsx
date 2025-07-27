@@ -6,10 +6,10 @@ import { ReatomProvider } from "./reatom-provider";
 import { PropsWithChildren } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { useUpdate } from "@reatom/npm-react";
-import { Toaster } from "./toaster";
 import { pageContextAtom } from "../models/global.model";
 import { Footer } from './footer';
 import { Widgets } from '../components/app/widgets/components/widgets';
+import { Toaster } from '../components/config/toaster';
 
 const SyncPageContext = () => {
   const pageContext = usePageContext()

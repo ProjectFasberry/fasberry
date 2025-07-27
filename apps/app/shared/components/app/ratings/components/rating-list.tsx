@@ -1,12 +1,12 @@
 import { RatingBelkoinCard, RatingCharismCard, RatingLandsCard, RatingParkourCard, RatingPlaytimeCard, RatingReputationCard } from "./rating-cards";
 import { GetRatings, RatingBelkoin, ratingByAtom, RatingCharism, ratingDataAtom, RatingLands, ratingMetaAtom, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model"
-import Events from '@repo/assets/gifs/minecraft-boime.gif'
 import { useInView } from "react-intersection-observer";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { updateRatingAction } from "../models/update-ratings.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { tv } from "tailwind-variants";
 import { ReactNode } from "react";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const RatingsListSkeleton = () => {
   return (
@@ -39,7 +39,7 @@ const RatingsSkeleton = () => {
 const RatingIsEmpty = () => {
   return (
     <div className="flex flex-col items-center gap-4">
-      <img src={Events} loading="lazy" alt="" width={256} height={256} />
+      <img src={getStaticImage("gifs/minecraft-boime.gif")} loading="lazy" alt="" width={256} height={256} />
       <p className="text-xl font-bold text-shark-50">Рейтингов пока нет</p>
     </div>
   )

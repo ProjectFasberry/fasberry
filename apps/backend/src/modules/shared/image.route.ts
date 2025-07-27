@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
-import { getStaticObject } from '#/shared/minio/init';
+import { getStaticObject } from "#/helpers/volume";
 
 const imageSchema = t.Object({
   id: t.Optional(

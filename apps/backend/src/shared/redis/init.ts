@@ -2,6 +2,8 @@ import { isProduction } from "#/helpers/is-production";
 import { logger } from "#/utils/config/logger";
 import Redis from 'ioredis';
 
+let rc: Redis | null = null;
+
 const redis = new Redis({
   host: isProduction ? Bun.env.REDIS_HOST : "localhost",
   port: Bun.env.REDIS_PORT,
@@ -9,19 +11,14 @@ const redis = new Redis({
   username: Bun.env.REDIS_USER
 });
 
-let redisClient: Redis | null = null;
-
 export const getRedisClient = (): Redis => {
-  if (!redisClient) {
-    throw new Error('Redis client is not initialized');
-  }
-
-  return redisClient;
+  if (!rc) throw new Error('Redis client is not initialized');
+  return rc;
 }
 
-export const initRedis = async () => {
+export async function initRedis() {
   try {
-    redisClient = redis
+    rc = redis
     logger.success("Redis client is connected")
   } catch (e) {
     logger.error(`Redis`, e)

@@ -1,4 +1,3 @@
-import { isClientAtom } from "@/shared/models/global.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";
 import { clientOnly } from "vike-react/clientOnly";
@@ -9,12 +8,7 @@ const ProfileSkinRender = clientOnly(() => import("@/shared/components/app/skin/
 
 export const PlayerSkin = reatomComponent(({ ctx }) => {
   const user = ctx.spy(targetUserAtom)
-
   if (!user) return null;
-
-  if (ctx.spy(isClientAtom)) {
-    return <Skeleton className="w-full lg:w-1/3 lg:border lg:h-[520px]" />
-  }
 
   return (
     <div className="flex flex-col h-full gap-2 w-full lg:w-1/3 lg:sticky  pt-2 lg:top-0">

@@ -5,10 +5,11 @@ import { itemsResource, StoreItem as StoreItemProps } from "../../models/store.m
 import { createLink } from "@/shared/components/config/link"
 import { Button } from "@repo/ui/button"
 import { atom } from "@reatom/core"
-import { cartDataAtom, selectItemToCart } from "../../models/store-cart.model"
+import { cartDataAtom, removeFromCart, selectItemToCart } from "../../models/store-cart.model"
 import { tv } from "tailwind-variants"
-import { IconSelect } from "@tabler/icons-react"
 import Inspect from "@repo/assets/images/minecraft/block_inspect.webp"
+import { getStaticImage } from "@/shared/lib/volume-helpers"
+import { isSsrAtom } from "@/shared/models/global.model"
 
 const StoreItemSkeleton = () => {
   return (
@@ -34,18 +35,18 @@ const StoreListSkeleton = () => {
   )
 }
 
-const CURRENCIES: Record<string, string> = {
-  "charism": "харизмы",
-  "belkoin": "белкоинов",
-  "real": "рублей"
+export const CURRENCIES: Record<string, { img: string | null, symbol: string }> = {
+  "CHARISM": { img: getStaticImage("donates/charism_wallet.png"), symbol: "C" },
+  "BELKOIN": { img: getStaticImage("donates/belkoin_wallet.png"), symbol: "B" },
+  "RUB": { img: null, symbol: "₽" }
 }
 
 const buyButtonVariants = tv({
-  base: `group gap-2 duration-150 *:duration-150 px-4 w-full rounded-lg`,
+  base: `group gap-2 duration-150 *:duration-150 px-6 w-full rounded-xl`,
   variants: {
     variant: {
       active: "bg-neutral-50 hover:bg-neutral-200",
-      inactive: "hover:bg-green-800 bg-green-700"
+      inactive: "bg-[#35C759]/80"
     }
   },
   defaultVariants: {
@@ -54,7 +55,7 @@ const buyButtonVariants = tv({
 })
 
 const buyButtonTypographyVariants = tv({
-  base: `font-semibold text-base`,
+  base: `font-semibold text-base text-nowrap`,
   variants: {
     variant: {
       active: "text-neutral-900",
@@ -66,60 +67,101 @@ const buyButtonTypographyVariants = tv({
   }
 })
 
-const getItemStatusAtom = (origin: string) => atom((ctx) => {
-  const isSelected = ctx.spy(cartDataAtom).find(t => t.origin === origin)
-  
+const getItemStatusAtom = (id: number) => atom((ctx) => {
+  const isSelected = ctx.spy(cartDataAtom).some(target => target.id === id)
   const variant: "active" | "inactive" = isSelected ? "active" : "inactive"
-
   return { variant, isSelected }
-}, `${origin}.status`)
+}, `${id}.status`)
 
-const ItemFooter = reatomComponent<{ price: number, origin: string, wallet: string }>(({
-  ctx, price, origin, wallet
-}) => {
-  const { isSelected, variant } = ctx.spy(
-    getItemStatusAtom(origin)
-  )
-
-  const currency = CURRENCIES[wallet]
-
+export const ItemPrice = ({ currency, price }: { currency: string, price: string | number }) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full gap-2">
-      <Typography className="text-base font-semibold bg-neutral-800 text-nowrap">
-        {price} {currency}
+    <div
+      className="flex items-center gap-1 text-base select-none font-semibold 
+        text-nowrap bg-blue-600 justify-center py-1 px-4 rounded-full"
+    >
+      {CURRENCIES[currency].img ? (
+        <img src={CURRENCIES[currency].img} alt={CURRENCIES[currency].symbol} width={24} height={24} />
+      ) : (
+        <span>{CURRENCIES[currency].symbol}</span>
+      )}
+      <Typography className="text-base select-none font-semibold text-nowrap">
+        {price}
       </Typography>
-      <Button
-        className={buyButtonVariants({ variant })}
-        onClick={() => selectItemToCart(ctx, origin)}
-      >
-        <Typography className={buyButtonTypographyVariants({ variant })}>
-          {isSelected ? "В корзине" : "Купить"}
-        </Typography>
-        {isSelected && <IconSelect size={20} className="text-neutral-900" />}
-      </Button>
     </div>
   )
-}, "ItemFooter")
+}
+
+export const ItemSelectToCart = reatomComponent<Pick<StoreItemProps, "id">>(({ ctx, id }) => {
+  if (ctx.spy(isSsrAtom)) {
+    return <Skeleton className="h-10 w-24" />
+  }
+
+  const { isSelected, variant } = ctx.spy(getItemStatusAtom(id))
+
+  const handle = () => {
+    if (isSelected) {
+      removeFromCart(ctx, id)
+    } else {
+      selectItemToCart(ctx, id)
+    }
+  }
+
+  return (
+    <Button className={buyButtonVariants({ variant })} onClick={handle}>
+      <Typography className={buyButtonTypographyVariants({ variant })}>
+        {isSelected ? "В корзине" : "Купить"}
+      </Typography>
+    </Button>
+  )
+}, "ItemSelectToCart")
+
+const storeItemVariant = tv({
+  base: `flex flex-col items-center w-full overflow-hidden rounded-xl justify-between gap-2 p-2 sm:p-4 relative`,
+  variants: {
+    variant: {
+      default: "bg-gradient-to-b from-neutral-700/80 via-neutral-700/70 to-neutral-700/60"
+    }
+  },
+  defaultVariants: {
+    variant: "default"
+  }
+})
 
 const StoreItem = ({
-  description, origin, title, price, imageUrl, details: { wallet }
+  description, id, title, price, imageUrl, currency, summary
 }: StoreItemProps) => {
   return (
-    <div className="flex flex-col items-center w-full gap-2 overflow-hidden rounded-lg p-2 bg-neutral-800">
-      <a href={createLink("store", origin)} className="flex items-center justify-center bg-neutral-600/40 p-4 rounded-lg">
-        <img src={imageUrl} draggable={false} width={48} height={48} alt="" className="min-h-[48px] min-w-[48px]" />
+    <div className={storeItemVariant()}>
+      <div className="z-[1] select-none absolute w-full h-full">
+        <img src={getStaticImage("patterns/pattern_light.png")} draggable={false} width={600} height={600} alt="" />
+      </div>
+      <a
+        href={createLink("store", id)}
+        target="_blank"
+        className="flex relative z-[2] items-center justify-center rounded-lg"
+      >
+        <img src={imageUrl} draggable={false} width={64} height={64} alt="" className="min-h-[64px] min-w-[64px]" />
       </a>
-      <div className="flex flex-col w-full justify-center items-center">
-        <a href={createLink("store", origin)}>
-          <Typography className="text-xl font-semibold" color="white">
+      <div className="flex flex-col w-full overflow-hidden justify-center relative z-[2] items-center">
+        <a
+          href={createLink("store", id)}
+          target="_blank"
+          className="w-full overflow-hidden"
+        >
+          <Typography
+            className="text-lg lg:text-xl font-semibold truncate text-white w-full text-center block whitespace-nowrap"
+          >
             {title}
           </Typography>
         </a>
-        <Typography color="gray" className="truncate text-sm w-full text-center">
-          {description}
+        <Typography color="gray" className="truncate relative -top-1 text-xs sm:text-sm w-full text-center">
+          {summary}
         </Typography>
       </div>
-      <ItemFooter price={price} origin={origin} wallet={wallet} />
+      <div className="flex flex-col mt-0 sm:mt-2 items-center relative z-[2] justify-center w-full gap-2">
+        <ItemPrice currency={currency} price={price} />
+        <ItemSelectToCart id={id} />
+      </div>
     </div>
   )
 }
@@ -137,12 +179,14 @@ export const StoreList = reatomComponent(({ ctx }) => {
   const data = ctx.spy(itemsResource.dataAtom)
   const isLoading = ctx.spy(itemsResource.statusesAtom).isPending
 
-  if (!isLoading && !data.length) return <ItemsNotFound />
+  if (!isLoading && !data.length) {
+    return <ItemsNotFound />
+  }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 auto-rows-auto gap-4 w-full h-full">
+    <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 auto-rows-auto gap-2 lg:gap-4 w-full h-full">
       {isLoading ? <StoreListSkeleton /> : (
-        data.map(t => <StoreItem key={t.origin} {...t} />)
+        data.map(t => <StoreItem key={t.id} {...t} />)
       )}
     </div>
   )

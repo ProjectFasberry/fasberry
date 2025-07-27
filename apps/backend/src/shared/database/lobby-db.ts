@@ -1,20 +1,28 @@
+import { isProduction } from "#/helpers/is-production";
+import { logger } from "#/utils/config/logger";
 import type { DB as lobbyDBType } from "@repo/shared/types/db/lobby-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
 
-const lobbyDialect = ({
-  user, password, port, database, host
-}: DatabaseConnection) => {
-  return new MysqlDialect({ pool: createPool({ database, host, user, password, port, connectionLimit: 10 }) });
-};
+export const poolOptsHooks = (name: string) => ({
+  onCreateConnection: async () => {
+    if (!isProduction) {
+      logger.debug(`New ${name} DB connection created`);
+    }
+  }
+})
 
 export const lobby = new Kysely<lobbyDBType>({
-  dialect: lobbyDialect({
-    user: Bun.env.MYSQL_USER!,
-    password: Bun.env.MYSQL_ROOT_PASSWORD!,
-    port: Number(Bun.env.LOBBY_MYSQL_PORT!),
-    database: "lobby",
-    host: "127.0.0.1"
+  dialect: new MysqlDialect({
+    pool: createPool({
+      host: Bun.env.LOBBY_MYSQL_HOST,
+      user: Bun.env.MYSQL_USER,
+      password: Bun.env.MYSQL_ROOT_PASSWORD,
+      port: Number(Bun.env.LOBBY_MYSQL_PORT),
+      database: Bun.env.LOBBY_MYSQL_DB,
+      connectionLimit: 10
+    }),
+    ...poolOptsHooks("Lobby")
   })
-}); 
+});

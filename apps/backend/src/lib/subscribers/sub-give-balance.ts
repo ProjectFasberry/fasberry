@@ -1,5 +1,5 @@
 
-import { playerPoints } from "#/shared/database/playerpoints-db"
+import { playerpoints } from "#/shared/database/playerpoints-db"
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { logger } from "#/utils/config/logger"
 import { sql } from "kysely"
@@ -19,11 +19,11 @@ export const subscribeGiveBalance = () => {
       const nickname: string = msg.data.toString()
 
       try {
-        const res = await playerPoints
+        const res = await playerpoints
           .updateTable("playerpoints_points")
           .set({ points: sql`points + 5` })
           .where("uuid", "=", 
-            playerPoints
+            playerpoints
               .selectFrom("playerpoints_username_cache")
               .select("uuid")
               .where("username", "=", nickname)

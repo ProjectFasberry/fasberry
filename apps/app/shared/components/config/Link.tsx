@@ -6,14 +6,14 @@ type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement>
 
 type Links = "land" | "player" | "news" | "store"
 
-const LINKS = (target: string): Record<Links, string> => ({
+const LINKS = (target: string | number): Record<Links, string> => ({
   "land": `/land/${target}`,
   "player": `/player/${target}`,
   "news": `/news/${target}`,
   "store": `/store/i/${target}`
 })
 
-export const createLink = (type: Links, target: string) => LINKS(target)[type]
+export const createLink = (type: Links, target: string | number) => LINKS(target)[type]
 
 export function Link({ href, className, ...props }: LinkProps) {
   const pathname = usePageContext().urlPathname;

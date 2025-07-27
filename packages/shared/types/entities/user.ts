@@ -1,4 +1,4 @@
-import { Donate } from "./donate-type"
+import { Donate } from "./donate"
 
 export type User = {
   nickname: string,

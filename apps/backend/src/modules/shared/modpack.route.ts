@@ -4,7 +4,7 @@ import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { CacheControl } from "elysiajs-cdn-cache";
 import { cachePlugin } from "#/lib/middlewares/cache-control";
-import { getStaticObject } from "#/shared/minio/init";
+import { getStaticObject } from "#/helpers/volume";
 
 async function getModpacks() {
   const query = await sqlite

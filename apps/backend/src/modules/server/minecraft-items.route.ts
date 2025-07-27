@@ -3,7 +3,7 @@ import { sql } from "kysely";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
-import { getStaticObject } from "#/shared/minio/init";
+import { getStaticObject } from "#/helpers/volume";
 
 async function getMinecraftItems() {
   const query = await sqlite

@@ -8,7 +8,8 @@ import SBPIcon from "@repo/assets/images/sbp.jpg"
 import { PaymentCurrency } from '@repo/shared/constants/currencies';
 import { tv, VariantProps } from 'tailwind-variants';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
-import { atom } from '@reatom/core';
+import { action, atom } from '@reatom/core';
+import { Skeleton } from "@repo/ui/skeleton";
 
 const currencyItemVariants = tv({
   base: `flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border-transparent`,
@@ -49,20 +50,32 @@ const TIPS: Partial<Record<typeof AGREGATORS[number], string>> = {
   "cryptobot": "Нужен телеграм"
 }
 
+const selectCurrency = action((ctx, currency: PaymentCurrency | null) => {
+  if (currency) {
+    storeCurrencyAtom(ctx, currency);
+  }
+
+  selectCurrencyDialogIsOpenAtom(ctx, false);
+}, "selectCurrency")
+
 const List = reatomComponent(({ ctx }) => {
   const [previewCurrency, setPreviewCurrency] = useState<PaymentCurrency | null>(null);
   const [system, setSystem] = useState<typeof AGREGATORS[number] | null>(null)
 
   const currencies = ctx.spy(currenciesResource.dataAtom);
-  const currency = ctx.spy(storeCurrencyAtom)
+
+  if (ctx.spy(currenciesResource.statusesAtom).isPending) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+    )
+  }
+
   const fiatMethod = ctx.spy(storePayMethodAtom)
-
-  const selectCurrency = () => {
-    if (!previewCurrency) return;
-
-    selectCurrencyDialogIsOpenAtom(ctx, false);
-    storeCurrencyAtom(ctx, previewCurrency);
-  };
 
   if (!currencies) return null;
 
@@ -131,7 +144,10 @@ const List = reatomComponent(({ ctx }) => {
         </Typography>
       )}
       <div className="flex flex-col sm:flex-row gap-2 items-center justify-between w-full">
-        <Button onClick={selectCurrency} className="w-full sm:w-2/3 hover:bg-green-800 bg-green-700">
+        <Button
+          className="w-full sm:w-2/3 hover:bg-green-800 bg-green-700"
+          onClick={() => selectCurrency(ctx, previewCurrency)}
+        >
           <Typography color="white" className="text-lg">
             Выбрать
           </Typography>
@@ -152,7 +168,6 @@ const selectCurrencyDialogIsOpenAtom = atom(false, "selectCurrencyDialigIsOpen")
 
 const SelectedCurrency = reatomComponent(({ ctx }) => {
   const currency = ctx.spy(storeCurrencyAtom)
-
   return <Typography color="white" className="text-sm lg:text-md font-semibold">{currency}</Typography>
 })
 

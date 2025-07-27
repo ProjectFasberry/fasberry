@@ -2,7 +2,7 @@ import { Button } from "@repo/ui/button"
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography"
 import { usePageContext } from "vike-react/usePageContext"
-import Allay from "@repo/assets/gifs/allay.gif"
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const TITLE: Record<string, string> = {
   "user": "Игрок не найден",
@@ -15,7 +15,7 @@ export default function NotExist() {
   return (
     <MainWrapperPage>
       <div className="flex flex-col items-center justify-center gap-4 w-full h-full">
-        <img src={Allay} height={102} width={102} alt="" />
+        <img src={getStaticImage("gifs/allay.gif")} height={102} width={102} alt="" />
         <Typography className="font-semibold text-base sm:text-xl">
           {TITLE[type] ?? "Ресурс не найден"}
         </Typography>

@@ -1,29 +1,100 @@
 import { PaymentMeta, publishPaymentNotify } from "#/lib/publishers/pub-payment-notify";
+import { TransactionalTask } from "../config/saga";
 import { callBroadcast } from "../server/call-broadcast";
 import { callServerCommand } from "../server/call-command";
-import { setPlayerGroup } from "../server/set-player-group";
 import { DONATE_TITLE } from "@repo/shared/constants/donate-aliases";
-import { abortablePromiseAll } from "#/helpers/abortable";
-import { logger } from "@repo/lib/logger";
+import { publishUpdateGroup } from "#/lib/publishers/pub-update-group";
+import { luckperms } from "#/shared/database/luckperms-db";
 
-export async function processDonatePayment({
-  nickname, paymentType, paymentValue
-}: PaymentMeta) {
-  const r = await setPlayerGroup(nickname, `group.${paymentValue}`)
+type ProcessDonate = {
+  recipient: string, 
+  value: PaymentMeta["paymentValue"], 
+  type: PaymentMeta["paymentType"]
+}
 
-  // if invalid update a group
-  if (!r) {
-    logger.error(`Payment: Invalid group ${paymentValue} for nickname ${nickname}`)
+async function setPlayerGroup(
+  nickname: string,
+  permission: string
+): Promise<boolean> {
+  try {
+    let isUpdated = false;
 
-    return;
+    const result = await luckperms
+      .insertInto("luckperms_user_permissions")
+      .values((eb) => ({
+        uuid: eb
+          .selectFrom("luckperms_players")
+          .select("uuid")
+          .where("username", "=", nickname)
+          .limit(1),
+        permission,
+        world: "global",
+        expiry: 0,
+        contexts: "{}",
+        server: "global",
+        value: true
+      }))
+      .onConflict((oc) => oc
+        .columns(["uuid", "permission"])
+        .doUpdateSet({ permission })
+      )
+      .executeTakeFirst();
+
+    if (result.numInsertedOrUpdatedRows) {
+      isUpdated = true;
+    }
+
+    if (isUpdated) {
+      publishUpdateGroup({ nickname, permission })
+    }
+
+    return isUpdated;
+  } catch (e) {
+    throw e
+  }
+}
+
+async function updatePlayerGroup({ recipient, type, value }: ProcessDonate) {
+  const result = await setPlayerGroup(recipient, `group.${value}`);
+
+  if (!result) {
+    throw new Error("Error updating player group")
   }
 
-  publishPaymentNotify({ nickname, paymentType, paymentValue })
+  publishPaymentNotify({
+    nickname: recipient, paymentType: type, paymentValue: value
+  });
+}
 
-  const message = `Игрок ${nickname} приобрел привилегию ${DONATE_TITLE[paymentValue as keyof typeof DONATE_TITLE]}`
+export function processDonatePayment(
+  { recipient, type, value }: ProcessDonate
+): TransactionalTask[] {
+  const message = `Игрок ${recipient} приобрел привилегию ${DONATE_TITLE[value as keyof typeof DONATE_TITLE]}`;
 
-  await abortablePromiseAll([
-    (signal) => callServerCommand({ parent: "cmi", value: `toast ${nickname} Поздравляем с покупкой!` }, { signal }),
-    (signal) => callBroadcast({ message }, { signal })
-  ])
+  const giveDonateTask: TransactionalTask = {
+    name: "give-donate-group",
+    execute: (signal) => updatePlayerGroup({ recipient, type, value }),
+    rollback: (signal) => {
+      console.log(`Rolling back group for ${recipient}. Setting to default.`);
+      return setPlayerGroup(recipient, `group.default`);
+    }
+  };
+
+  const notifyTask: TransactionalTask = {
+    name: "notify-player",
+    execute: (signal) => callServerCommand(
+      { parent: "cmi", value: `toast ${recipient} Поздравляем с покупкой!` },
+      { signal }
+    ),
+  };
+
+  const broadcastTask: TransactionalTask = {
+    name: "broadcast-to-server",
+    execute: (signal) => callBroadcast(
+      { message },
+      { signal }
+    ),
+  };
+
+  return [giveDonateTask, notifyTask, broadcastTask];
 }

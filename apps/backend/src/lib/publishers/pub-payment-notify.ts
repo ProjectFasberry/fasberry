@@ -1,7 +1,7 @@
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { z } from 'zod/v4';
 import { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema.js";
-import { paymentTypeSchema } from "@repo/shared/schemas/payment/payment-schema";
+import { paymentTypeSchema } from "@repo/shared/schemas/payment";
 import { donateSchema } from "@repo/shared/schemas/entities/donate-schema";
 
 export type PaymentCryptoCurrency = z.infer<typeof currencyCryptoSchema>

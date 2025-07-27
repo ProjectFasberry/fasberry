@@ -98,11 +98,11 @@ export const authorize = reatomAsync(async (ctx) => {
     await sleep(200)
 
     const res = await client.post(`auth/${type}`, {
+      throwHttpErrors: false,
+      signal: ctx.controller.signal,
       json: {
         nickname, password, findout, referrer, token
       },
-      signal: ctx.controller.signal,
-      throwHttpErrors: false
     })
 
     const data = await res.json<WrappedResponse<{ id: string, nickname: string }> | ValidationResponse>()
@@ -133,15 +133,14 @@ export const authorize = reatomAsync(async (ctx) => {
     if (res.data) {
       const type = ctx.get(typeAtom)
 
-      resetAuth(ctx)
-
       if (type === 'register') {
+        resetAuth(ctx)
         toast.success("Всё ок! Теперь войдите в аккаунт")
         typeAtom(ctx, "login")
       }
 
       if (type === 'login') {
-        window.location.reload();
+        ctx.schedule(() => window.location.reload())
       }
     }
   },

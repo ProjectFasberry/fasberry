@@ -1,149 +1,106 @@
-import { StorePrice } from "@/shared/components/app/shop/components/cart/store-price";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { IconArrowLeft } from "@tabler/icons-react";
-import ExpActive from "@repo/assets/images/minecraft/exp-active.webp"
-import { cardDataSelectedAtom, cartDataAtom, cartIsValidAtom } from "@/shared/components/app/shop/models/store-cart.model";
-import { Link } from "@/shared/components/config/link";
-import { tv } from "tailwind-variants";
-import { CartItem } from "@/shared/components/app/shop/components/cart/basket-item";
-import { StoreSelectCurrency } from "@/shared/components/app/shop/components/cart/store-currency";
+import { atom, CtxSpy, onDisconnect, withReset } from "@reatom/framework";
+import { createPaymentAction } from "@/shared/components/app/shop/models/store.model";
+import { ReactNode } from "react";
+import { CartOrders } from "@/shared/components/app/shop/components/cart/cart-orders";
+import { CartContent } from "@/shared/components/app/shop/components/cart/cart-content";
 
-const sectionVariant = tv({
-  base: `bg-neutral-900 gap-4 p-2 sm:p-3 lg:p-4 rounded-lg w-full`
-})
+const StoreLoader = reatomComponent(({ ctx }) => {
+  const isLoading = ctx.spy(createPaymentAction.statusesAtom).isPending;
 
-const CartContentData = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(cartDataAtom);
+  ctx.schedule(() => {
+    if (isLoading) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  });
 
+  if (!isLoading) return null;
+
+  return (
+    <div className="flex z-[1000] items-center flex-col gap-4 fixed bg-black/60 justify-center h-full w-full">
+      <div className="ui-loader loader-blk">
+        <svg viewBox="22 22 44 44" className="multiColor-loader">
+          <circle cx="44" cy="44" r="20.2" fill="none" strokeWidth="3.6" className="loader-circle loader-circle-animation">
+          </circle>
+        </svg>
+      </div>
+      <Typography className="font-semibold text-xl">
+        Готовим заказ
+      </Typography>
+    </div>
+  )
+}, "StoreLoader")
+
+type StoreCartType = typeof STORE_BADGES[number]["value"]
+
+const storeCartTypeAtom = atom<StoreCartType>("basket", "storeCartType").pipe(withReset())
+const storeCartTypeIsActive = (ctx: CtxSpy, target: StoreCartType) => ctx.spy(storeCartTypeAtom) === target
+
+onDisconnect(storeCartTypeAtom, (ctx) => storeCartTypeAtom.reset(ctx))
+
+const STORE_BADGES = [
+  {
+    title: "Корзина",
+    value: "basket",
+    condition: function (ctx: CtxSpy) { return storeCartTypeIsActive(ctx, this.value) }
+  },
+  {
+    title: "Заказы",
+    value: "orders",
+    condition: function (ctx: CtxSpy) { return storeCartTypeIsActive(ctx, this.value) }
+  }
+] as const;
+
+const STORE_COMPONENTS: Record<StoreCartType, ReactNode> = {
+  "basket": <CartContent />,
+  "orders": <CartOrders />
+}
+
+const StoreNavigation = reatomComponent(({ ctx }) => {
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <Button onClick={() => window.history.back()} className="h-10 p-0 aspect-square rounded-full bg-neutral-800">
+        <IconArrowLeft size={22} className='text-neutral-400' />
+      </Button>
+      {STORE_BADGES.map((badge) => (
+        <Button
+          key={badge.value}
+          data-state={badge.condition(ctx) ? "active" : "inactive"}
+          className="group h-10 border-2 data-[state=active]:bg-neutral-800 border-neutral-800 rounded-full px-4 py-1"
+          onClick={() => storeCartTypeAtom(ctx, badge.value)}
+        >
+          <Typography className="font-semibold text-neutral-200">
+            {badge.title}
+          </Typography>
+        </Button>
+      ))}
+    </div>
+  )
+}, "StoreNavigation")
+
+const StoreContent = reatomComponent(({ ctx }) => STORE_COMPONENTS[ctx.spy(storeCartTypeAtom)])
+
+export default function StoreCart() {
   return (
     <>
-      <Typography className="text-2xl font-semibold">
-        Содержимое
-      </Typography>
-      <div className="flex flex-col gap-4 w-full">
-        {data.map((item, idx) => (
-          <CartItem key={idx} {...item} />
-        ))}
-      </div>
-    </>
-  )
-}, "CartContentData")
-
-const CartSummery = reatomComponent(({ ctx }) => {
-  const all = ctx.spy(cartDataAtom).length;
-  const selected = ctx.spy(cardDataSelectedAtom).length
-
-  return (
-    <div className="flex items-center justify-between w-full gap-2">
-      <Typography className="font-semibold">
-        Товаров: {all}
-      </Typography>
-      <Typography className="font-semibold">
-        Выбрано: {selected}
-      </Typography>
-    </div>
-  )
-}, "CartSummery")
-
-const CartActions = reatomComponent(({ ctx }) => {
-  const isDisabled = !ctx.spy(cartIsValidAtom);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <Button
-        disabled={isDisabled}
-        className="bg-green-700 hover:bg-green-800 rounded-xl"
-      >
-        <Typography color="white" className="text-lg font-semibold">
-          Перейти к оформлению
-        </Typography>
-      </Button>
-      <div className="flex flex-col gap-4 w-full h-full">
-        <div className="flex justify-between w-full items-center gap-2">
-          <div className="flex flex-col">
-            <Typography color="white" className="text-lg font-semibold">
-              Способ оплаты
-            </Typography>
-            <Typography color="gray" className="leading-4 w-full text-wrap truncate">
-              Можно выбрать иной способ оплаты
-            </Typography>
-          </div>
+      <StoreLoader />
+      <MainWrapperPage>
+        <div className="flex flex-col gap-4 w-full h-full">
           <div className="flex items-center gap-2">
-            <StoreSelectCurrency />
-          </div>
-        </div>
-      </div>
-      <div
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full h-full"
-      >
-        <div className="flex items-center gap-2 justify-center w-fit rounded-lg">
-          <div className="flex items-center justify-center bg-neutral-600/40 p-2 rounded-lg">
-            <img src={ExpActive} loading="lazy" width={32} height={32} alt="" />
-          </div>
-          <div className="flex flex-col justify-center">
-            <Typography color="gray" className="text-lg leading-6">Стоимость</Typography>
-            <StorePrice />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}, "CartActions")
-
-const CartContent = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(cartDataAtom);
-
-  if (!data.length) {
-    return (
-      <div className={sectionVariant({ className: "flex gap-2 *:w-fit flex-col w-full" })}>
-        <Typography className='text-2xl font-semibold'>
-          Пусто
-        </Typography>
-        <Typography color="gray">
-          Перейдите в магазин, чтобы найти всё, что нужно.
-        </Typography>
-        <Link href="/store">
-          <Button className="bg-neutral-800 font-semibold">
-            В магазин
-          </Button>
-        </Link>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex flex-col lg:flex-row items-start w-full gap-6 h-fit">
-      <div className={sectionVariant({ className: "flex flex-col lg:w-2/3" })}>
-        <CartContentData />
-        <CartSummery />
-      </div>
-      <div className={sectionVariant({ className: "flex flex-col lg:w-1/3" })}>
-        <CartActions />
-      </div>
-    </div>
-  )
-}, "CartContent")
-
-export default function StoreCard() {
-  return (
-    <MainWrapperPage>
-      <div className="flex flex-col gap-4 w-full h-full">
-        <div className="flex items-center gap-2">
-          <Button onClick={() => window.history.back()} className="px-2 gap-2 bg-neutral-800">
-            <IconArrowLeft size={24} className='text-neutral-400' />
-            <Typography className="text-base font-semibold">
-              Вернуться
+            <Typography className="text-3xl font-semibold">
+              Хранилище
             </Typography>
-          </Button>
-          <Typography className="text-3xl font-semibold">
-            Корзина
-          </Typography>
+          </div>
+          <StoreNavigation />
+          <StoreContent />
         </div>
-        <CartContent />
-      </div>
-    </MainWrapperPage>
+      </MainWrapperPage>
+    </>
   )
 }

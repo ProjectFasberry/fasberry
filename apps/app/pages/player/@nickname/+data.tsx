@@ -1,11 +1,14 @@
 import { client } from "@/shared/api/client";
-import { PageContextServer } from "vike/types";
+import { PageContext, PageContextServer } from "vike/types";
 import type { User } from "@repo/shared/types/entities/user"
 import { redirect } from "vike/abort";
 import { useConfig } from "vike-react/useConfig";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { DONATE_TITLE } from "@repo/shared/constants/donate-aliases";
 import dayjs from "@/shared/lib/create-dayjs"
+import { createCtx } from "@reatom/core";
+import { snapshotAtom } from "@/shared/lib/ssr";
+import { targetUserAtom } from "@/shared/components/app/player/models/player.model";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -59,8 +62,7 @@ export async function data(pageContext: PageContextServer) {
   })
 
   return {
-    id: pageContext.routeParams.nickname,
-    title: pageContext.routeParams.nickname,
+    nickname: pageContext.routeParams.nickname,
     user
   }
 }

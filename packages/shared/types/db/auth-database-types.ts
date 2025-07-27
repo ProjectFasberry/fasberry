@@ -11,6 +11,18 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
+export type Json = JsonValue;
+
+export type JsonArray = JsonValue[];
+
+export type JsonObject = {
+  [x: string]: JsonValue | undefined;
+};
+
+export type JsonPrimitive = boolean | number | string | null;
+
+export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface AUTH {
@@ -36,6 +48,11 @@ export interface Events {
   title: string;
 }
 
+export interface EventsOriginal {
+  id: Generated<number>;
+  type: string;
+}
+
 export interface GameStatus {
   id: Generated<number>;
   joined: Timestamp | null;
@@ -53,15 +70,14 @@ export interface SOCIAL {
   VK_ID: Int8 | null;
 }
 
-export interface StoreDonates {
-  commands: string[];
-  description: string;
+export interface StoreCartItems {
+  created_at: Generated<Timestamp>;
   id: Generated<number>;
-  imageUrl: string;
-  origin: string;
-  price: Int8;
-  rating: number;
-  title: string;
+  nickname: string;
+  price_snapshot: string;
+  product_id: number;
+  quantity: number;
+  session_id: string | null;
 }
 
 export interface StoreEconomy {
@@ -73,23 +89,25 @@ export interface StoreEconomy {
   value: string;
 }
 
-export interface StoreEvents {
-  description: string;
+export interface StoreItems {
+  currency: string;
+  description: Json | null;
   id: Generated<number>;
   imageUrl: string | null;
-  origin: string;
-  price: number;
+  price: Int8;
+  summary: string;
   title: string;
   type: string;
-  wallet: string;
+  value: string;
 }
 
 export interface DB {
   AUTH: AUTH;
   events: Events;
+  events_original: EventsOriginal;
   game_status: GameStatus;
   SOCIAL: SOCIAL;
-  store_donates: StoreDonates;
+  store_cart_items: StoreCartItems;
   store_economy: StoreEconomy;
-  store_events: StoreEvents;
+  store_items: StoreItems;
 }
