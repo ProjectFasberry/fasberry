@@ -15,12 +15,12 @@ const CURRENCIES: Record<string, { img: string | null, symbol: string }> = {
 const storeCurrencySymbolAtom = atom((ctx) => CURRENCIES[ctx.spy(storeCurrencyAtom)], "storeCurrencySymbol")
 
 export const StorePrice = reatomComponent(({ ctx }) => {
-  const target = ctx.spy(cartPriceAtom)
+  const { REAL, BELKOIN, CHARISM } = ctx.spy(cartPriceAtom)
   const { img, symbol } = ctx.spy(storeCurrencySymbolAtom)
 
   return (
     <Typography className="text-lg leading-5 font-semibold">
-      {target} {symbol}
+      {REAL} {symbol}
     </Typography>
   )
 }, "StorePrice")

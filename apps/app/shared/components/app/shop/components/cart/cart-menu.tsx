@@ -2,13 +2,15 @@ import { AtomState } from "@reatom/core"
 import { reatomComponent } from "@reatom/npm-react"
 import { Typography } from "@repo/ui/typography"
 import { IconBasket, IconX } from "@tabler/icons-react"
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@repo/ui/hover-card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@repo/ui/dropdown-menu"
 import { Link } from "../../../../config/link"
 import { Button } from "@repo/ui/button"
-import { cartMenuIsOpenAtom, cartPriceAtom, cartDataAtom } from "../../models/store-cart.model"
+import { cartMenuIsOpenAtom, cartDataAtom, removeItemFromCart } from "../../models/store-cart.model"
+import { StorePrice } from "./store-price"
+import { ItemPrice } from "../items/store-list"
 
-const CartMenuItem = reatomComponent<AtomState<typeof cartDataAtom>[number]>(({ 
-  ctx, id, title, price, imageUrl
+const CartMenuItem = reatomComponent<AtomState<typeof cartDataAtom>[number]>(({
+  ctx, id, title, price, imageUrl, currency
 }) => {
   return (
     <div className="flex items-center justify-between gap-2 bg-neutral-800 p-2 rounded-lg w-full">
@@ -19,11 +21,9 @@ const CartMenuItem = reatomComponent<AtomState<typeof cartDataAtom>[number]>(({
         </Typography>
       </div>
       <div className="flex items-center gap-1 sm:gap-2">
-        <Typography className="text-lg text-nowrap font-semibold">
-          {price} RUB
-        </Typography>
+        <ItemPrice currency={currency} price={price}/>
         <IconX
-          onClick={() => cartDataAtom.removeItem(ctx, id as number)}
+          onClick={() => removeItemFromCart(ctx, id)}
           size={24}
           className="cursor-pointer hover:text-neutral-500 text-neutral-400"
         />
@@ -53,40 +53,30 @@ const CartMenuData = reatomComponent(({ ctx }) => {
   )
 }, "MenuCartData")
 
-const CartMenuPrice = reatomComponent(({ ctx }) => {
-  return (
-    <div className="flex flex-col w-fit">
-      <Typography className="text-base">
-        Итого:
-      </Typography>
-      <Typography className='text-lg font-semibold'>
-        {ctx.spy(cartPriceAtom)} RUB
-      </Typography>
-    </div>
-  )
-}, "MenuCartPrice")
-
 export const CartMenu = reatomComponent(({ ctx }) => {
   return (
-    <HoverCard
+    <DropdownMenu
       open={ctx.spy(cartMenuIsOpenAtom)}
       onOpenChange={v => cartMenuIsOpenAtom(ctx, v)}
-      openDelay={1}
-      closeDelay={1}
     >
-      <HoverCardTrigger asChild>
+      <DropdownMenuTrigger asChild>
         <Link
           href="/store/cart"
-          className="flex items-center justify-center bg-white/10 p-2 rounded-lg"
+          className="flex items-center h-10 justify-center bg-white/10 p-2 rounded-lg"
         >
           <IconBasket size={26} className="text-neutral-400" />
         </Link>
-      </HoverCardTrigger>
-      <HoverCardContent side="left" className="flex flex-col min-w-80 sm:w-96 max-w-96 gap-4 p-4">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="bottom" className="flex flex-col min-w-80 sm:w-96 max-w-96 gap-4 p-4">
         <CartMenuData />
         <div className="flex justify-between items-center w-full">
-          <CartMenuPrice />
-          <Link href="/store/cart">
+          <div className="flex flex-col w-fit">
+            <Typography className="text-base">
+              Итого:
+            </Typography>
+            <StorePrice />
+          </div>
+          <Link href="/store/cart" onClick={() => cartMenuIsOpenAtom(ctx, false)}>
             <Button className="bg-green-700 hover:bg-green-800">
               <Typography className="font-semibold">
                 В корзину
@@ -94,7 +84,7 @@ export const CartMenu = reatomComponent(({ ctx }) => {
             </Button>
           </Link>
         </div>
-      </HoverCardContent>
-    </HoverCard>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }, "CartMenu")

@@ -5,8 +5,8 @@ import {
   changeRecipientIsValidAtom,
   newRecipientAtom,
   openRecipientChangeDialog,
-  removeFromCart,
-  selectCartItem,
+  removeItemFromCart,
+  updateItemSelectedStatus,
   StoreBasket
 } from "../../models/store-cart.model"
 import { Button } from "@repo/ui/button"
@@ -54,10 +54,8 @@ const ChangeRecipient = reatomComponent<{ recipient: string | null, id: number }
 }, "ChangeRecipient")
 
 export const CartItem = reatomComponent<StoreBasket>(({
-  ctx, title, imageUrl, description, details, price, id, summary
+  ctx, title, imageUrl, description, selected, for: recipient, price, id, summary
 }) => {
-  const recipient = details.for
-
   return (
     <div
       id={id.toString()}
@@ -65,9 +63,9 @@ export const CartItem = reatomComponent<StoreBasket>(({
     >
       <Button
         className="absolute top-3 left-3 flex items-center justify-center !p-0 w-6 h-6 bg-blue-600/80"
-        onClick={() => selectCartItem(ctx, id)}
+        onClick={() => updateItemSelectedStatus(ctx, id)}
       >
-        {details.selected ? <IconCheck size={22} /> : null}
+        {selected ? <IconCheck size={22} /> : null}
       </Button>
       <div className="flex items-center select-none min-w-[36px] min-h-[36px] h-[48px] w-[48px] justify-center overflow-hidden rounded-lg">
         <img src={imageUrl} draggable={false} width={48} height={48} alt="" className="min-h-[48px] min-w-[48px]" />
@@ -96,7 +94,7 @@ export const CartItem = reatomComponent<StoreBasket>(({
           <div
             title="Удалить"
             className="flex cursor-pointer items-center justify-center h-8 p-1 rounded-lg bg-neutral-700"
-            onClick={() => removeFromCart(ctx, id)}
+            onClick={() => removeItemFromCart(ctx, id)}
           >
             <IconTrash size={22} />
           </div>

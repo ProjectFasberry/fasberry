@@ -34,7 +34,9 @@ async function getItems(args: Static<typeof donatesSchema>) {
       "imageUrl",
       "type",
       "currency",
-      "summary"
+      "summary",
+      "command",
+      "value"
     ])
     .orderBy("id", "asc")
     .limit(limit)

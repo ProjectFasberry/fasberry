@@ -5,13 +5,33 @@ export function throwError(e: unknown): { error: string } {
     typeof e === 'object' &&
     e !== null &&
     'message' in e &&
-    typeof { error: (e as any).message === 'string' }
+    typeof (e as any).message === 'string'
   ) {
-    return { error: (e as { message: string }).message }
+    try {
+      const parsed = JSON.parse((e as any).message);
+      
+      if (typeof parsed === 'object' && parsed !== null) {
+        return { error: parsed };
+      }
+
+      return { error: (e as any).message };
+    } catch {
+      return { error: (e as any).message };
+    }
   }
 
   if (typeof e === 'string') {
-    return { error: e };
+    try {
+      const parsed = JSON.parse(e);
+
+      if (typeof parsed === 'object' && parsed !== null) {
+        return { error: parsed };
+      }
+
+      return { error: e }; 
+    } catch {
+      return { error: e }; 
+    }
   }
 
   return { error };

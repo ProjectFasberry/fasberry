@@ -1,4 +1,4 @@
-import { IconBasket, IconCategory, IconStars, IconUsersGroup, IconX } from "@tabler/icons-react";
+import { IconArrowRight, IconBasket, IconCategory, IconStars, IconUsersGroup, IconX } from "@tabler/icons-react";
 import { createLink, Link } from '@/shared/components/config/link';
 import { reatomComponent } from "@reatom/npm-react";
 import { currentUserAtom } from "../models/current-user.model";
@@ -11,10 +11,11 @@ import { CartMenu } from "../components/app/shop/components/cart/cart-menu";
 
 export const AuthorizeButton = () => {
   return (
-    <Button onClick={() => navigate("/auth")} className="bg-green-700 rounded-lg ">
-      <Typography className="font-semibold text-neutral-50 text-md sm:text-base">
+    <Button onClick={() => navigate("/auth")} className="h-10 p-0 sm:px-4 sm:py-2 aspect-square sm:aspect-auto bg-green-700 rounded-lg">
+      <Typography className="hidden sm:inline font-semibold text-neutral-50 text-md sm:text-base">
         Авторизоваться
       </Typography>
+      <IconArrowRight size={20} className="sm:hidden"/>
     </Button>
   )
 }
@@ -27,7 +28,7 @@ const HeaderUser = reatomComponent(({ ctx }) => {
   return (
     <Link
       href={createLink("player", currentUser.nickname)}
-      className="w-[38px] h-[38px] overflow-hidden rounded-md"
+      className="w-10 h-10 overflow-hidden rounded-md"
     >
       <Avatar
         nickname={currentUser.nickname}

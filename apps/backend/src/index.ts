@@ -55,6 +55,9 @@ import { orderRoute } from "./modules/store/order.route";
 import { paymentEvents } from "./modules/store/payment/payment-events.route";
 import { ordersRoute } from "./modules/store/orders.route";
 import { nanoid } from "nanoid";
+import { startCacheWorker } from "./utils/workers/currencies";
+import { isProduction } from "./helpers/is-production";
+import { basket } from "./modules/store/basket.route";
 
 async function startServices() {
   async function startNats() {
@@ -103,6 +106,7 @@ const store = new Elysia()
     .use(createOrderRoute)
     .use(currencies)
     .use(ordersRoute)
+    .use(basket)
   )
 
 const shared = new Elysia()
@@ -234,7 +238,8 @@ process.on('uncaughtException', handleFatalError);
 process.on('unhandledRejection', handleFatalError);
 
 export type App = typeof app
-
 export type Shared = typeof shared
+
+isProduction && startCacheWorker()
 
 logger.success(`Server is running at ${app.server?.hostname}:${app.server?.port}`);

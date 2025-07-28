@@ -72,12 +72,13 @@ export interface SOCIAL {
 
 export interface StoreCartItems {
   created_at: Generated<Timestamp>;
+  for: string | null;
   id: Generated<number>;
-  nickname: string;
+  initiator: string;
   price_snapshot: string;
   product_id: number;
   quantity: number;
-  session_id: string | null;
+  selected: Generated<boolean>;
 }
 
 export interface StoreEconomy {
@@ -90,6 +91,7 @@ export interface StoreEconomy {
 }
 
 export interface StoreItems {
+  command: string | null;
   currency: string;
   description: Json | null;
   id: Generated<number>;
@@ -101,6 +103,24 @@ export interface StoreItems {
   value: string;
 }
 
+export interface StorePromotions {
+  ends_at: Generated<Timestamp | null>;
+  id: string;
+  item_id: number;
+  priority: string;
+  starts_at: Generated<Timestamp>;
+  title: string;
+  type: string;
+  value: string;
+}
+
+export interface StorePromotionStyles {
+  color: string;
+  icon: string;
+  label: string;
+  type: string;
+}
+
 export interface DB {
   AUTH: AUTH;
   events: Events;
@@ -110,4 +130,6 @@ export interface DB {
   store_cart_items: StoreCartItems;
   store_economy: StoreEconomy;
   store_items: StoreItems;
+  store_promotion_styles: StorePromotionStyles;
+  store_promotions: StorePromotions;
 }

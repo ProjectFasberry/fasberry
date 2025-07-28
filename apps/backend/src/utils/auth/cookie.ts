@@ -21,7 +21,7 @@ export function setCookie({ cookie, key, expires, value }: SetCookie) {
   cookie[key].expires = expires
   cookie[key].httpOnly = true
   cookie[key].path = "/"
-  cookie[key].secure = isProduction
+  cookie[key].secure = true
   cookie[key].sameSite = "none"
 }
 
@@ -30,7 +30,7 @@ export function unsetCookie({ cookie, key }: Properties) {
   cookie[key].value = ""
   cookie[key].expires = new Date(0)
   cookie[key].path = "/"
-  cookie[key].secure = isProduction
+  cookie[key].secure = true
   cookie[key].maxAge = 0
   cookie[key].sameSite = "none"
 }

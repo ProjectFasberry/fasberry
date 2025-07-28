@@ -1,6 +1,7 @@
-import { z } from 'zod/v4';
+import { z, ZodType } from 'zod/v4';
 import { donateSchema } from '../entities/donate-schema';
 import { currencyCryptoSchema, currencyFiatSchema } from '../entities/currencies-schema';
+import { JsonValue } from '../../types/db/auth-database-types';
 
 export const paymentFiatMethodSchema = z.enum(["card", "sbp"])
 export const paymentTypeSchema = z.enum(['donate', 'belkoin', 'charism', 'item', 'event']);
@@ -59,4 +60,22 @@ export const orderEventPayloadSchema = z.object({
     id: z.string(),
     date_at: z.union([z.string(), z.date()])
   })
+})
+
+export const STORE_TYPES = ["donate", "event"] as const
+
+export const storeItemSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  description: z.custom<JsonValue>().nullish(),
+  imageUrl: z.string(),
+  type: z.union([
+    z.enum(STORE_TYPES),
+    z.string()
+  ]),
+  command: z.string().nullable(),
+  value: z.string(),
+  currency: z.string(),
+  price: z.number(),
+  summary: z.string()
 })

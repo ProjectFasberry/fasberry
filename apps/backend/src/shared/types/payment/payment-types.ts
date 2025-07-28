@@ -84,11 +84,13 @@ export type BalanceType = {
   onhold: string
 }
 
-export type ExchangeRate = {
-  is_valid: boolean,
-  is_crypto: boolean,
-  is_fiat: boolean,
-  source: z.infer<typeof exchangeRateSource>,
-  target: z.infer<typeof exchangeRateTarget>,
-  rate: string
-}
+export const exchangeRateSchema = z.object({
+  is_valid: z.boolean(),
+  is_crypto: z.boolean(),
+  is_fiat: z.boolean(),
+  source: exchangeRateSource,
+  target: exchangeRateTarget,
+  rate: z.string()
+})
+
+export type ExchangeRate = z.infer<typeof exchangeRateSchema>

@@ -2,14 +2,14 @@ import { createOrderSchema } from '@repo/shared/schemas/payment';
 import { toast } from 'sonner';
 import { reatomAsync, reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
-import { sleep, withReset } from "@reatom/framework"
+import { concurrent, sleep, withReset } from "@reatom/framework"
 import { PaymentCurrency } from "@repo/shared/constants/currencies"
 import { z } from 'zod/v4';
 import { client } from '@/shared/api/client';
 import type { Currencies } from "@repo/shared/types/db/sqlite-database-types"
 import type { Selectable } from "kysely"
 import type { StoreItem as item } from "@repo/shared/types/entities/store"
-import { cardDataSelectedAtom } from './store-cart.model';
+import { cartDataSelectedAtom, cartWarningDialogIsContinueAtom, validateBeforeSubmit } from './store-cart.model';
 import { CreateOrderRoutePayload } from "@repo/shared/types/entities/payment"
 import { navigate } from 'vike/client/router';
 import { Payments } from "@repo/shared/types/db/payments-database-types"
@@ -73,6 +73,11 @@ type CreateOrder = z.infer<typeof createOrderSchema>
 export const createdPaymentDataAtom = atom<CreateOrderRoutePayload | null>(null)
 
 export const createPaymentAction = reatomAsync(async (ctx) => {
+  validateBeforeSubmit(ctx);
+
+  const isContinue = ctx.get(cartWarningDialogIsContinueAtom)
+  if (!isContinue) return;
+
   const method = ctx.get(storePayMethodAtom)
   const currency = ctx.get(storeCurrencyAtom);
 
@@ -80,34 +85,33 @@ export const createPaymentAction = reatomAsync(async (ctx) => {
     method, currency: "USDT"
   }
 
-  const selectedItems = ctx.get(cardDataSelectedAtom)
+  const selectedItems = ctx.get(cartDataSelectedAtom)
 
   const items: CreateOrder["items"] = selectedItems
-    .filter(target => typeof target.details.for === "string")
+    .filter(target => typeof target.for === "string")
     .map(target => ({
       id: target.id,
-      recipient: target.details.for as string,
+      recipient: target.for as string,
     }));
 
   return await ctx.schedule(async () => {
     const res = await client.post("store/create-order", {
       json: { items, details },
-      throwHttpErrors: false,
-      signal: ctx.controller.signal
+      throwHttpErrors: false
     })
-  
+
     const data = await res.json<WrappedResponse<CreateOrderRoutePayload>>()
-  
+
     if ("error" in data) {
       throw new Error(data.error)
     }
-  
+
     const { data: { gamePurchase, realPurchase, payload } } = data;
-  
+
     if (!gamePurchase && !realPurchase) {
       throw new Error("Произошла какая-то ошибка")
     }
-  
+
     return { gamePurchase, realPurchase, payload }
   })
 }, {

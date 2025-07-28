@@ -4,6 +4,7 @@ import { payments } from "#/shared/database/payments-db";
 import { getRedisClient } from "#/shared/redis/init";
 import { ExchangeRate, InvoiceType } from "#/shared/types/payment/payment-types";
 import { logger } from "#/utils/config/logger";
+import { EXCHANGE_RATES_KEY } from "#/utils/workers/currencies";
 import { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema";
 import { PaymentStatus } from "@repo/shared/types/db/payments-database-types";
 import { nanoid } from "nanoid";
@@ -40,7 +41,7 @@ type CreateCryptoOrder = {
   }
 }
 
-type CryptoPayPayload<T> = { ok: boolean, result: T }
+export type CryptoPayPayload<T> = { ok: boolean, result: T }
 
 function extractDiff(rubPrice: number, exchangeRate: number): number {
   const priceInTargetCurrency = rubPrice / exchangeRate;
@@ -51,11 +52,17 @@ async function getPriceInCurrency(
   inputPrice: number,
   currency: z.infer<typeof currencyCryptoSchema>
 ): Promise<number> {
-  const rates = await CRYPTO_PAY_API
-    .get("getExchangeRates")
-    .json<CryptoPayPayload<ExchangeRate[]>>()
+  const redis = getRedisClient()
 
-  const target = rates.result.find(
+  const data = await redis.get(EXCHANGE_RATES_KEY)
+
+  if (!data) {
+    throw new Error("Exchange rates cache is not defined")
+  }
+
+  const rates: ExchangeRate[] = JSON.parse(data)
+
+  const target = rates.find(
     target => target.source === currency && target.target === "RUB"
   )
 

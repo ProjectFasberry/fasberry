@@ -4,8 +4,7 @@ import { Skeleton } from "@repo/ui/skeleton"
 import { itemsResource, StoreItem as StoreItemProps } from "../../models/store.model"
 import { createLink } from "@/shared/components/config/link"
 import { Button } from "@repo/ui/button"
-import { atom } from "@reatom/core"
-import { cartDataAtom, removeFromCart, selectItemToCart } from "../../models/store-cart.model"
+import { getItemStatus, handleItemToCart } from "../../models/store-cart.model"
 import { tv } from "tailwind-variants"
 import Inspect from "@repo/assets/images/minecraft/block_inspect.webp"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
@@ -67,27 +66,26 @@ const buyButtonTypographyVariants = tv({
   }
 })
 
-const getItemStatusAtom = (id: number) => atom((ctx) => {
-  const isSelected = ctx.spy(cartDataAtom).some(target => target.id === id)
-  const variant: "active" | "inactive" = isSelected ? "active" : "inactive"
-  return { variant, isSelected }
-}, `${id}.status`)
-
 export const ItemPrice = ({ currency, price }: { currency: string, price: string | number }) => {
   return (
-    <div
-      className="flex items-center gap-1 text-base select-none font-semibold 
-        text-nowrap bg-blue-600 justify-center py-1 px-4 rounded-full"
-    >
+    <div className="flex items-center gap-1 text-base select-none text-nowrap font-semibold">
       {CURRENCIES[currency].img ? (
         <img src={CURRENCIES[currency].img} alt={CURRENCIES[currency].symbol} width={24} height={24} />
       ) : (
         <span>{CURRENCIES[currency].symbol}</span>
       )}
-      <Typography className="text-base select-none font-semibold text-nowrap">
+      <Typography>
         {price}
       </Typography>
     </div>
+  )
+}
+
+const Spinner = () => {
+  return (
+    <svg viewBox="0 0 16 16" height="16" width="16" className="windows-loading-spinner">
+      <circle r="7px" cy="8px" cx="8px"></circle>
+    </svg>
   )
 }
 
@@ -96,18 +94,20 @@ export const ItemSelectToCart = reatomComponent<Pick<StoreItemProps, "id">>(({ c
     return <Skeleton className="h-10 w-24" />
   }
 
-  const { isSelected, variant } = ctx.spy(getItemStatusAtom(id))
+  const state = ctx.spy(getItemStatus(id))
 
-  const handle = () => {
-    if (isSelected) {
-      removeFromCart(ctx, id)
-    } else {
-      selectItemToCart(ctx, id)
-    }
-  }
+  const isLoading = state?.isLoading ?? false
+  const isSelected = state?.isSelected ?? false;
+
+  const variant: "active" | "inactive" = isSelected ? "active" : "inactive"
 
   return (
-    <Button className={buyButtonVariants({ variant })} onClick={handle}>
+    <Button
+      className={buyButtonVariants({ variant })}
+      disabled={isLoading}
+      onClick={() => handleItemToCart(ctx, id)}
+    >
+      {isLoading && <Spinner />}
       <Typography className={buyButtonTypographyVariants({ variant })}>
         {isSelected ? "В корзине" : "Купить"}
       </Typography>
@@ -159,7 +159,11 @@ const StoreItem = ({
         </Typography>
       </div>
       <div className="flex flex-col mt-0 sm:mt-2 items-center relative z-[2] justify-center w-full gap-2">
-        <ItemPrice currency={currency} price={price} />
+        <div
+          className="flex items-center bg-blue-600 justify-center py-1 px-4 rounded-full"
+        >
+          <ItemPrice currency={currency} price={price} />
+        </div>
         <ItemSelectToCart id={id} />
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { cardDataSelectedAtom, cartDataAtom, cartIsValidAtom } from "../../models/store-cart.model";
+import { cartDataSelectedAtom, cartDataAtom, cartIsValidAtom } from "../../models/store-cart.model";
 import { StorePrice } from "./store-price";
 import { Link } from "@/shared/components/config/link";
 import { Button } from "@repo/ui/button";
@@ -26,7 +26,7 @@ const CartContentData = reatomComponent(({ ctx }) => {
   )
 }, "CartContentData")
 
-const CartSummerySelected = reatomComponent(({ ctx }) => ctx.spy(cardDataSelectedAtom).length, "CartSummerySelected")
+const CartSummerySelected = reatomComponent(({ ctx }) => ctx.spy(cartDataSelectedAtom).length, "CartSummerySelected")
 const CartSummeryTotal = reatomComponent(({ ctx }) => ctx.spy(cartDataAtom).length, "CartSummery")
 
 const CartActionsSubmit = reatomComponent(({ ctx }) => {
