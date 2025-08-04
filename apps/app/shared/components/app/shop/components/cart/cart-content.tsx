@@ -21,7 +21,7 @@ const CartContentData = reatomComponent(({ ctx }) => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {data.map((item, idx) => <CartItem key={idx} {...item} />)}
+      {data.map(item => <CartItem key={item.id} {...item} />)}
     </div>
   )
 }, "CartContentData")
@@ -30,7 +30,7 @@ const CartSummerySelected = reatomComponent(({ ctx }) => ctx.spy(cartDataSelecte
 const CartSummeryTotal = reatomComponent(({ ctx }) => ctx.spy(cartDataAtom).length, "CartSummery")
 
 const CartActionsSubmit = reatomComponent(({ ctx }) => {
-  const isDisabled = !ctx.spy(cartIsValidAtom);
+  const isValid = ctx.spy(cartIsValidAtom);
 
   const handle = () => {
     void spawn(ctx, async (spawnCtx) => createPaymentAction(spawnCtx))
@@ -38,7 +38,7 @@ const CartActionsSubmit = reatomComponent(({ ctx }) => {
 
   return (
     <Button
-      disabled={isDisabled}
+      disabled={!isValid}
       onClick={handle}
       className="bg-green-700 hover:bg-green-800 rounded-xl"
     >
@@ -48,44 +48,6 @@ const CartActionsSubmit = reatomComponent(({ ctx }) => {
     </Button>
   )
 }, "CartActionsSubmit")
-
-const CartActions = () => {
-  return (
-    <div className="flex flex-col gap-4">
-      <CartActionsSubmit />
-      <div className="flex flex-col gap-4 w-full h-full">
-        <div className="flex justify-between w-full items-center gap-2">
-          <div className="flex flex-col">
-            <Typography color="white" className="text-lg font-semibold">
-              Способ оплаты
-            </Typography>
-            <Typography color="gray" className="leading-4 w-full text-wrap truncate">
-              Можно выбрать иной способ оплаты
-            </Typography>
-          </div>
-          <div className="flex items-center gap-2">
-            <StoreSelectCurrency />
-          </div>
-        </div>
-      </div>
-      <div
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full h-full"
-      >
-        <div className="flex items-center gap-2 justify-center w-fit rounded-lg">
-          <div className="flex items-center justify-center bg-neutral-600/40 p-2 rounded-lg">
-            <img src={getStaticImage("icons/exp-active.webp")} loading="lazy" width={32} height={32} alt="" />
-          </div>
-          <div className="flex flex-col justify-center">
-            <Typography color="gray" className="text-lg leading-6">
-              Стоимость
-            </Typography>
-            <StorePrice />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const CartContentEmpty = () => {
   return (
@@ -105,17 +67,12 @@ const CartContentEmpty = () => {
   )
 }
 
-const cartIsEmptyAtom = atom<boolean>((ctx) => {
-  const target = ctx.spy(cartDataAtom);
-  return target.length === 0;
-})
+const cartDataIsEmptyAtom = atom((ctx) => ctx.spy(cartDataAtom).length === 0)
 
 export const CartContent = reatomComponent(({ ctx }) => {
-  const isEmpty = ctx.spy(cartIsEmptyAtom);
+  const isEmpty = ctx.spy(cartDataIsEmptyAtom);
 
-  if (isEmpty) {
-    return <CartContentEmpty />
-  }
+  if (isEmpty) return <CartContentEmpty />;
 
   return (
     <div className="flex flex-col lg:flex-row items-start w-full gap-6 h-fit">
@@ -134,7 +91,39 @@ export const CartContent = reatomComponent(({ ctx }) => {
         </div>
       </div>
       <div className={sectionVariant({ className: "flex flex-col lg:w-1/3" })}>
-        <CartActions />
+        <div className="flex flex-col gap-4">
+          <CartActionsSubmit />
+          <div className="flex flex-col gap-4 w-full h-full">
+            <div className="flex justify-between w-full items-center gap-2">
+              <div className="flex flex-col">
+                <Typography color="white" className="text-lg font-semibold">
+                  Способ оплаты
+                </Typography>
+                <Typography color="gray" className="leading-4 w-full text-wrap truncate">
+                  Можно выбрать иной способ оплаты
+                </Typography>
+              </div>
+              <div className="flex items-center gap-2">
+                <StoreSelectCurrency />
+              </div>
+            </div>
+          </div>
+          <div
+            className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full h-full"
+          >
+            <div className="flex items-start gap-2 justify-center w-fit rounded-lg">
+              <div className="flex items-center justify-center bg-neutral-600/40 p-2 rounded-lg">
+                <img src={getStaticImage("icons/exp-active.webp")} loading="lazy" width={32} height={32} alt="" />
+              </div>
+              <div className="flex flex-col justify-center">
+                <Typography color="gray" className="text-lg leading-6">
+                  Стоимость
+                </Typography>
+                <StorePrice />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

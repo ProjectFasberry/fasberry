@@ -47,10 +47,7 @@ export const orderDetailsSchema = z.object({
   currency: paymentCurrencySchema,
 })
 
-export const createOrderSchema = z.object({
-  items: z.array(orderItemSchema),
-  details: orderDetailsSchema
-})
+export const createOrderSchema = orderDetailsSchema
 
 export const orderEventPayloadTypeSchema = z.enum(["invoice_paid", "canceled"])
 

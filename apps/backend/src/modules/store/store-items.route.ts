@@ -1,25 +1,12 @@
-import { throwError } from "#/helpers/throw-error";
 import Elysia, { Static, t } from "elysia";
+import { throwError } from "#/helpers/throw-error";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { main } from "#/shared/database/main-db";
 import { StoreItem } from "@repo/shared/types/entities/store";
-import { definePrice } from "./store-item.route";
-import { getStaticObject } from "#/helpers/volume";
+import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
 
 export const GAME_CURRENCIES = ["CHARISM", "BELKOIN"] as const;
 export type GameCurrency = typeof GAME_CURRENCIES[number]
-
-export function processImageUrl(target?: string | null) {
-  if (target) {
-    if (target.includes("https://")) {
-      return target;
-    }
-
-    return getStaticObject(target)
-  }
-
-  return getStaticObject("icons/adventure_icon.png")
-}
 
 async function getItems(args: Static<typeof donatesSchema>) {
   const limit = args.limit ?? 32

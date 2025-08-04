@@ -77,31 +77,37 @@ const StoreFilterList = reatomComponent(({ ctx }) => {
   )
 }, "StoreFilterList")
 
-export const StoreFilters = reatomComponent(({ ctx }) => {
+const StoreFiltersSheet = reatomComponent(({ctx}) => {
+  return (
+    <Sheet>
+      <SheetTrigger className="flex w-full cursor-pointer gap-2 items-center justify-center">
+        <IconFilter size={24} className="text-neutral-400" />
+        <Typography color="gray" className="text-lg font-semibold">
+          Изменить фильтры
+        </Typography>
+      </SheetTrigger>
+      <SheetContent
+        side="bottom"
+        className='flex flex-col items-center justify-start max-h-[60vh] overflow-y-auto gap-4 rounded-t-2xl'
+      >
+        <SheetTitle>Фильтры</SheetTitle>
+        <div className='flex flex-col gap-2 w-full'>
+          <StoreFilterList />
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}, "StoreFiltersSheet")
+
+export const StoreFilters = () => {
   return (
     <div className="flex sm:flex-col justify-center gap-y-6 gap-x-2 w-full h-fit">
       <div className="sm:hidden block">
-        <Sheet>
-          <SheetTrigger className="flex cursor-pointer gap-2 items-center justify-center">
-            <IconFilter size={24} className="text-neutral-400" />
-            <Typography color="gray" className="text-lg font-semibold">
-              Изменить фильтры
-            </Typography>
-          </SheetTrigger>
-          <SheetContent
-            side="bottom"
-            className='flex flex-col items-center justify-start max-h-[60vh] overflow-y-auto gap-4 rounded-t-2xl'
-          >
-            <SheetTitle>Фильтры</SheetTitle>
-            <div className='flex flex-col gap-2 w-full'>
-              <StoreFilterList />
-            </div>
-          </SheetContent>
-        </Sheet>
+        <StoreFiltersSheet/>
       </div>
       <div className="hidden sm:block">
         <StoreFilterList />
       </div>
     </div>
   )
-}, "StoreFilters")
+}

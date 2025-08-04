@@ -20,7 +20,6 @@
         "@reatom/npm-react": "3.10.6",
         "@reatom/persist": "3.4.1",
         "@reatom/persist-web-storage": "3.4.6",
-        "@repo/assets": "workspace:*",
         "@repo/config-typescript": "workspace:*",
         "@repo/lib": "workspace:*",
         "@repo/shared": "workspace:*",
@@ -111,7 +110,6 @@
         "@reatom/framework": "3.4.64",
         "@reatom/npm-react": "3.10.6",
         "@reatom/persist": "^3.4.1",
-        "@repo/assets": "workspace:*",
         "@repo/lib": "workspace:*",
         "@repo/shared": "workspace:*",
         "@repo/ui": "workspace:*",
@@ -151,10 +149,6 @@
         "vite-bundle-visualizer": "1.2.1",
       },
     },
-    "packages/assets": {
-      "name": "@repo/assets",
-      "version": "0.0.0",
-    },
     "packages/config-eslint": {
       "name": "@repo/config-eslint",
       "version": "0.0.0",
@@ -171,7 +165,6 @@
       "version": "0.0.0",
       "dependencies": {
         "@neodx/log": "^0.4.1",
-        "@repo/assets": "workspace:*",
         "@repo/shared": "workspace:*",
       },
       "devDependencies": {
@@ -182,9 +175,6 @@
     "packages/shared": {
       "name": "@repo/shared",
       "version": "0.1.0",
-      "dependencies": {
-        "@repo/assets": "workspace:*",
-      },
       "devDependencies": {
         "@repo/config-typescript": "workspace:*",
         "typescript": "5.8.3",
@@ -647,8 +637,6 @@
     "@reatom/primitives": ["@reatom/primitives@3.11.0", "", { "dependencies": { "@reatom/core": "^3.1.1", "@reatom/utils": "^3.1.1" } }, "sha512-b+jtK7qpQxSP83mYQXpPRMlFyg+C9WPv4sZDWSmm00mwmwetW0KbltftkWiwQjQM1TLwpDLZ6R7DX7fcTraIgg=="],
 
     "@reatom/utils": ["@reatom/utils@3.11.3", "", {}, "sha512-H2FQf9xra7Twf0PxS6L0DtuRRC79NfHRB3V/YhnhPHyUE/UFscXrin/I2eGj3FEKcgOfC2BWnzCOrkXjKWgECQ=="],
-
-    "@repo/assets": ["@repo/assets@workspace:packages/assets"],
 
     "@repo/config-eslint": ["@repo/config-eslint@workspace:packages/config-eslint"],
 
@@ -1805,6 +1793,8 @@
     "trough": ["trough@2.2.0", "", {}, "sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw=="],
 
     "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
+
+    "tsx": ["tsx@4.20.3", "", { "dependencies": { "esbuild": "~0.25.0", "get-tsconfig": "^4.7.5" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "bin": { "tsx": "dist/cli.mjs" } }, "sha512-qjbnuR9Tr+FJOMBqJCW5ehvIo/buZq7vH7qD7JziU98h6l3qGy0a/yPFjwO+y0/T7GFpNgNAvEcPPVfyT8rrPQ=="],
 
     "tunnel-agent": ["tunnel-agent@0.6.0", "", { "dependencies": { "safe-buffer": "^5.0.1" } }, "sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w=="],
 

@@ -21,6 +21,7 @@ export const useCreateCtx = (extension?: Fn<[Ctx]>) => {
 
   return ctxRef.current
 }
+
 export const ReatomProvider = ({ children }: PropsWithChildren) => {
   const { snapshot } = usePageContext()
 

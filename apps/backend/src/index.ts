@@ -1,4 +1,4 @@
-import { Context, Cookie, Elysia } from "elysia";
+import { Elysia } from "elysia";
 import { serverTiming } from '@elysiajs/server-timing'
 import { logger as loggerMiddleware } from "@tqman/nice-logger";
 import { swagger } from "@elysiajs/swagger"
@@ -44,26 +44,27 @@ import { rateGroup } from "./modules/user/like.route";
 import { initRedis } from "./shared/redis/init";
 import { sessionDerive } from "./lib/middlewares/session";
 import { userDerive } from "./lib/middlewares/user";
-import { refreshSession } from "./modules/auth/auth.model";
 import { checkOrderRoute } from "./modules/store/payment/check-order.route";
 import { currencies } from "./modules/store/payment/currencies.route";
-import { CLIENT_ID_HEADER_KEY, createOrderRoute } from "./modules/store/payment/create-order.route";
+import { createOrderRoute } from "./modules/store/payment/create-order.route";
 import { restore } from "./modules/auth/restore.route";
-import { CROSS_SESSION_KEY, SESSION_KEY, setCookie, unsetCookie } from "./utils/auth/cookie";
 import { storeItem } from "./modules/store/store-item.route";
 import { orderRoute } from "./modules/store/order.route";
 import { paymentEvents } from "./modules/store/payment/payment-events.route";
 import { ordersRoute } from "./modules/store/orders.route";
-import { nanoid } from "nanoid";
 import { startCacheWorker } from "./utils/workers/currencies";
 import { isProduction } from "./helpers/is-production";
 import { basket } from "./modules/store/basket.route";
+import { defineClientId, defineSession } from "./utils/auth/session";
+import { INTERNAl_FILES, loadInternalFiles } from "./utils/config/load-internal-files";
+
+function startWorkers() {
+  isProduction && startCacheWorker()
+}
 
 async function startServices() {
   async function startNats() {
     await initNats()
-
-    // subscribePlayerGroup()
     subscribeRefferalCheck()
     subscribePlayerJoin()
     subscribeReferalReward()
@@ -77,7 +78,16 @@ async function startServices() {
   }
 
   await startNats()
-  await Promise.all([startMinio(), initRedis()])
+
+  await Promise.all([
+    startMinio(), 
+    initRedis()
+  ])
+
+  await loadInternalFiles(INTERNAl_FILES);
+
+  bot.init();
+  startWorkers();
 }
 
 await startServices()
@@ -92,15 +102,12 @@ const auth = new Elysia()
       .use(restore)
   )
 
-const order = new Elysia()
-  .group("/order", app => app
-    .use(orderRoute)
-    .use(paymentEvents)
-  )
-
 const store = new Elysia()
   .group("/store", app => app
-    .use(order)
+    .group("/order", app => app
+      .use(orderRoute)
+      .use(paymentEvents)
+    )
     .use(storeItem)
     .use(storeItems)
     .use(createOrderRoute)
@@ -150,50 +157,6 @@ const server = new Elysia()
 const root = new Elysia()
   .get("/health", ({ status }) => status(200))
 
-function defineClientId(cookie: Context["cookie"]) {
-  const clientId = cookie[CLIENT_ID_HEADER_KEY].value
-
-  if (!clientId) {
-    const id = nanoid(7)
-
-    setCookie({
-      cookie,
-      key: CLIENT_ID_HEADER_KEY,
-      expires: new Date(9999999999999),
-      value: id
-    });
-
-    logger.log(`Client id setted to ${id}`);
-  }
-}
-
-async function defineSession(
-  token: string | null, 
-  cookie: Context["cookie"]
-) {
-  if (!token) return;
-
-  const refreshResult = await refreshSession(token);
-
-  if (refreshResult) {
-    const { expires_at, nickname } = refreshResult;
-
-    setCookie({
-      cookie,
-      key: SESSION_KEY,
-      expires: expires_at,
-      value: token
-    })
-
-    setCookie({
-      cookie,
-      key: CROSS_SESSION_KEY,
-      expires: expires_at,
-      value: nickname
-    })
-  }
-}
-
 const app = new Elysia({ prefix: "/minecraft" })
   .use(swagger({
     scalarConfig: {
@@ -230,16 +193,11 @@ const app = new Elysia({ prefix: "/minecraft" })
   .listen(4104)
   .compile()
 
-bot.init();
-
 showRoutes(app)
 
 process.on('uncaughtException', handleFatalError);
 process.on('unhandledRejection', handleFatalError);
 
 export type App = typeof app
-export type Shared = typeof shared
-
-isProduction && startCacheWorker()
 
 logger.success(`Server is running at ${app.server?.hostname}:${app.server?.port}`);

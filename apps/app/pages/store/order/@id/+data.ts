@@ -3,6 +3,7 @@ import { useConfig } from 'vike-react/useConfig'
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { client } from "@/shared/api/client";
 import { Payment } from "@/shared/components/app/shop/models/store.model";
+import { logRouting } from "../../i/@id/+data";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -31,6 +32,8 @@ export async function data(pageContext: PageContextServer) {
       title: wrapTitle(`Заказ устарел`),
     })
   }
+
+  logRouting(pageContext.urlPathname, "data")
 
   return {
     id: pageContext.routeParams.id,

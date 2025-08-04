@@ -4,6 +4,8 @@ import { wrapTitle } from "@/shared/lib/wrap-title";
 import { client } from "@/shared/api/client";
 import { render } from "vike/abort";
 import { StoreItem } from "@repo/shared/types/entities/store";
+import logger from "consola"
+import { defineCartData } from "@/shared/components/app/shop/models/store-cart.model";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -18,6 +20,10 @@ async function getItem({ id, ...args }: { id: string } & RequestInit) {
   return data.data
 }
 
+export function logRouting(t: string, m: string) {
+  logger.log(`[Routing]: ${t} called +${m}`)
+}
+
 export async function data(pageContext: PageContextServer) {
   const config = useConfig()
 
@@ -30,6 +36,10 @@ export async function data(pageContext: PageContextServer) {
   config({
     title: wrapTitle(item.title.slice(0, 32)),
   })
+
+  logRouting(pageContext.urlPathname, "data")
+
+  await defineCartData(pageContext)
 
   return {
     id: pageContext.routeParams.id,

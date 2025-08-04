@@ -1,3 +1,5 @@
+import { getStaticObject } from "@/shared/lib/volume";
+
 export default function HeadIndex() {
   return (
     <>
@@ -9,13 +11,13 @@ export default function HeadIndex() {
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Новости" />
-      <meta property="og:image" content="https://mc.fasberry.su/images/backgrounds/bees.jpg" />
+      <meta property="og:image" content={getStaticObject("background", "bees.jpg")} />
       <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta name="twitter:title" content="Новости" />
       <meta name="twitter:description" content="Последние новости и обновления с нашего сервера Fasberry. Узнайте о новых возможностях и ивентах!" />
-      <meta name="twitter:image" content="https://mc.fasberry.su/images/backgrounds/bees.jpg" />
+      <meta name="twitter:image" content={getStaticObject("background", "bees.jpg")} />
       <meta property="twitter:image:type" content="image/jpeg" />
       <meta property="twitter:image:width" content="1200" />
       <meta property="twitter:image:height" content="630" />

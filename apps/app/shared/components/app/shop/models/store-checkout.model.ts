@@ -5,11 +5,6 @@ import { toast } from "sonner";
 import { Payment } from "./store.model";
 import { withReset } from "@reatom/framework";
 
-const PAYMENT_EVENTS_URLS = (id: string): Record<string, string> => ({
-  "production": `https://api.fasberry.su/minecraft/store/order/${id}/events`,
-  "development": `http://localhost:4104/minecraft/store/order/${id}/events`
-})
-
 export const msgAtom = atom<OrderEventPayload | null>(null, "msg")
 export const connectIsSuccessAtom = atom(false, "isSuccess")
 export const esAtom = atom<EventSource | null>(null, "eventSource").pipe(withReset())
@@ -47,8 +42,10 @@ msgAtom.onChange((ctx, target) => {
 esAtom.onChange((ctx, target) => {
   if (!target) return;
 
-  target.onopen = () => import.meta.env.DEV && toast.success("Connected to payment events")
-
+  target.onopen = () => {
+    import.meta.env.DEV && toast.success("Connected to payment events")
+  }
+  
   target.addEventListener("payload", (event) => {
     try {
       msgAtom(ctx, JSON.parse(event.data))
@@ -62,8 +59,10 @@ export const targetPaymentIdAtom = atom<string>("", "targetPaymentId")
 export const orderDataAtom = atom<Payment | null>(null, "orderData")
 
 export const connectToPaymentEvents = reatomAsync(async (ctx, target: string) => {
-  const url = PAYMENT_EVENTS_URLS(target)[import.meta.env.MODE];
+  const url = `${import.meta.env.PUBLIC_ENV__API_PREFIX}/store/order/${target}/events`;
+
   targetPaymentIdAtom(ctx, target);
+
   return esAtom(ctx, es(url));
 }, {
   name: "connectToPaymentEvents",

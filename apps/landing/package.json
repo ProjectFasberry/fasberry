@@ -5,11 +5,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "NODE_ENV=production vike preview --port 3002 --host",
-    "dev": "NODE_ENV=development vike dev --port 3005 --host",
-    "build": "vike build",
-    "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "_start": "NODE_ENV=production vike preview --port 3002 --host",
+    "_dev": "NODE_ENV=development vike dev --port 3005 --host",
+    "_build": "vike build",
+    "_lint": "eslint .",
+    "_type-check": "tsc --noEmit"
   },
   "sideEffects": [
     "**/*.css"
@@ -21,9 +21,9 @@
     "@reatom/framework": "3.4.64",
     "@reatom/npm-react": "3.10.6",
     "@reatom/persist": "^3.4.1",
-    "@repo/assets": "workspace:*",
     "@repo/lib": "workspace:*",
     "@repo/shared": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@tabler/icons-react": "3.34.0",
     "@tanstack/react-table": "8.21.3",
     "@uiw/react-heat-map": "2.3.3",
@@ -32,7 +32,6 @@
     "dayjs": "1.11.11",
     "ky": "1.8.1",
     "lucide-react": "0.468.0",
-    "@repo/ui": "workspace:*",
     "radix-ui": "1.4.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",

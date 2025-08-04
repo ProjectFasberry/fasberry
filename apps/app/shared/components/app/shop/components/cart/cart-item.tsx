@@ -1,20 +1,20 @@
 import { reatomComponent } from "@reatom/npm-react"
-import {
-  changeRecipient,
-  changeRecipientDialogIsOpen,
-  changeRecipientIsValidAtom,
-  newRecipientAtom,
-  openRecipientChangeDialog,
-  removeItemFromCart,
-  updateItemSelectedStatus,
-  StoreBasket
-} from "../../models/store-cart.model"
+import { CartBasket } from "../../models/store-cart.model"
 import { Button } from "@repo/ui/button"
 import { IconCheck, IconGift, IconTrash } from "@tabler/icons-react"
 import { Typography } from "@repo/ui/typography"
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog"
 import { Input } from "@repo/ui/input"
 import { createLink } from "@/shared/components/config/link"
+import { 
+  changeRecipient, 
+  changeRecipientDialogIsOpen, 
+  changeRecipientIsValidAtom, 
+  newRecipientAtom, 
+  openRecipientChangeDialog, 
+  removeItemFromCart, 
+  updateItemSelectedStatus 
+} from "../../models/store-item.model"
 
 const ChangeRecipient = reatomComponent<{ recipient: string | null, id: number }>(({
   ctx, recipient, id
@@ -53,7 +53,7 @@ const ChangeRecipient = reatomComponent<{ recipient: string | null, id: number }
   )
 }, "ChangeRecipient")
 
-export const CartItem = reatomComponent<StoreBasket>(({
+export const CartItem = reatomComponent<CartBasket>(({
   ctx, title, imageUrl, description, selected, for: recipient, price, id, summary
 }) => {
   return (

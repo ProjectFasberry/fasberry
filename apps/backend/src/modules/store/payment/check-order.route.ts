@@ -1,6 +1,4 @@
 import { throwError } from "#/helpers/throw-error";
-import { publishPaymentLog } from "#/lib/publishers/pub-payment-log";
-import { publishPaymentSuccess } from "#/lib/publishers/pub-payment-success";
 import { payments } from "#/shared/database/payments-db";
 import { InvoiceType } from "#/shared/types/payment/payment-types";
 import Elysia from "elysia";

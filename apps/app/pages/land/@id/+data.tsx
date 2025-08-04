@@ -6,6 +6,7 @@ import { PageContextServer } from "vike/types";
 import dayjs from "@/shared/lib/create-dayjs"
 import { Land } from "@repo/shared/types/entities/land";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
+import { logRouting } from "@/pages/store/i/@id/+data";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -55,6 +56,8 @@ export async function data(pageContext: PageContextServer) {
     ),
   })
 
+  logRouting(pageContext.urlPathname, "data");
+  
   return {
     id: pageContext.routeParams.id,
     land

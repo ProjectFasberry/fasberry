@@ -263,26 +263,35 @@ export const createOrderRoute = new Elysia()
 
     !isProduction && logger.debug(`Initiator ${initiator}`)
 
-    const { details: { currency }, items } = data;
-
-    const ids = items.map(target => target.id)
+    const { currency } = data;
 
     try {
-      if (!ids.length) {
-        throw new Error("Список ID пуст, невозможно выполнить запрос");
-      }
-
       const query = await main
-        .selectFrom("store_items")
-        .select(["id", "currency", "title", "price", "type", "value"])
-        .where("id", "in", ids)
-        .execute();
+        .selectFrom("store_cart_items")
+        .innerJoin("store_items", "store_items.id", "store_cart_items.product_id")
+        .select([
+          "store_items.id",
+          "store_items.currency",
+          "store_items.title",
+          "store_items.price",
+          "store_items.type",
+          "store_items.value",
+          "store_cart_items.for as recipient"
+        ])
+        .where("store_cart_items.initiator", "=", initiator)
+        .where("store_cart_items.selected", "=", true)
+        .execute()
 
       if (query.length === 0) {
         throw new Error("Товары не найдены или устарели")
       }
 
-      const gameItems = query.filter(
+      const items = query.filter(
+        (target): target is typeof target & { recipient: string } =>
+          typeof target.recipient === 'string'
+      );
+
+      const gameItems = items.filter(
         (target): target is typeof target & { currency: GameCurrency } => isGameCurrency(target.currency)
       );
 
@@ -336,7 +345,6 @@ export const createOrderRoute = new Elysia()
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
-      logger.error(e)
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {

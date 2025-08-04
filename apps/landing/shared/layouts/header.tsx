@@ -5,6 +5,7 @@ import { lazy, Suspense } from "react";
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@repo/ui/dropdown-menu";
 import { reatomComponent } from "@reatom/npm-react";
+import { getStaticObject } from "../lib/volume";
 
 const HeaderSheet = lazy(() => import("./header-mobile").then(m => ({ default: m.HeaderSheet })))
 
@@ -17,7 +18,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
 
     if (pathname === href) {
       return toast.info("Вы уже на этой странице", {
-        icon: <img alt="" loading="lazy" width={32} height={32} src="/images/minecraft/icons/bell.webp" />
+        icon: <img alt="" loading="lazy" width={32} height={32} src={getStaticObject("minecraft/icons", "bell.webp")} />
       })
     }
   }
@@ -32,7 +33,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
             className="flex items-center gap-1 mx-2"
           >
             {isActive && (
-              <img src="/images/minecraft/icons/experience_big.webp" width={20} alt="" height={20} />
+              <img src={getStaticObject("minecraft/icons", "experience_big.webp")} width={20} alt="" height={20} />
             )}
             <p
               data-href={href}
@@ -75,7 +76,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
             {childs.map(item => (
               <div key={item.name} className="flex items-center gap-1 cursor-pointer">
                 {item.href === pathname && (
-                  <img src="/images/minecraft/icons/experience_big.webp" width={16} alt="" height={16} />
+                  <img src={getStaticObject("minecraft/icons", "experience_big.webp")} width={16} alt="" height={16} />
                 )}
                 <Link href={item.href || "/"}>
                   <p className="hover:brightness-150 text-lg text-project-color">
@@ -92,14 +93,15 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
 }
 
 export const Header = reatomComponent(({ ctx }) => {
+  const url = getStaticObject("static", "cracked_polished_blacked.webp")
+
   return (
     <div
-      className="header flex items-center justify-between absolute top-0 transition w-full bg-repeat-x z-50
-        bg-[url('/images/static/cracked_polished_blacked.webp')] "
-      style={{ backgroundSize: '160px' }}
+      className={`header flex items-center justify-between absolute top-0 transition w-full bg-repeat-x z-50`}
+      style={{ backgroundSize: '160px', backgroundImage: `url(${url})` }}
     >
       <Link href="/" className="bg-transparent cursor-pointer relative md:-right-[40px] top-3 xl:-right-[60px]">
-        <img src="/images/fasberry_logo.webp" width={224} height={64} title="Fasberry" alt="Fasberry" />
+        <img src={getStaticObject("static", "fasberry_logo.webp")} width={224} height={64} title="Fasberry" alt="Fasberry" />
       </Link>
       <div className="hidden xl:flex gap-5 items-center justify-start pr-[132px]">
         {MAIN_HEADER.map(item => (

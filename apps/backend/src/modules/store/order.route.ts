@@ -1,6 +1,6 @@
+import Elysia, { t } from "elysia";
 import { throwError } from "#/helpers/throw-error";
 import { payments } from "#/shared/database/payments-db";
-import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getOrderKey, PaymentCacheData, } from "./payment/create-crypto-order";
 import { getRedisClient } from "#/shared/redis/init";
@@ -54,40 +54,6 @@ export async function getOrder(uniqueId: string): Promise<Omit<PaymentCacheData,
 const orderRouteSchema = t.Object({
   id: t.String()
 })
-
-const statusMap: Record<string, "success" | "pending" | "canceled" | "error"> = {
-  "succeeded": "success",
-  "failed": "error",
-  "captured": "pending",
-  "pending": "pending",
-  "waitingForCapture": "pending",
-  "canceled": "canceled",
-  "received": "success",
-  "created": "pending",
-  "cancelled": "canceled",
-}
-
-//     async function getCurrencyPriceByRub<T extends CurrencyString>(
-//       convertedCurrency: T
-//     ): Promise<{ [key in T]: { rub: number } }> {
-//       // @ts-expect-error
-//       const currencyId = PAYMENT_CURRENCIES_MAPPING[convertedCurrency]
-
-//       const res = await ky("https://api.coingecko.com/api/v3/simple/price", {
-//         searchParams: { "ids": currencyId, "vs_currencies": "rub" }
-//       })
-
-//       const data = await res.json<{ [key in T]: { rub: number } }>()
-
-//       return data;
-//     }
-
-//     const res = await getCurrencyPriceByRub(currency)
-
-//     if (Object.keys(res).length === 0) return null;
-
-//     return res
-//   })
 
 export const orderRoute = new Elysia()
   .get("/:id", async (ctx) => {

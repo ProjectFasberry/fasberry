@@ -55,6 +55,16 @@ export const paymentEvents = new Elysia()
           controller.enqueue(encoder.encode(":\n\n"));
         }, PING_TIMEOUT);
 
+        controllerAbort.addEventListener("abort", async () => {
+          logger.log(`[SSE]: Abort signal received for order ${uniqueId}`);
+          clearInterval(pingInterval);
+          controller.close();
+          
+          try {
+            if (sub) await sub.drain();
+          } catch { }
+        });
+
         try {
           for await (const msg of sub) {
             if (controllerAbort.aborted) break;

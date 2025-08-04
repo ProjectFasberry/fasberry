@@ -1,7 +1,6 @@
 import Elysia from "elysia";
 import { createUser, generateOfflineUUID, getExistsUser, registerSchema } from "./auth.model";
 import { throwError } from "#/helpers/throw-error";
-import UnsafePasswords from "@repo/assets/configs/unsafe_passwords.txt"
 import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
 import ky from "ky";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
@@ -9,6 +8,7 @@ import { ipPlugin } from "#/lib/middlewares/ip";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { logger } from "#/utils/config/logger";
 import { userDerive } from "#/lib/middlewares/user";
+import { textSets } from "#/utils/config/load-internal-files";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -20,14 +20,10 @@ async function getLicense(nickname: string) {
   return ky.get(`${MOJANG_API_URL}/${nickname}`, { throwHttpErrors: false }).json<MojangPayload>();
 }
 
-const unsafePasswordsSet: Set<string> = new Set(
-  UnsafePasswords.split("\n")
-    .map((l: string) => l.trim())
-    .filter((l: string) => l && l !== "****")
-);
+export function validatePasswordSafe(pwd: string): boolean {
+  const unsafePasswords = textSets["unsafe_passwords.txt"];
 
-export function validatePasswordSafe(password: string): boolean {
-  return !unsafePasswordsSet.has(password.trim());
+  return !unsafePasswords.has(pwd.trim())
 }
 
 async function getUserUUID(nickname: string) {

@@ -1,14 +1,14 @@
 import { Typography } from "@repo/ui/typography"
 import { reatomComponent } from "@reatom/npm-react"
 import { Skeleton } from "@repo/ui/skeleton"
-import { itemsResource, StoreItem as StoreItemProps } from "../../models/store.model"
+import { itemsResource, StoreItem as StoreItemProps, storeItemsDataAtom } from "../../models/store.model"
 import { createLink } from "@/shared/components/config/link"
 import { Button } from "@repo/ui/button"
-import { getItemStatus, handleItemToCart } from "../../models/store-cart.model"
 import { tv } from "tailwind-variants"
-import Inspect from "@repo/assets/images/minecraft/block_inspect.webp"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
 import { isSsrAtom } from "@/shared/models/global.model"
+import { getItemStatus, handleItemToCart } from "../../models/store-item.model"
+import { CURRENCIES } from "../cart/store-price"
 
 const StoreItemSkeleton = () => {
   return (
@@ -32,12 +32,6 @@ const StoreListSkeleton = () => {
       <StoreItemSkeleton />
     </>
   )
-}
-
-export const CURRENCIES: Record<string, { img: string | null, symbol: string }> = {
-  "CHARISM": { img: getStaticImage("donates/charism_wallet.png"), symbol: "C" },
-  "BELKOIN": { img: getStaticImage("donates/belkoin_wallet.png"), symbol: "B" },
-  "RUB": { img: null, symbol: "₽" }
 }
 
 const buyButtonVariants = tv({
@@ -173,25 +167,20 @@ const StoreItem = ({
 const ItemsNotFound = () => {
   return (
     <div className="flex flex-col gap-2 items-center h-full justify-center w-full">
-      <img src={Inspect} width={64} height={64} alt="" />
+      <img src={getStaticImage("items/block_inspect.webp")} width={64} height={64} alt="" />
       <Typography className="text-xl font-semibold">Доступных товаров нет</Typography>
     </div>
   )
 }
 
 export const StoreList = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(itemsResource.dataAtom)
-  const isLoading = ctx.spy(itemsResource.statusesAtom).isPending
+  const data = ctx.spy(storeItemsDataAtom)
 
-  if (!isLoading && !data.length) {
-    return <ItemsNotFound />
-  }
+  if (!data.length) return <ItemsNotFound />;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 auto-rows-auto gap-2 lg:gap-4 w-full h-full">
-      {isLoading ? <StoreListSkeleton /> : (
-        data.map(t => <StoreItem key={t.id} {...t} />)
-      )}
+      {data.map(item => <StoreItem key={item.id} {...item} />)}
     </div>
   )
 }, "StoreList")

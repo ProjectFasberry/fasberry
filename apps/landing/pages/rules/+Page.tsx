@@ -1,5 +1,6 @@
 import { Link } from "@/shared/components/config/link";
 import { Rules } from "@/shared/components/landing/rules/rules";
+import { getStaticObject } from "@/shared/lib/volume";
 import { Button } from "@repo/ui/button";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Overlay } from "@repo/ui/overlay";
@@ -7,12 +8,15 @@ import { Typography } from "@repo/ui/typography";
 import { WrapperTitle } from "@repo/ui/wrapper-title";
 
 export default function RulesPage() {
+  const url = getStaticObject("backgrounds", "rules_background.png")
+
   return (
     <MainWrapperPage variant="with_section">
       <div
         className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start
-					bg-bottom md:bg-center bg-cover bg-[url('/images/backgrounds/rules_background.png')]
+					bg-bottom md:bg-center bg-cover
         `}
+        style={{ backgroundImage: `url(${url})` }}
       >
         <Overlay variant="default" />
         <WrapperTitle>

@@ -9,5 +9,6 @@ export default {
   reactStrictMode: false,
   prefetchStaticAssets: 'viewport',
   passToClient: ['snapshot'],
-  ssr: false
+  ssr: false,
+  prerender: true,
 } satisfies Config;

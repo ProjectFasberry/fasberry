@@ -13,6 +13,7 @@ export const minio = new Minio.Client({
 export const SKINS_BUCKET = "skins"
 export const AVATARS_BUCKET = "avatars"
 export const STATIC_BUCKET = "static"
+export const INTERNAL_FILES_BUCKET = "internal-files"
 
 const BUCKETS = [SKINS_BUCKET, AVATARS_BUCKET]
 

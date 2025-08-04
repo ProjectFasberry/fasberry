@@ -1,12 +1,66 @@
 import { StoreFilters } from "@/shared/components/app/shop/components/filters/store-filters";
 import { StoreList } from "@/shared/components/app/shop/components/items/store-list";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
+import { validateNumber } from "@/shared/lib/validate-primitives";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
+import { atom } from "@reatom/core";
+import { withReset } from "@reatom/framework";
+import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
+
+const walletTypeAtom = atom<"charism" | "belkoin">("charism", "walletType")
+const walletValueAtom = atom<number>(0, "walletValue").pipe(withReset())
+
+walletTypeAtom.onChange((ctx, _) => walletValueAtom.reset(ctx))
+
+const WalletInput = reatomComponent(({ ctx }) => {
+  return (
+    <Input
+      type="text"
+      maxLength={8}
+      className="px-4 w-full lg:w-1/3"
+      placeholder="Количество"
+      value={ctx.spy(walletValueAtom)}
+      onChange={e => {
+        const value = validateNumber(e.target.value);
+
+        if (value !== null) {
+          walletValueAtom(ctx, value)
+        }
+      }}
+    />
+  )
+}, "WalletInput")
+
+const WalletType = reatomComponent(({ ctx }) => {
+  const current = ctx.spy(walletTypeAtom);
+
+  return (
+    <div
+      className="flex items-center gap-2 
+        *:px-4 *:py-1 *:cursor-pointer *:rounded-xl 
+        *:data-[state=inactive]:bg-neutral-800/10 *:data-[state=active]:bg-neutral-800 
+        *:h-10"
+    >
+      <div
+        data-state={current === 'charism' ? "active" : "inactive"}
+        onClick={() => walletTypeAtom(ctx, "charism")}
+      >
+        <Typography className="font-semibold">Харизма</Typography>
+      </div>
+      <div
+        data-state={current === 'belkoin' ? "active" : "inactive"}
+        onClick={() => walletTypeAtom(ctx, "belkoin")}
+      >
+        <Typography className="font-semibold">Белкоин</Typography>
+      </div>
+    </div>
+  )
+}, "WalletType")
 
 const WalletsStore = () => {
   return (
@@ -34,6 +88,8 @@ const WalletsStore = () => {
                 placeholder="Почта"
                 className="bg-transparent placeholder:font-semibold border-2 border-neutral-600"
               />
+              <WalletType />
+              <WalletInput />
               <Input
                 placeholder="Количество"
                 className="bg-transparent placeholder:font-semibold border-2 border-neutral-600"
@@ -86,7 +142,6 @@ const DefaultStore = () => {
 
 export default function StorePage() {
   const search = usePageContext().urlParsed.search;
-
   const targetIsWallet = search["q"] === 'wallet'
 
   return (

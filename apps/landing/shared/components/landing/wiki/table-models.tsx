@@ -209,7 +209,7 @@ export const armorColumnsArmor = [
       <div className="flex items-center gap-x-1 w-full">
         <span>{props.getValue().generic}</span>
         <div className="flex flex-nowrap items-center">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -225,7 +225,7 @@ export const armorColumnsArmor = [
       <div className="flex items-center gap-x-2">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -241,7 +241,7 @@ export const armorColumnsArmor = [
       <div className="flex items-center gap-x-2 text-center">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -257,7 +257,7 @@ export const armorColumnsArmor = [
       <div className="flex items-center gap-x-2 text-center">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -288,7 +288,7 @@ export const armorColumnsToughness = [
       <div className="flex items-center gap-x-2 text-center">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -304,7 +304,7 @@ export const armorColumnsToughness = [
       <div className="flex items-center gap-x-2 text-center">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -320,7 +320,7 @@ export const armorColumnsToughness = [
       <div className="flex items-center gap-x-2 text-center">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>
@@ -336,7 +336,7 @@ export const armorColumnsToughness = [
       <div className="flex items-center gap-x-2 text-center">
         <span>{props.getValue().generic}</span>
         <div className="flex-nowrap items-center flex">
-          (<TableImage src="/images/minecraft/icons/armor.webp" alt="Armor" />
+          (<TableImage src="https://volume/fasberry.su/static/minecraft/icons/armor.webp" alt="Armor" />
           &nbsp;x {props.getValue().generic / 2})
         </div>
       </div>

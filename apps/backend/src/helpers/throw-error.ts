@@ -1,3 +1,5 @@
+import { logger } from "#/utils/config/logger";
+
 export function throwError(e: unknown): { error: string } {
   let error = 'Internal Server Error';
 
@@ -33,6 +35,8 @@ export function throwError(e: unknown): { error: string } {
       return { error: e }; 
     }
   }
+
+  logger.error(error)
 
   return { error };
 }

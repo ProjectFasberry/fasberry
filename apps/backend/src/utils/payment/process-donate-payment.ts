@@ -1,4 +1,3 @@
-import { PaymentMeta, publishPaymentNotify } from "#/lib/publishers/pub-payment-notify";
 import { TransactionalTask } from "../config/saga";
 import { callBroadcast } from "../server/call-broadcast";
 import { callServerCommand } from "../server/call-command";
@@ -8,8 +7,8 @@ import { luckperms } from "#/shared/database/luckperms-db";
 
 type ProcessDonate = {
   recipient: string, 
-  value: PaymentMeta["paymentValue"], 
-  type: PaymentMeta["paymentType"]
+  value: string, 
+  type: any
 }
 
 async function setPlayerGroup(
@@ -60,10 +59,6 @@ async function updatePlayerGroup({ recipient, type, value }: ProcessDonate) {
   if (!result) {
     throw new Error("Error updating player group")
   }
-
-  publishPaymentNotify({
-    nickname: recipient, paymentType: type, paymentValue: value
-  });
 }
 
 export function processDonatePayment(

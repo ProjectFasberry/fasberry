@@ -1,3 +1,4 @@
+import { logRouting } from "@/pages/store/i/@id/+data";
 import { client } from "@/shared/api/client";
 import { NewsType } from "@/shared/components/app/news/components/news";
 import { wrapTitle } from "@/shared/lib/wrap-title";
@@ -37,6 +38,8 @@ export async function data(pageContext: PageContextServer) {
     title: wrapTitle(news.title),
     description: news.description.slice(0, 256)
   })
+
+  logRouting(pageContext.urlPathname, "data");
 
   return {
     id: pageContext.routeParams.id,

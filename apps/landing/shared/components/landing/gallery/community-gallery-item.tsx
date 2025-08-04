@@ -2,7 +2,21 @@ import { Carousel, CarouselContent, CarouselIndicator, CarouselItem, CarouselNav
 import { MorphingDialog, MorphingDialogClose, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTrigger } from "@repo/ui/morph-dialog";
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
-import { commuinityGallery } from "@repo/shared/wiki/data/community/community-list";
+import { COMMUNITY_FOLDER_ITEM } from "@repo/shared/wiki/data/folders";
+
+const commuinityGallery = [
+  COMMUNITY_FOLDER_ITEM("moon"),
+  COMMUNITY_FOLDER_ITEM("sunset"),
+  COMMUNITY_FOLDER_ITEM("market"),
+  COMMUNITY_FOLDER_ITEM("duck"),
+  COMMUNITY_FOLDER_ITEM("dragon_dead"),
+  COMMUNITY_FOLDER_ITEM("hills"),
+  COMMUNITY_FOLDER_ITEM("market_seller"),
+  COMMUNITY_FOLDER_ITEM("offenburg"),
+  COMMUNITY_FOLDER_ITEM("night"),
+  COMMUNITY_FOLDER_ITEM("water_sand"),
+  COMMUNITY_FOLDER_ITEM("early_sunset"),
+];
 
 const selectedKeyAtom = atom(0, "selectedKey")
 
@@ -14,7 +28,15 @@ const CarouselGallery = reatomComponent(({ ctx }) => {
       <CarouselContent>
         {commuinityGallery.map((image, i) => (
           <CarouselItem key={i} className="max-h-[720px] relative">
-            <img draggable={false} loading="lazy" src={image} alt="" className="select-none w-full object-cover h-full" width={1920} height={1080} />
+            <img
+              draggable={false}
+              loading="lazy"
+              src={image}
+              alt=""
+              className="select-none w-full object-cover h-full"
+              width={1920}
+              height={1080}
+            />
           </CarouselItem>
         ))}
       </CarouselContent>
@@ -38,7 +60,8 @@ const GalleryItemDialog = reatomComponent<{ image: string }>(({ ctx, image }) =>
       </MorphingDialogTrigger>
       <MorphingDialogContainer>
         <MorphingDialogContent
-          className='flex flex-col gap-6 xl:flex-row rounded-lg p-0 max-h-[720px] max-w-[1280px] bg-neutral-950 pointer-events-auto relative w-full mx-2'
+          className='flex flex-col gap-6 xl:flex-row rounded-lg p-0 max-h-[720px] 
+            max-w-[1280px] bg-neutral-950 pointer-events-auto relative w-full mx-2'
         >
           <CarouselGallery />
           <MorphingDialogClose />

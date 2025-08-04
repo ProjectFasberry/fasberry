@@ -1,3 +1,4 @@
+import { getStaticObject } from "@/shared/lib/volume";
 import { Link } from "../../config/link";
 import { action, atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
@@ -7,7 +8,7 @@ import { tv } from "tailwind-variants";
 const IDEAS = [
 	{
 		title: "Геймплей",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/steve-alex.webp",
+		image: getStaticObject("images", "steve-alex.webp"),
 		description: "Выживайте, создавайте поселения и города, общайтесь с игроками, создавайте себя",
 		type: "full"
 	},
@@ -23,7 +24,7 @@ const IDEAS = [
 	},
 	{
 		title: "Карта",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/map-preview.webp",
+		image: getStaticObject("images", "map-preview.webp"),
 		link: {
 			title: "Перейти к карте",
 			href: "https://map.fasberry.su"
@@ -33,7 +34,7 @@ const IDEAS = [
 	},
 	{
 		title: "Квесты",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/casino-barebones.webp",
+		image: getStaticObject("images", "casino-barebones.webp"),
 		link: {
 			title: "Узнать больше",
 			href: "/wiki?tab=quests"
@@ -43,7 +44,7 @@ const IDEAS = [
 	},
 	{
 		title: "Ресурспак",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/custom-armor.webp",
+		image: getStaticObject("images", "custom-armor.webp"),
 		link: {
 			title: "Узнать больше",
 			href: "/wiki?tab=resourcepack"
@@ -53,7 +54,7 @@ const IDEAS = [
 	},
 	{
 		title: "Эмоции",
-		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/emotes-preview.webp",
+		image: getStaticObject("images", "emotes-preview.webp"),
 		link: {
 			title: "Узнать больше",
 			href: "/wiki?tab=emotes"
@@ -93,9 +94,9 @@ const IdeaMainNavigation = reatomComponent<{ type: "next" | "prev" }>(({ ctx, ty
 			onClick={() => toggle(ctx, type)}
 		>
 			{type === 'prev' ? (
-				<img src="/images/minecraft/icons/large-arrow-left-hover.png" width={20} loading="lazy" height={20} alt="назад" />
+				<img src={getStaticObject("minecraft/icons", "large-arrow-left-hover.png")} width={20} loading="lazy" height={20} alt="назад" />
 			) : (
-				<img src="/images/minecraft/icons/large-arrow-right-hover.png" width={20} loading="lazy" height={20} alt="далее" />
+				<img src={getStaticObject("minecraft/icons", "large-arrow-right-hover.png")} width={20} loading="lazy" height={20} alt="далее" />
 			)}
 			<Typography className="inline md:hidden">{type === 'prev' ? 'Назад' : 'Далее'}</Typography>
 		</div>
@@ -197,7 +198,7 @@ const IdeaMainNavigationTarget = reatomComponent(({ ctx }) => {
 					>
 						<Typography className="truncate">{preview.title}</Typography>
 					</div>
-					{(idx + 1) < IDEAS.length && <hr className="w-4 h-[1px] border-2 border-neutral-600"/>}
+					{(idx + 1) < IDEAS.length && <hr className="w-4 h-[1px] border-2 border-neutral-600" />}
 				</>
 			))}
 		</div>

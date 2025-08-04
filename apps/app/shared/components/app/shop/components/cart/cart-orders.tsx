@@ -54,4 +54,4 @@ export const CartOrders = reatomComponent(({ ctx }) => {
       ))}
     </div>
   )
-})
+}, "CartOrders")

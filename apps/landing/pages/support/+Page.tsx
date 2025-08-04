@@ -1,4 +1,5 @@
 import { Link } from "@/shared/components/config/link";
+import { getStaticObject } from "@/shared/lib/volume";
 import { Button } from "@repo/ui/button";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Overlay } from "@repo/ui/overlay";
@@ -6,12 +7,15 @@ import { Typography } from "@repo/ui/typography";
 import { WrapperTitle } from "@repo/ui/wrapper-title";
 
 export default function SupportPage() {
+  const url = getStaticObject("background", "support_background.png");
+
   return (
     <MainWrapperPage variant="with_section">
       <div
-        className="full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start
-          bg-bottom bg-no-repeat bg-cover bg-[url('/images/backgrounds/support_background.png')]
-        "
+        className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start
+          bg-bottom bg-no-repeat bg-cover
+        `}
+        style={{ backgroundImage: `url(${url})` }}
       >
         <Overlay variant="default" />
         <WrapperTitle>
@@ -55,7 +59,12 @@ export default function SupportPage() {
           >
             <div>
               <img
-                width={244} height={244} loading="lazy" alt="Monitoring" className="max-h-[244px] w-auto" src="/images/support/steve.webp"
+                width={244}
+                height={244}
+                loading="lazy"
+                alt="Monitoring"
+                className="max-h-[244px] w-auto"
+                src={getStaticObject("support", "steve.webp")}
               />
               <div className="flex flex-col items-center xl:items-start gap-1 md:gap-2 w-full">
                 <h1 className="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-fuchsia-400">
@@ -80,7 +89,7 @@ export default function SupportPage() {
                 width={244}
                 height={244}
                 className="max-h-[244px] w-auto"
-                src="/images/support/alex.webp"
+                src={getStaticObject("support", "alex.webp")}
                 loading="lazy"
                 alt="Share"
               />

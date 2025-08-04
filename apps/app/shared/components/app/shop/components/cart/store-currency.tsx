@@ -3,13 +3,12 @@ import { reatomComponent } from "@reatom/npm-react";
 import { currenciesResource, storeCurrencyAtom, storePayMethodAtom } from "../../models/store.model";
 import { Button } from "@repo/ui/button";
 import { HTMLAttributes, useState } from 'react';
-import CreditCardIcon from "@repo/assets/images/credit-card.webp"
-import SBPIcon from "@repo/assets/images/sbp.jpg"
 import { PaymentCurrency } from '@repo/shared/constants/currencies';
 import { tv, VariantProps } from 'tailwind-variants';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
 import { action, atom } from '@reatom/core';
 import { Skeleton } from "@repo/ui/skeleton";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const currencyItemVariants = tv({
   base: `flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border-transparent`,
@@ -125,14 +124,14 @@ const List = reatomComponent(({ ctx }) => {
               variant={fiatMethod === 'sbp' ? 'selected' : 'default'}
               onClick={() => storePayMethodAtom(ctx, 'sbp')}
             >
-              <img src={SBPIcon} loading="lazy" alt="" width={28} height={28} />
+              <img src={getStaticImage("currencies/sbp.jpg")} loading="lazy" alt="" width={28} height={28} />
               <Typography className="text-lg">СБП</Typography>
             </CurrencyItem>
             <CurrencyItem
               variant={fiatMethod === 'card' ? 'selected' : 'default'}
               onClick={() => storePayMethodAtom(ctx, 'card')}
             >
-              <img src={CreditCardIcon} alt="" loading="lazy" width={28} height={28} />
+              <img src={getStaticImage("currencies/credit-card.webp")} alt="" loading="lazy" width={28} height={28} />
               <Typography className="text-lg">Карта</Typography>
             </CurrencyItem>
           </div>

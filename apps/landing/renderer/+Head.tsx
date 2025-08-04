@@ -1,3 +1,4 @@
+import { getStaticObject } from "@/shared/lib/volume";
 import { usePageContext } from "vike-react/usePageContext";
 
 export default function HeadDefault() {
@@ -35,13 +36,13 @@ export default function HeadDefault() {
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Официальный сайт майнкрафт сервера Fasberry." />
-      <meta property="og:image" content="https://mc.fasberry.su/images/backgrounds/donate_background.png" />
+      <meta property="og:image" content={getStaticObject("background", "donate_background.png")} />
       <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta name="twitter:title" content="Fasberry Project" />
       <meta name="twitter:description" content="Сколько хороших и комфортных для вас майнкрафт-серверов вы знаете/знали? Теперь знаете на один больше." />
-      <meta name="twitter:image" content="https://mc.fasberry.su/images/backgrounds/donate_background.png" />
+      <meta name="twitter:image" content={getStaticObject("background", "donate_background.png")} />
       <meta property="twitter:image:type" content="image/jpeg" />
       <meta property="twitter:image:width" content="1200" />
       <meta property="twitter:image:height" content="630" />

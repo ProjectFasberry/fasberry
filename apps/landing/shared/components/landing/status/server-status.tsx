@@ -1,4 +1,5 @@
 import { BASE } from '@/shared/api/client';
+import { getStaticObject } from '@/shared/lib/volume';
 import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { reatomComponent } from '@reatom/npm-react';
 
@@ -54,7 +55,7 @@ export const ServerStatus = reatomComponent(({ ctx }) => {
               width={26}
               height={26}
               className="w-[26px] h-[26px]"
-              src="/images/minecraft/icons/search.webp"
+              src={getStaticObject("minecraft/icons", "search.webp")}
               title="Список игроков"
             />
             <p className="text-green-server-color text-xl text-shadow-xl">

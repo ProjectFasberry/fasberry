@@ -6,10 +6,11 @@ import { atom } from '@reatom/core';
 import { reatomComponent } from '@reatom/npm-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@repo/ui/sheet';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/ui/accordion';
+import { getStaticObject } from '../lib/volume';
 
 const ExperienceCircle = () => {
   return (
-    <img src="/images/minecraft/icons/experience_big.webp" loading="lazy" width={16} height={16} alt="" />
+    <img src={getStaticObject("minecraft/icons", "experience_big.webp")} loading="lazy" width={16} height={16} alt="" />
   )
 }
 
@@ -27,7 +28,7 @@ const Content = reatomComponent(({ ctx }) => {
     <>
       <div className="flex justify-between px-2 items-center w-full">
         <Link href="/" className="bg-transparent right-6 relative top-2">
-          <img src="/images/fasberry_logo.webp" alt="Fasberry" width={224} height={64} />
+          <img src={getStaticObject("static", "fasberry_logo.webp")} alt="Fasberry" width={224} height={64} />
         </Link>
       </div>
       <Accordion type="single" collapsible className="flex flex-col items-center justify-center w-full gap-4 px-4">
@@ -88,8 +89,8 @@ export const HeaderSheet = reatomComponent(({ ctx }) => {
   const isOpen = ctx.spy(sheetIsOpenAtom)
 
   const chestStatusImage = isOpen
-    ? '/images/minecraft/icons/chest_opened.webp'
-    : '/images/minecraft/icons/chest_closed.webp';
+    ? getStaticObject("minecraft/icons", "chest_opened.webp")
+    : getStaticObject("minecraft/icons", "chest_closed.webp")
 
   return (
     <Sheet modal open={isOpen} onOpenChange={v => sheetIsOpenAtom(ctx, v)}>

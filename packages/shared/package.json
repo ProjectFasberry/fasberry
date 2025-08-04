@@ -15,9 +15,6 @@
     "lobby-gen-types": "kysely-codegen --dialect mysql --url=env\\(LOBBY_DATABASE_URL\\) --out-file=./types/db/lobby-database-types.ts",
     "luckperms-gen-types": "kysely-codegen --dialect postgres --url=env\\(LUCKPERMS_DATABASE_URL\\) --out-file=./types/db/luckperms-database-types.ts"
   },
-  "dependencies": {
-    "@repo/assets": "workspace:*"
-  },
   "devDependencies": {
     "@repo/config-typescript": "workspace:*",
     "typescript": "5.8.3"

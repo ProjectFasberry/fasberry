@@ -6,11 +6,9 @@ import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip";
 import { BASE } from "@/shared/api/client";
-import Wolf from "@repo/assets/images/minecraft/seeking_wolf.png"
-import Alex from "@repo/assets/images/minecraft/adventure_icon.png"
-import Enderman from "@repo/assets/images/minecraft/enderman_boosts.png"
 import { Button } from "@repo/ui/button";
 import { tv } from "tailwind-variants";
+import { getStaticObject } from "@/shared/lib/volume";
 
 const NumericItem = ({ index }: { index: number }) => {
   return (
@@ -144,7 +142,7 @@ export default function StartPage() {
               </div>
             </div>
             <div className={stepImageVariant()}>
-              <img src={Wolf} draggable={false} width={128} height={128} alt="Register" loading="lazy" />
+              <img src={getStaticObject("items", "seeking_wolf.png")} draggable={false} width={128} height={128} alt="Register" loading="lazy" />
             </div>
           </div>
           <div className={stepVariant()}>
@@ -166,7 +164,7 @@ export default function StartPage() {
               </div>
             </div>
             <div className={stepImageVariant()}>
-              <img src={Enderman} draggable={false} width={128} height={128} alt="Cabinet" loading="lazy" />
+              <img src={getStaticObject("items", "enderman_boosts.png")} draggable={false} width={128} height={128} alt="Cabinet" loading="lazy" />
             </div>
           </div>
           <div className={stepVariant()}>
@@ -177,7 +175,7 @@ export default function StartPage() {
               </Typography>
             </div>
             <div className={stepImageVariant()}>
-              <img src={Alex} draggable={false}  width={128} height={128} alt="Done" loading="lazy" />
+              <img src={getStaticObject("items", "adventure_icon.png")} draggable={false}  width={128} height={128} alt="Done" loading="lazy" />
             </div>
           </div>
           <div className="flex border-4 border-black rounded-lg overflow-hidden h-[80vh] relative w-full">

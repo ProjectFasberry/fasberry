@@ -4,9 +4,9 @@
   cursor: pointer;
   image-rendering: pixelated;
   background-size: cover;
-  background-image: url('/images/minecraft/ui/button-inside.png');
+  background-image: url('https://volume.fasberry.su/static/minecraft/ui/button-inside.png');
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/button-border.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/button-border.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 10% 3%;
   border-image-repeat: stretch;
@@ -15,9 +15,9 @@
 
 .button:hover {
   background-size: cover;
-  background-image: url('/images/minecraft/ui/button-inside-hover.png');
+  background-image: url('https://volume.fasberry.su/static/minecraft/ui/button-inside-hover.png');
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/button-border-hover.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/button-border-hover.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 10% 3%;
   border-image-repeat: stretch;
@@ -25,9 +25,9 @@
 
 .button:active {
   background-size: cover;
-  background-image: url('/images/minecraft/ui/button-inside-active.png');
+  background-image: url('https://volume.fasberry.su/static/minecraft/ui/button-inside-active.png');
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/button-border-active.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/button-border-active.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 10% 3%;
   border-image-repeat: contain;
@@ -38,7 +38,7 @@
 .scrollbar::-webkit-scrollbar-corner {
   --zoom: 24;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/raised-slot.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/raised-slot.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 33.5% 33.5% fill;
   border-image-repeat: stretch;
@@ -48,7 +48,7 @@
 .raised-slot-button:hover {
   --zoom: 24;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/raised-slot-hover.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/raised-slot-hover.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 33.5% 33.5% fill;
   border-image-repeat: stretch;
@@ -58,7 +58,7 @@
 .raised-slot-button:active {
   --zoom: 24;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/raised-slot-active.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/raised-slot-active.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 33.5% 33.5% fill;
   border-image-repeat: stretch;
@@ -68,7 +68,7 @@
 .enchanting-slot-button {
   --zoom: 24;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/enchanting-slot.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/enchanting-slot.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 33.5% 33.5% fill;
   border-image-repeat: stretch;
@@ -78,7 +78,7 @@
 .enchanting-slot-button:hover {
   --zoom: 24;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/enchanting-slot-hover.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/enchanting-slot-hover.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 33.5% 33.5% fill;
   border-image-repeat: stretch;
@@ -88,7 +88,7 @@
 .enchanting-slot-button:active {
   --zoom: 24;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/enchanting-slot-active.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/enchanting-slot-active.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 33.5% 33.5% fill;
   border-image-repeat: stretch;
@@ -97,7 +97,7 @@
 .anvil-textbox {
   --zoom: 16;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/anvil-textbox.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/anvil-textbox.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 40% 40% fill;
   border-image-repeat: stretch;
@@ -108,7 +108,7 @@
 .anvil-textbox:focus {
   --zoom: 16;
   border-width: calc(var(--block-size) / var(--zoom));
-  border-image: url('/images/minecraft/ui/anvil-textbox-active.png');
+  border-image: url('https://volume.fasberry.su/static/minecraft/ui/anvil-textbox-active.png');
   border-image-width: calc(var(--block-size) / var(--zoom));
   border-image-slice: 40% 40% fill;
   border-image-repeat: stretch;

@@ -1,11 +1,23 @@
-import { userDerive } from "#/lib/middlewares/user";
 import Elysia, { t } from "elysia";
+import { userDerive } from "#/lib/middlewares/user";
 import { CLIENT_ID_HEADER_KEY } from "./payment/create-order.route";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
 import { main } from "#/shared/database/main-db";
-import { definePrice } from "./store-item.route";
-import { processImageUrl } from "./store-items.route";
+import { defineGlobalPrice, definePrice, processImageUrl, StorePrice } from "#/utils/store/store-transforms";
+
+const itemBasketBaseSchema = t.Object({
+  id: t.Number()
+})
+
+const editItemKeys = ["for", "selected"] as const;
+const editItemValues = [t.String(), t.Boolean()];
+
+const editItemToBasket = t.Object({
+  id: t.Number(),
+  key: t.UnionEnum(editItemKeys),
+  value: t.Union(editItemValues)
+})
 
 const addItemToBasket = new Elysia()
   .use(userDerive())
@@ -44,6 +56,7 @@ const addItemToBasket = new Elysia()
           price_snapshot: existsQuery.price.toString(),
           product_id: existsQuery.id,
           quantity: 1,
+          for: initiator
         })
         .returning("product_id")
         .executeTakeFirst()
@@ -55,9 +68,7 @@ const addItemToBasket = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    body: t.Object({
-      id: t.Number()
-    })
+    body: itemBasketBaseSchema
   })
 
 const removeItemToBasket = new Elysia()
@@ -86,9 +97,7 @@ const removeItemToBasket = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    body: t.Object({
-      id: t.Number()
-    })
+    body: itemBasketBaseSchema
   })
 
 const itemEdit = new Elysia()
@@ -124,11 +133,7 @@ const itemEdit = new Elysia()
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
   }, {
-    body: t.Object({
-      id: t.Number(),
-      key: t.UnionEnum(["for", "selected"]),
-      value: t.Union([t.String(), t.Boolean()])
-    })
+    body: editItemToBasket
   })
 
 const basketList = new Elysia()
@@ -177,11 +182,15 @@ const basketList = new Elysia()
         ])
         .execute()
 
-      const data = query.map((item) => ({
+      const products = query.map((item) => ({
         ...item,
         imageUrl: processImageUrl(item.imageUrl),
         price: definePrice(item.currency, item.price)
       }))
+
+      const price = await defineGlobalPrice("RUB", initiator)
+
+      const data: { products: typeof products, price: StorePrice } = { products, price }
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {

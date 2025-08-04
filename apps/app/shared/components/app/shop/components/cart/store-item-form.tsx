@@ -77,36 +77,3 @@ const PrivacyField = reatomComponent(({ ctx }) => {
 //     </div>
 //   )
 // }, "EmailField")
-
-// todo: refactor form for cart actions
-export const StoreItemForm = reatomComponent(({ ctx }) => {
-  const isValid = false
-  // ctx.spy(isValidAtom)
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    const privacy = ctx.get(storePrivacyAtom)
-
-    if (!privacy) return toast.error("Вы не приняли условия")
-
-    void spawn(ctx, async (spawnCtx) => createPaymentAction(spawnCtx));
-  };
-
-  return (
-    <form onSubmit={(e) => onSubmit(e)} className="flex flex-col justify-between gap-y-6 pt-2">
-      <PrivacyField />
-      <div className="flex flex-col lg:flex-row items-center gap-2 w-full">
-        <div className="flex items-center gap-2 justify-center bg-neutral-600/40 p-2 w-full lg:w-1/2 rounded-lg">
-          <Typography className='text-lg'>Итого:</Typography>
-          <StorePrice />
-        </div>
-        <Button
-          disabled={!isValid} className="w-full lg:w-1/2 hover:bg-[#05b458] bg-[#088d47]"
-        >
-          <Typography color="white" className="text-lg">Купить</Typography>
-        </Button>
-      </div>
-    </form>
-  );
-}, "SubscriptionItemForm")

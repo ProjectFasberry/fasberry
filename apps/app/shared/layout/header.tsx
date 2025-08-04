@@ -1,4 +1,4 @@
-import { IconArrowRight, IconBasket, IconCategory, IconStars, IconUsersGroup, IconX } from "@tabler/icons-react";
+import { IconArrowRight, IconBasket, IconCategory, IconStars, IconUsersGroup } from "@tabler/icons-react";
 import { createLink, Link } from '@/shared/components/config/link';
 import { reatomComponent } from "@reatom/npm-react";
 import { currentUserAtom } from "../models/current-user.model";
@@ -7,7 +7,6 @@ import { Button } from "@repo/ui/button";
 import { navigate } from "vike/client/router";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
-import { CartMenu } from "../components/app/shop/components/cart/cart-menu";
 
 export const AuthorizeButton = () => {
   return (
@@ -15,7 +14,7 @@ export const AuthorizeButton = () => {
       <Typography className="hidden sm:inline font-semibold text-neutral-50 text-md sm:text-base">
         Авторизоваться
       </Typography>
-      <IconArrowRight size={20} className="sm:hidden"/>
+      <IconArrowRight size={20} className="sm:hidden" />
     </Button>
   )
 }
@@ -112,7 +111,14 @@ export const Header = () => {
             ))}
           </div>
           <div className="flex gap-2 items-center w-full md:w-1/5 justify-end">
-            {pathname.includes("/store") && <CartMenu />}
+            {pathname.includes("/store") && (
+              <Link
+                href="/store/cart"
+                className="flex items-center h-10 justify-center bg-white/10 p-2 rounded-lg"
+              >
+                <IconBasket size={26} className="text-neutral-400" />
+              </Link>
+            )}
             <HeaderUser />
           </div>
         </div>

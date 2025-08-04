@@ -1,12 +1,15 @@
+import { getStaticObject } from "@/shared/lib/volume"
 import { clientOnly } from "vike-react/clientOnly"
 
 const ToasterInit = clientOnly(() => import("sonner").then(m => m.Toaster))
 
+const img = getStaticObject("minecraft/icons", "book_big.webp")
+
 const icons = {
-  info: <img width={32} height={32} alt="" loading="lazy" draggable={false} src="/images/minecraft/icons/book_big.webp" />,
-  error: <img width={32} height={32} alt="" loading="lazy" draggable={false} src="/images/minecraft/icons/book_big.webp" />,
-  success: <img width={32} height={32} alt="" loading="lazy" draggable={false} src="/images/minecraft/icons/book_big.webp" />,
-  warning: <img width={32} height={32} alt="" loading="lazy" draggable={false} src="/images/minecraft/icons/book_big.webp" />
+  info: <img width={32} height={32} alt="" loading="lazy" draggable={false} src={img} />,
+  error: <img width={32} height={32} alt="" loading="lazy" draggable={false} src={img}/>,
+  success: <img width={32} height={32} alt="" loading="lazy" draggable={false} src={img} />,
+  warning: <img width={32} height={32} alt="" loading="lazy" draggable={false} src={img} />
 }
 
 export const Toaster = () => {

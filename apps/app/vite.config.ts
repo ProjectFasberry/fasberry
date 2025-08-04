@@ -1,7 +1,12 @@
+import { defineConfig, loadEnv } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
 import vike from "vike/plugin";
+
+const env = loadEnv('all',process.cwd());
+
+const port = Number(env.APP_PORT)
+const host = env.APP_HOST
 
 export default defineConfig({
   plugins: [
@@ -36,9 +41,11 @@ export default defineConfig({
     },
   },
   preview: {
+    host, port,
     allowedHosts: true
   },
   server: {
+    host, port,
     allowedHosts: true
   }
 });

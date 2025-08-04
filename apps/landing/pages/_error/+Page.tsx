@@ -1,4 +1,5 @@
 import { Link } from "@/shared/components/config/link";
+import { getStaticObject } from "@/shared/lib/volume";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
@@ -11,7 +12,7 @@ export default function Page() {
       <div
         className="flex min-h-screen justify-center items-center px-8"
         style={{
-          backgroundImage: 'url("/images/static/dirt.webp")'
+          backgroundImage: `url('${getStaticObject("static", "dirt.webp")}')`
         }}
       >
         <div className="flex flex-col items-center gap-y-2">
@@ -33,11 +34,13 @@ export default function Page() {
     );
   }
 
+  const url = getStaticObject("static", "dirt.webp")
+
   return (
     <div
       className="flex min-h-screen justify-center items-center px-8"
       style={{
-        backgroundImage: 'url("/images/static/dirt.webp")'
+        backgroundImage: `url('${url}')`
       }}
     >
       <div className="flex flex-col items-center gap-y-2">
