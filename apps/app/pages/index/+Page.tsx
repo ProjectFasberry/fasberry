@@ -19,20 +19,20 @@ const CONTACTS = [
     color: "bg-[#0b5aba]",
     href: "https://vk.com/fasberry",
   },
-  {
-    title: "Discord",
-    value: "ds",
-    img: "https://cristalix.gg/content/icons/discord.svg",
-    color: "bg-[#5865F2]",
-    href: "https://discord.gg/X4x6Unj89g",
-  },
-  {
-    title: "X",
-    value: "x",
-    img: "https://cristalix.gg/content/icons/x.svg",
-    color: "bg-black",
-    href: "/",
-  },
+  // {
+  //   title: "Discord",
+  //   value: "ds",
+  //   img: "https://cristalix.gg/content/icons/discord.svg",
+  //   color: "bg-[#5865F2]",
+  //   href: "https://discord.gg/X4x6Unj89g",
+  // },
+  // {
+  //   title: "X",
+  //   value: "x",
+  //   img: "https://cristalix.gg/content/icons/x.svg",
+  //   color: "bg-black",
+  //   href: "/",
+  // },
 ]
 
 const Contacts = () => {

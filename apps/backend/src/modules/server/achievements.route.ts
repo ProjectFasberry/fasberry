@@ -88,9 +88,9 @@ async function getAchievementsMeta() {
 export const achievementsMeta = new Elysia()
   .get("/achievements-meta", async (ctx) => {
     try {
-      const meta = await getAchievementsMeta()
+      const data = await getAchievementsMeta()
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: meta })
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
@@ -101,9 +101,9 @@ export const achievements = new Elysia()
     const nickname = ctx.params.nickname
 
     try {
-      const achievements = await getAchievements(nickname)
+      const data = await getAchievements(nickname)
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: achievements })
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }

@@ -10,32 +10,22 @@ import { logRouting } from "@/pages/store/i/@id/+data";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getUser({ nickname, ...args }: { nickname: string } & RequestInit) {
+async function getUser(
+  nickname: string, 
+  args: RequestInit
+) {
   const res = await client(`server/user/${nickname}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<User>>()
 
-  if (!data || 'error' in data) return null
+  if ('error' in data) throw new Error(data.error)
 
   return data.data
 }
 
-export async function data(pageContext: PageContextServer) {
-  const config = useConfig()
-
-  let user: User | null = null;
-
-  try {
-    user = await getUser({
-      headers: pageContext.headers ?? undefined, nickname: pageContext.routeParams.nickname
-    })
-  } catch (e) {
-    console.error(e)
-  }
-
-  if (!user) {
-    throw redirect("/not-exist?type=user")
-  }
-
+function metadata(
+  user: User,
+  pageContext: PageContextServer
+) {
   const description = `Профиль игрока ${user.nickname}. 
   Привилегия: ${DONATE_TITLE[user.group]}. 
   Играет с ${dayjs(user.details.reg_date).format("DD MMM YYYY")}. 
@@ -43,7 +33,7 @@ export async function data(pageContext: PageContextServer) {
 
   const title = wrapTitle(user.nickname)
 
-  config({
+  return {
     title,
     image: user?.avatar,
     description,
@@ -57,7 +47,26 @@ export async function data(pageContext: PageContextServer) {
         <meta name="keywords" content={`${user.nickname}, fasberry, fasberry page, профиль ${user.nickname}`} />
       </>
     ),
-  })
+  }
+}
+
+export async function data(pageContext: PageContextServer) {
+  const config = useConfig()
+  const headers = pageContext.headers ?? undefined
+
+  let user: User | null = null;
+
+  try {
+    user = await getUser(pageContext.routeParams.nickname, { headers })
+  } catch (e) {
+    console.error(e)
+  }
+
+  if (!user) {
+    throw redirect("/not-exist?type=user")
+  }
+
+  config(metadata(user, pageContext))
 
   logRouting(pageContext.urlPathname, "data");
 

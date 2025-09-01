@@ -1,42 +1,10 @@
-import { client } from "@/shared/api/client";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
-import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { onConnect } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
-
-type StatusPayload = {
-  proxy: {
-    status: string;
-    online: number;
-    max: number;
-    players: string[];
-  };
-  servers: {
-    bisquite: {
-      online: number;
-      max: number;
-      players: string[];
-      status: string;
-    };
-  };
-}
-
-const serverStatus = reatomResource(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client("server/status", {
-      searchParams: { type: "servers" }, signal: ctx.controller.signal, throwHttpErrors: false
-    })
-
-    const data = await res.json<WrappedResponse<StatusPayload>>()
-
-    if ("error" in data) return null;
-
-    return data.data
-  })
-}).pipe(withStatusesAtom(), withCache(), withDataAtom())
+import { serverStatus } from "../models/intro.model";
 
 onConnect(serverStatus.dataAtom, serverStatus)
 
@@ -71,8 +39,15 @@ const IntroActions = reatomComponent(({ ctx }) => {
 
 export const Intro = () => {
   return (
-    <div id="intro" className="flex items-center relative rounded-lg overflow-hidden w-full max-h-[400px]">
-      <img src={getStaticImage("arts/general-preview.jpg")} fetchPriority="high" alt="Start" />
+    <div
+      id="intro"
+      className="flex items-center relative rounded-lg overflow-hidden w-full md:h-[400px] max-h-[400px]"
+    >
+      <img
+        src={getStaticImage("arts/general-preview.jpg")}
+        fetchPriority="high"
+        alt="Start"
+      />
       <div className="flex select-none items-center gap-2 lg:gap-4 absolute top-0 p-3 md:p-4 lg:p-6">
         <img
           src="/favicon.ico"

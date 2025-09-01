@@ -13,9 +13,7 @@ async function getItem({ id, ...args }: { id: string } & RequestInit) {
   const res = await client(`store/item/${id}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<StoreItem>>()
 
-  if ("error" in data) {
-    return null;
-  }
+  if ("error" in data) throw new Error(data.error)
 
   return data.data
 }
@@ -24,18 +22,25 @@ export function logRouting(t: string, m: string) {
   logger.log(`[Routing]: ${t} called +${m}`)
 }
 
+function metadata(
+  item: StoreItem
+) {
+  return {
+    title: wrapTitle(item.title.slice(0, 32)),
+  }
+}
+
 export async function data(pageContext: PageContextServer) {
   const config = useConfig()
-
-  const item = await getItem({ id: pageContext.routeParams.id, headers: pageContext.headers ?? undefined })
+  const headers = pageContext.headers ?? undefined
+  
+  const item = await getItem({ id: pageContext.routeParams.id, headers })
 
   if (!item) {
     throw render("/not-exist")
   }
 
-  config({
-    title: wrapTitle(item.title.slice(0, 32)),
-  })
+  config(metadata(item))
 
   logRouting(pageContext.urlPathname, "data")
 

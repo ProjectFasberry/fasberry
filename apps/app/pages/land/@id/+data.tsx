@@ -10,37 +10,28 @@ import { logRouting } from "@/pages/store/i/@id/+data";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getLand({ ulid, ...args }: { ulid: string } & RequestInit) {
+async function getLand(
+  ulid: string, 
+  args: RequestInit
+) {
   const res = await client(`server/land/${ulid}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<Land>>()
 
-  if (!data || 'error' in data) return null
+  if ('error' in data) throw new Error(data.error)
 
   return data.data
 }
 
-export async function data(pageContext: PageContextServer) {
-  const config = useConfig()
-
-  let land: Land | null = null;
-
-  try {
-    land = await getLand({ 
-      ulid: pageContext.routeParams.id, headers: pageContext.headers ?? undefined
-    })
-  } catch (e) {
-    console.error(e)
-  }
-
-  if (!land) {
-    throw render("/not-exist?type=land")
-  }
-
+function metadata(
+  land: Land,
+  pageContext: PageContextServer
+) {
   const title = wrapTitle(land.name.slice(0, 64))
-  const description = `
-  Территория ${land.name}. Создана ${dayjs(land.created_at).format("DD MMM YYYY")}. ${land.members.length} участников`
+  const created_at = dayjs(land.created_at).format("DD MMM YYYY");
+  const description = `Территория ${land.name}. Создана ${created_at}. ${land.members.length} участников`
+  const keywords = `${land.name}, fasberry, fasberry page, территория ${land.name}, land, fasberry land, fasberry ${land.name}`
 
-  config({
+  return {
     title,
     description,
     image: getStaticImage("arts/adventure-in-blossom.jpg"),
@@ -50,11 +41,30 @@ export async function data(pageContext: PageContextServer) {
         <meta property="og:type" content="website" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="keywords" content={`${land.name}, fasberry, fasberry page, территория ${land.name}, land, fasberry land, fasberry ${land.name}`}
+        <meta name="keywords" content={keywords}
         />
       </>
     ),
-  })
+  }
+}
+
+export async function data(pageContext: PageContextServer) {
+  const config = useConfig()
+  const headers = pageContext.headers ?? undefined
+
+  let land: Land | null = null;
+
+  try {
+    land = await getLand(pageContext.routeParams.id, { headers })
+  } catch (e) {
+    console.error(e)
+  }
+
+  if (!land) {
+    throw render("/not-exist?type=land")
+  }
+
+  config(metadata(land, pageContext))
 
   logRouting(pageContext.urlPathname, "data");
   

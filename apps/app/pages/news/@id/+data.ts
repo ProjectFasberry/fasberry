@@ -12,9 +12,18 @@ async function getNews({ id, ...args }: { id: string } & RequestInit) {
   const res = await client(`shared/news/${id}`, { ...args })
   const data = await res.json<WrappedResponse<NewsType>>()
 
-  if (!data || 'error' in data) return null
+  if ('error' in data) throw new Error(data.error)
 
   return data.data
+}
+
+function metadata(
+  news: NewsType
+) {
+  return {
+    title: wrapTitle(news.title),
+    description: news.description.slice(0, 256)
+  }
 }
 
 export async function data(pageContext: PageContextServer) {
@@ -34,10 +43,7 @@ export async function data(pageContext: PageContextServer) {
     throw render("/not-exist")
   }
 
-  config({
-    title: wrapTitle(news.title),
-    description: news.description.slice(0, 256)
-  })
+  config(metadata(news))
 
   logRouting(pageContext.urlPathname, "data");
 

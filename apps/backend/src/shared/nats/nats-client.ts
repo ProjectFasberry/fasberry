@@ -1,13 +1,15 @@
 import { logger } from "#/utils/config/logger";
 import { connect, ConnectionOptions, type NatsConnection } from "nats"; 
+import { exit } from "node:process";
 
-const servers = `nats://${Bun.env.NATS_HOST ?? "localhost:4223"}`
+const servers = `nats://${Bun.env.NATS_HOST}`
 
 const NATS_CONFIG: ConnectionOptions = {
   servers,
   token: Bun.env.NATS_AUTH_TOKEN,
   reconnect: true,
-  maxReconnectAttempts: -1
+  maxReconnectAttempts: -1,
+  reconnectTimeWait: 2000, 
 }
 
 let nc: NatsConnection | null = null;
@@ -18,6 +20,7 @@ export async function initNats() {
     logger.success(`Connected to ${NATS_CONFIG.servers}`)
   } catch (e) {
     logger.error("NATS ", e)
+    exit(1)
   }
 }
 
@@ -34,5 +37,6 @@ export async function closeNatsConnection() {
     logger.log('NATS connection closed.')
   } catch (err) {
     logger.error('Error closing NATS connection:', err)
+    exit(1)
   }
 }

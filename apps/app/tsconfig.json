@@ -32,7 +32,10 @@
     }
   },
   "include": [
-    ".",
+    "./vite.config.ts",
+    "./declare.d.ts",
+    "./**/*.ts",
+    "./**/*.tsx",
   ],
   "exclude": [
     "dist",

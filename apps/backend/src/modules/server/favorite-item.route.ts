@@ -32,7 +32,11 @@ export const favoriteItem = new Elysia()
 
       let favoriteItemImage = getStaticObject(favoriteItem.image)
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: { ...favoriteItem, image: favoriteItemImage } })
+      const data = {
+        ...favoriteItem, image: favoriteItemImage
+      }
+
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
     }

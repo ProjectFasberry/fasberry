@@ -1,7 +1,6 @@
 import { throwError } from "#/helpers/throw-error";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { userDerive } from "#/lib/middlewares/user";
-import { main } from "#/shared/database/main-db";
 import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";

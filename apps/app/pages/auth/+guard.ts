@@ -4,10 +4,12 @@ import { redirect } from "vike/abort";
 import { logRouting } from "../store/i/@id/+data";
 
 export const guard: GuardAsync = async (pageContext) => {
+  const headers = pageContext.headers ?? undefined
+  
+  const isValid = await validateSession({ headers })
+  
   logRouting(pageContext.urlPathname, "guard");
-
-  const isValid = await validateSession({ headers: pageContext.headers ?? undefined })
-
+  
   if (isValid) {
     throw redirect("/")
   }

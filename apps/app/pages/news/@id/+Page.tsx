@@ -4,10 +4,10 @@ import { Data } from "./+data";
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import dayjs from "dayjs";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { IconEye } from "@tabler/icons-react";
 import { NewsType } from "@/shared/components/app/news/components/news";
+import dayjs from "dayjs";
 
 const getNewsUrl = (id: string) => `/news/${id}`
 

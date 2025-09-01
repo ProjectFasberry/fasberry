@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@neodx/log": "^0.4.1",
+    "clsx": "2.1.1",
     "@repo/shared": "workspace:*"
   },
   "devDependencies": {

@@ -1,17 +1,21 @@
 import * as Sentry from "@sentry/react";
 
-function sentryInit() {
-  if (import.meta.env.PROD) {
-    const DSN = import.meta.env.PUBLIC_ENV__SENTRY_DSN;
-  
-    Sentry.init({
-      dsn: DSN,
-      sendDefaultPii: true
-    });
+const DSN = import.meta.env.PUBLIC_ENV__SENTRY_DSN;
+
+const sentryConfig: Sentry.BrowserOptions = {
+  dsn: DSN,
+  sendDefaultPii: true
+}
+
+function initSentry() {
+  const isProduction = import.meta.env.PROD;
+
+  if (isProduction) {  
+    Sentry.init(sentryConfig);
   }
 }
 
-sentryInit()
+initSentry()
 
 window.addEventListener('error', (err) => {
   console.error('An error occurred:', err)

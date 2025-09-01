@@ -54,9 +54,9 @@ export const userGameStatus = new Elysia()
     const nickname = ctx.params.nickname;
 
     try {
-      const payload = await getPlayerStatus(nickname);
+      const data = await getPlayerStatus(nickname);
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: payload });
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data });
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
     }

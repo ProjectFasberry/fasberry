@@ -7,31 +7,33 @@ import { logRouting } from "../../i/@id/+data";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getOrder({ id, ...args }: { id: string } & RequestInit) {
+async function getOrder(
+  id: string, 
+  args: RequestInit
+) {
   const res = await client(`store/order/${id}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<Payment>>()
 
-  if ("error" in data) {
-    return null;
-  }
+  if ("error" in data) throw new Error(data.error)
 
   return data.data
 }
 
 export async function data(pageContext: PageContextServer) {
   const config = useConfig()
+  const headers = pageContext.headers ?? undefined
 
-  const item = await getOrder({ id: pageContext.routeParams.id, headers: pageContext.headers ?? undefined })
+  const item = await getOrder(pageContext.routeParams.id, { headers })
 
-  if (item) {
-    config({
-      title: wrapTitle(`Заказ ${item.unique_id}`),
-    })
-  } else {
-    config({
-      title: wrapTitle(`Заказ устарел`),
-    })
+  let title = `Заказ ${item.unique_id}`
+  
+  if (!item) {
+    title = wrapTitle(`Заказ устарел`)
   }
+
+  config({
+    title
+  })
 
   logRouting(pageContext.urlPathname, "data")
 
