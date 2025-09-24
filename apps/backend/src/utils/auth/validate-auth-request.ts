@@ -1,6 +1,6 @@
 import { isProduction } from "#/helpers/is-production"
 import { main } from "#/shared/database/main-db";
-import { logger } from "@repo/lib/logger";
+import { logger } from "@repo/shared/lib/logger";
 import ky from "ky"
 
 type Payload = {

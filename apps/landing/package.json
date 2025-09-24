@@ -1,14 +1,14 @@
 {
-  "name": "minecraft-frontend",
+  "name": "landing",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.1.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "_start": "NODE_ENV=production vike preview --port 3002 --host",
     "_dev": "NODE_ENV=development vike dev --port 3005 --host",
     "_build": "vike build",
-    "_lint": "eslint .",
+    "_lint": "bunx biome lint",
     "_type-check": "tsc --noEmit"
   },
   "sideEffects": [
@@ -21,7 +21,6 @@
     "@reatom/framework": "3.4.64",
     "@reatom/npm-react": "3.10.6",
     "@reatom/persist": "^3.4.1",
-    "@repo/lib": "workspace:*",
     "@repo/shared": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tabler/icons-react": "3.34.0",
@@ -46,6 +45,7 @@
     "zod-validation-error": "3.0.0"
   },
   "devDependencies": {
+    "@repo/config-biome": "workspace:*",
     "@mdx-js/react": "3.1.0",
     "@mdx-js/rollup": "3.1.0",
     "@repo/config-typescript": "workspace:*",

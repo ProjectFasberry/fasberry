@@ -7,7 +7,7 @@ import {
   type Transition,
   type HTMLMotionProps,
 } from 'motion/react';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 
 type AccordionItemContextType = {
   isOpen: boolean;

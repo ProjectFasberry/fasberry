@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "lint": "bunx biome lint",
+    "type-check": "tsc --noEmit"
   },
   "exports": {
     "./*": "./src/*"
@@ -14,7 +15,6 @@
     "**/*.css"
   ],
   "dependencies": {
-    "@repo/lib": "workspace:*",
     "radix-ui": "1.4.2",
     "react": "19.1.0",
     "@tabler/icons-react": "3.34.0",
@@ -24,6 +24,7 @@
     "tailwind-variants": "1.0.0"
   },
   "devDependencies": {
+    "@repo/config-biome": "workspace:*",
     "@repo/config-typescript": "workspace:*",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",

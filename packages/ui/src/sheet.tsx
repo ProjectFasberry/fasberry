@@ -7,7 +7,7 @@ import {
   type Transition,
 } from 'motion/react';
 import { X } from 'lucide-react';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 import { tv, VariantProps } from 'tailwind-variants';
 
 type SheetContextType = {

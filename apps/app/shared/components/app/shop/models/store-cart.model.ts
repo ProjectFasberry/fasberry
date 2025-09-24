@@ -5,10 +5,10 @@ import { client } from "@/shared/api/client";
 import { toast } from "sonner";
 import { snapshotAtom, withSsr } from "@/shared/lib/ssr";
 import { PageContextServer } from "vike/types";
+import { isDevelopment } from "@/shared/env";
 
 export type CartBasket = Pick<StoreItem,
-  | "id" | "title" | "description" | "summary" | "price" | "command"
-  | "currency" | "type" | "value" | "imageUrl"
+  | "id" | "title" | "description" | "summary" | "price" | "command" | "currency" | "type" | "value" | "imageUrl"
 > & {
   quantity: number;
   selected: boolean;
@@ -21,13 +21,15 @@ export type CartPrice = {
   BELKOIN: number
 }
 
+type BasketPayloadData = { products: CartBasket[], price: CartPrice }
+
 export async function getBasketData(args?: RequestInit) {
-  const res = await client("store/basket/list", { throwHttpErrors: false, ...args })
-    .json<WrappedResponse<{ products: CartBasket[], price: CartPrice }>>();
+  const res = await client("store/basket/list", { ...args })
+  const data = await res.json<WrappedResponse<BasketPayloadData>>();
 
-  if ("error" in res) throw new Error()
+  if ("error" in data) throw new Error()
 
-  return res.data;
+  return data.data;
 }
 
 export const cartDataAtom = atom<CartBasket[]>([], "cartData").pipe(withSsr("cartData"))
@@ -133,7 +135,7 @@ export async function defineCartData(pageContext: PageContextServer) {
   const prevSnapshot = pageContext.snapshot
   const newSnapshot = { ...prevSnapshot, ...snapshot }
 
-  console.log("defineCartData")
+  isDevelopment && console.log("defineCartData")
 
   pageContext.snapshot = newSnapshot
 }
@@ -143,9 +145,25 @@ export async function defineStoreItemsData(pageContext: PageContextServer) {
   const headers = pageContext.headers
 
   if (headers) {
-    const data = await getStoreItems({ type: "all", wallet: "all" }, { headers })
+    const res = await getStoreItems({ type: "all", wallet: "all" }, { headers })
+    const data = await res.json<WrappedResponse<StoreItem[]>>();
 
-    storeItemsDataAtom(ctx, data)
+    let payload: StoreItem[] = [];
+
+    if ("error" in data) {
+      payload = []
+    } else {
+      payload = data.data
+
+      // set/update the client_id
+      const setCookieValue = res.headers.getSetCookie()
+
+      if (setCookieValue.length >= 1) {
+        pageContext.headersResponse = res.headers
+      }
+    }
+
+    storeItemsDataAtom(ctx, payload)
   }
 
   const snapshot = ctx.get(snapshotAtom)
@@ -153,7 +171,7 @@ export async function defineStoreItemsData(pageContext: PageContextServer) {
   const prevSnapshot = pageContext.snapshot
   const newSnapshot = { ...prevSnapshot, ...snapshot }
 
-  console.log("defineStoreItemsData")
+  isDevelopment && console.log("defineStoreItemsData")
 
   pageContext.snapshot = newSnapshot
 }

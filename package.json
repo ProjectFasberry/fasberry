@@ -6,15 +6,15 @@
     "build": "bun scripts/run build",
     "dev": "bun scripts/run dev",
     "lint": "bun scripts/run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "bun scripts/run check-types",
+    "type-check": "bun scripts/run type-check",
     "docker-start": "docker compose up -d",
     "docker-down": "docker compose down"
   },
   "devDependencies": {
     "concurrently": "9.1.2",
     "cross-env": "^7.0.3",
-    "prettier": "3.5.3"
+    "@types/bun": "^1.2.22",
+    "@biomejs/biome": "2.2.4"
   },
   "workspaces": [
     "apps/*",

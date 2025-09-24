@@ -3,7 +3,6 @@ import { Context } from "elysia";
 import { CROSS_SESSION_KEY, SESSION_KEY, setCookie } from "./cookie";
 import { CLIENT_ID_HEADER_KEY } from "#/modules/store/payment/create-order.route";
 import { nanoid } from "nanoid";
-import { logger } from "../config/logger";
 
 export async function defineSession(
   token: string | null, 
@@ -33,18 +32,22 @@ export async function defineSession(
 }
 
 export function defineClientId(cookie: Context["cookie"]) {
-  const clientId = cookie[CLIENT_ID_HEADER_KEY].value
-
-  if (!clientId) {
-    const id = nanoid(7)
+  const existsClientId = cookie[CLIENT_ID_HEADER_KEY].value
+  
+  console.log(`Exists client id ${existsClientId}`)
+  
+  if (!existsClientId) {
+    const newClientId = nanoid(7)
+    const nickname = cookie["nickname"].value ?? null;
+    const ip = cookie["ip"].value;
 
     setCookie({
       cookie,
       key: CLIENT_ID_HEADER_KEY,
       expires: new Date(9999999999999),
-      value: id
+      value: newClientId
     });
 
-    logger.log(`Client id setted to ${id}`);
+    console.log(`Client id [ip=${ip};nickname=${nickname}] updated to ${newClientId}`);
   }
 }

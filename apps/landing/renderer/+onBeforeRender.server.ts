@@ -1,13 +1,32 @@
-import type { OnBeforeRenderAsync, PageContext } from 'vike/types';
+import type { PageContextServer } from 'vike/types';
 import { createCtx } from '@reatom/core';
 import { snapshotAtom } from '@/shared/api/ssr';
-import { logger } from '@repo/lib/logger';
+import { logger } from '@repo/shared/lib/logger';
 import { loggedUserAtom } from '@/shared/api/global.model';
-import { getCookie } from "@repo/lib/get-cookie"
+import { isDevelopment } from '@/shared/env';
 
 const LOGGED_USER_KEY = "logged_nickname"
 
-export const onBeforeRender: OnBeforeRenderAsync = async (pageContext) => {
+function getCookie(
+  header: string | null | undefined, 
+  key: string
+): string | undefined {
+	if (!header) return undefined;
+
+	const cookies = header.split(";").map(c => c.trim());
+
+	for (const cookie of cookies) {
+		const [cookieKey, ...rest] = cookie.split("=");
+
+		if (cookieKey === key) {
+			return decodeURIComponent(rest.join("="));
+		}
+	}
+
+	return undefined;
+}
+
+export const onBeforeRender = async (pageContext: PageContextServer) => {
   const ctx = createCtx()
   const headers = pageContext.headers;
 
@@ -29,7 +48,9 @@ export const onBeforeRender: OnBeforeRenderAsync = async (pageContext) => {
 
   const snapshot = ctx.get(snapshotAtom)
 
-  import.meta.env.DEV && logger.info(`\n${JSON.stringify(snapshot, null, 2)}\n`)
+  if (isDevelopment) {
+    logger.info(`\n${JSON.stringify(snapshot, null, 2)}\n`)
+  }
 
   return {
     pageContext: {

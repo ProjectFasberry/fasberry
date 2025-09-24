@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { motion, Transition, useMotionValue } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 
 export type CarouselContextType = {
   index: number;

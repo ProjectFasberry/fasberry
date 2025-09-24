@@ -1,14 +1,14 @@
 {
-  "name": "minecraft-app",
+  "name": "app",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.1.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development vike dev",
     "build": "NODE_ENV=production vike build",
     "start": "NODE_ENV=production vike preview --host",
-    "lint": "eslint .",
+    "lint": "bunx biome lint",
     "type-check": "tsc --noEmit"
   },
   "sideEffects": [
@@ -22,8 +22,6 @@
     "@reatom/npm-react": "3.10.6",
     "@reatom/persist": "3.4.1",
     "@reatom/persist-web-storage": "3.4.6",
-    "@repo/config-typescript": "workspace:*",
-    "@repo/lib": "workspace:*",
     "@repo/shared": "workspace:*",
     "@repo/ui": "workspace:*",
     "@sentry/react": "9.38.0",
@@ -45,6 +43,7 @@
   },
   "devDependencies": {
     "@repo/config-typescript": "workspace:*",
+    "@repo/config-biome": "workspace:*",
     "@tailwindcss/vite": "4.1.12",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",

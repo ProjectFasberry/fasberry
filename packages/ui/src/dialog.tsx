@@ -7,7 +7,7 @@ import {
   type HTMLMotionProps,
   type Transition,
 } from 'motion/react';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 
 type DialogContextType = {
   isOpen: boolean;

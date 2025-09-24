@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Checkbox as CheckboxPrimitive } from 'radix-ui';
 import { motion, type HTMLMotionProps } from 'motion/react';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 
 type CheckboxProps = React.ComponentProps<typeof CheckboxPrimitive.Root> &
   HTMLMotionProps<'button'>;

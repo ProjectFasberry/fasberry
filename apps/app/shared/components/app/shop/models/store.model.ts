@@ -2,7 +2,7 @@ import { createOrderSchema } from '@repo/shared/schemas/payment';
 import { toast } from 'sonner';
 import { reatomAsync, reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
-import { sleep, withReset } from "@reatom/framework"
+import { withReset } from "@reatom/framework"
 import { z } from 'zod/v4';
 import { client } from '@/shared/api/client';
 import type { Currencies } from "@repo/shared/types/db/sqlite-database-types"
@@ -13,6 +13,7 @@ import { CreateOrderRoutePayload } from "@repo/shared/types/entities/payment"
 import { navigate } from 'vike/client/router';
 import { Payments } from "@repo/shared/types/db/payments-database-types"
 import { withSsr } from '@/shared/lib/ssr';
+import { isDevelopment } from '@/shared/env';
 
 export type StoreItem = item
 export type Payment = Selectable<Payments>
@@ -31,27 +32,32 @@ export async function getStoreItems(
   { type, wallet }: { type: StoreCategory, wallet: StoreWalletFilter },
   args?: RequestInit
 ) {
-  const res = await client("store/items", {
-    searchParams: { type, wallet }, ...args
-  });
-
-  const data = await res.json<WrappedResponse<StoreItem[]>>();
-
-  if ("error" in data) return []
-
-  return data.data
+  return client("store/items", { searchParams: { type, wallet }, ...args })
 }
 
 export const storeItemsDataAtom = atom<StoreItem[]>([], "storeItemsData").pipe(withSsr("storeItemsData"))
 
-export const itemsResource = reatomResource(async (ctx) => {
-  const type = ctx.spy(storeCategoryAtom)
-  const wallet = ctx.spy(storeWalletFilterAtom)
+storeCategoryAtom.onChange((ctx, v) => {
+  isDevelopment && console.log("storeCategoryAtom", v)
+  itemsResource(ctx)
+})
+
+storeWalletFilterAtom.onChange((ctx, v) => {
+  isDevelopment && console.log("storeWalletFilterAtom", v)
+  itemsResource(ctx)
+})
+
+export const itemsResource = reatomAsync(async (ctx) => {
+  const type = ctx.get(storeCategoryAtom)
+  const wallet = ctx.get(storeWalletFilterAtom)
 
   return await ctx.schedule(async () => {
     const res = await getStoreItems({ type, wallet })
+    const data = await res.json<WrappedResponse<StoreItem[]>>();
 
-    storeItemsDataAtom(ctx, res)
+    if ("error" in data) return []
+
+    storeItemsDataAtom(ctx, data.data)
   })
 }, "itemsResource").pipe(withStatusesAtom())
 

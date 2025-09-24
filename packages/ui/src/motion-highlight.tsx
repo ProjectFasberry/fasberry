@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { AnimatePresence, Transition, motion } from 'motion/react';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 
 type MotionHighlightMode = 'children' | 'parent';
 
@@ -30,7 +30,6 @@ type MotionHighlightContextType<T extends string> = {
 };
 
 const MotionHighlightContext = React.createContext<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   MotionHighlightContextType<any> | undefined
 >(undefined);
 

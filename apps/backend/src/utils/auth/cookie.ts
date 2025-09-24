@@ -1,8 +1,8 @@
 import { isProduction } from "#/helpers/is-production"
-import { Cookie } from "elysia"
+import { Context } from "elysia"
 
 type Properties = {
-  cookie: Record<string, Cookie<string | undefined>>,
+  cookie: Context["cookie"],
   key: string,
 }
 

@@ -1,6 +1,6 @@
 import { getNatsConnection } from "#/shared/nats/nats-client"
 import { LUCKPERMS_UPDATE_SUBJECT } from "#/shared/nats/nats-subjects"
-import { natsLogger } from "@repo/lib/logger"
+import { natsLogger } from "@repo/shared/lib/logger"
 
 type LuckpermsUpdateContent = {
   userUuid: string

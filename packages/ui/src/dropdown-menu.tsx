@@ -12,7 +12,7 @@ import {
   MotionHighlight,
   MotionHighlightItem,
 } from './motion-highlight';
-import { cn } from '@repo/lib/cn';
+import { cn } from '@repo/shared/lib/cn';
 
 type DropdownMenuContextType = {
   isOpen: boolean;
