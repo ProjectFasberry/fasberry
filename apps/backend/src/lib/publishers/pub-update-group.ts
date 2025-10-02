@@ -1,5 +1,5 @@
-import { getNatsConnection } from "#/shared/nats/nats-client";
-import { LUCKPERMS_UPDATE_SUBJECT } from "#/shared/nats/nats-subjects";
+import { getNatsConnection } from "#/shared/nats/client";
+import { LUCKPERMS_UPDATE_SUBJECT } from "#/shared/nats/subjects";
 import { nanoid } from "nanoid";
 import { LuckpermsLogContent } from "../subscribers/sub-player-group";
 

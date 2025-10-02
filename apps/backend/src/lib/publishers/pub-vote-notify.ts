@@ -1,4 +1,4 @@
-import { getNatsConnection } from "#/shared/nats/nats-client"
+import { getNatsConnection } from "#/shared/nats/client"
 // import { USER_NOTIFICATIONS_SUBJECT } from "#/shared/nats/nats-subjects"
 
 export function publishVoteNotify(nickname: string) {

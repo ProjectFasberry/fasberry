@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import z from "zod/v4";
-import { getNatsConnection } from "#/shared/nats/nats-client";
+import { getNatsConnection } from "#/shared/nats/client";
 import { logger } from "#/utils/config/logger";
 import { Subscription } from "nats"
 import { getOrder } from "../order.route";

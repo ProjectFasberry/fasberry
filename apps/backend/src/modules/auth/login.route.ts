@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import { throwError } from '#/helpers/throw-error';
 import { authSchema, createSession, getExistsUser } from './auth.model';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
-import { ipPlugin } from '#/lib/middlewares/ip';
+import { ipPlugin } from '#/lib/plugins/ip';
 import { sessionDerive } from '#/lib/middlewares/session';
 import { userDerive } from '#/lib/middlewares/user';
 import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding";

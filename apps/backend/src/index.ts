@@ -1,21 +1,13 @@
-import { Elysia } from "elysia";
-import { serverTiming } from '@elysiajs/server-timing'
-import { logger as loggerMiddleware } from "@tqman/nice-logger";
-import { swagger } from "@elysiajs/swagger"
+import { Elysia, ElysiaConfig } from "elysia";
+import { serverTiming as serverTimingPlugin } from '@elysiajs/server-timing'
 import { cors } from '@elysiajs/cors'
-import { initNats } from "./shared/nats/nats-client";
 import { me } from "#/modules/user/me.route";
-import { rateLimitPlugin } from "./lib/middlewares/rate-limit";
-import { subscribeRefferalCheck } from "./lib/subscribers/sub-referal-check";
-import { subscribePlayerJoin } from "./lib/subscribers/sub-player-join";
-import { subscribeReferalReward } from "./lib/subscribers/sub-referal-reward";
-import { subscribeGiveBalance } from "./lib/subscribers/sub-give-balance";
-import { subscribePlayerStats } from "./lib/subscribers/sub-player-stats";
+import { rateLimitPlugin } from "./lib/plugins/rate-limit";
 import { initMinioBuckets, printBuckets } from "./shared/minio/init";
 import { bot } from "./shared/bot/logger";
 import { handleFatalError } from "./utils/config/handle-log";
 import { showRoutes } from "./utils/config/print-routes";
-import { ipPlugin } from "./lib/middlewares/ip";
+import { ipPlugin } from "./lib/plugins/ip";
 import { validateGroup } from "./modules/private/validation.route";
 import { rateGroup } from "./modules/user/like.route";
 import { initRedis } from "./shared/redis/init";
@@ -30,62 +22,34 @@ import { auth } from "./modules/auth";
 import { server } from "./modules/server";
 import { shared } from "./modules/shared";
 import { root } from "./modules/root";
+import { startNats } from "./shared/nats/init";
+import { loggerPlugin } from "./lib/plugins/logger";
+import { swaggerPlugin } from "./lib/plugins/swagger";
 
-function startWorkers() {
-  isProduction && startCacheWorker()
+const appConfig: ElysiaConfig<string> = {
+  prefix: "/minecraft",
+  serve: {
+    hostname: '0.0.0.0'
+  },
+  aot: true
 }
 
-async function startServices() {
-  async function startNats() {
-    await initNats()
-    subscribeRefferalCheck()
-    subscribePlayerJoin()
-    subscribeReferalReward()
-    subscribeGiveBalance()
-    subscribePlayerStats()
-  }
-
-  async function startMinio() {
-    await printBuckets()
-    await initMinioBuckets()
-  }
-
-  await startNats()
-
-  await Promise.all([
-    startMinio(), 
-    initRedis()
-  ])
-
-  await loadInternalFiles(INTERNAl_FILES);
-
-  bot.init();
-  startWorkers();
-}
-
-await startServices()
-
-const app = new Elysia({ prefix: "/minecraft" })
-  .use(swagger({
-    scalarConfig: {
-      spec: {
-        url: '/minecraft/swagger/json'
-      }
-    }
-  }))
-  .use(rateLimitPlugin())
-  .trace(async ({ onHandle, context: { path } }) => {
-    onHandle(({ begin, onStop }) => {
-      onStop(({ end }) => console.log(`${path} -> ${Math.floor(end - begin)}ms`))
-    })
+const corsPlugin = () => new Elysia().use(
+  cors({
+    credentials: true
   })
-  .use(cors({ credentials: true }))
-  .use(serverTiming())
-  .use(loggerMiddleware())
+)
+
+const app = new Elysia(appConfig)
+  .use(swaggerPlugin())
+  .use(rateLimitPlugin())
+  .use(corsPlugin())
+  .use(serverTimingPlugin())
+  .use(loggerPlugin())
   .use(ipPlugin())
   .use(root)
   .use(sessionDerive())
-  .onBeforeHandle(async ({ cookie, session, ...ctx }) => {
+  .onBeforeHandle(async ({ cookie, session }) => {
     defineSession(session, cookie)
   })
   .use(userDerive())
@@ -96,14 +60,48 @@ const app = new Elysia({ prefix: "/minecraft" })
   .use(store)
   .use(validateGroup)
   .use(rateGroup)
-  .listen(4104)
-  .compile()
+  .onError(({ code, error }) => {
+    const data = { error: error.toString().slice(0, 128) ?? "Internal Server Error" }
+    console.error(error, code)
+    return data
+  })
 
-showRoutes(app)
+async function startServices() {
+  function startWorkers() {
+    isProduction && startCacheWorker()
+  }
+
+  async function startMinio() {
+    await printBuckets()
+    await initMinioBuckets()
+  }
+
+  await startNats()
+
+  await Promise.all([
+    startMinio(),
+    initRedis()
+  ])
+
+  await loadInternalFiles(INTERNAl_FILES);
+
+  bot.init();
+  startWorkers();
+}
+
+async function start() {
+  await startServices()
+
+  showRoutes(app)
+
+  app.listen(4104);
+
+  console.log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);
+}
+
+await start()
 
 process.on('uncaughtException', handleFatalError);
 process.on('unhandledRejection', handleFatalError);
 
 export type App = typeof app
-
-console.log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);

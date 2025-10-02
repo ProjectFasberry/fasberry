@@ -6,25 +6,35 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { CLIENT_ID_HEADER_KEY } from "./payment/create-order.route";
 import { getRedisClient } from "#/shared/redis/init";
 import { PaymentCacheData } from "./payment/create-crypto-order";
+import z from "zod/v4";
+
+const ordersRouteSchema = z.object({
+  type: z.enum(["succeeded", "all", "pending"]).optional().default("all")
+});
 
 export const ordersRoute = new Elysia()
   .use(userDerive())
   .get("/orders", async (ctx) => {
-    const initiator = ctx.nickname ?? ctx.cookie[CLIENT_ID_HEADER_KEY].value;
+    const initiator = ctx.nickname ?? ctx.cookie[CLIENT_ID_HEADER_KEY].value as string;
 
     if (!initiator) {
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null })
     }
 
+    const { type } = ctx.query
+
     try {
       const redis = getRedisClient();
 
       const keys = await redis.smembers(`index:initiator:${initiator}`);
+
       const orders: PaymentCacheData[] = await Promise.all(
         keys.map(key => redis.get(key).then(value => JSON.parse(value!)))
       );
 
-      const query = await payments
+      const status = type !== 'all' ? type : null
+
+      let query = payments
         .selectFrom("payments")
         .select([
           "unique_id",
@@ -39,13 +49,20 @@ export const ordersRoute = new Elysia()
           "initiator"
         ])
         .where("initiator", "=", initiator)
-        .execute()
+
+      if (status) {
+        query = query.where("status", "=", status)
+      } 
+
+      const queryData = await query.execute()
 
       // @ts-expect-error
-      const data: PaymentCacheData[] = [...orders, ...query]
+      const data: PaymentCacheData[] = [...orders, ...queryData]
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {
       return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
+  }, {
+    query: ordersRouteSchema
   })

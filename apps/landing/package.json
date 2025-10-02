@@ -20,7 +20,7 @@
     "@reatom/core": "3.10.1",
     "@reatom/framework": "3.4.64",
     "@reatom/npm-react": "3.10.6",
-    "@reatom/persist": "^3.4.1",
+    "@reatom/persist": "3.4.1",
     "@repo/shared": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tabler/icons-react": "3.34.0",
@@ -29,7 +29,7 @@
     "@uiw/react-tooltip": "4.22.3",
     "@vitejs/plugin-react": "5.0.2",
     "dayjs": "1.11.11",
-    "ky": "1.8.1",
+    "ky": "1.11.0",
     "lucide-react": "0.468.0",
     "radix-ui": "1.4.2",
     "react": "19.1.0",
@@ -41,8 +41,7 @@
     "tailwind-variants": "1.0.0",
     "vike": "0.4.238",
     "vike-react": "0.6.5",
-    "zod": "3.25.67",
-    "zod-validation-error": "3.0.0"
+    "zod": "3.25.67"
   },
   "devDependencies": {
     "@repo/config-biome": "workspace:*",

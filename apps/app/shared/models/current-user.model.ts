@@ -8,7 +8,8 @@ export const currentUserAtom = atom<CurrentUser | null>(null, "currentUser").pip
 );
 
 export async function getMe(args?: RequestInit) {
-  const res = await client("get-me", { throwHttpErrors: false, ...args })
+  const res = await client("get-me", { throwHttpErrors: false, retry: 0, ...args })
+
   if (!res.ok) return null;
 
   const data = await res.json<WrappedResponse<CurrentUser>>()

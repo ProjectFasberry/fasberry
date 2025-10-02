@@ -8,7 +8,6 @@ import type { User } from "@repo/shared/types/entities/user"
 import dayjs from "dayjs"
 import { Donate } from "@repo/shared/types/entities/donate";
 import { sessionDerive } from "#/lib/middlewares/session";
-import { sqlite } from "#/shared/database/sqlite-db";
 import { userDerive } from "#/lib/middlewares/user";
 
 export const user = new Elysia()
@@ -34,13 +33,13 @@ export const user = new Elysia()
     }
 
     async function getDetails() {
-      const result = await sqlite
+      const result = await main
         .selectFrom("likes")
-        .select([
-          sqlite.fn.countAll().as("count"),
-          sqlite.fn
+        .select(eb => [
+          eb.fn.countAll().as("count"),
+          eb.fn
             .sum(
-              sqlite
+              eb
                 .case()
                 .when("initiator", "=", initiator)
                 .then(1)

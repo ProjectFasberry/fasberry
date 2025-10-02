@@ -1,5 +1,5 @@
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/nats-subjects"
+import { getNatsConnection } from "#/shared/nats/client"
+import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
 import { withAbort } from "#/helpers/abortable"
 
 type CommandType =

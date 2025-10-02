@@ -1,12 +1,12 @@
 import { throwError } from "#/helpers/throw-error";
 import { getStaticObject } from "#/helpers/volume";
-import { sqlite } from "#/shared/database/sqlite-db";
+import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
 async function getFavoriteItem(favoriteId: string) {
-  const query = await sqlite
-    .selectFrom("minecraft_items")
+  const query = await main
+    .selectFrom("items")
     .select([
       "image",
       "id",

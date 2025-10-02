@@ -1,5 +1,16 @@
 import { reatomComponent } from "@reatom/npm-react";
-import { acceptRulesAtom, authorize, globalErrorAtom, errorTypeAtom, findoutAtom, isValidAtom, nicknameAtom, passwordAtom, typeAtom, resetErrors, } from "../models/auth.model";
+import {
+  acceptRulesAtom,
+  authorize,
+  globalErrorAtom,
+  errorTypeAtom,
+  findoutAtom,
+  isValidAtom,
+  nicknameAtom,
+  passwordAtom,
+  typeAtom,
+  resetErrors
+} from "../models/auth.model";
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input"
 import { tv } from "tailwind-variants";
@@ -11,44 +22,50 @@ const authInput = tv({
 })
 
 const Nickname = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorTypeAtom).includes("nickname") ? "error" : "default"
+
   return (
     <Input
+      className={authInput()}
+      data-state={state}
       value={ctx.spy(nicknameAtom)}
+      onClick={() => resetErrors(ctx)}
+      onChange={e => nicknameAtom(ctx, e.target.value)}
       placeholder="Никнейм"
       maxLength={32}
-      onClick={() => resetErrors(ctx)}
-      data-state={ctx.spy(errorTypeAtom).includes("nickname") ? "error" : "default"}
-      className={authInput()}
-      onChange={e => nicknameAtom(ctx, e.target.value)}
     />
   )
 }, "Nickname")
 
 const Password = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorTypeAtom).includes("password") ? "error" : "default"
+
   return (
     <Input
+      className={authInput()}
+      data-state={state}
       value={ctx.spy(passwordAtom)}
+      onClick={() => resetErrors(ctx)}
+      onChange={e => passwordAtom(ctx, e.target.value)}
       placeholder="Пароль"
       maxLength={64}
       type="password"
-      onClick={() => resetErrors(ctx)}
-      data-state={ctx.spy(errorTypeAtom).includes("password") ? "error" : "default"}
-      className={authInput()}
-      onChange={e => passwordAtom(ctx, e.target.value)}
     />
   )
 }, "Password")
 
 const Findout = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorTypeAtom).includes("findout") ? "error" : "default"
+
   return (
     <Input
+      className={authInput()}
+      data-state={state}
       value={ctx.spy(findoutAtom)}
+      onClick={() => resetErrors(ctx)}
+      onChange={e => findoutAtom(ctx, e.target.value)}
       placeholder="Откуда узнали о проекте?"
       maxLength={128}
-      onClick={() => resetErrors(ctx)}
-      data-state={ctx.spy(errorTypeAtom).includes("findout") ? "error" : "default"}
-      className={authInput()}
-      onChange={e => findoutAtom(ctx, e.target.value)}
     />
   )
 }, "Findout")
@@ -57,9 +74,9 @@ export const SubmitAuth = reatomComponent(({ ctx }) => {
   return (
     <Button
       variant="minecraft"
-      disabled={ctx.spy(authorize.isLoading) || !ctx.spy(isValidAtom)}
-      onClick={() => authorize(ctx)}
       className="bg-neutral-600 w-full rounded-lg"
+      onClick={() => authorize(ctx)}
+      disabled={ctx.spy(authorize.isLoading) || !ctx.spy(isValidAtom)}
     >
       <Typography className="font-semibold  text-lg">
         {ctx.spy(typeAtom) === 'register' ? "Зарегистрироваться" : "Войти"}
@@ -70,7 +87,10 @@ export const SubmitAuth = reatomComponent(({ ctx }) => {
 
 const ResetPassword = reatomComponent(({ ctx }) => {
   return (
-    <Typography onClick={() => toast.warning("Пока не доступно.")} className='cursor-pointer text-center text-lg text-neutral-400'>
+    <Typography
+      className='cursor-pointer text-center text-lg text-neutral-400'
+      onClick={() => toast.warning("Пока не доступно.")}
+    >
       Я забыл пароль
     </Typography>
   )
@@ -148,7 +168,7 @@ export const AuthError = reatomComponent(({ ctx }) => {
   )
 }, "AuthError")
 
-export const LoginForm = reatomComponent(({ ctx }) => {
+export const LoginForm = () => {
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       <Nickname />
@@ -156,4 +176,4 @@ export const LoginForm = reatomComponent(({ ctx }) => {
       <ResetPassword />
     </div>
   )
-}, "LoginForm")
+}

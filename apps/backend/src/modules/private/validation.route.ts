@@ -1,8 +1,8 @@
+import Elysia from "elysia";
 import { throwError } from "#/helpers/throw-error";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { userDerive } from "#/lib/middlewares/user";
-import { sqlite } from "#/shared/database/sqlite-db";
-import Elysia from "elysia";
+import { main } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
 export const privateValidate = new Elysia()
@@ -10,7 +10,7 @@ export const privateValidate = new Elysia()
   .use(userDerive())
   .get('/validate', async ({ nickname, ...ctx }) => {
     try {
-      const result = await sqlite
+      const result = await main
         .selectFrom("admins")
         .select("id")
         .where("nickname", "=", nickname)

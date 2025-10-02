@@ -1,20 +1,18 @@
 import { abortablePromiseAll } from "#/helpers/abortable";
-import { sqlite } from "#/shared/database/sqlite-db";
-import { getNatsConnection } from "#/shared/nats/nats-client";
-import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/nats-subjects";
-import { logger } from "#/utils/config/logger";
+import { main } from "#/shared/database/main-db";
+import { getNatsConnection } from "#/shared/nats/client";
+import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/subjects";
+import { logError, logger } from "#/utils/config/logger";
 import { callServerCommand } from "#/utils/server/call-command";
 import { validateReferal } from "#/utils/server/validate-referal";
 
 export const subscribeRefferalCheck = () => {
   const nc = getNatsConnection()
 
-  logger.success("Subscribed to refferal check")
-
   return nc.subscribe(USER_REFERAL_CHECK_SUBJECT, {
     callback: async (e, msg) => {
       if (e) {
-        logger.error(e);
+        logError(e)
         return;
       }
 
@@ -27,7 +25,7 @@ export const subscribeRefferalCheck = () => {
 
         const controller = new AbortController()
 
-        await sqlite.transaction().execute(async (trx) => {
+        await main.transaction().execute(async (trx) => {
           await abortablePromiseAll([
             // for initiator
             (signal) => callServerCommand({ parent: "cmi", value: `money give ${result.initiator} 60` }, { signal }),
@@ -40,7 +38,7 @@ export const subscribeRefferalCheck = () => {
 
           const update = await trx
             .updateTable("referrals")
-            .set({ completed: 1 })
+            .set({ completed: true })
             .where(eb =>
               eb.and([
                 eb("initiator", "=", result.initiator),
@@ -52,7 +50,7 @@ export const subscribeRefferalCheck = () => {
           logger.log(update.numUpdatedRows > 0 ? "updated" : "not updated")
         })
       } catch (e) {
-        logger.error(e)
+        logError(e)
       }
     }
   })

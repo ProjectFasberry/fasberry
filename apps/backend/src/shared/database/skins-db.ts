@@ -4,6 +4,8 @@ import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
 import { poolOptsHooks } from "./lobby-db";
 
+console.log(Bun.env.SKINS_MYSQL_HOST)
+
 export const skins = new Kysely<skinsDBType>({
   dialect: new MysqlDialect({
     pool: createPool({

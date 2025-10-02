@@ -1,28 +1,28 @@
-
 import { playerpoints } from "#/shared/database/playerpoints-db"
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { logger } from "#/utils/config/logger"
+import { getNatsConnection } from "#/shared/nats/client"
+import { SERVER_EVENT_GIVE_BALANCE } from "#/shared/nats/subjects"
+import { logError } from "#/utils/config/logger"
 import { sql } from "kysely"
 
 export const subscribeGiveBalance = () => {
   const nc = getNatsConnection()
 
-  logger.success("Subscribed to give balance")
-  
-  return nc.subscribe("give.balance", {
+  return nc.subscribe(SERVER_EVENT_GIVE_BALANCE, {
     callback: async (e, msg) => {
       if (e) {
-        logger.error(e.message)
+        logError(e)
         return;
       }
 
       const nickname: string = msg.data.toString()
 
       try {
+        let payload: string | null = null;
+
         const res = await playerpoints
           .updateTable("playerpoints_points")
           .set({ points: sql`points + 5` })
-          .where("uuid", "=", 
+          .where("uuid", "=",
             playerpoints
               .selectFrom("playerpoints_username_cache")
               .select("uuid")
@@ -31,18 +31,15 @@ export const subscribeGiveBalance = () => {
           .executeTakeFirstOrThrow()
 
         if (res.numUpdatedRows) {
-          const payload = JSON.stringify({ result: "ok" });
-
+          payload = JSON.stringify({ result: "ok" });
           return msg.respond(payload)
         }
 
-        return msg.respond(
-          JSON.stringify({ error: "not updated" })
-        )
+        payload = JSON.stringify({ error: "not updated" })
+
+        return msg.respond(payload)
       } catch (e) {
-        if (e instanceof Error) {
-          logger.error(e.message)
-        }
+        logError(e)
       }
     }
   })

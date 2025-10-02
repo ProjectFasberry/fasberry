@@ -9,7 +9,7 @@ const TITLE: Record<string, string> = {
   "land": "Похоже этого региона уже нет",
 }
 
-export default function NotExist() {
+export default function Page() {
   const type = usePageContext().urlParsed.search["type"] as "user" | "land"
 
   return (

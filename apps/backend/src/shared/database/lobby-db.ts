@@ -8,7 +8,7 @@ import { createPool } from "mysql2";
 export const poolOptsHooks = (name: string) => ({
   onCreateConnection: async () => {
     if (!isProduction) {
-      logger.debug(`New ${name} DB connection created`);
+      console.log(`New ${name} DB connection created`);
     }
   }
 })

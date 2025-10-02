@@ -25,6 +25,12 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Admins {
+  created_at: Generated<string>;
+  id: Generated<number>;
+  nickname: string;
+}
+
 export interface AUTH {
   HASH: string;
   IP: string | null;
@@ -37,6 +43,15 @@ export interface AUTH {
   REGDATE: Int8 | null;
   TOTPTOKEN: string | null;
   UUID: string | null;
+}
+
+export interface Currencies {
+  id: Generated<number>;
+  imageUrl: string;
+  isAvailable: Generated<boolean>;
+  isPublic: Generated<boolean>;
+  title: string;
+  value: string;
 }
 
 export interface Events {
@@ -53,11 +68,91 @@ export interface EventsOriginal {
   type: string;
 }
 
+export interface Facts {
+  fact: string;
+  id: Generated<number>;
+}
+
+export interface Findout {
+  id: Generated<number>;
+  nickname: string;
+  value: string;
+}
+
 export interface GameStatus {
   id: Generated<number>;
   joined: Timestamp | null;
   nickname: string;
   quited: Timestamp | null;
+}
+
+export interface IpList {
+  id: Generated<number>;
+  ip: string;
+  name: string;
+}
+
+export interface Items {
+  description: string | null;
+  id: Generated<number>;
+  image: string;
+  title: string;
+}
+
+export interface Likes {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  initiator: string;
+  recipient: string;
+}
+
+export interface Modpacks {
+  client: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  imageUrl: string;
+  mods: string;
+  name: string;
+  shaders: string | null;
+  version: string;
+}
+
+export interface News {
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  imageUrl: string;
+  media_links: string | null;
+  tags: string | null;
+  title: string;
+}
+
+export interface NewsViews {
+  id: Generated<number>;
+  initiator: string;
+  news_id: number;
+}
+
+export interface Referrals {
+  completed: Generated<boolean>;
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  initiator: string;
+  recipient: string;
+}
+
+export interface Rules {
+  id: Generated<number>;
+  punishment: string | null;
+  rule_list_id: string;
+  subtitle: string | null;
+  title: string;
+}
+
+export interface RulesTermins {
+  article_desc: string;
+  article_title: string;
+  id: Generated<number>;
 }
 
 export interface SOCIAL {
@@ -121,15 +216,35 @@ export interface StorePromotionStyles {
   type: string;
 }
 
+export interface VotedUsers {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  nickname: string;
+}
+
 export interface DB {
+  admins: Admins;
   AUTH: AUTH;
+  currencies: Currencies;
   events: Events;
   events_original: EventsOriginal;
+  facts: Facts;
+  findout: Findout;
   game_status: GameStatus;
+  ip_list: IpList;
+  items: Items;
+  likes: Likes;
+  modpacks: Modpacks;
+  news: News;
+  news_views: NewsViews;
+  referrals: Referrals;
+  rules: Rules;
+  rules_termins: RulesTermins;
   SOCIAL: SOCIAL;
   store_cart_items: StoreCartItems;
   store_economy: StoreEconomy;
   store_items: StoreItems;
   store_promotion_styles: StorePromotionStyles;
   store_promotions: StorePromotions;
+  voted_users: VotedUsers;
 }

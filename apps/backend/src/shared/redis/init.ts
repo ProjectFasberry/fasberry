@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 let rc: Redis | null = null;
 
 const redis = new Redis({
-  host: isProduction ? Bun.env.REDIS_HOST : "localhost",
+  host: isProduction ? Bun.env.REDIS_HOST : "127.0.0.1",
   port: Bun.env.REDIS_PORT,
   password: Bun.env.REDIS_USER_PASSWORD,
   username: Bun.env.REDIS_USER

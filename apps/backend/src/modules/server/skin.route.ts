@@ -3,7 +3,6 @@ import Elysia, { t } from 'elysia';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { getPlayerAvatar, getRawSkin, getSkin } from './skin.model';
 import { CacheControl } from 'elysiajs-cdn-cache';
-import { cachePlugin } from '#/lib/middlewares/cache-control';
 
 const download = new Elysia()
   .get('/download/:nickname', async (ctx) => {
@@ -26,7 +25,6 @@ const skinSchema = t.Object({
 })
 
 const skin = new Elysia()
-  .use(cachePlugin())
   .get('/:nickname', async (ctx) => {
     const nickname = ctx.params.nickname
     const type = ctx.query.type;
@@ -50,13 +48,7 @@ const skin = new Elysia()
       }
 
       if (result) {
-        ctx.cacheControl.set(
-          "Cache-Control",
-          new CacheControl()
-            .set("public", true)
-            .set("max-age", 60)
-            .set("s-maxage", 60)
-        );
+        ctx.set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
 
         return ctx.status(HttpStatusEnum.HTTP_200_OK, result)
       }

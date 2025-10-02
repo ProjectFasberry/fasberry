@@ -4,7 +4,7 @@ import { throwError } from "#/helpers/throw-error";
 import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
 import ky from "ky";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { ipPlugin } from "#/lib/middlewares/ip";
+import { ipPlugin } from "#/lib/plugins/ip";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { logger } from "#/utils/config/logger";
 import { userDerive } from "#/lib/middlewares/user";

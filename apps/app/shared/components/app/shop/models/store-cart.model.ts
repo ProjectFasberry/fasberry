@@ -80,15 +80,20 @@ export const cartIsValidAtom = atom((ctx) => {
   return productsLengthValidate && productsRecipientValidate
 }, "cartIsValidAtom")
 
+export async function getOrders(
+  { type }: { type?: "all" | "succeeded" | "pending" },
+  init?: RequestInit
+) {
+  const res = await client("store/orders", { searchParams: { type }, throwHttpErrors: false, ...init })
+  const data = await res.json<WrappedResponse<Payment[]>>()
+
+  if ("error" in data) throw new Error(data.error)
+
+  return data.data
+}
+
 export const storeOrdersListAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client("store/orders", { throwHttpErrors: false, signal: ctx.controller.signal })
-    const data = await res.json<WrappedResponse<Payment[]>>()
-
-    if ("error" in data) throw new Error(data.error)
-
-    return data.data
-  })
+  return await ctx.schedule(async () => getOrders({ type: "all" }, { signal: ctx.controller.signal }))
 }, {
   name: "storeOrdersListAction",
   onReject: (_, e) => e instanceof Error && toast.error(e.message)

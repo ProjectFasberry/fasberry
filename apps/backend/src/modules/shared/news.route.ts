@@ -1,13 +1,11 @@
 import { normalizeIp } from "#/helpers/normalize-ip";
 import { throwError } from "#/helpers/throw-error";
-import { sqlite } from "#/shared/database/sqlite-db";
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
-import { CacheControl } from "elysiajs-cdn-cache";
-import { cachePlugin } from "#/lib/middlewares/cache-control";
-import { ipPlugin } from "#/lib/middlewares/ip";
+import { ipPlugin } from "#/lib/plugins/ip";
 import { getStaticObject } from "#/helpers/volume";
+import { main } from "#/shared/database/main-db";
 
 const newsSchema = t.Object({
   limit: t.Optional(
@@ -34,47 +32,49 @@ function wrapMeta(res: Partial<PaginatedMeta>) {
 }
 
 async function createNewsViews(target: { ids: number[], ip: string }) {
+  if (target.ids.length === 0) return
+
   const data = target.ids.map((id) => ({
     news_id: id,
     initiator: target.ip
   }))
 
-  await sqlite
+  await main
     .insertInto("news_views")
     .values(data)
     .onConflict((oc) =>
-      oc.columns(["news_id", "initiator"]).doNothing()
+      oc.constraint("news_views_news_id_initiator_uniq").doNothing()
     )
     .executeTakeFirst()
 }
 
 export const soloNews = new Elysia()
-  .use(cachePlugin())
   .get("/news/:id", async (ctx) => {
     const id = ctx.params.id
 
     try {
-      const query = await sqlite
-        .selectFrom("minecraft_news")
-        .leftJoin('news_views', 'news_views.news_id', 'minecraft_news.id')
-        .select([
-          'minecraft_news.id',
-          'minecraft_news.created_at',
-          'minecraft_news.title',
-          'minecraft_news.description',
-          'minecraft_news.imageUrl',
-          'minecraft_news.media_links',
-          sqlite.fn.count('news_views.id').as('views')
+      const query = await main
+        .selectFrom("news")
+        .leftJoin('news_views', 'news_views.news_id', 'news.id')
+        .select(eb => [
+          'news.id',
+          'news.created_at',
+          'news.title',
+          'news.description',
+          'news.imageUrl',
+          'news.media_links',
+          eb.fn.count('news_views.id').as('views')
         ])
-        .where("minecraft_news.id", "=", Number(id))
+        .where("news.id", "=", Number(id))
         .groupBy([
-          'minecraft_news.id',
-          'minecraft_news.created_at',
-          'minecraft_news.title',
-          'minecraft_news.description',
-          'minecraft_news.imageUrl',
-          'minecraft_news.media_links'
+          'news.id',
+          'news.created_at',
+          'news.title',
+          'news.description',
+          'news.imageUrl',
+          'news.media_links'
         ])
+        .limit(1)
         .executeTakeFirst()
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: query ?? null })
@@ -84,7 +84,6 @@ export const soloNews = new Elysia()
   })
 
 export const news = new Elysia()
-  .use(cachePlugin())
   .use(ipPlugin())
   .get("/news", async (ctx) => {
     try {
@@ -92,25 +91,25 @@ export const news = new Elysia()
 
       const DEFAULT_LIMIT = limit ?? 16;
 
-      let query = sqlite
-        .selectFrom('minecraft_news')
-        .leftJoin('news_views', 'news_views.news_id', 'minecraft_news.id')
-        .select([
-          'minecraft_news.id',
-          'minecraft_news.created_at',
-          'minecraft_news.title',
-          'minecraft_news.description',
-          'minecraft_news.imageUrl',
-          'minecraft_news.media_links',
-          sqlite.fn.count('news_views.id').as('views')
+      let query = main
+        .selectFrom('news')
+        .leftJoin('news_views', 'news_views.news_id', 'news.id')
+        .select(eb => [
+          'news.id',
+          'news.created_at',
+          'news.title',
+          'news.description',
+          'news.imageUrl',
+          'news.media_links',
+          eb.fn.countAll().as('views')
         ])
         .groupBy([
-          'minecraft_news.id',
-          'minecraft_news.created_at',
-          'minecraft_news.title',
-          'minecraft_news.description',
-          'minecraft_news.imageUrl',
-          'minecraft_news.media_links'
+          'news.id',
+          'news.created_at',
+          'news.title',
+          'news.description',
+          'news.imageUrl',
+          'news.media_links'
         ])
         .limit(DEFAULT_LIMIT)
 
@@ -128,12 +127,9 @@ export const news = new Elysia()
             expression: "created_at",
           }
         ],
-        // @ts-expect-error
-        parseCursor: (cursor) => {
-          return {
-            created_at: new Date(cursor.created_at),
-          }
-        },
+        parseCursor: (cursor) => ({
+          created_at: new Date(cursor.created_at)
+        })
       })
 
       const data = res.rows.map((news) => ({
@@ -147,13 +143,7 @@ export const news = new Elysia()
         ip: normalizeIp(ctx.ip)
       })
 
-      ctx.cacheControl.set(
-        "Cache-Control",
-        new CacheControl()
-          .set("public", true)
-          .set("max-age", 60)
-          .set("s-maxage", 60)
-      );
+      ctx.set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
 
       return { data, meta: wrapMeta(res) }
     } catch (e) {

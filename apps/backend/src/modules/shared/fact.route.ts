@@ -1,5 +1,5 @@
 import { throwError } from "#/helpers/throw-error";
-import { sqlite } from "#/shared/database/sqlite-db";
+import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
@@ -10,8 +10,8 @@ export const fact = new Elysia()
     const randomId = Math.floor(getRandomArbitrary(1, 97));
 
     try {
-      const fact = await sqlite
-        .selectFrom("minecraft_facts")
+      const fact = await main
+        .selectFrom("facts")
         .select("fact")
         .where("id", "=", randomId)
         .executeTakeFirst();

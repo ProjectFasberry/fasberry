@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.bun
+.bun-cache
+.git
+.vscode
+*.log
+*.DS_Store
+
+data

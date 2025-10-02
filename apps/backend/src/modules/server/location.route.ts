@@ -1,7 +1,7 @@
 import { throwError } from "#/helpers/throw-error"
 import { userDerive } from "#/lib/middlewares/user"
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { SERVER_EVENT_GET_USER_LOCATION, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/nats-subjects"
+import { getNatsConnection } from "#/shared/nats/client"
+import { SERVER_EVENT_GET_USER_LOCATION, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
 import Elysia from "elysia"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 

@@ -1,14 +1,13 @@
 import { throwError } from "#/helpers/throw-error";
-import { sqlite } from "#/shared/database/sqlite-db";
-import { getNatsConnection } from "#/shared/nats/nats-client";
-import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/nats-subjects";
+import { getNatsConnection } from "#/shared/nats/client";
+import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import ky from "ky";
 import { CacheControl } from 'elysiajs-cdn-cache';
-import { cachePlugin } from "#/lib/middlewares/cache-control";
 import { logger } from "#/utils/config/logger";
 import { isProduction } from "#/helpers/is-production";
+import { main } from "#/shared/database/main-db";
 
 type ServerStatus = {
   online: boolean;
@@ -77,7 +76,7 @@ type StatusPayload = {
 async function getProxyStats(): Promise<ServerStatus | null> {
   let ip: string = "play.fasberry.su";
 
-  const query = await sqlite
+  const query = await main
     .selectFrom("ip_list")
     .select("ip")
     .where("name", "=", "server_proxy")
@@ -113,7 +112,6 @@ async function getBisquiteStats(): Promise<StatusPayload | null> {
 }
 
 export const status = new Elysia()
-  .use(cachePlugin())
   .get("/status", async (ctx) => {
     const type = ctx.query.type;
 
@@ -157,13 +155,7 @@ export const status = new Elysia()
           servers: { bisquite }
         }
 
-        ctx.cacheControl.set(
-          "Cache-Control",
-          new CacheControl()
-            .set("public", true)
-            .set("max-age", 60)
-            .set("s-maxage", 60)
-        );
+        ctx.set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
 
         return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
       }

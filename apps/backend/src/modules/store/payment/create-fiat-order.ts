@@ -1,5 +1,5 @@
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { PAYMENT_FIAT_START_SUBJECT } from "#/shared/nats/nats-subjects"
+import { getNatsConnection } from "#/shared/nats/client"
+import { PAYMENT_FIAT_START_SUBJECT } from "#/shared/nats/subjects"
 import { paymentFiatMethodSchema } from "@repo/shared/schemas/payment"
 import type { z } from "zod/v4"
 

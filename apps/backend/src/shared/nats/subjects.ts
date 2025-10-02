@@ -15,3 +15,5 @@ export const SERVER_STATUS_SUBJECT = "server.status"
   export const SERVER_EVENT_CHECK_PLAYER_STATUS = "checkOnline"
   export const SERVER_EVENT_GET_USER_LOCATION = "getLocation"
   export const SERVER_EVENT_GET_SERVER_STATS = "getServerStats"
+
+export const SERVER_EVENT_GIVE_BALANCE = "give.balance"

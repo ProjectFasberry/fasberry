@@ -1,6 +1,5 @@
 import { normalizeIp } from "#/helpers/normalize-ip"
 import { main } from "#/shared/database/main-db"
-import { sqlite } from "#/shared/database/sqlite-db"
 import { getRedisClient } from "#/shared/redis/init"
 import { Static, t } from "elysia"
 
@@ -237,7 +236,7 @@ export async function createUser({
       .returning(["NICKNAME as nickname", "REGDATE"])
       .executeTakeFirstOrThrow()
 
-    await sqlite.insertInto("findout").values({ nickname, findout }).executeTakeFirst()
+    await main.insertInto("findout").values({ nickname, value: findout }).executeTakeFirst()
 
     if (referrer) {
       await registerReferrer({ initiator: nickname, recipient: referrer })

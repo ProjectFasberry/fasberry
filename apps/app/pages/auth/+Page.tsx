@@ -38,17 +38,22 @@ const Auth = reatomComponent(({ ctx }) => {
           </TabsContent>
         </TabsContents>
         <SubmitAuth />
-        <AuthError/>
+        <AuthError />
       </div>
     </Tabs>
   )
 }, "Auth")
 
-export default function AuthPage() {
+export default function Page() {
   return (
     <MainWrapperPage>
-      <form onSubmit={(e) => e.preventDefault()} className="flex items-center justify-center h-[60vh] w-full">
-        <Auth />
+      <form
+        className="flex items-center justify-center h-[80dvh] w-full"
+        onSubmit={(e) => e.preventDefault()}
+      >
+        <div className="flex items-start justify-center h-[60dvh] w-full">
+          <Auth />
+        </div>
       </form>
     </MainWrapperPage>
   )

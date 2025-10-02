@@ -1,6 +1,6 @@
 import { BProgress } from '@bprogress/core';
-import type { OnPageTransitionStartAsync } from "vike/types";
+import { PageContextClient } from 'vike/types';
 
-export const onPageTransitionStart: OnPageTransitionStartAsync = async () => {
+export const onPageTransitionStart = async (pageContext: Partial<PageContextClient>) => {
   BProgress.start()
 };

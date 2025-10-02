@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss()
     ],
+    ssr: {
+      noExternal: ['@tabler/icons-react']
+    },
     build: {
       target: "es2022",
       minify: "esbuild",

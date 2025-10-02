@@ -1,7 +1,7 @@
 import { throwError } from "#/helpers/throw-error";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { userDerive } from "#/lib/middlewares/user";
-import { sqlite } from "#/shared/database/sqlite-db";
+import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
@@ -10,7 +10,7 @@ const likes = new Elysia()
     const recipient = ctx.params.nickname;
 
     try {
-      const query = await sqlite
+      const query = await main
         .selectFrom("likes")
         .select(eb => [
           "initiator",
@@ -52,7 +52,7 @@ const like = new Elysia()
     }
 
     try {
-      const result = await sqlite.transaction().execute(async (trx) => {
+      const result = await main.transaction().execute(async (trx) => {
         const deleteResult = await trx
           .deleteFrom("likes")
           .where("initiator", "=", initiator)

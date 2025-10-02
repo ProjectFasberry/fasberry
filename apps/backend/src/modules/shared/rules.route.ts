@@ -1,9 +1,7 @@
 import { throwError } from "#/helpers/throw-error";
-import { cachePlugin } from "#/lib/middlewares/cache-control";
-import { sqlite } from "#/shared/database/sqlite-db";
+import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { CacheControl } from "elysiajs-cdn-cache";
 
 const ruleTypes: Record<"chat" | "game" | "based", string> = {
   'chat': 'Правила чата',
@@ -13,12 +11,12 @@ const ruleTypes: Record<"chat" | "game" | "based", string> = {
 
 async function getRules() {
   const [rules, terms] = await Promise.all([
-    sqlite
-      .selectFrom("rules_content")
+    main
+      .selectFrom("rules")
       .selectAll()
       .where("rule_list_id", "in", ["chat", "game", "based"])
       .execute(),
-    sqlite
+    main
       .selectFrom("rules_termins")
       .selectAll()
       .execute()
@@ -41,18 +39,11 @@ async function getRules() {
 }
 
 export const rules = new Elysia()
-  .use(cachePlugin())
   .get("/rules", async (ctx) => {
     try {
       const data = await getRules()
 
-      ctx.cacheControl.set(
-        "Cache-Control",
-        new CacheControl()
-          .set("public", true)
-          .set("max-age", 3600)
-          .set("s-maxage", 3600)
-      );
+      ctx.set.headers["Cache-Control"] = "public, max-age=3600, s-maxage=3600"
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {

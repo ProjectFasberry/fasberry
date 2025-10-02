@@ -5,7 +5,6 @@ import { CacheControl } from "elysiajs-cdn-cache";
 import { throwError } from "#/helpers/throw-error";
 import { executeWithCursorPagination } from "kysely-paginate";
 import type { Land } from "@repo/shared/types/entities/land"
-import { cachePlugin } from "#/lib/middlewares/cache-control";
 import { sessionDerive } from "#/lib/middlewares/session";
 import { userDerive } from "#/lib/middlewares/user";
 import { getStaticObject } from "#/helpers/volume";
@@ -124,7 +123,6 @@ async function getLand({
 }
 
 export const land = new Elysia()
-  .use(cachePlugin())
   .use(sessionDerive())
   .use(userDerive())
   .get("/land/:id", async ({ nickname: initiator, ...ctx }) => {
@@ -133,13 +131,7 @@ export const land = new Elysia()
     try {
       const data = await getLand({ id, initiator })
 
-      ctx.cacheControl.set(
-        "Cache-Control",
-        new CacheControl()
-          .set("public", true)
-          .set("max-age", 15)
-          .set("s-maxage", 15)
-      );
+      ctx.set.headers["Cache-Control"] = "public, max-age=15, s-maxage=15"
 
       return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
     } catch (e) {

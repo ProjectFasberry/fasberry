@@ -1,13 +1,12 @@
 import { sql } from "kysely";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { sqlite } from "#/shared/database/sqlite-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { publishVoteNotify } from "#/lib/publishers/pub-vote-notify";
 import { main } from "#/shared/database/main-db";
 
 async function postVoted(nickname: string) {
-  const result = await sqlite
+  const result = await main
     .insertInto("voted_users")
     .values({ nickname })
     .onConflict((ob) => ob.column("nickname").doNothing())

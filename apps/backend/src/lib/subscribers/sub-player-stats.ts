@@ -1,7 +1,7 @@
 import { bisquite } from "#/shared/database/bisquite-db"
 import { reputation } from "#/shared/database/reputation-db"
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { logger } from "#/utils/config/logger"
+import { getNatsConnection } from "#/shared/nats/client"
+import { logError } from "#/utils/config/logger"
 
 type PlayerStats = {
   charism: number
@@ -57,37 +57,29 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
 export const subscribePlayerStats = () => {
   const nc = getNatsConnection()
 
-  logger.success("Subscribed to player stats")
-
-  try {
-    return nc.subscribe("todo" + ".*", {
-      callback: async (e, msg) => {
-        if (e) {
-          logger.error(e.message)
-          return
-        }
-
-        const subject = msg.subject
-        const nickname = subject.split(".")[3]
-
-        if (!nickname) {
-          const payload = JSON.stringify({ error: "Invalid nickname" });
-
-          return msg.respond(payload)
-        }
-
-        try {
-          const stats = await getPlayerStats(nickname)
-
-          return msg.respond(JSON.stringify(stats))
-        } catch (e) {
-          console.error(e)
-        }
+  return nc.subscribe("todo" + ".*", {
+    callback: async (e, msg) => {
+      if (e) {
+        logError(e)
+        return
       }
-    })
-  } catch (e) {
-    if (e instanceof Error) {
-      logger.error(e.message)
+
+      const subject = msg.subject
+      const nickname = subject.split(".")[3]
+
+      if (!nickname) {
+        const payload = JSON.stringify({ error: "Invalid nickname" });
+
+        return msg.respond(payload)
+      }
+
+      try {
+        const stats = await getPlayerStats(nickname)
+
+        return msg.respond(JSON.stringify(stats))
+      } catch (e) {
+        logError(e)
+      }
     }
-  }
+  })
 }

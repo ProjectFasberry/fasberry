@@ -1,7 +1,7 @@
 import { abortablePromiseAll } from "#/helpers/abortable"
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { USER_REFERAL_REWARD_SUBJECT } from "#/shared/nats/nats-subjects"
-import { logger } from "#/utils/config/logger"
+import { getNatsConnection } from "#/shared/nats/client"
+import { USER_REFERAL_REWARD_SUBJECT } from "#/shared/nats/subjects"
+import { logError } from "#/utils/config/logger"
 import { callServerCommand } from "#/utils/server/call-command"
 
 type ReferalRewardPayload = {
@@ -12,12 +12,10 @@ type ReferalRewardPayload = {
 export const subscribeReferalReward = () => {
   const nc = getNatsConnection()
 
-  logger.success("Subscribed to referal reward")
-
   return nc.subscribe(USER_REFERAL_REWARD_SUBJECT, {
     callback: async (e, msg) => {
       if (e) {
-        logger.error(e.message);
+        logError(e)
         return;
       }
 
@@ -32,7 +30,7 @@ export const subscribeReferalReward = () => {
           (signal) => callServerCommand({ parent: "p", value: `give ${payload.referrer} 1` }, { signal })
         ], controller)
       } catch (e) {
-        logger.error(e);
+        logError(e)
       }
     }
   })

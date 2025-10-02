@@ -1,6 +1,6 @@
 import { BProgress } from '@bprogress/core';
-import type { OnPageTransitionEndAsync } from "vike/types";
+import { PageContextClient } from 'vike/types';
 
-export const onPageTransitionEnd: OnPageTransitionEndAsync = async () => {
+export const onPageTransitionEnd = async (pageContext: PageContextClient) => {
   BProgress.done()
 };

@@ -1,13 +1,13 @@
-import { sqlite } from "#/shared/database/sqlite-db";
 import { sql } from "kysely";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";
 import { getStaticObject } from "#/helpers/volume";
+import { main } from "#/shared/database/main-db";
 
 async function getMinecraftItems() {
-  const query = await sqlite
-    .selectFrom("minecraft_items")
+  const query = await main
+    .selectFrom("items")
     .select([
       "description",
       "title",

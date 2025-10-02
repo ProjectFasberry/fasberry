@@ -31,9 +31,6 @@ const NotFoundPage = () => {
 const ErrorPage = () => {
   return (
     <>
-      <Typography color="gray" className="text-neutral-400 text-base md:text-xl font-normal">
-        Отключено
-      </Typography>
       <Back />
     </>
   )

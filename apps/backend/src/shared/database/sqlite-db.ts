@@ -3,9 +3,11 @@ import type { DB as sqliteDBType } from "@repo/shared/types/db/sqlite-database-t
 import { Database } from "bun:sqlite";
 import { BunSqliteDialect } from 'kysely-bun-sqlite';
 
+console.log(Bun.env.SQLITE_DATABASE_URL)
+
 const database = new Database(Bun.env.SQLITE_DATABASE_URL)
 
-database.exec("PRAGMA journal_mode = WAL;");
+database.run("PRAGMA journal_mode = WAL;");
 
 export const sqlite = new Kysely<sqliteDBType>({ 
   dialect: new BunSqliteDialect({ database })

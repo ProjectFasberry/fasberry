@@ -2,15 +2,12 @@ import { reatomComponent } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
 import { IconHeart } from "@tabler/icons-react"
 import { tv } from "tailwind-variants"
-import { rateUser } from "../models/rate.model"
+import { rateList, RateUser, rateUser } from "../models/rate.model"
 import { isIdentityAtom } from "../models/player.model"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@repo/ui/hover-card"
-import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
-import { client } from "@/shared/api/client"
 import { Typography } from "@repo/ui/typography"
 import { createLink, Link } from "@/shared/components/config/link"
 import { onConnect } from "@reatom/framework"
-import { currentUserAtom } from "@/shared/models/current-user.model"
 import { Avatar } from "../../avatar/components/avatar"
 import dayjs from "@/shared/lib/create-dayjs"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog"
@@ -47,63 +44,50 @@ type RateProps = {
   count: number
 }
 
-type RateList = {
-  data: {
-    initiator: string;
-    created_at: string;
-  }[];
-  meta: number;
-}
-
-const rateList = reatomResource(async (ctx) => {
-  const isIdentity = ctx.spy(isIdentityAtom);
-  if (!isIdentity) return;
-
-  const currentUser = ctx.get(currentUserAtom)
-  if (!currentUser) return;
-
-  return await ctx.schedule(async () => {
-    const res = await client(`rates/${currentUser.nickname}`, {
-      signal: ctx.controller.signal, throwHttpErrors: false
-    })
-
-    const data = await res.json<RateList | { error: string }>()
-
-    if ("error" in data) return null;
-
-    return data;
-  })
-}, "rateList").pipe(withStatusesAtom(), withDataAtom(), withCache())
-
 onConnect(rateList.dataAtom, rateList)
 
+const ListCard = ({ initiator, created_at }: RateUser) => {
+  return (
+    <div className="flex items-center gap-2 bg-neutral-800 rounded-lg p-2">
+      <Link href={createLink("player", initiator)}>
+        <Avatar
+          nickname={initiator}
+          propWidth={32}
+          propHeight={32}
+          className="min-h-8 min-w-8 aspect-square"
+        />
+      </Link>
+      <div className="flex flex-col">
+        <Link href={createLink("player", initiator)}>
+          <Typography className="text-base font-semibold">
+            {initiator}
+          </Typography>
+        </Link>
+        <Typography color="gray" className="text-sm leading-3">
+          {dayjs(created_at).fromNow()}
+        </Typography>
+      </div>
+    </div>
+  )
+}
+
 const List = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(rateList.dataAtom)?.data
+  const data = ctx.spy(rateList.dataAtom)?.data;
+
+  if (data && data.length === 0) {
+    return <Typography color="gray">пусто</Typography>
+  }
+
   if (!data) return null;
 
   return (
     <div className="flex flex-col overflow-y-auto max-h-[400px] gap-2 w-full h-full">
-      {data.map(item => (
-        <div key={item.initiator} className="flex items-center gap-2 bg-neutral-800 rounded-lg p-2">
-          <Link href={createLink("player", item.initiator)}>
-            <Avatar
-              nickname={item.initiator}
-              propWidth={32}
-              propHeight={32}
-              className="min-h-[32px] min-w-[32px]"
-            />
-          </Link>
-          <div className="flex flex-col">
-            <Link href={createLink("player", item.initiator)}>
-              <Typography className="text-base font-semibold">
-                {item.initiator}
-              </Typography>
-            </Link>
-            <Typography color="gray" className="text-sm leading-3">
-              {dayjs(item.created_at).fromNow()}
-            </Typography>
-          </div>
-        </div>
+      {data.map(user => (
+        <ListCard
+          key={user.initiator}
+          initiator={user.initiator}
+          created_at={user.created_at}
+        />
       ))}
     </div>
   )

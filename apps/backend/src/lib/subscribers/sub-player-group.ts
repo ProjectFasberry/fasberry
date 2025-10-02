@@ -1,7 +1,3 @@
-import { getNatsConnection } from "#/shared/nats/nats-client"
-import { LUCKPERMS_UPDATE_SUBJECT } from "#/shared/nats/nats-subjects"
-import { natsLogger } from "@repo/shared/lib/logger"
-
 type LuckpermsUpdateContent = {
   userUuid: string
 }
@@ -31,8 +27,6 @@ type ActionType = "set" | "unset"
 
 // export const subscribePlayerGroup = () => {
 //   const nc = getNatsConnection()
-
-//   natsLogger.success("Subscribed to player group")
 
 //   return nc.subscribe(LUCKPERMS_UPDATE_SUBJECT, {
 //     callback: async (e, msg) => {

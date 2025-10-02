@@ -12,11 +12,11 @@ const NATS_CONFIG: ConnectionOptions = {
   reconnectTimeWait: 2000, 
 }
 
-let nc: NatsConnection | null = null;
+let nats: NatsConnection | null = null;
 
 export async function initNats() {
   try {
-    nc = await connect(NATS_CONFIG);
+    nats = await connect(NATS_CONFIG);
     logger.success(`Connected to ${NATS_CONFIG.servers}`)
   } catch (e) {
     logger.error("NATS ", e)
@@ -25,15 +25,15 @@ export async function initNats() {
 }
 
 export function getNatsConnection(): NatsConnection {
-  if (!nc) throw new Error('NATS client is not initialized');
-  return nc;
+  if (!nats) throw new Error('NATS client is not initialized');
+  return nats;
 }
 
 export async function closeNatsConnection() {
-  if (!nc) return;
+  if (!nats) return;
 
   try {
-    await nc.drain();
+    await nats.drain();
     logger.log('NATS connection closed.')
   } catch (err) {
     logger.error('Error closing NATS connection:', err)

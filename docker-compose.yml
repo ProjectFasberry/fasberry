@@ -3,6 +3,7 @@ name: fasberry
 services:
   nats:
     image: nats:latest
+    container_name: nats-1
     restart: unless-stopped
     ports:
       - "4223:4222"
@@ -20,131 +21,9 @@ services:
     volumes:
       - ./data/fasberry/nats/data:/nats
       - ./data/fasberry/nats/jetstream:/nats/jetstream
-
-  payments_db:
-    container_name: payments_db
-    build: .
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${PAYMENTS_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${PAYMENTS_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${PAYMENTS_POSTGRES_DB}
-    ports:
-      - ${PAYMENTS_POSTGRES_PORT}:5432/tcp
-    volumes:
-      - ./data/fasberry/db/payments/data:/var/lib/postgresql/data
-
-  lobby_db:
-    container_name: lobby_db
-    image: mariadb:latest
-    restart: unless-stopped
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: lobby
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - ${LOBBY_MYSQL_PORT}:3306/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/lobby/data:/var/lib/mysql
-
-  bisquite_db:
-    container_name: bisquite_db
-    image: mariadb:latest
-    restart: unless-stopped
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: bisquite
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - ${BISQUITE_MYSQL_PORT}:3306/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/bisquite/data:/var/lib/mysql
-      - ./data/fasberry/db/minecraft/bisquite/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
-
-  luckperms_db:
-    container_name: luckperms_db
-    image: postgres:15.1
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${LUCKPERMS_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${LUCKPERMS_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${LUCKPERMS_POSTGRES_DB}
-    ports:
-      - ${LUCKPERMS_POSTGRES_PORT}:5432/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/luckperms/data:/var/lib/postgresql/data
-
-  authorization-db:
-    container_name: authorization-db
-    image: postgres:15.1
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${AUTHORIZATION_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${AUTHORIZATION_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${AUTHORIZATION_POSTGRES_DB}
-    ports:
-      - ${AUTHORIZATION_POSTGRES_PORT}:5432/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/authorization/data:/var/lib/postgresql/data
-
-  # eco-db:
-  #   container_name: eco_db
-  #   image: mysql:9.2
-  #   restart: always
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: eco
-  #     MYSQL_USER: ${MYSQL_USER}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #   ports:
-  #     - ${ECO_MYSQL_PORT}:3306/tcp
-  #   volumes:
-  #     - ./data/fasberry/db/minecraft/eco/data:/var/lib/mysql
-
-  playerpoints-db:
-    container_name: playerpoints_db
-    image: mariadb:latest
-    restart: unless-stopped
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: playerpoints
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - ${PLAYERPOINTS_MYSQL_PORT}:3306/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/playerpoints/data:/var/lib/mysql
-
-  reputation-db:
-    container_name: reputation_db
-    image: mariadb:latest
-    restart: unless-stopped
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: reputation
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - ${REPUTATION_MYSQL_PORT}:3306/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/reputation/data:/var/lib/mysql
-
-  skins-proxy-db:
-    container_name: skins_proxy_db
-    image: mariadb:latest
-    restart: unless-stopped
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: skins_proxy
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - ${SKINS_PROXY_MYSQL_PORT}:3306/tcp
-    volumes:
-      - ./data/fasberry/db/minecraft/skins_proxy/data:/var/lib/mysql
-
+    networks:
+      - fasberry
+      
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -158,6 +37,8 @@ services:
       - ./data/fasberry/minio/data:/data
     command: server /data --console-address ":9001"
     restart: unless-stopped
+    networks:
+      - fasberry
 
   redis:
     image: 'redis:8.0.3'
@@ -173,6 +54,205 @@ services:
       - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
     entrypoint: /entrypoint.sh
     restart: always
+    networks:
+      - fasberry
+
+  payments-db:
+    container_name: payments-db
+    build: .
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PAYMENTS_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PAYMENTS_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PAYMENTS_POSTGRES_DB}
+    ports:
+      - ${PAYMENTS_POSTGRES_PORT}:5432/tcp
+    volumes:
+      - ./data/fasberry/db/payments/data:/var/lib/postgresql/data
+    networks:
+      - fasberry
+
+  lobby-db:
+    container_name: lobby-db
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: lobby
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${LOBBY_MYSQL_PORT}:3306/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/lobby/data:/var/lib/mysql
+    networks:
+      - fasberry
+
+  bisquite-db:
+    container_name: bisquite-db
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: bisquite
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${BISQUITE_MYSQL_PORT}:3306/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/bisquite/data:/var/lib/mysql
+      - ./data/fasberry/db/minecraft/bisquite/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    networks:
+      - fasberry
+
+  luckperms-db:
+    container_name: luckperms-db
+    image: postgres:15.1
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${LUCKPERMS_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${LUCKPERMS_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${LUCKPERMS_POSTGRES_DB}
+    ports:
+      - ${LUCKPERMS_POSTGRES_PORT}:5432/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/luckperms/data:/var/lib/postgresql/data
+    networks:
+      - fasberry
+
+  authorization-db:
+    container_name: authorization-db
+    image: postgres:15.1
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${AUTHORIZATION_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AUTHORIZATION_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AUTHORIZATION_POSTGRES_DB}
+    ports:
+      - ${AUTHORIZATION_POSTGRES_PORT}:5432/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/authorization/data:/var/lib/postgresql/data
+    networks:
+      - fasberry
+      
+  # eco-db:
+  #   container_name: eco-db
+  #   image: mysql:9.2
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #     MYSQL_DATABASE: eco
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #   ports:
+  #     - ${ECO_MYSQL_PORT}:3306/tcp
+  #   volumes:
+  #     - ./data/fasberry/db/minecraft/eco/data:/var/lib/mysql
+
+  playerpoints-db:
+    container_name: playerpoints-db
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: playerpoints
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${PLAYERPOINTS_MYSQL_PORT}:3306/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/playerpoints/data:/var/lib/mysql
+    networks:
+      - fasberry
+
+  reputation-db:
+    container_name: reputation-db
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: reputation
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${REPUTATION_MYSQL_PORT}:3306/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/reputation/data:/var/lib/mysql
+    networks:
+      - fasberry
+
+  skins-proxy-db:
+    container_name: skins-proxy-db
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: skins_proxy
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${SKINS_PROXY_MYSQL_PORT}:3306/tcp
+    volumes:
+      - ./data/fasberry/db/minecraft/skins_proxy/data:/var/lib/mysql
+    networks:
+      - fasberry
+
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    ports:
+      - "4104:4104"
+    environment: 
+      - SQLITE_DATABASE_URL=/app/data/sqlite/sqlite.db
+      - REDIS_HOST=redis
+      - NATS_HOST=nats:4222
+      - SKINS_MYSQL_HOST=skins-proxy-db
+      - SKINS_MYSQL_PORT=3306
+      - REPUTATION_MYSQL_HOST=reputation-db
+      - REPUTATION_MYSQL_PORT=3306
+      - BISQUITE_MYSQL_HOST=bisquite-db
+      - BISQUITE_MYSQL_PORT=3306
+      - LOBBY_MYSQL_HOST=lobby-db
+      - LOBBY_MYSQL_PORT=3306
+      - PLAYERPOINTS_MYSQL_HOST=playerpoints-db
+      - PLAYERPOINTS_MYSQL_PORT=3306
+      - LUCKPERMS_POSTGRES_HOST=luckperms-db
+      - LUCKPERMS_POSTGRES_PORT=5432
+      - PAYMENTS_POSTGRES_HOST=payments-db
+      - PAYMENTS_POSTGRES_PORT=5432
+      - AUTHORIZATION_POSTGRES_HOST=authorization-db
+      - AUTHORIZATION_POSTGRES_PORT=5432
+    env_file:
+      - apps/backend/.env
+    volumes:
+      - ./data/fasberry/db/sqlite:/app/data/sqlite
+    depends_on:
+      - nats
+      - redis
+      - minio
+    networks:
+      - fasberry
+      - traefik-internal
+      
+  # app:
+  #   container_name: app
+  #   build:
+  #     context: .
+  #     dockerfile: apps/app/Dockerfile
+  #   ports:
+  #     - "3003:3003"
+  #   env_file:
+  #     - apps/app/.env.production.local
+  #   networks:
+  #     - traefik-internal
+
+networks:
+  traefik-internal:
+    external: true
+  fasberry:
+    name: fasberry
 
 volumes:
   acme_data:

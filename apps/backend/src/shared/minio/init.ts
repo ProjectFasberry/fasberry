@@ -3,7 +3,7 @@ import { logger } from "#/utils/config/logger"
 import * as Minio from "minio"
 
 export const minio = new Minio.Client({
-  endPoint: isProduction ? Bun.env.MINIO_ENDPOINT : "localhost",
+  endPoint: isProduction ? Bun.env.MINIO_ENDPOINT : "127.0.0.1",
   port: isProduction ? 443 : 9000, 
   useSSL: isProduction,
   accessKey: Bun.env.MINIO_ACCESS_KEY,
