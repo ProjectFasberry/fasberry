@@ -1,8 +1,8 @@
 import { useConfig } from 'vike-react/useConfig'
 import { wrapTitle } from '@/shared/lib/wrap-title'
 import { getStaticImage } from '@/shared/lib/volume-helpers'
-import { logRouting } from '../store/i/@id/+data'
 import { PageContextServer } from 'vike/types'
+import { logRouting } from '@/shared/lib/log'
 
 export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()

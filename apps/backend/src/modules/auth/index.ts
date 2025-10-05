@@ -6,11 +6,10 @@ import { validate } from "./validate.route";
 import { restore } from "./restore.route";
 
 export const auth = new Elysia()
-  .group("/auth", app =>
-    app
-      .use(login)
-      .use(invalidate)
-      .use(register)
-      .use(validate)
-      .use(restore)
+  .group("/auth", app => app
+    .use(login)
+    .use(invalidate)
+    .use(register)
+    .use(validate)
+    .use(restore)
   )

@@ -3,7 +3,7 @@
 // const TEST_MIN_PLAYTIME = 5 * 60 * 1000
 
 import { bisquite } from "#/shared/database/bisquite-db";
-import { main } from "#/shared/database/main-db";
+import { general } from "#/shared/database/main-db";
 
 // min playtime for reward //
 
@@ -13,7 +13,7 @@ const MIN_PLAYTIME_FOR_RECIPIENT = 3 * 60 * 60 * 1000
 const MIN_PLAYTIME_FOR_INITIATOR = 6 * 60 * 60 * 1000
 
 export async function validateReferal(nickname: string) {
-  const queryRefferals = await main
+  const queryRefferals = await general
     .selectFrom("referrals")
     .selectAll()
     .where(eb =>

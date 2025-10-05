@@ -1,43 +1,45 @@
-import { throwError } from "#/helpers/throw-error";
-import { getStaticObject } from "#/helpers/volume";
-import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
+import { getStaticUrl } from "#/helpers/volume";
+import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
-async function getFavoriteItem(favoriteId: string) {
-  const query = await main
+async function getFavoriteItem(nickname: string) {
+  return general
     .selectFrom("items")
+    .innerJoin("fv_items", "fv_items.id", "items.id")
     .select([
-      "image",
-      "id",
-      "title",
-      "description"
+      "items.id",
+      "items.image",
+      "items.title",
+      "items.description"
     ])
-    .where("id", "=", Number(favoriteId))
-    .executeTakeFirst();
-
-  return query;
+    .where("fv_items.nickname", "=", nickname)
+    .groupBy([
+      "items.id",
+      "items.image",
+      "items.title",
+      "items.description"
+    ])
+    .limit(1)
+    .orderBy("fv_items.created_at", "desc")
+    .executeTakeFirst()
 }
 
 export const favoriteItem = new Elysia()
-  .get("/favorite-item/:nickname", async (ctx) => {
-    const nickname = ctx.params.nickname
+  .get("/fv-item/:nickname", async ({ status, params }) => {
+    const nickname = params.nickname
+    const item = await getFavoriteItem(nickname)
 
-    try {
-      const favoriteItem = await getFavoriteItem(nickname)
-
-      if (!favoriteItem) {
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null })
-      }
-
-      let favoriteItemImage = getStaticObject(favoriteItem.image)
-
-      const data = {
-        ...favoriteItem, image: favoriteItemImage
-      }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
+    if (!item) {
+      return status(HttpStatusEnum.HTTP_200_OK, { data: null })
     }
+
+    const image = getStaticUrl(item.image)
+
+    const data = {
+      ...item, 
+      image
+    }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   })

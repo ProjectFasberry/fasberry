@@ -1,7 +1,7 @@
-import { throwError } from "#/helpers/throw-error";
+import Elysia from "elysia";
 import { luckperms } from "#/shared/database/luckperms-db";
-import Elysia, { Static, t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
+import z from "zod/v4";
 
 // example permission's name:
 // lobby = "lobby.*"
@@ -30,14 +30,14 @@ export const ACHIEVEMENTS_RAW: Record<string, AchievementDetails> = {
 async function getAchievementDetails(achievement: string) {
   const v = ACHIEVEMENTS_RAW[achievement]
 
-  const publicImage = `https://kong.fasberry.su/storage/v1/object/public/static/achievements/${v.img}`
+  const publicImage = `${process.env.VOLUME_ENDPOINT}/static/achievements/${v.img}`
 
   return { ...v, img: publicImage }
 }
 
-const achievementsSchema = t.UnionEnum(["lobby", "bisquite", "main"])
+const achievementsSchema = z.enum(["lobby", "bisquite", "main"])
 
-type AchievementType = Static<typeof achievementsSchema>
+type AchievementType = z.infer<typeof achievementsSchema>
 
 async function getAchievements(nickname: string) {
   const query = await luckperms
@@ -52,7 +52,7 @@ async function getAchievements(nickname: string) {
     .where(eb =>
       eb.and([
         eb.or(
-          achievementsSchema.enum.map(option =>
+          achievementsSchema.options.map(option =>
             eb("luckperms_user_permissions.permission", "like", `${option}%`)
           )
         ),
@@ -87,24 +87,16 @@ async function getAchievementsMeta() {
 
 export const achievementsMeta = new Elysia()
   .get("/achievements-meta", async (ctx) => {
-    try {
-      const data = await getAchievementsMeta()
+    const data = await getAchievementsMeta()
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+    return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
   })
 
 export const achievements = new Elysia()
   .get("/achievements/:nickname", async (ctx) => {
     const nickname = ctx.params.nickname
 
-    try {
-      const data = await getAchievements(nickname)
+    const data = await getAchievements(nickname)
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+    return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
   })

@@ -5,20 +5,22 @@ import { redirect } from "vike/abort";
 import { useConfig } from "vike-react/useConfig";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { DONATE_TITLE } from "@repo/shared/constants/donate-aliases";
+import { logRouting } from "@/shared/lib/log";
+import { createCtx } from "@reatom/core";
+import { getLands, playerLandsAtom } from "@/shared/components/app/player/models/player-lands.model";
+import { targetUserAtom } from "@/shared/components/app/player/models/player.model";
+import { mergeSnapshot } from "@/shared/lib/snapshot";
 import dayjs from "@/shared/lib/create-dayjs"
-import { logRouting } from "@/pages/store/i/@id/+data";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getUser(
-  nickname: string, 
-  args: RequestInit
+  nickname: string,
+  init: RequestInit
 ) {
-  const res = await client(`server/user/${nickname}`, { throwHttpErrors: false, ...args })
+  const res = await client(`server/player/${nickname}`, { throwHttpErrors: false, ...init })
   const data = await res.json<WrappedResponse<User>>()
-
   if ('error' in data) throw new Error(data.error)
-
   return data.data
 }
 
@@ -53,14 +55,9 @@ function metadata(
 export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
+  const param = pageContext.routeParams.nickname;
 
-  let user: User | null = null;
-
-  try {
-    user = await getUser(pageContext.routeParams.nickname, { headers })
-  } catch (e) {
-    console.error(e)
-  }
+  const user = await getUser(param, { headers })
 
   if (!user) {
     throw redirect("/not-exist?type=user")
@@ -69,6 +66,15 @@ export async function data(pageContext: PageContextServer) {
   config(metadata(user, pageContext))
 
   logRouting(pageContext.urlPathname, "data");
+
+  const ctx = createCtx()
+
+  const { data: lands } = await getLands(user.nickname, { headers })
+
+  targetUserAtom(ctx, user);
+  playerLandsAtom(ctx, lands);
+
+  pageContext.snapshot = mergeSnapshot(ctx, pageContext)
 
   return {
     nickname: pageContext.routeParams.nickname,

@@ -4,11 +4,11 @@ import { payments } from "#/shared/database/payments-db";
 import { getRedisClient } from "#/shared/redis/init";
 import { ExchangeRate, InvoiceType } from "#/shared/types/payment/payment-types";
 import { logger } from "#/utils/config/logger";
-import { EXCHANGE_RATES_KEY } from "#/utils/workers/currencies";
 import { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema";
 import { PaymentStatus } from "@repo/shared/types/db/payments-database-types";
 import { nanoid } from "nanoid";
 import { z } from "zod/v4";
+import { EXCHANGE_RATES_KEY } from "./currencies.model";
 
 type CreateInvoicePayload = Pick<InvoiceType,
   | "currency_type"
@@ -102,7 +102,7 @@ export async function rollbackOrder({
   return deleteInvoice ?? false
 }
 
-export const getOrderLink = (uniqueId: string) => `https://app.fasberry.su/store/order/${uniqueId}`
+export const getOrderLink = (uniqueId: string) => `${process.env.FRONTEND_ENDPOINT}/store/order/${uniqueId}`
 export const getOrderKey = (uniqueId: string) => `order:${uniqueId}`
 export const getOrderInitiatorIndexKey = (initiator: string) => `index:initiator:${initiator}`
 const getOrderRateKey = (initiator: string) => `rate:order_limit:${initiator}`

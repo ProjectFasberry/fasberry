@@ -32,7 +32,8 @@ const Charism = ({ amount }: { amount: number }) => {
 }
 
 const ExampleEvent = () => {
-  const exampleImage = getStaticImage("arts/fishing_rod.webp")
+  const exampleImage = getStaticImage("arts/fishing_rod.webp");
+  
   return (
     <div className="flex flex-col items-center 2xl:aspect-square gap-4 w-full rounded-md p-2 bg-shark-950">
       <div className="border border-shark-700 w-full flex items-center justify-center rounded-md p-4">
@@ -80,12 +81,13 @@ const ExampleEvent = () => {
     </div>
   )
 }
+
 export default function Page() {
   return (
     <div className="flex lg:flex-row flex-col w-full min-h-dvh gap-2">
       <div className="flex flex-col gap-y-4 w-full !p-4">
         <Typography color="white" className="text-2xl font-semibold">
-          Ивенты
+          Задания
         </Typography>
         <div className="flex flex-col gap-2 w-full h-full">
           <Typography className="text-xl">

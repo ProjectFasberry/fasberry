@@ -1,9 +1,8 @@
-import { isProduction } from "#/helpers/is-production";
-import { logger } from "#/utils/config/logger";
 import type { DB as lobbyDBType } from "@repo/shared/types/db/lobby-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
+import { isProduction } from "../env";
 
 export const poolOptsHooks = (name: string) => ({
   onCreateConnection: async () => {

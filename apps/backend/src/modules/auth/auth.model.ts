@@ -1,7 +1,7 @@
 import { normalizeIp } from "#/helpers/normalize-ip"
-import { main } from "#/shared/database/main-db"
+import { general } from "#/shared/database/main-db"
 import { getRedisClient } from "#/shared/redis/init"
-import { Static, t } from "elysia"
+import z from "zod/v4"
 
 export const DEFAULT_SESSION_EXPIRE = 60 * 60 * 24 * 30 // 30 days
 export const DEFAULT_SESSION_EXPIRE_MS = 60 * 60 * 24 * 30 * 1000
@@ -15,7 +15,7 @@ export const getUserSessionsKey = (nickname: string) => `user_sessions:${nicknam
 export const getUserKey = (token: string) => `session:${token}`
 
 export async function getExistsUser(nickname: string): Promise<{ hash: string | null, result: boolean }> {
-  const query = await main
+  const query = await general
     .selectFrom("AUTH")
     .select("HASH")
     .where("NICKNAME", "=", nickname)
@@ -62,7 +62,9 @@ export async function getIsExistsSession(token: string) {
   return Boolean(result)
 }
 
-export async function createSession({ token, info, nickname }: CreateSession): Promise<CreateSession & { expires_at: Date }> {
+export async function createSession(
+  { token, info, nickname }: CreateSession
+): Promise<CreateSession & { expires_at: Date }> {
   const redis = getRedisClient()
 
   const userSessionsKey = getUserSessionsKey(nickname)
@@ -187,43 +189,37 @@ export async function refreshSession(token: string) {
   return null;
 }
 
-export const authSchema = t.Object({
-  nickname: t.String({
-    minLength: 2,
-    maxLength: 16,
-    pattern: '^(?!.*[\\u0400-\\u04FF])\\S*$',
-    errorMessage: {
-      minLength: 'Поле обязательно для заполнения!',
-      maxLength: 'Ник не содержит больше 16 символов!',
-      pattern: 'Ник содержит недопустимые символы или пробелы',
-    },
-  }),
-  password: t.String({ minLength: 6 }),
-  token: t.String({ minLength: 4 })
+export const authSchema = z.object({
+  nickname: z.string()
+    .min(2, { error: "Поле обязательно для заполнения!" })
+    .max(16, { error: "Ник не содержит больше 16 символов!" })
+    .regex(/^(?!.*[\u0400-\u04FF])\S*$/, { error: "Ник содержит недопустимые символы или пробелы" }),
+  password: z.string().min(6),
+  token: z.string().min(4)
 })
 
-export const registerSchema = t.Composite([
+export const registerSchema = z.intersection(
   authSchema,
-  t.Object({
-    findout: t.String({ minLength: 1 }),
-    referrer: t.Optional(t.String()),
+  z.object({
+    findout: z.string().min(1),
+    referrer: z.string().optional()
   })
-])
+)
 
-type CreateUser = Omit<Static<typeof registerSchema>, "token"> & {
+type CreateUser = Omit<z.infer<typeof registerSchema>, "token"> & {
   uuid: string,
   ip: string
 }
 
 // todo: impl ref syystem
 async function registerReferrer({ initiator, recipient }: { initiator: string, recipient: string }) {
-  
+
 }
 
 export async function createUser({
   nickname, findout, password, referrer, uuid, ip
 }: CreateUser) {
-  return main.transaction().execute(async (trx) => {
+  return general.transaction().execute(async (trx) => {
     const user = await trx
       .insertInto("AUTH")
       .values({
@@ -236,7 +232,7 @@ export async function createUser({
       .returning(["NICKNAME as nickname", "REGDATE"])
       .executeTakeFirstOrThrow()
 
-    await main.insertInto("findout").values({ nickname, value: findout }).executeTakeFirst()
+    await general.insertInto("findout").values({ nickname, value: findout }).executeTakeFirst()
 
     if (referrer) {
       await registerReferrer({ initiator: nickname, recipient: referrer })

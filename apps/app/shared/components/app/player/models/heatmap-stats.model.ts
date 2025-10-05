@@ -1,5 +1,5 @@
+import { logError } from "@/shared/lib/log";
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { toast } from "sonner";
 
 export const value = [
   { date: '2025/01/11', count: 0 },
@@ -21,6 +21,6 @@ export const playerActivity = reatomAsync(async (ctx) => {
 }, {
   name: "playerActivity",
   onReject: (ctx, e) => {
-    if (e instanceof Error) toast.error(e.message)
+    logError(e)
   }
 }).pipe(withStatusesAtom(), withDataAtom())

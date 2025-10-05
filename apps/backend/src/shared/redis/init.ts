@@ -1,6 +1,6 @@
-import { isProduction } from "#/helpers/is-production";
 import { logger } from "#/utils/config/logger";
 import Redis from 'ioredis';
+import { isProduction } from "../env";
 
 let rc: Redis | null = null;
 

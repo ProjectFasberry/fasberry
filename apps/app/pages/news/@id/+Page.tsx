@@ -1,39 +1,24 @@
 import { pageContextAtom } from "@/shared/models/global.model";
-import { PageContext } from "vike/types";
 import { Data } from "./+data";
-import { atom } from "@reatom/core";
-import { reatomComponent } from "@reatom/npm-react";
+import { action } from "@reatom/core";
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { IconEye } from "@tabler/icons-react";
-import { NewsType } from "@/shared/components/app/news/components/news";
 import dayjs from "dayjs";
+import { startPageEvents } from "@/shared/lib/events";
+import { useData } from "vike-react/useData";
 
-const getNewsUrl = (id: string) => `/news/${id}`
+const events = action((ctx) => {
+  const pageContext = ctx.get(pageContextAtom);
+  if (!pageContext) return;
 
-const newsAtom = atom<NewsType | null>(null, "news")
-
-pageContextAtom.onChange((ctx, state) => {
-  if (!state) return;
-
-  const target = state as PageContext<Data>
-  const land = target.data?.news ?? null
-
-  if (target.urlPathname === getNewsUrl(target.routeParams.id)) {
-    newsAtom(ctx, land)
-  }
-})
+  // const data = pageContext.data as Data
+}, "events")
 
 const NewsItem = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(newsAtom)
-
-  if (!data) return (
-    <div className="flex justify-center items-center w-full h-full">
-      <Typography className="font-semibold text-xl sm:text-2xl">
-        Ресурс не найден
-      </Typography>
-    </div>
-  )
+  const data = useData<Data>().news
+  if (!data) return null;
 
   return (
     <div className="flex flex-col gap-4 w-full h-full">
@@ -59,6 +44,8 @@ const NewsItem = reatomComponent(({ ctx }) => {
 }, "NewsItem")
 
 export default function NewsPage() {
+  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "news" }), [pageContextAtom]);
+
   return (
     <MainWrapperPage>
       <NewsItem />

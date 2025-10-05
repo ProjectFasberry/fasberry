@@ -1,88 +1,74 @@
-import { throwError } from "#/helpers/throw-error";
-import { sessionDerive } from "#/lib/middlewares/session";
-import { userDerive } from "#/lib/middlewares/user";
-import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
+import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
+import { defineUser } from "#/lib/middlewares/define";
 
 const likes = new Elysia()
-  .get("/rates/:nickname", async (ctx) => {
-    const recipient = ctx.params.nickname;
+  .get("/rates/:nickname", async ({ status, params }) => {
+    const recipient = params.nickname;
 
-    try {
-      const query = await main
-        .selectFrom("likes")
-        .select(eb => [
-          "initiator",
-          "created_at",
-          eb.fn.countAll().over().as('total_count')
-        ])
-        .where("recipient", "=", recipient)
-        .limit(8)
-        .orderBy("created_at", "desc")
-        .execute()
+    const query = await general
+      .selectFrom("likes")
+      .select(eb => [
+        "initiator",
+        "created_at",
+        eb.fn.countAll().over().as('total_count')
+      ])
+      .where("recipient", "=", recipient)
+      .limit(8)
+      .orderBy("created_at", "desc")
+      .execute()
 
-      const count = Number(query[0]?.total_count) ?? 0
+    const data = query.map(item => ({ initiator: item.initiator, created_at: item.created_at }))
+    const count: number = Number(query[0]?.total_count ?? 0)
 
-      const data = {
-        data: query.map(item => ({ initiator: item.initiator, created_at: item.created_at })),
-        meta: {
-          count
-        }
+    const response = {
+      data,
+      meta: {
+        count
       }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, data)
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
     }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data: response })
   })
 
 const like = new Elysia()
-  .use(sessionDerive())
-  .use(userDerive())
-  .post("/rate/:nickname", async ({ nickname: initiator, ...ctx }) => {
-    const recipient = ctx.params.nickname;
-
-    if (!initiator) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
-    }
+  .use(defineUser())
+  .post("/rate/:nickname", async ({ nickname: initiator, status, params }) => {
+    const recipient = params.nickname;
 
     if (initiator === recipient) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("Dont like yourself"))
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "Dont like yourself")
     }
 
-    try {
-      const result = await main.transaction().execute(async (trx) => {
-        const deleteResult = await trx
-          .deleteFrom("likes")
-          .where("initiator", "=", initiator)
-          .where("recipient", "=", recipient)
-          .executeTakeFirst();
+    const result = await general.transaction().execute(async (trx) => {
+      const del = await trx
+        .deleteFrom("likes")
+        .where("initiator", "=", initiator)
+        .where("recipient", "=", recipient)
+        .executeTakeFirst();
 
-        if (deleteResult.numDeletedRows > 0n) {
-          return "unrated"
-        } else {
-          await trx
-            .insertInto("likes")
-            .values({ initiator, recipient })
-            .execute();
-
-          return "rated"
-        }
-      });
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: result })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
-  }, {
-    beforeHandle: async ({ nickname, ...ctx }) => {
-      if (!nickname) {
-        return ctx.status(HttpStatusEnum.HTTP_401_UNAUTHORIZED, throwError("Unauthorized"))
+      if (del.numDeletedRows) {
+        return "unrated";
       }
-    },
+
+      const upd = await trx
+        .insertInto("likes")
+        .values({ initiator, recipient })
+        .executeTakeFirst();
+
+      if (!upd.numInsertedOrUpdatedRows) {
+        throw new Error("Rating is not updated")
+      }
+
+      return "rated"
+    });
+
+    const data = result;
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   })
 
-export const rateGroup = new Elysia()
+export const rate = new Elysia()
   .use(like)
   .use(likes)

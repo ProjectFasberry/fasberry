@@ -1,12 +1,12 @@
 import { Typography } from "@repo/ui/typography"
 import { reatomComponent } from "@reatom/npm-react"
 import { Skeleton } from "@repo/ui/skeleton"
-import { itemsResource, StoreItem as StoreItemProps, storeItemsDataAtom } from "../../models/store.model"
+import { itemsAction, StoreItem as StoreItemProps, storeItemsDataAtom } from "../../models/store.model"
 import { createLink } from "@/shared/components/config/link"
 import { Button } from "@repo/ui/button"
 import { tv } from "tailwind-variants"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
-import { isSsrAtom } from "@/shared/models/global.model"
+import { isClientAtom } from "@/shared/models/global.model"
 import { getItemStatus, handleItemToCart } from "../../models/store-item.model"
 import { CURRENCIES } from "../cart/store-price"
 
@@ -84,7 +84,7 @@ const Spinner = () => {
 }
 
 export const ItemSelectToCart = reatomComponent<Pick<StoreItemProps, "id">>(({ ctx, id }) => {
-  if (ctx.spy(isSsrAtom)) {
+  if (!ctx.spy(isClientAtom)) {
     return <Skeleton className="h-10 w-24" />
   }
 

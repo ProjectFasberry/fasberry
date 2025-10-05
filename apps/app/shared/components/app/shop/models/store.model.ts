@@ -1,6 +1,6 @@
 import { createOrderSchema } from '@repo/shared/schemas/payment';
 import { toast } from 'sonner';
-import { reatomAsync, reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
+import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { z } from 'zod/v4';
@@ -39,15 +39,15 @@ export const storeItemsDataAtom = atom<StoreItem[]>([], "storeItemsData").pipe(w
 
 storeCategoryAtom.onChange((ctx, v) => {
   isDevelopment && console.log("storeCategoryAtom", v)
-  itemsResource(ctx)
+  itemsAction(ctx)
 })
 
 storeWalletFilterAtom.onChange((ctx, v) => {
   isDevelopment && console.log("storeWalletFilterAtom", v)
-  itemsResource(ctx)
+  itemsAction(ctx)
 })
 
-export const itemsResource = reatomAsync(async (ctx) => {
+export const itemsAction = reatomAsync(async (ctx) => {
   const type = ctx.get(storeCategoryAtom)
   const wallet = ctx.get(storeWalletFilterAtom)
 
@@ -59,18 +59,18 @@ export const itemsResource = reatomAsync(async (ctx) => {
 
     storeItemsDataAtom(ctx, data.data)
   })
-}, "itemsResource").pipe(withStatusesAtom())
+}, "itemsAction").pipe(withStatusesAtom())
 
-export const currenciesResource = reatomResource(async (ctx) => {
+export const currenciesAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
     const res = await client("store/currencies", { throwHttpErrors: false, signal: ctx.controller.signal })
     const data = await res.json<WrappedResponse<Selectable<Currencies>[]>>()
 
-    if ("error" in data) return null
+    if ("error" in data) throw new Error(data.error)
 
     return data.data
   })
-}, "currenciesResource").pipe(withStatusesAtom(), withCache(), withDataAtom())
+}, "currenciesAction").pipe(withStatusesAtom(), withCache(), withDataAtom(null))
 
 type CreateOrder = z.infer<typeof createOrderSchema>
 

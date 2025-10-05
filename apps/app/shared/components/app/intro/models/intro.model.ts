@@ -1,5 +1,5 @@
 import { client } from "@/shared/api/client";
-import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 
 type StatusPayload = {
   proxy: {
@@ -18,7 +18,7 @@ type StatusPayload = {
   };
 }
 
-export const serverStatus = reatomResource(async (ctx) => {
+export const serverStatusAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
     const res = await client("server/status", {
       searchParams: { type: "servers" }, signal: ctx.controller.signal, throwHttpErrors: false
@@ -26,8 +26,8 @@ export const serverStatus = reatomResource(async (ctx) => {
 
     const data = await res.json<WrappedResponse<StatusPayload>>()
 
-    if ("error" in data) return null;
+    if ("error" in data) throw new Error(data.error);
 
     return data.data
   })
-}).pipe(withStatusesAtom(), withCache(), withDataAtom())
+}, "serverStatusAction").pipe(withStatusesAtom(), withCache(), withDataAtom(null))

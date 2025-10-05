@@ -6,9 +6,10 @@ export async function handleFatalError(error: Error | unknown) {
   if (error instanceof Error) {
     message = error.message
   } else {
-    console.error('Unhandled Rejection:', error);
     message = `Unhandled Rejection: ${error}`
   }
+
+  console.error('Unhandled Rejection:', error);
 
   const text = `Сервис Fasberry Backend упал. \n${message}`
 

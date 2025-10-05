@@ -3,22 +3,22 @@ import { Land } from "@/shared/components/app/land/components/land"
 import { landAtom } from "@/shared/components/app/land/models/land.model"
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Data } from "./+data"
-import { PageContext } from "vike/types"
+import { action } from "@reatom/core";
+import { useUpdate } from "@reatom/npm-react";
+import { startPageEvents } from "@/shared/lib/events";
 
-const getLandUrl = (id: string) => `/land/${id}`
+const events = action((ctx) => {
+  const pageContext = ctx.get(pageContextAtom)
+  if (!pageContext) return;
 
-pageContextAtom.onChange((ctx, state) => {
-  if (!state) return;
+  const data = pageContext.data as Data
 
-  const target = state as PageContext<Data>
-  const land = target.data?.land ?? null
+  landAtom(ctx, data.land)
+}, "events")
 
-  if (target.urlPathname === getLandUrl(target.routeParams.id)) {
-    landAtom(ctx, land)
-  }
-})
+export default function Page() {
+  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "land" }), [pageContextAtom]);
 
-export default function LandPage() {
   return (
     <MainWrapperPage>
       <Land />

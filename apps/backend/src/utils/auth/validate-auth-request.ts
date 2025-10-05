@@ -1,7 +1,7 @@
-import { isProduction } from "#/helpers/is-production"
-import { main } from "#/shared/database/main-db";
-import { logger } from "@repo/shared/lib/logger";
+import { general } from "#/shared/database/main-db";
 import ky from "ky"
+import { logError } from "../config/logger";
+import { isProduction } from "#/shared/env";
 
 type Payload = {
   success: boolean,
@@ -30,18 +30,15 @@ export async function verifyAuth(token: string) {
 
     return "verified"
   } catch (e) {
-    if (e instanceof Error) {
-      logger.error(e.message)
-    }
-
+    logError(e)
     return "no-verified"
   }
 }
 
 async function validateIpRestricts(ip: string): Promise<boolean> {
-  const result = await main
+  const result = await general
     .selectFrom("AUTH")
-    .select(main.fn.countAll().as("count"))
+    .select(general.fn.countAll().as("count"))
     .where("IP", "=", ip)
     .$castTo<{ count: number }>()
     .executeTakeFirst();

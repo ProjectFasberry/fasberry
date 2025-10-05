@@ -11,7 +11,6 @@ export const Logout = reatomComponent(({ ctx }) => {
   if (!currentUser) return null;
 
   const isIdentity = ctx.spy(isIdentityAtom)
-
   if (!isIdentity) return null;
 
   const handle = () => void spawn(ctx, async (spawnCtx) => logout(spawnCtx))

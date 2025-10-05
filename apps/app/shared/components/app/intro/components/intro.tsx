@@ -4,21 +4,21 @@ import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
-import { serverStatus } from "../models/intro.model";
+import { serverStatusAction } from "../models/intro.model";
 
-onConnect(serverStatus.dataAtom, serverStatus)
+onConnect(serverStatusAction.dataAtom, serverStatusAction)
 
 const IntroStatus = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(serverStatus.dataAtom);
+  const data = ctx.spy(serverStatusAction.dataAtom);
 
-  if (ctx.spy(serverStatus.statusesAtom).isPending && !ctx.spy(serverStatus.cacheAtom)) {
+  if (ctx.spy(serverStatusAction.statusesAtom).isPending && !ctx.spy(serverStatusAction.cacheAtom)) {
     return <Skeleton className="w-4 h-4 inline-flex rounded-sm" />
   }
 
   return data?.proxy.online ?? 0
 }, "IntroStatus")
 
-const IntroActions = reatomComponent(({ ctx }) => {
+const IntroActions = () => {
   return (
     <div className="flex bottom-0 gap-4 absolute w-full items-center p-3 md:p-4 lg:p-6">
       <a href="https://mc.fasberry.su/start" target="_blank">
@@ -35,16 +35,18 @@ const IntroActions = reatomComponent(({ ctx }) => {
       </div>
     </div>
   )
-}, "IntroActions")
+}
 
 export const Intro = () => {
+  const introImage = getStaticImage("arts/general-preview.jpg");
+  
   return (
     <div
       id="intro"
       className="flex items-center relative rounded-lg overflow-hidden w-full md:h-[400px] max-h-[400px]"
     >
       <img
-        src={getStaticImage("arts/general-preview.jpg")}
+        src={introImage}
         fetchPriority="high"
         alt="Start"
       />

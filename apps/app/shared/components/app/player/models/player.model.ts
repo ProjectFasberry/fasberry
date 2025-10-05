@@ -3,14 +3,14 @@ import { withHistory } from "@/shared/lib/reatom-helpers"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { User } from "@repo/shared/types/entities/user"
+import { withSsr } from "@/shared/lib/ssr"
+import { pageContextAtom } from "@/shared/models/global.model"
 
-export const targetUserAtom = atom<User | null>(null, "targetUser")
+export const targetUserAtom = atom<User | null>(null, "targetUser").pipe(withSsr("targetUser"))
 
-export const userParam = atom<string | null>((ctx) => {
-  const state = ctx.spy(targetUserAtom)
-  if (!state) return null
-  return state.nickname
-}, "userParam").pipe(withHistory(), withReset())
+export const userParamAtom = atom<string | null>(
+  (ctx) => ctx.spy(pageContextAtom)?.routeParams.nickname ?? null, "userParam"
+).pipe(withHistory(), withReset())
 
 export const isIdentityAtom = atom((ctx) => {
   const currentUser = ctx.spy(currentUserAtom)

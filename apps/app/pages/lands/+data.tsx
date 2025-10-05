@@ -1,7 +1,7 @@
 import { PageContextServer } from "vike/types";
 import { useConfig } from 'vike-react/useConfig'
 import { wrapTitle } from "@/shared/lib/wrap-title";
-import { logRouting } from "../store/i/@id/+data";
+import { logRouting } from "@/shared/lib/log";
 
 function metadata() {
   return {

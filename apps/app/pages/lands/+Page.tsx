@@ -4,11 +4,13 @@ import { LandsList } from "@/shared/components/app/lands/components/lands-list";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const LandsPreviewImage = () => {
+  const landsImage = getStaticImage("arts/clan-preview.jpg");
+
   return (
     <div className="flex select-none flex-col items-center justify-end relative overflow-hidden h-[180px] rounded-lg w-full">
       <img
         draggable={false}
-        src={getStaticImage("arts/clan-preview.jpg")}
+        src={landsImage}
         alt=""
         loading="lazy"
         width={800}
@@ -20,7 +22,7 @@ const LandsPreviewImage = () => {
   )
 }
 
-export default function LandsPage() {
+export default function Page() {
   return (
     <MainWrapperPage>
       <div className="flex flex-col gap-4 w-full h-full">

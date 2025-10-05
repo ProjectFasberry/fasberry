@@ -1,12 +1,12 @@
-import { sql } from "kysely";
 import Elysia from "elysia";
+import { sql } from "kysely";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { publishVoteNotify } from "#/lib/publishers/pub-vote-notify";
-import { main } from "#/shared/database/main-db";
+import { general } from "#/shared/database/main-db";
 
 async function postVoted(nickname: string) {
-  const result = await main
+  const result = await general
     .insertInto("voted_users")
     .values({ nickname })
     .onConflict((ob) => ob.column("nickname").doNothing())
@@ -16,7 +16,7 @@ async function postVoted(nickname: string) {
     return
   }
 
-  const { reward } = await main
+  const { reward } = await general
     .selectFrom("events")
     .select("reward")
     .where("origin", "=", "vote-for-server")
@@ -40,19 +40,19 @@ async function postVoted(nickname: string) {
 }
 
 export const processPlayerVote = new Elysia()
-  .post("/process-player-vote", async (ctx) => {
-    const parsedBody = await ctx.body as { nick: string, time: string, sign: string }
+  .post("/vote", async ({ body, status }) => {
+    const parsedBody = await body as { nick: string, time: string, sign: string }
 
     const nick = parsedBody["nick"]
     const time = parsedBody["time"]
     const sign = parsedBody["sign"]
 
     if (!nick || !time || !sign) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "error");
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "error");
     }
 
     if (nick.length > 16) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, 'nickname limit');
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, 'nickname limit');
     }
 
     const expSign = new Bun.CryptoHasher("sha1")
@@ -60,12 +60,12 @@ export const processPlayerVote = new Elysia()
       .digest('hex');
 
     if (sign !== expSign) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST, 'error');
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, 'error');
     }
 
     await postVoted(nick);
 
-    return ctx.status(HttpStatusEnum.HTTP_200_OK, 'ok');
+    return status(HttpStatusEnum.HTTP_200_OK, 'ok');
   }, {
     parse: "multipart/form-data"
   })

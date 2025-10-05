@@ -1,9 +1,20 @@
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
-import { reatomComponent } from "@reatom/npm-react";
-import { useData } from "vike-react/useData"
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Data } from "./+data";
 import { ItemPrice, ItemSelectToCart } from "@/shared/components/app/shop/components/items/store-list";
+import { action } from "@reatom/core";
+import { pageContextAtom } from "@/shared/models/global.model";
+import { startPageEvents } from "@/shared/lib/events";
+import { useData } from "vike-react/useData"
+
+const events = action((ctx) => {
+  const pageContext = ctx.get(pageContextAtom);
+  if (!pageContext) return;
+
+  // const data = pageContext.data as Data;
+  // 
+}, "events")
 
 const SelectedDonate = reatomComponent(({ ctx }) => {
   const data = useData<Data>().item
@@ -49,7 +60,9 @@ const SelectedDonate = reatomComponent(({ ctx }) => {
   )
 }, "SelectedDonate")
 
-export default function StoreItem() {
+export default function Page() {
+  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "i" }), [pageContextAtom]);
+
   return (
     <MainWrapperPage>
       <SelectedDonate />

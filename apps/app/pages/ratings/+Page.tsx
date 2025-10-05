@@ -1,19 +1,20 @@
-import { RatingList } from "@/shared/components/app/ratings/components/rating-list";
+import { Ratings } from "@/shared/components/app/ratings/components/rating-list";
 import { RatingNavigation } from "@/shared/components/app/ratings/components/rating-navigation";
-import { ratingAction, ratingDataAtom } from "@/shared/components/app/ratings/models/ratings.model";
-import { onConnect } from "@reatom/framework";
+import { ratingsAction } from "@/shared/components/app/ratings/models/ratings.model";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
+import { useUpdate } from "@reatom/npm-react";
+import { action } from "@reatom/core";
 
-onConnect(ratingDataAtom, ratingAction)
+const ratingsImage = getStaticImage("arts/sand-camel.jpg")
 
 const RatingsPreviewImage = () => {
   return (
     <div className="flex select-none flex-col items-center justify-end relative overflow-hidden h-[180px] rounded-lg w-full">
       <img
+        src={ratingsImage}
         draggable={false}
-        src={getStaticImage("arts/sand-camel.jpg")}
         alt=""
         width={800}
         height={800}
@@ -24,7 +25,13 @@ const RatingsPreviewImage = () => {
   )
 }
 
+const startEventsAction = action((ctx) => {
+  ratingsAction(ctx)
+}, "startEventsAction")
+
 export default function RatingsPage() {
+  useUpdate(startEventsAction, []);
+
   return (
     <MainWrapperPage>
       <div className="flex flex-col gap-4 w-full h-full">
@@ -34,7 +41,7 @@ export default function RatingsPage() {
             Рейтинг сервера
           </Typography>
           <RatingNavigation />
-          <RatingList />
+          <Ratings />
         </div>
       </div>
     </MainWrapperPage>

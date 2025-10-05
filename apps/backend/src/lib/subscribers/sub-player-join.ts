@@ -3,6 +3,9 @@ import { getNatsConnection } from "#/shared/nats/client"
 import { SERVER_USER_EVENT_SUBJECT, USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/subjects"
 import { z } from "zod/v4"
 import { logError, logger } from '#/utils/config/logger';
+import { natsLogger } from '#/shared/nats/init';
+import { general } from '#/shared/database/main-db';
+import { safeJsonParse } from '#/utils/config/transforms';
 
 const userJoinSchema = z.object({
   date: z.string(),
@@ -10,9 +13,54 @@ const userJoinSchema = z.object({
   event: z.enum(["join", "quit"])
 })
 
+function pushToReferral(
+  { nickname }: { nickname: string }
+) {
+  const nc = getNatsConnection()
+
+  const payload = new TextEncoder().encode(nickname)
+  nc.publish(USER_REFERAL_CHECK_SUBJECT, payload)
+}
+
+async function joinEvents(
+  { nickname, date }: Omit<z.infer<typeof userJoinSchema>, "event">
+) {
+  pushToReferral({ nickname });
+
+  const query = await general
+    .insertInto("activity_users")
+    .values({
+      event: new Date().toISOString(),
+      nickname,
+      type: "join"
+    })
+    .executeTakeFirst()
+
+  if (Number(query.numInsertedOrUpdatedRows)) {
+    console.log("updated", query.insertId)
+  }
+}
+
+async function quitEvents(
+  { nickname, date }: Omit<z.infer<typeof userJoinSchema>, "event">
+) {
+  const query = await general
+    .insertInto("activity_users")
+    .values({
+      event: new Date().toISOString(),
+      nickname,
+      type: "quit"
+    })
+    .executeTakeFirst()
+
+  if (!query.numInsertedOrUpdatedRows) {
+    logger.warn(`Activity for ${nickname} is not created`)
+  }
+}
+
 export const subscribePlayerJoin = () => {
   const nc = getNatsConnection()
-  
+
   return nc.subscribe(SERVER_USER_EVENT_SUBJECT, {
     callback: async (e, msg) => {
       if (e) {
@@ -20,28 +68,29 @@ export const subscribePlayerJoin = () => {
         return;
       }
 
-      const payload = JSON.parse(new TextDecoder().decode(msg.data))
+      const str = new TextDecoder().decode(msg.data);
+
+      const result = safeJsonParse<z.infer<typeof userJoinSchema>>(str)
+      if (!result.ok) return;
+
+      const payload = result.value
 
       if (!userJoinSchema.shape.event.options.includes(payload.event)) {
         return;
       }
 
       const { success, data } = userJoinSchema.safeParse(payload)
-
       if (!success) return;
 
       try {
+        natsLogger.log(`${data.nickname} ${data.event}`, dayjs().format("HH:mm:ss YYYY-MM-DD"))
+
         switch (data.event) {
           case "join":
-            console.log(`${data.nickname} joined`, dayjs().format("HH:mm:ss YYYY-MM-DD"))
-
-            nc.publish(USER_REFERAL_CHECK_SUBJECT, new TextEncoder().encode(data.nickname))
+            joinEvents(data);
             break;
           case "quit":
-            console.log(`${data.nickname} quit`, dayjs().format("HH:mm:ss YYYY-MM-DD"))
-
-            break;
-          default:
+            quitEvents(data)
             break;
         }
       } catch (e) {

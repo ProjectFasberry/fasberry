@@ -2,13 +2,13 @@ import { reatomComponent } from "@reatom/npm-react";
 import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
 import { Button } from "@repo/ui/button";
-import { userParam } from "../../player/models/player.model";
+import { userParamAtom } from "../../player/models/player.model";
 import { Typography } from "@repo/ui/typography";
 
 export const ProfileSkinDownloadLink = reatomComponent(({ ctx }) => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
-  const target = ctx.spy(userParam)
+  const target = ctx.spy(userParamAtom)
   if (!target) return null;
 
   const downloadUrl = `https://api.fasberry.su/minecraft/server/skin/download/${target}`

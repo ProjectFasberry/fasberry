@@ -8,7 +8,7 @@ export const currentUserAtom = atom<CurrentUser | null>(null, "currentUser").pip
 );
 
 export async function getMe(args?: RequestInit) {
-  const res = await client("get-me", { throwHttpErrors: false, retry: 0, ...args })
+  const res = await client("me", { throwHttpErrors: false, retry: 0, ...args })
 
   if (!res.ok) return null;
 

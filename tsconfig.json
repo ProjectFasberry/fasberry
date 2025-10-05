@@ -6,6 +6,9 @@
     },
     {
       "path": "./apps/app"
-    }
+    },
+        {
+      "path": "./apps/landing"
+    },
   ]
 }

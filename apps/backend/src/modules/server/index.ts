@@ -1,6 +1,6 @@
 import { achievements, achievementsMeta } from "#/modules/server/achievements.route";
 import { favoriteItem } from "#/modules/server/favorite-item.route";
-import { userGameStatus } from "#/modules/server/game-status.route";
+import { activity } from "#/modules/server/activity.route";
 import { land, lands, playerLands } from "#/modules/server/lands.route";
 import { userLocation } from "#/modules/server/location.route";
 import { minecraftItems } from "#/modules/server/minecraft-items.route";
@@ -8,8 +8,9 @@ import { playerBalance, playerSkills, playerStats } from "#/modules/server/playe
 import { ratingBy } from "#/modules/server/rating.route";
 import { skinGroup } from "#/modules/server/skin.route";
 import { status } from "#/modules/server/status.route";
-import { user } from "#/modules/user/user.route";
+import { player } from "#/modules/user/user.route";
 import Elysia from "elysia";
+import { events } from "./events.route";
 
 export const server = new Elysia()
   .group("/server", app =>
@@ -27,7 +28,8 @@ export const server = new Elysia()
       .use(playerLands)
       .use(achievementsMeta)
       .use(achievements)
-      .use(userGameStatus)
+      .use(activity)
       .use(status)
-      .use(user)
+      .use(player)
+      .use(events)
   )

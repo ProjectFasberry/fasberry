@@ -1,5 +1,5 @@
 import { abortablePromiseAll } from "#/helpers/abortable";
-import { main } from "#/shared/database/main-db";
+import { general } from "#/shared/database/main-db";
 import { getNatsConnection } from "#/shared/nats/client";
 import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/subjects";
 import { logError, logger } from "#/utils/config/logger";
@@ -25,7 +25,7 @@ export const subscribeRefferalCheck = () => {
 
         const controller = new AbortController()
 
-        await main.transaction().execute(async (trx) => {
+        await general.transaction().execute(async (trx) => {
           await abortablePromiseAll([
             // for initiator
             (signal) => callServerCommand({ parent: "cmi", value: `money give ${result.initiator} 60` }, { signal }),

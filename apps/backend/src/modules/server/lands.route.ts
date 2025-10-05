@@ -1,13 +1,12 @@
+import Elysia from "elysia";
 import { bisquite } from "#/shared/database/bisquite-db";
-import Elysia, { Static, t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { CacheControl } from "elysiajs-cdn-cache";
-import { throwError } from "#/helpers/throw-error";
 import { executeWithCursorPagination } from "kysely-paginate";
 import type { Land } from "@repo/shared/types/entities/land"
-import { sessionDerive } from "#/lib/middlewares/session";
-import { userDerive } from "#/lib/middlewares/user";
-import { getStaticObject } from "#/helpers/volume";
+import { getStaticUrl } from "#/helpers/volume";
+import { getDirection } from "#/utils/config/paginate";
+import z from "zod/v4";
+import { defineUser } from "#/lib/middlewares/define";
 
 async function getLand({
   id, initiator
@@ -28,8 +27,8 @@ async function getLand({
   async function getDetails() {
     if (landRow.name === 'Kingdom') {
       return {
-        banner: "https://volume.fasberry.su/banners/kingdom.png",
-        gallery: [getStaticObject("arts/1.png"), getStaticObject("arts/2.png"), getStaticObject("arts/3.png")]
+        banner: `${process.env.VOLUME_ENDPOINT}/banners/kingdom.png`,
+        gallery: [getStaticUrl("arts/1.png"), getStaticUrl("arts/2.png"), getStaticUrl("arts/3.png")]
       }
     }
 
@@ -37,20 +36,27 @@ async function getLand({
   }
 
   async function getMembers() {
-    let members = memberUUIDs.length > 0 ? await bisquite
+    const query = bisquite
       .selectFrom('CMI_users')
       .select([
         'player_uuid as uuid',
         'username as nickname'
       ])
       .where('player_uuid', 'in', memberUUIDs)
-      .execute() : [];
 
-    if (initiator && members.some(member => member.nickname === initiator)) {
+    let members: Awaited<ReturnType<typeof query["execute"]>> = [];
+
+    if (memberUUIDs.length > 0) {
+      members = await query.execute()
+    }
+
+    const isMember = members.some(member => member.nickname === initiator)
+
+    if (initiator && isMember) {
       isOwner = true
     }
 
-    return members.map((member, idx) => ({
+    const data = members.map((member, idx) => ({
       uuid: member.uuid as string,
       nickname: member.nickname as string,
       chunks: 0,
@@ -58,14 +64,20 @@ async function getLand({
       // 1 type = member
       role: idx === 0 ? 4 : 1
     }))
+
+    return data
   }
 
   async function getMain() {
-    const OWNER_FIELDS = isOwner ? [
-      "lands_lands.balance",
-      "lands_lands.limits",
-      "lands_lands.spawn"
-    ] : []
+    let OWNER_FIELDS: string[] = [];
+
+    if (isOwner) {
+      OWNER_FIELDS = [
+        "lands_lands.balance",
+        "lands_lands.limits",
+        "lands_lands.spawn"
+      ]
+    }
 
     const query = await bisquite
       .selectFrom("lands_lands")
@@ -99,7 +111,9 @@ async function getLand({
       ])
       .executeTakeFirst()
 
-    return query ?? null;
+    const data = query ?? null;
+
+    return data
   }
 
   const [main, members, details] = await Promise.all([
@@ -123,23 +137,16 @@ async function getLand({
 }
 
 export const land = new Elysia()
-  .use(sessionDerive())
-  .use(userDerive())
-  .get("/land/:id", async ({ nickname: initiator, ...ctx }) => {
+  .use(defineUser())
+  .get("/land/:id", async ({ nickname: initiator, set, status, ...ctx }) => {
     const id = ctx.params.id
 
-    try {
-      const data = await getLand({ id, initiator })
+    const data = await getLand({ id, initiator })
 
-      ctx.set.headers["Cache-Control"] = "public, max-age=15, s-maxage=15"
+    set.headers["Cache-Control"] = "public, max-age=15, s-maxage=15"
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   })
-
-
 
 type PlayerLands = {
   data: Array<Pick<Land, "ulid" | "name" | "title" | "created_at" | "type"> & {
@@ -152,8 +159,8 @@ type PlayerLands = {
   meta: { count: number }
 }
 
-const landsByNicknameSchema = t.Object({
-  exclude: t.Optional(t.String())
+const landsByNicknameSchema = z.object({
+  exclude: z.string().optional()
 })
 
 type LandMember = {
@@ -163,7 +170,7 @@ type LandMember = {
 }
 
 export const playerLands = new Elysia()
-  .get("/lands/:nickname", async (ctx) => {
+  .get("/lands/:nickname", async ({ status, ...ctx }) => {
     const nickname = ctx.params.nickname
     const exclude = ctx.query.exclude;
 
@@ -174,27 +181,27 @@ export const playerLands = new Elysia()
       }
     }
 
-    try {
-      let lands = await getLandsByNickname(nickname)
+    let lands = await getLandsByNickname(nickname)
 
-      if (!lands) return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: lands })
-
-      if (exclude) {
-        lands = lands.filter(land => land.ulid !== exclude)
-      }
-
-      data = {
-        data: lands,
-        meta: {
-          count: lands.length
-        }
-      }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, data)
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
+    if (!lands) {
+      return status(HttpStatusEnum.HTTP_200_OK, { data: lands })
     }
-  }, { query: landsByNicknameSchema })
+
+    if (exclude) {
+      lands = lands.filter(land => land.ulid !== exclude)
+    }
+
+    data = {
+      data: lands,
+      meta: {
+        count: lands.length
+      }
+    }
+
+    return status(HttpStatusEnum.HTTP_200_OK, data)
+  }, {
+    query: landsByNicknameSchema
+  })
 
 export async function getLandsByNickname(nickname: string) {
   const player = await bisquite
@@ -250,32 +257,28 @@ export async function getLandsByNickname(nickname: string) {
   }));
 }
 
-
-
 type Lands = Pick<Land, "ulid" | "title" | "name" | "level" | "created_at" | "type" | "stats"> & {
   members: {
     [key: string]: number
   }
 }
 
-const landsSchema = t.Object({
-  cursor: t.Optional(t.String())
+const landsSchema = z.object({
+  cursor: z.string().optional()
 })
 
 export const lands = new Elysia()
-  .get("/lands", async (ctx) => {
-    const cursor = ctx.query.cursor
+  .get("/lands", async ({ status, ...ctx }) => {
+    const { cursor } = ctx.query
 
-    try {
-      const lands = await getLands({ cursor })
+    const lands = await getLands({ cursor })
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, lands)
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
-  }, { query: landsSchema })
+    return status(HttpStatusEnum.HTTP_200_OK, { data: lands })
+  }, { 
+    query: landsSchema 
+  })
 
-async function getLands({ cursor }: Static<typeof landsSchema>) {
+async function getLands({ cursor }: z.infer<typeof landsSchema>) {
   const query = bisquite
     .selectFrom("lands_lands")
     .select([
@@ -289,13 +292,13 @@ async function getLands({ cursor }: Static<typeof landsSchema>) {
       "created_at"
     ])
 
+  const direction = getDirection(false)
+
   const res = await executeWithCursorPagination(query, {
     perPage: 16,
     after: cursor,
     fields: [
-      {
-        key: "created_at", direction: "desc", expression: "created_at",
-      }
+      { key: "created_at", direction, expression: "created_at" }
     ],
     parseCursor: (cursor) => ({
       created_at: new Date(cursor.created_at)

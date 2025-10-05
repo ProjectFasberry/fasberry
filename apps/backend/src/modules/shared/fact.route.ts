@@ -1,27 +1,25 @@
-import { throwError } from "#/helpers/throw-error";
-import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
+import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-
-const getRandomArbitrary = (min: number, max: number) => Math.random() * (max - min) + min;
+import { sql } from "kysely";
 
 export const fact = new Elysia()
-  .get('/random-fact', async (ctx) => {
-    const randomId = Math.floor(getRandomArbitrary(1, 97));
+  .get('/random-fact', async ({ status }) => {
+    const fact = await general
+      .selectFrom('facts')
+      .select('fact')
+      .where(
+        'id',
+        '=',
+        sql<number>`(
+          SELECT FLOOR(random() * (SELECT COUNT(*) FROM facts)) + 1
+          )`
+      )
+      .executeTakeFirst();
 
-    try {
-      const fact = await main
-        .selectFrom("facts")
-        .select("fact")
-        .where("id", "=", randomId)
-        .executeTakeFirst();
-
-      if (!fact) {
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null });
-      }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: fact.fact });
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
+    if (!fact) {
+      return status(HttpStatusEnum.HTTP_200_OK, { data: null });
     }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data: fact.fact });
   })

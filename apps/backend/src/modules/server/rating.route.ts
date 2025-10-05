@@ -1,25 +1,27 @@
-import { throwError } from "#/helpers/throw-error";
-import Elysia, { Static, t } from "elysia";
+import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
 import { lobby } from "#/shared/database/lobby-db";
 import { playerpoints } from "#/shared/database/playerpoints-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { reputation } from "#/shared/database/reputation-db";
+import z from "zod/v4";
+import { getDirection } from "#/utils/config/paginate";
 
-const ratingSchema = t.Object({
-  by: t.UnionEnum(["charism", "belkoin", "lands_chunks", "reputation", "playtime", "parkour"]),
-  limit: t.Optional(t.Number()),
-  cursor: t.Optional(t.String()),
-  ascending: t.Optional(t.Boolean())
+const ratingSchema = z.object({
+  by: z.enum([
+    "charism", "belkoin", "lands_chunks", "reputation", "playtime", "parkour"
+  ]),
+  limit: z.coerce.number().optional().default(50),
+  ascending: z.stringbool().optional(),
+  cursor: z.string().optional(),
 })
 
-const DEFAULT_LIMIT = 50
-
-async function getRatingBy({
-  by, ascending, cursor, limit = DEFAULT_LIMIT
-}: Static<typeof ratingSchema>) {
-  const direction = ascending ? "asc" : "desc"
+async function getRatingBy(
+  by: Pick<z.infer<typeof ratingSchema>, "by">["by"],
+  { ascending, cursor, limit }: Omit<z.infer<typeof ratingSchema>, "by">
+) {
+  const direction = getDirection(ascending)
 
   switch (by) {
     case "parkour":
@@ -57,7 +59,7 @@ async function getRatingBy({
       const charismQuery = bisquite
         .selectFrom("CMI_users")
         .select([
-          "Balance as balance", 
+          "Balance as balance",
           "username as nickname"
         ])
 
@@ -150,7 +152,7 @@ async function getRatingBy({
       const reputationQuery = reputation
         .selectFrom("reputation")
         .select([
-          "reputation", 
+          "reputation",
           "reputation.uuid"
         ])
 
@@ -167,7 +169,7 @@ async function getRatingBy({
         const { nickname, uuid } = await bisquite
           .selectFrom("CMI_users")
           .select([
-            "username as nickname", 
+            "username as nickname",
             "player_uuid as uuid"
           ])
           .where("player_uuid", "=", row.uuid)
@@ -193,7 +195,7 @@ async function getRatingBy({
       const playtimeQuery = bisquite
         .selectFrom('CMI_users')
         .select([
-          "TotalPlayTime as total", 
+          "TotalPlayTime as total",
           "username as nickname"
         ])
 
@@ -221,16 +223,14 @@ async function getRatingBy({
 }
 
 export const ratingBy = new Elysia()
-  .get("/rating", async (ctx) => {
-    const { by, limit, cursor, ascending } = ctx.query;
+  .get("/rating", async ({ status, set, query }) => {
+    const { by, limit, cursor, ascending } = query;
 
-    try {
-      const res = await getRatingBy({ by, limit, cursor, ascending })
+    const response = await getRatingBy(by, { limit, cursor, ascending })
 
-      ctx.set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+    set.headers["Cache-Control"] = "public, max-age=60"
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, res)
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
-    }
-  }, { query: ratingSchema })
+    return status(HttpStatusEnum.HTTP_200_OK, { data: response })
+  }, {
+    query: ratingSchema
+  })

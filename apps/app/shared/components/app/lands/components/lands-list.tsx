@@ -1,16 +1,19 @@
 import { Skeleton } from "@repo/ui/skeleton"
-import { landsResource } from "../models/lands.model"
+import { landsAction } from "../models/lands.model"
 import { reatomComponent } from "@reatom/npm-react"
 import { createLink, Link } from "@/shared/components/config/link"
 import { tv } from 'tailwind-variants'
 import { Typography } from '@repo/ui/typography'
-import { useMemo } from "react"
+import { useState } from "react"
 import { FormattedText } from "../../land/components/land-title"
 import { DefaultBanner } from "../../land/components/land-banner"
 import { Avatar } from "../../avatar/components/avatar"
 import { IconCircleFilled } from "@tabler/icons-react"
 import { MasonryGrid } from "@repo/ui/masonry-grid"
 import { Land } from "@repo/shared/types/entities/land"
+import { onConnect } from "@reatom/framework"
+import { isEmptyArray } from "@/shared/lib/array"
+import { NotFound } from "@/shared/ui/not-found"
 
 type LandCard = Pick<Land, "ulid" | "name" | "members" | "level" | "title" | "balance">
 
@@ -60,25 +63,25 @@ const LandCard = ({ level, members, name, title, ulid }: LandCard) => {
 
 const masonryOpts = {
   columnConfig: {
-    default: 1, 
-    640: 2, 
-    1024: 3, 
+    default: 1,
+    640: 2,
+    1024: 3,
     1280: 3,
   },
   columnGap: 6,
   rowGap: 6
 }
 
-const LandsSkeleton = () => {
-  const SKELETON_HEIGHTS = ['h-32', 'h-44', 'h-36', 'h-40', 'h-56', 'h-64', 'h-72'];
-  const SKELETON_COUNT = 12;
+const SKELETON_HEIGHTS = ['h-32', 'h-44', 'h-36', 'h-40', 'h-56', 'h-64', 'h-72'];
+const SKELETON_COUNT = 12;
 
-  const randomHeights = useMemo(() => {
-    return Array.from({ length: SKELETON_COUNT }).map(() => {
-      const randomIndex = Math.floor(Math.random() * SKELETON_HEIGHTS.length);
-      return SKELETON_HEIGHTS[randomIndex];
-    });
-  }, []);
+const LandsSkeleton = () => {
+  const [randomHeights] = useState(() =>
+    Array.from({ length: SKELETON_COUNT }).map(() => {
+      const randomIdx = Math.floor(Math.random() * SKELETON_HEIGHTS.length);
+      return SKELETON_HEIGHTS[randomIdx];
+    })
+  );
 
   return (
     <MasonryGrid
@@ -89,20 +92,28 @@ const LandsSkeleton = () => {
   )
 }
 
-export const LandsList = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(landsResource.dataAtom)
+onConnect(landsAction.dataAtom, landsAction)
 
-  if (ctx.spy(landsResource.statusesAtom).isPending) {
+export const LandsList = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(landsAction.dataAtom)
+
+  if (ctx.spy(landsAction.statusesAtom).isPending) {
     return <LandsSkeleton />
   }
 
   if (!data) return null;
 
+  const isEmpty = isEmptyArray(data?.data);
+
+  if (isEmpty) {
+    return <NotFound title="Пока ничего нет" />
+  }
+
   return (
     <MasonryGrid
-      {...masonryOpts}
       items={data.data}
       renderItem={(land) => <LandCard key={land.ulid} {...land} />}
+      {...masonryOpts}
     />
   )
 }, "LandsList")

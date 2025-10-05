@@ -1,10 +1,9 @@
-import { throwError } from "#/helpers/throw-error";
-import { userDerive } from "#/lib/middlewares/user";
+import Elysia from "elysia";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { playerpoints } from "#/shared/database/playerpoints-db";
 import { reputation } from "#/shared/database/reputation-db";
-import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
+import { defineUser } from "#/lib/middlewares/define";
 
 async function getBelkoin(nickname: string) {
   return playerpoints
@@ -36,30 +35,24 @@ async function getUserBalance(nickname: string) {
 }
 
 export const playerBalance = new Elysia()
-  .use(userDerive())
-  .get("/player-balance", async ({ nickname, ...ctx }) => {
+  .use(defineUser())
+  .get("/player-balance", async ({ nickname, status }) => {
     if (!nickname) {
-      return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
     }
 
-    try {
-      const balance = await getUserBalance(nickname)
+    const balance = await getUserBalance(nickname)
 
-      if (!balance) {
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: { charism: 0, belkoin: 0 } })
-      }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: balance })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+    if (!balance) {
+      return status(HttpStatusEnum.HTTP_200_OK, { data: { charism: 0, belkoin: 0 } })
     }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data: balance })
   })
 
 async function getSkills(nickname: string) {
   const query = await bisquite
-    // @ts-expect-error
     .selectFrom("ADAPT_DATA")
-    // @ts-expect-error
     .innerJoin("Players", "Players.UUID", "ADAPT_DATA.UUID")
     .select([
       "ADAPT_DATA.DATA"
@@ -178,19 +171,15 @@ export const playerSkills = new Elysia()
   .get("/player-skills/:nickname", async (ctx) => {
     const nickname = ctx.params.nickname
 
-    try {
-      let skills = await getSkills(nickname)
+    let skills = await getSkills(nickname)
 
-      if (!skills) {
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null })
-      }
-
-      const data = JSON.parse(skills.DATA) as SkillsData
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+    if (!skills) {
+      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null })
     }
+
+    const data = JSON.parse(skills.DATA) as SkillsData
+
+    return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
   })
 
 type PlayerStats = {
@@ -241,14 +230,8 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
 }
 
 export const playerStats = new Elysia()
-  .get("/player-stats/:nickname", async (ctx) => {
-    const nickname = ctx.params.nickname
-
-    try {
-      const stats = await getPlayerStats(nickname)
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: stats })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+  .get("/stats/:nickname", async ({ params, status }) => {
+    const nickname = params.nickname
+    const stats = await getPlayerStats(nickname)
+    return status(HttpStatusEnum.HTTP_200_OK, { data: stats })
   })

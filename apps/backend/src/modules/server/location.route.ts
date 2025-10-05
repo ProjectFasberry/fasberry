@@ -1,9 +1,8 @@
-import { throwError } from "#/helpers/throw-error"
-import { userDerive } from "#/lib/middlewares/user"
+import Elysia from "elysia"
 import { getNatsConnection } from "#/shared/nats/client"
 import { SERVER_EVENT_GET_USER_LOCATION, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
-import Elysia from "elysia"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
+import { defineUser } from "#/lib/middlewares/define"
 
 type UserLocation = {
   world: string,
@@ -19,12 +18,16 @@ async function getLocation(nickname: string) {
   const nc = getNatsConnection()
 
   const payload = { event: SERVER_EVENT_GET_USER_LOCATION, nickname }
-
-  const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 7000 })
-  if (!res) return null;
-
-  const data = res.json<Omit<UserLocation, "customLocation">>()
-  return data
+  
+  try {
+    const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 1000 })
+    if (!res) return null;
+  
+    const data = res.json<Omit<UserLocation, "customLocation">>()
+    return data
+  } catch (e) {
+    throw e
+  }
 }
 
 function parseWorldName(input: string): string | null {
@@ -77,47 +80,47 @@ function getCustomLocation({
 
   let title: string | null = null;
 
-  for (const [_, cuboid] of terrainMap) {
-    if (world === cuboid.world) {
-      if (x >= cuboid.minX && x <= cuboid.maxX && z >= cuboid.minZ && z <= cuboid.maxZ) {
-        return title = cuboid.title;
+  for (const [_, target] of terrainMap) {
+    if (world === target.world) {
+      if (
+        x >= target.minX && x <= target.maxX &&
+        z >= target.minZ && z <= target.maxZ
+      ) {
+        return title = target.title;
       }
     }
   }
 
   if (!title && world === 'Offenburg') {
-    return title = "где-то на спавне"
+    title = "где-то на спавне"
+    return title;
   }
 
   return null;
 }
 
 export const userLocation = new Elysia()
-  .use(userDerive())
-  .get("/location/:nickname", async ({ nickname: initiator, ...ctx }) => {
-    const recipient = ctx.params.nickname
+  .use(defineUser())
+  .get("/location/:nickname", async ({ status, nickname: initiator, ...ctx }) => {
+    const recipient = ctx.params.nickname;
 
-    try {
-      const rawLocation = await getLocation(recipient)
+    const rawLocation = await getLocation(recipient)
 
-      if (!rawLocation) {
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: null })
-      }
-
-      let location: UserLocation | null = null;
-      let world: string = parseWorldName(rawLocation.world) ?? rawLocation.world
-
-      location = {
-        ...rawLocation,
-        world,
-        customLocation: getCustomLocation({
-          world,
-          coords: { x: rawLocation.x, z: rawLocation.z }
-        })
-      }
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: location })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+    if (!rawLocation) {
+      return status(HttpStatusEnum.HTTP_200_OK, { data: null })
     }
+
+    let location: UserLocation | null = null;
+    let world: string = parseWorldName(rawLocation.world) ?? rawLocation.world
+
+    location = {
+      ...rawLocation,
+      world,
+      customLocation: getCustomLocation({
+        world,
+        coords: { x: rawLocation.x, z: rawLocation.z }
+      })
+    }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data: location })
   })

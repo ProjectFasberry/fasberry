@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "main-gen-types": "kysely-codegen --dialect postgres --url=env\\(MAIN_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
+    "general-gen-types": "kysely-codegen --dialect postgres --url=env\\(GENERAL_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
     "sqlite-gen-types": "kysely-codegen --dialect sqlite --url=env\\(SQLITE_DATABASE_URL\\) --out-file=./types/db/sqlite-database-types.ts",
     "payments-gen-types": "kysely-codegen --dialect postgres --url=env\\(PAYMENTS_DATABASE_URL\\) --out-file=./types/db/payments-database-types.ts",
     "skins-gen-types": "kysely-codegen --dialect mysql --url=env\\(SKINS_DATABASE_URL\\) --out-file=./types/db/skins-database-types.ts",

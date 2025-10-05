@@ -1,67 +1,56 @@
-import { throwError } from '#/helpers/throw-error';
-import Elysia, { t } from 'elysia';
+import Elysia from 'elysia';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { getPlayerAvatar, getRawSkin, getSkin } from './skin.model';
-import { CacheControl } from 'elysiajs-cdn-cache';
+import z from 'zod/v4';
 
 const download = new Elysia()
-  .get('/download/:nickname', async (ctx) => {
-    const nickname = ctx.params.nickname
+  .get('/download/:nickname', async ({ set, params, status }) => {
+    const nickname = params.nickname
+    const skin = await getRawSkin(nickname)
 
-    try {
-      const skin = await getRawSkin(nickname)
+    set.headers["content-type"] = 'image/png'
+    set.headers['content-disposition'] = `attachment; filename=${nickname}-skin.png`
 
-      ctx.headers["content-type"] = 'image/png'
-      ctx.headers['content-disposition'] = `attachment; filename=${nickname}-skin.png`
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, skin)
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
-    }
+    return status(HttpStatusEnum.HTTP_200_OK, skin)
   });
 
-const skinSchema = t.Object({
-  type: t.UnionEnum(["full", "head"])
+const skinSchema = z.object({
+  type: z.enum(["full", "head"])
 })
 
 const skin = new Elysia()
-  .get('/:nickname', async (ctx) => {
+  .get('/:nickname', async ({ status, set, ...ctx }) => {
     const nickname = ctx.params.nickname
     const type = ctx.query.type;
 
-    try {
-      let result: string = ""
+    let result: string = ""
 
-      switch (type) {
-        case "full":
-          const skin = await getSkin(nickname)
-
-          result = skin
-          break;
-        case "head":
-          const avatar = await getPlayerAvatar(nickname)
-
-          result = avatar
-          break;
-        default:
-          break;
-      }
-
-      if (result) {
-        ctx.set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
-
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, result)
-      }
-
-      return ctx.status(500)
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
+    switch (type) {
+      case "full":
+        const skin = await getSkin(nickname)
+        result = skin
+        break;
+      case "head":
+        const avatar = await getPlayerAvatar({ recipient: nickname })
+        result = avatar
+        break;
+      default:
+        break;
     }
-  }, { query: skinSchema });
+
+    if (result) {
+      set.headers["Cache-Control"] = "public, max-age=60";
+
+      return status(HttpStatusEnum.HTTP_200_OK, result)
+    }
+
+    return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
+  }, {
+    query: skinSchema
+  });
 
 export const skinGroup = new Elysia()
-  .group("/skin", app =>
-    app
-      .use(skin)
-      .use(download)
+  .group("/skin", app => app
+    .use(skin)
+    .use(download)
   )

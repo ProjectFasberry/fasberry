@@ -1,29 +1,19 @@
 import Elysia from "elysia";
-import { throwError } from "#/helpers/throw-error";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { sessionDerive } from "#/lib/middlewares/session";
-import { userDerive } from "#/lib/middlewares/user";
 import { getIsExistsSession } from "./auth.model";
+import { defineSession } from "#/lib/middlewares/define";
 
 export const validate = new Elysia()
-  .use(sessionDerive())
-  .use(userDerive())
-  .get("/validate-session", async ({ cookie, nickname, session, ...ctx }) => {
-    const token = session;
-
-    if (!token) return ctx.status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
-
-    try {
-      const data = await getIsExistsSession(token);
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+  .use(defineSession())
+  .derive(({ session, status }) => {
+    if (!session) {
+      return status(HttpStatusEnum.HTTP_200_OK, { data: false })
     }
-  }, {
-    beforeHandle: async ({ session, ...ctx }) => {
-      if (!session) {
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: false })
-      }
-    }
+
+    return { session }
+  })
+  .get("/validate-session", async ({ session: token, status }) => {
+    const data = await getIsExistsSession(token);
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   })

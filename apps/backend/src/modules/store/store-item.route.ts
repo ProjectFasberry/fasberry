@@ -1,12 +1,12 @@
-import Elysia, { t } from "elysia";
-import { throwError } from "#/helpers/throw-error";
-import { main } from "#/shared/database/main-db";
+import Elysia from "elysia";
+import { general } from "#/shared/database/main-db";
 import { StoreItem } from "@repo/shared/types/entities/store";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
+import z from "zod/v4";
 
 async function getItem(id: number): Promise<StoreItem | null> {
-  const query = await main
+  const query = await general
     .selectFrom("store_items")
     .select([
       "id",
@@ -34,21 +34,17 @@ async function getItem(id: number): Promise<StoreItem | null> {
   return data
 }
 
-const storeItemSchema = t.Object({
-  id: t.Number()
+const storeItemSchema = z.object({
+  id: z.coerce.number()
 })
 
 export const storeItem = new Elysia()
   .get("/item/:id", async (ctx) => {
     const id = ctx.params.id
 
-    try {
-      const data: StoreItem | null = await getItem(id)
+    const data: StoreItem | null = await getItem(id)
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+    return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     params: storeItemSchema
   })

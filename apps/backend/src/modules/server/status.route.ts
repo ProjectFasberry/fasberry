@@ -1,13 +1,12 @@
-import { throwError } from "#/helpers/throw-error";
+import Elysia from "elysia";
 import { getNatsConnection } from "#/shared/nats/client";
 import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
-import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import ky from "ky";
-import { CacheControl } from 'elysiajs-cdn-cache';
 import { logger } from "#/utils/config/logger";
-import { isProduction } from "#/helpers/is-production";
-import { main } from "#/shared/database/main-db";
+import { general } from "#/shared/database/main-db";
+import z from "zod/v4";
+import { isProduction } from "#/shared/env";
 
 type ServerStatus = {
   online: boolean;
@@ -61,8 +60,8 @@ const initial = {
   players: []
 }
 
-const statusSchema = t.Object({
-  type: t.UnionEnum(["servers", "services"])
+const statusSchema = z.object({
+  type: z.enum(["servers", "services"])
 })
 
 type StatusPayload = {
@@ -76,7 +75,7 @@ type StatusPayload = {
 async function getProxyStats(): Promise<ServerStatus | null> {
   let ip: string = "play.fasberry.su";
 
-  const query = await main
+  const query = await general
     .selectFrom("ip_list")
     .select("ip")
     .where("name", "=", "server_proxy")
@@ -86,10 +85,10 @@ async function getProxyStats(): Promise<ServerStatus | null> {
     ip = query.ip
   }
 
-  const res = await ky.get(`https://api.mcstatus.io/v2/status/java/${ip}:25565`, { 
-    searchParams: { timeout: 1.0 }, throwHttpErrors: false 
+  const res = await ky.get(`https://api.mcstatus.io/v2/status/java/${ip}:25565`, {
+    searchParams: { timeout: 1.0 }, throwHttpErrors: false
   })
-  
+
   const data = await res.json<ServerStatus>()
 
   return data
@@ -112,60 +111,58 @@ async function getBisquiteStats(): Promise<StatusPayload | null> {
 }
 
 export const status = new Elysia()
-  .get("/status", async (ctx) => {
+  .get("/status", async ({ status, set, ...ctx }) => {
     const type = ctx.query.type;
 
-    try {
-      if (type === 'servers') {
-        const rawProxy = await getProxyStats()
+    if (type === 'servers') {
+      const rawProxy = await getProxyStats()
 
-        if (rawProxy && rawProxy.online === false) {
-          const data = {
-            proxy: initial,
-            servers: { bisquite: initial }
-          }
-
-          return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-        }
-
-        let rawBisquite: StatusPayload | null = null;
-
-        try {
-          rawBisquite = await getBisquiteStats()
-        } catch (e) {
-          !isProduction && e instanceof Error && logger.warn(e.message, e.stack)
-        }
-
-        const proxy = rawProxy as ServerStatus
-
-        const bisquite = (rawBisquite && "players" in rawBisquite) ? {
-          online: rawBisquite.currentOnline,
-          max: rawBisquite.maxPlayers,
-          players: rawBisquite.players,
-          status: "online"
-        } : initial
-
+      if (rawProxy && rawProxy.online === false) {
         const data = {
-          proxy: {
-            status: "online",
-            online: proxy.players?.online ?? 0,
-            max: proxy.players?.max ?? 200,
-            players: proxy.players?.list ? proxy.players.list.map((player) => player.name_raw) : []
-          },
-          servers: { bisquite }
+          proxy: initial,
+          servers: { bisquite: initial }
         }
 
-        ctx.set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
-
-        return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
+        return status(HttpStatusEnum.HTTP_200_OK, { data })
       }
 
-      if (type === 'services') {
-        return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Not supported"))
+      let rawBisquite: StatusPayload | null = null;
+
+      try {
+        rawBisquite = await getBisquiteStats()
+      } catch (e) {
+        !isProduction && e instanceof Error && logger.warn(e.message, e.stack)
       }
-      
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Not supported"))
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
+
+      const proxy = rawProxy as ServerStatus
+
+      const bisquite = (rawBisquite && "players" in rawBisquite) ? {
+        online: rawBisquite.currentOnline,
+        max: rawBisquite.maxPlayers,
+        players: rawBisquite.players,
+        status: "online"
+      } : initial
+
+      const data = {
+        proxy: {
+          status: "online",
+          online: proxy.players?.online ?? 0,
+          max: proxy.players?.max ?? 200,
+          players: proxy.players?.list ? proxy.players.list.map((player) => player.name_raw) : []
+        },
+        servers: { bisquite }
+      }
+
+      set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+
+      return status(HttpStatusEnum.HTTP_200_OK, { data })
     }
-  }, { query: statusSchema })
+
+    if (type === 'services') {
+      return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, "Not supported")
+    }
+
+    return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, "Not supported")
+  }, {
+    query: statusSchema
+  })

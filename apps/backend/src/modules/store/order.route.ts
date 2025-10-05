@@ -1,20 +1,18 @@
-import Elysia, { t } from "elysia";
-import { throwError } from "#/helpers/throw-error";
+import Elysia from "elysia";
 import { payments } from "#/shared/database/payments-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getOrderKey, PaymentCacheData, } from "./payment/create-crypto-order";
 import { getRedisClient } from "#/shared/redis/init";
+import z from "zod/v4";
 
 async function getCachedOrder(uniqueId: string): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
   const redis = getRedisClient()
   const redisKey = getOrderKey(uniqueId)
 
   const data = await redis.get(redisKey)
-
   if (!data) return null;
 
   const payload: PaymentCacheData = JSON.parse(data);
-
   return payload
 }
 
@@ -37,7 +35,10 @@ async function getPersistedOrder(uniqueId: string): Promise<Omit<PaymentCacheDat
     .executeTakeFirst()
 
   if (dbResult) {
-    return { ...dbResult, asset: dbResult.asset as Omit<PaymentCacheData, "expires_in">["asset"] }
+    return { 
+      ...dbResult, 
+      asset: dbResult.asset as Omit<PaymentCacheData, "expires_in">["asset"] 
+    }
   }
 
   return null;
@@ -51,21 +52,15 @@ export async function getOrder(uniqueId: string): Promise<Omit<PaymentCacheData,
   return persisted
 }
 
-const orderRouteSchema = t.Object({
-  id: t.String()
+const orderRouteSchema = z.object({
+  id: z.string()
 })
 
 export const orderRoute = new Elysia()
-  .get("/:id", async (ctx) => {
-    const id = ctx.params.id;
-
-    try {
-      const data = await getOrder(id)
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+  .get("/:id", async ({ status, params }) => {
+    const id = params.id;
+    const data = await getOrder(id)
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     params: orderRouteSchema
   })

@@ -1,11 +1,10 @@
-import { useData } from "vike-react/useData"
 import { Data } from "./+data";
 import { Typography } from "@repo/ui/typography";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { connectToPaymentEvents, esAtom, orderDataAtom, orderRequestEventAtom } from "@/shared/components/app/shop/models/store-checkout.model";
 import { PageLoader } from "@/shared/ui/page-loader";
-import { atom } from "@reatom/core";
+import { action, atom } from "@reatom/core";
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog";
 import { IconCheck, IconCopy, IconEye } from "@tabler/icons-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -16,6 +15,7 @@ import { createLink, Link } from "@/shared/components/config/link";
 import { Button } from "@repo/ui/button";
 import { onConnect, onDisconnect, sleep } from "@reatom/framework";
 import { pageContextAtom } from "@/shared/models/global.model";
+import { startPageEvents } from "@/shared/lib/events";
 
 type Product = {
   id: number;
@@ -42,12 +42,14 @@ const STATUSES: Record<Payment["status"], { title: string, color: string }> = {
   }
 }
 
-const SyncOrder = () => {
-  const data = useData<Data>().item;
-  if (!data) return null;
-  useUpdate((ctx) => orderDataAtom(ctx, data), [])
-  return null
-}
+const events = action((ctx) => {
+  const pageContext = ctx.get(pageContextAtom);
+  if (!pageContext) return;
+
+  const data = pageContext.data as Data
+
+  orderDataAtom(ctx, data.item)
+}, "events")
 
 orderRequestEventAtom.onChange(async (ctx, target) => {
   if (target === 'invoice_paid') {
@@ -287,28 +289,13 @@ const Order = reatomComponent(({ ctx }) => {
   )
 }, "Order")
 
-const OrderNotFound = () => {
-  return (
-    <MainWrapperPage>
-      <Typography className='font-semibold text-white text-2xl'>
-        Заказ устарел
-      </Typography>
-    </MainWrapperPage>
-  )
-}
-
-export default function OrderPage() {
-  const data = useData<Data>().item;
-
-  if (!data) {
-    return <OrderNotFound />
-  }
+export default function Page() {
+  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "order" }), [pageContextAtom])
 
   return (
     <>
       <OrderLoader />
       <MainWrapperPage>
-        <SyncOrder />
         <Order />
       </MainWrapperPage>
     </>

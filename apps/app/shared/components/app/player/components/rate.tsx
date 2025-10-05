@@ -2,7 +2,7 @@ import { reatomComponent } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
 import { IconHeart } from "@tabler/icons-react"
 import { tv } from "tailwind-variants"
-import { rateList, RateUser, rateUser } from "../models/rate.model"
+import { rateListAction, RateUser, rateUser } from "../models/rate.model"
 import { isIdentityAtom } from "../models/player.model"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@repo/ui/hover-card"
 import { Typography } from "@repo/ui/typography"
@@ -44,7 +44,7 @@ type RateProps = {
   count: number
 }
 
-onConnect(rateList.dataAtom, rateList)
+onConnect(rateListAction.dataAtom, rateListAction)
 
 const ListCard = ({ initiator, created_at }: RateUser) => {
   return (
@@ -72,7 +72,7 @@ const ListCard = ({ initiator, created_at }: RateUser) => {
 }
 
 const List = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(rateList.dataAtom)?.data;
+  const data = ctx.spy(rateListAction.dataAtom)?.data;
 
   if (data && data.length === 0) {
     return <Typography color="gray">пусто</Typography>
@@ -94,7 +94,7 @@ const List = reatomComponent(({ ctx }) => {
 }, "List")
 
 const RateList = reatomComponent<Pick<RateProps, "count">>(({ ctx, count }) => {
-  if (ctx.spy(rateList.statusesAtom).isPending && !ctx.spy(rateList.cacheAtom)) {
+  if (ctx.spy(rateListAction.statusesAtom).isPending && !ctx.spy(rateListAction.cacheAtom)) {
     return <Skeleton className="h-36 w-full" />
   }
 

@@ -1,8 +1,8 @@
 import { client } from "@/shared/api/client";
-import { reatomAsync, reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { toast } from "sonner";
+import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { isIdentityAtom, targetUserAtom } from "./player.model";
 import { currentUserAtom } from "@/shared/models/current-user.model";
+import { logError } from "@/shared/lib/log";
 
 export const rateUser = reatomAsync(async (ctx, target: string) => {
   if (ctx.get(isIdentityAtom)) return;
@@ -36,7 +36,7 @@ export const rateUser = reatomAsync(async (ctx, target: string) => {
     })
   },
   onReject: (ctx, e) => {
-    if (e instanceof Error) toast.error(e.message)
+    logError(e)
   }
 }).pipe(withStatusesAtom())
 
@@ -50,8 +50,8 @@ export type RateUser = {
   created_at: string;
 }
 
-export const rateList = reatomResource(async (ctx) => {
-  const isIdentity = ctx.spy(isIdentityAtom);
+export const rateListAction = reatomAsync(async (ctx) => {
+  const isIdentity = ctx.get(isIdentityAtom);
   if (!isIdentity) return;
 
   const currentUser = ctx.get(currentUserAtom)
@@ -62,10 +62,10 @@ export const rateList = reatomResource(async (ctx) => {
       signal: ctx.controller.signal, throwHttpErrors: false
     })
 
-    const data = await res.json<RateList | { error: string }>()
+    const data = await res.json<WrappedResponse<RateList>>()
 
     if ("error" in data) throw new Error(data.error)
 
-    return data;
+    return data.data;
   })
-}, "rateList").pipe(withStatusesAtom(), withDataAtom(), withCache())
+}, "rateListAction").pipe(withStatusesAtom(), withDataAtom(null), withCache())

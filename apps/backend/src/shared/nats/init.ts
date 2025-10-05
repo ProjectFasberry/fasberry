@@ -7,6 +7,8 @@ import { Subscription } from "nats"
 import { initNats } from "./client"
 import { logger } from "#/utils/config/logger"
 
+export const natsLogger = logger.withTag("Nats")
+
 const SUBCRIBERS: Record<string, () => Subscription> = {
   "subscribeRefferalCheck": subscribeRefferalCheck,
   "subscribePlayerJoin": subscribePlayerJoin,
@@ -20,6 +22,6 @@ export async function startNats() {
 
   for (const [name, fn] of Object.entries(SUBCRIBERS)) {
     fn()
-    logger.success(`Subscribed to ${name}`)
+    natsLogger.success(`Subscribed to ${name}`)
   }
 }

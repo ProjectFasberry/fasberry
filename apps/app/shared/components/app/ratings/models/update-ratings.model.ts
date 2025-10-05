@@ -1,120 +1,86 @@
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
-import { atom } from "@reatom/core"
-import { 
-  getRatings, 
-  RatingBelkoin, 
-  ratingByAtom, 
-  RatingCharism, 
-  ratingDataAtom, 
-  ratingFilterAtom, 
-  RatingLands, 
-  ratingMetaAtom, 
-  RatingParkour, 
-  RatingPlaytime, 
-  RatingReputation 
+import {
+  getRatingsFn,
+  ratingByAtom,
+  ratingDataAtom,
+  ratingMetaAtom,
+  resetRatings
 } from "./ratings.model"
-import { toast } from "sonner"
+import { logError } from "@/shared/lib/log"
+import { AtomState, batch } from "@reatom/core"
+import { sleep } from "@reatom/framework"
 
-const updateRatingActionVariablesAtom = atom<"update-filter" | "update-cursor" | null>(null, "updateRatingVariables")
+export const updateRatingAction = reatomAsync(async (ctx, target: AtomState<typeof ratingByAtom>, type: "update-filter" | "update-cursor") => {
+  if (type === 'update-filter') {
+    batch(ctx, () => {
+      resetRatings(ctx);
+      ratingByAtom(ctx, target);
+    })
 
-// todo: destructure onFulfill result;
+    await ctx.schedule(() => sleep(200))
+  }
 
-export const updateRatingAction = reatomAsync(async (
-  ctx, 
-  type: "update-filter" | "update-cursor"
-) => {
-  updateRatingActionVariablesAtom(ctx, type)
-  
-  const filtering = ctx.get(ratingFilterAtom)
-  const prevCursor = ctx.get(ratingMetaAtom)?.endCursor
-  const cursor = type === 'update-filter' ? undefined : prevCursor
-  const by = ctx.get(ratingByAtom)
+  const result = await ctx.schedule(() => getRatingsFn(ctx))
 
-  return await ctx.schedule(() => getRatings({ ...filtering, cursor, by }))
+  return { type, target, result };
 }, {
   name: "updateRatingAction",
-  onFulfill: (ctx, res) => {
-    if (!res) return;
+  onFulfill: (ctx, { type, target: by, result }) => {
+    if (!result) return;
 
-    const variables = ctx.get(updateRatingActionVariablesAtom)
-    if (!variables) return
+    if (type === "update-filter") {
+      batch(ctx, () => {
+        ratingDataAtom(ctx, result.data)
+        ratingMetaAtom(ctx, result.meta)
+      })
 
-    if (variables === "update-filter") {
-      ratingDataAtom(ctx, res.data)
-      ratingMetaAtom(ctx, res.meta)
       return;
     }
 
-    const by = ctx.get(ratingByAtom);
+    batch(ctx, () => {
+      // @ts-expect-error
+      ratingDataAtom(ctx, (state) => {
+        if (!state || !state.length) return result.data;
 
-    ratingMetaAtom(ctx, res.meta)
-    ratingDataAtom(ctx, (state) => {
-      if (!state || !state.length) return res.data;
+        type IdentifierKeyLiteral = 'nickname' | 'player' | 'land';
+        type RatingTypeKey = 'playtime' | 'parkour' | 'charism' | 'belkoin' | 'reputation' | 'lands_chunks';
 
-      if (by === 'playtime') {
-        const target = res.data as RatingPlaytime[]
-        const prev = state as RatingPlaytime[]
-        const newRating = target.filter(
-          m => !prev.some(exist => exist.nickname === m.nickname)
-        )
-        
-        return [...prev, ...newRating]
-      }
+        const keyMap: ReadonlyMap<RatingTypeKey, IdentifierKeyLiteral> = new Map([
+          ['playtime', 'nickname'],
+          ['charism', 'nickname'],
+          ['belkoin', 'nickname'],
+          ['reputation', 'nickname'],
+          ['parkour', 'player'],
+          ['lands_chunks', 'land'],
+        ]);
 
-      if (by === 'parkour') {
-        const target = res.data as RatingParkour[]
-        const prev = state as RatingParkour[]
-        const newRating = target.filter(
-          m => !prev.some(exist => exist.player === m.player)
-        )
+        const identifierKey = keyMap.get(by);
 
-        return [...prev, ...newRating]
-      }
+        if (!identifierKey) {
+          console.warn(`Unknown rating type: ${by}`);
+          return state;
+        }
 
-      if (by === 'charism') {
-        const target = res.data as RatingCharism[]
-        const prev = state as RatingCharism[]
-        const newRating = target.filter(
-          m => !prev.some(exist => exist.nickname === m.nickname)
-        )
+        if (!Array.isArray(result.data)) {
+          console.error('result.data is not an array:', result.data);
+          return state;
+        }
 
-        return [...prev, ...newRating]
-      }
+        const prev = state
+        const target = result.data
 
-      if (by === 'belkoin') {
-        const target = res.data as RatingBelkoin[]
-        const prev = state as RatingBelkoin[]
-        const newRating = target.filter(
-          m => !prev.some(exist => exist.nickname === m.nickname)
-        )
+        const newRating = target.filter(m =>
+          // @ts-expect-error
+          !prev.some(exist => exist[identifierKey] === m[identifierKey])
+        );
 
-        return [...prev, ...newRating]
-      }
+        return [...prev, ...newRating];
+      })
 
-      if (by === 'reputation') {
-        const target = res.data as RatingReputation[]
-        const prev = state as RatingReputation[]
-        const newRating = target.filter(
-          m => !prev.some(exist => exist.nickname === m.nickname)
-        )
-        
-        return [...prev, ...newRating]
-      }
-
-      if (by === 'lands_chunks') {
-        const target = res.data as RatingLands[]
-        const prev = state as RatingLands[]
-        const newRating = target.filter(
-          m => !prev.some(exist => exist.land === m.land)
-        )
-
-        return [...prev, ...newRating]
-      }
-
-      return state;
+      ratingMetaAtom(ctx, result.meta);
     })
   },
   onReject: (_, e) => {
-    e instanceof Error && toast.error(e.message)
+    logError(e)
   },
 }).pipe(withStatusesAtom())

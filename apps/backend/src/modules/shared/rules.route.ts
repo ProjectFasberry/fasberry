@@ -1,6 +1,5 @@
-import { throwError } from "#/helpers/throw-error";
-import { main } from "#/shared/database/main-db";
 import Elysia from "elysia";
+import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
 const ruleTypes: Record<"chat" | "game" | "based", string> = {
@@ -11,12 +10,12 @@ const ruleTypes: Record<"chat" | "game" | "based", string> = {
 
 async function getRules() {
   const [rules, terms] = await Promise.all([
-    main
+    general
       .selectFrom("rules")
       .selectAll()
       .where("rule_list_id", "in", ["chat", "game", "based"])
       .execute(),
-    main
+    general
       .selectFrom("rules_termins")
       .selectAll()
       .execute()
@@ -39,14 +38,10 @@ async function getRules() {
 }
 
 export const rules = new Elysia()
-  .get("/rules", async (ctx) => {
-    try {
-      const data = await getRules()
+  .get("/rules", async ({ status, set }) => {
+    const data = await getRules()
 
-      ctx.set.headers["Cache-Control"] = "public, max-age=3600, s-maxage=3600"
+    set.headers["Cache-Control"] = "public, max-age=3600, s-maxage=3600"
 
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e))
-    }
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   })

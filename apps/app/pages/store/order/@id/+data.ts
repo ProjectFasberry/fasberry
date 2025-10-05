@@ -3,18 +3,18 @@ import { useConfig } from 'vike-react/useConfig'
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { client } from "@/shared/api/client";
 import { Payment } from "@/shared/components/app/shop/models/store.model";
-import { logRouting } from "../../i/@id/+data";
+import { logRouting } from "@/shared/lib/log";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getOrder(
-  id: string, 
+  id: string,
   args: RequestInit
 ) {
   const res = await client(`store/order/${id}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<Payment>>()
-
-  if ("error" in data) throw new Error(data.error)
+  
+  if ("error" in data) throw new Error(data.error);
 
   return data.data
 }
@@ -26,7 +26,7 @@ export async function data(pageContext: PageContextServer) {
   const item = await getOrder(pageContext.routeParams.id, { headers })
 
   let title = `Заказ ${item.unique_id}`
-  
+
   if (!item) {
     title = wrapTitle(`Заказ устарел`)
   }

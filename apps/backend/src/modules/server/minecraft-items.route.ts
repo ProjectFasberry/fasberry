@@ -1,12 +1,11 @@
-import { sql } from "kysely";
 import Elysia from "elysia";
+import { sql } from "kysely";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { throwError } from "#/helpers/throw-error";
-import { getStaticObject } from "#/helpers/volume";
-import { main } from "#/shared/database/main-db";
+import { getStaticUrl } from "#/helpers/volume";
+import { general } from "#/shared/database/main-db";
 
 async function getMinecraftItems() {
-  const query = await main
+  const query = await general
     .selectFrom("items")
     .select([
       "description",
@@ -19,17 +18,12 @@ async function getMinecraftItems() {
 
   return query.map((item) => ({
     ...item,
-    image: getStaticObject(item.image)
+    image: getStaticUrl(item.image)
   }))
 }
 
 export const minecraftItems = new Elysia()
-  .get("/minecraft-items", async (ctx) => {
-    try {
-      const items = await getMinecraftItems();
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: items });
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
-    }
+  .get("/minecraft-items", async ({ status }) => {
+    const data = await getMinecraftItems();
+    return status(HttpStatusEnum.HTTP_200_OK, { data });
   })

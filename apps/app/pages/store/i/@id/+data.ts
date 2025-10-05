@@ -4,8 +4,8 @@ import { wrapTitle } from "@/shared/lib/wrap-title";
 import { client } from "@/shared/api/client";
 import { render } from "vike/abort";
 import { StoreItem } from "@repo/shared/types/entities/store";
-import logger from "consola"
 import { defineCartData } from "@/shared/components/app/shop/models/store-cart.model";
+import { logRouting } from "@/shared/lib/log";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -16,10 +16,6 @@ async function getItem({ id, ...args }: { id: string } & RequestInit) {
   if ("error" in data) throw new Error(data.error)
 
   return data.data
-}
-
-export function logRouting(t: string, m: string) {
-  logger.log(`[Routing]: ${t} called +${m}`)
 }
 
 function metadata(
@@ -34,13 +30,13 @@ export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
   
-  const item = await getItem({ id: pageContext.routeParams.id, headers })
+  const data = await getItem({ id: pageContext.routeParams.id, headers })
 
-  if (!item) {
+  if (!data) {
     throw render("/not-exist")
   }
 
-  config(metadata(item))
+  config(metadata(data))
 
   logRouting(pageContext.urlPathname, "data")
 
@@ -48,6 +44,6 @@ export async function data(pageContext: PageContextServer) {
 
   return {
     id: pageContext.routeParams.id,
-    item
+    item: data
   }
 }

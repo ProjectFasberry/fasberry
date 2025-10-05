@@ -1,9 +1,9 @@
-import { getStaticObject } from "#/helpers/volume";
+import { getStaticUrl } from "#/helpers/volume";
+import { EXCHANGE_RATES_KEY } from "#/modules/store/payment/currencies.model";
 import { GAME_CURRENCIES, GameCurrency } from "#/modules/store/store-items.route";
-import { main } from "#/shared/database/main-db";
+import { general } from "#/shared/database/main-db";
 import { getRedisClient } from "#/shared/redis/init";
 import { ExchangeRate } from "#/shared/types/payment/payment-types";
-import { EXCHANGE_RATES_KEY } from "../workers/currencies";
 
 export function processImageUrl(target?: string | null) {
   if (target) {
@@ -11,10 +11,10 @@ export function processImageUrl(target?: string | null) {
       return target;
     }
 
-    return getStaticObject(target)
+    return getStaticUrl(target)
   }
 
-  return getStaticObject("icons/adventure_icon.png")
+  return getStaticUrl("icons/adventure_icon.png")
 }
 
 // RUB is the base currency for all non-game items
@@ -66,7 +66,7 @@ export async function defineGlobalPrice(
 ): Promise<StorePrice> {
   const redis = getRedisClient();
 
-  const query = main
+  const query = general
     .selectFrom("store_cart_items")
     .innerJoin("store_items", "store_items.id", "store_cart_items.product_id")
     .select([

@@ -12,7 +12,6 @@ const Auth = reatomComponent(({ ctx }) => {
   return (
     <Tabs
       onValueChange={value => typeAtom(ctx, value as AtomState<typeof typeAtom>)}
-      defaultValue={type}
       value={type}
       className="flex flex-col gap-4 w-full max-w-lg border rounded-lg border-neutral-800 p-4 sm:p-5 lg:p-6"
     >

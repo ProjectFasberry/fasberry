@@ -5,13 +5,12 @@ import { isIdentityAtom } from "../models/player.model";
 import { Button } from "@repo/ui/button";
 import { Link } from "@/shared/components/config/link";
 
-export const PlayerBalance = reatomComponent(({ ctx }) => {
+export const Balance = reatomComponent(({ ctx }) => {
+  const isIdentity = ctx.spy(isIdentityAtom)
+  if (!isIdentity) return null;
+  
   const currentUser = ctx.spy(currentUserAtom)
   if (!currentUser) return null;
-
-  const isIdentity = ctx.spy(isIdentityAtom)
-
-  if (!isIdentity) return null;
 
   return (
     <div className="flex flex-col gap-2 w-full">

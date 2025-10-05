@@ -4,6 +4,7 @@ import { OrderEventPayload } from "@repo/shared/types/entities/payment";
 import { toast } from "sonner";
 import { Payment } from "./store.model";
 import { withReset } from "@reatom/framework";
+import { API_PREFIX_URL, isDevelopment } from "@/shared/env";
 
 export const msgAtom = atom<OrderEventPayload | null>(null, "msg")
 export const connectIsSuccessAtom = atom(false, "isSuccess")
@@ -43,7 +44,7 @@ esAtom.onChange((ctx, target) => {
   if (!target) return;
 
   target.onopen = () => {
-    import.meta.env.DEV && toast.success("Connected to payment events")
+    isDevelopment && toast.success("Connected to payment events")
   }
   
   target.addEventListener("payload", (event) => {
@@ -59,7 +60,7 @@ export const targetPaymentIdAtom = atom<string>("", "targetPaymentId")
 export const orderDataAtom = atom<Payment | null>(null, "orderData")
 
 export const connectToPaymentEvents = reatomAsync(async (ctx, target: string) => {
-  const url = `${import.meta.env.PUBLIC_ENV__API_PREFIX}/store/order/${target}/events`;
+  const url = `${API_PREFIX_URL}/store/order/${target}/events`;
 
   targetPaymentIdAtom(ctx, target);
 

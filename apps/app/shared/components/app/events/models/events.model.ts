@@ -1,21 +1,34 @@
-import { reatomResource, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { sleep } from "@reatom/framework";
+import { client } from "@/shared/api/client";
+import { createSearchParams } from "@/shared/lib/create-search-params";
+import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { atom } from "@reatom/core";
 
-export const EVENTS = [
-  {
-    type: "register",
-    log: `Игрок distribate зарегистрировался`
-  },
-  {
-    type: "update-news",
-    log: `Игрок distribate опубликовал новость`
-  },
-] as const;
+export type EventPayload = {
+  id: string;
+  type: string,
+  title: string,
+  content: {
+    created_at: string | Date,
+    description: string | null,
+    initiator: string
+  }
+}
 
-export const eventsAction = reatomResource(async (ctx) => {
+const eventsTypeAtom = atom<string | undefined>(undefined, "eventsType")
+
+export const eventsAction = reatomAsync(async (ctx) => {
+  const opts = {
+    type: ctx.get(eventsTypeAtom)
+  }
+  
+  const searchParams = createSearchParams(opts)
+
   return await ctx.schedule(async () => {
-    await sleep(120);
+    const res = await client("server/events/list", { searchParams, signal: ctx.controller.signal });
+    const data = await res.json<WrappedResponse<EventPayload[]>>();
 
-    return EVENTS
+    if ("error" in data) throw new Error(data.error)
+
+    return data.data
   })
-}, "eventsAction").pipe(withDataAtom(), withStatusesAtom())
+}, "eventsAction").pipe(withDataAtom([]), withStatusesAtom())

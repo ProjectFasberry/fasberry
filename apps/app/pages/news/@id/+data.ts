@@ -1,6 +1,6 @@
-import { logRouting } from "@/pages/store/i/@id/+data";
 import { client } from "@/shared/api/client";
 import { NewsType } from "@/shared/components/app/news/components/news";
+import { logRouting } from "@/shared/lib/log";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { useConfig } from "vike-react/useConfig";
 import { render } from "vike/abort";

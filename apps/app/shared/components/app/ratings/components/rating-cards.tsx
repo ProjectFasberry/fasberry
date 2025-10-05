@@ -74,9 +74,13 @@ const isOwnerAtom = (target: string) => atom((ctx) => {
 }, `isOwnerAtom`)
 
 export const RatingLandsCard = reatomComponent<RatingLands & RatingInitial>(({
-  ctx, land, chunks_amount, members, name, type, idx, blocks
+  ctx, land, chunks_amount, members: raw, name, type, idx, blocks
 }) => {
-  const nickname = Object.keys(members)[0]
+  if (typeof raw === 'undefined') return null;
+  
+  const members = Object.keys(raw);
+
+  const nickname = members[0]
   const isOwner = ctx.spy(isOwnerAtom(nickname))
 
   return (

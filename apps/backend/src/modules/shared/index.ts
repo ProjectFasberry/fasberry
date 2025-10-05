@@ -4,6 +4,7 @@ import { modpack } from "./modpack.route";
 import { rules } from "./rules.route";
 import { serverip } from "./server-ip.route";
 import { publicImage } from "./image.route";
+import { fact } from "./fact.route";
 
 export const shared = new Elysia()
   .group("/shared", app => app
@@ -13,4 +14,5 @@ export const shared = new Elysia()
     .use(rules)
     .use(serverip)
     .use(publicImage)
+    .use(fact)
   )

@@ -7,7 +7,7 @@ import { activeWidgetAtom, initWidgets, Widget as WidgetProps } from "../models/
 
 const widgetVariant = tv({
   base: `flex items-center p-2 sm:p-3 lg:p-4 gap-2 sm:gap-4 
-    justify-between rounded-lg w-full max-h-16 bg-neutral-900 border-2 border-neutral-800`
+    justify-between rounded-lg w-full overflow-hidden max-h-16 bg-neutral-900 border-2 border-neutral-800`
 })
 
 const Widget = ({ title, icon: Icon, description, action }: WidgetProps) => {
@@ -22,23 +22,26 @@ const Widget = ({ title, icon: Icon, description, action }: WidgetProps) => {
     >
       <div className="flex items-center gap-2 sm:gap-4">
         {Icon && (
-          <div className="flex bg-neutral-800 rounded-full p-2">
+          <div className="flex bg-neutral-800 rounded-full p-2 shrink-0">
             <Icon size={26} />
           </div>
         )}
-        <div className="flex flex-col justify-center">
-          <Typography className="truncate w-full font-semibold text-base sm:text-lg">
+        <div className="flex flex-col justify-center min-w-0">
+          <Typography className="truncate w-full font-semibold text-base sm:text-lg whitespace-nowrap">
             {title}
           </Typography>
           {description && (
-            <Typography color="gray" className="w-full hidden sm:inline truncate text-sm leading-5">
+            <Typography
+              color="gray"
+              className="hidden xl:inline truncate text-sm leading-5 whitespace-nowrap"
+            >
               {description}
             </Typography>
           )}
         </div>
       </div>
       {action && (
-        <div className="w-fit flex items-center justify-center">
+        <div className="w-fit flex items-center justify-center shrink-0">
           {action}
         </div>
       )}
@@ -53,9 +56,9 @@ export const Widgets = reatomComponent(({ ctx }) => {
   if (!active) return null;
 
   return (
-    <div 
-    id="widgets" 
-    className="hidden sm:flex items-center justify-center w-full fixed bottom-2 left-0 right-0"
+    <div
+      id="widgets"
+      className="hidden sm:flex items-center justify-center w-full fixed bottom-2 left-0 right-0"
     >
       <div className="mx-auto responsive">
         <Widget {...active} />

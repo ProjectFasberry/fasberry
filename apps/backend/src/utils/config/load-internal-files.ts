@@ -1,6 +1,5 @@
 import { nodeToWebStream } from "#/helpers/streams";
-import { INTERNAL_FILES_BUCKET, minio } from "#/shared/minio/init";
-import { logger } from "./logger";
+import { INTERNAL_FILES_BUCKET, minio, minioLogger } from "#/shared/minio/init";
 import { extname } from "node:path";
 
 export const textSets: Record<string, Set<string>> = {};
@@ -44,6 +43,6 @@ export async function loadInternalFiles(entries: FileEntry[]) {
 
     callback(filename, content);
 
-    logger.success(`Loaded ${filename} (${ext || "no extension"}) — type: ${typeof content}`);
+    minioLogger.success(`Loaded ${filename} (${ext || "no extension"}) — type: ${typeof content}`);
   }
 }

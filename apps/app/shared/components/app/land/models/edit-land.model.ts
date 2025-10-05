@@ -1,3 +1,4 @@
+import { logError } from "@/shared/lib/log"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
 import { action, atom } from "@reatom/core"
 import { withAssign, withReset } from "@reatom/framework"
@@ -65,8 +66,6 @@ export const saveChanges = reatomAsync(async (ctx) => {
     newBannerUrl.reset(ctx)
   },
   onReject: (ctx, e) => {
-    if (e instanceof Error) {
-      toast.error(e.message)
-    }
+    logError(e)
   }
 }).pipe(withStatusesAtom())

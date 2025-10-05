@@ -7,5 +7,4 @@ export async function data() {
   config({
     title: wrapTitle("Конфиг"),
   })
-
 }

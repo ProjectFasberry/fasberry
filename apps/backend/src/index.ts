@@ -8,14 +8,11 @@ import { bot } from "./shared/bot/logger";
 import { handleFatalError } from "./utils/config/handle-log";
 import { showRoutes } from "./utils/config/print-routes";
 import { ipPlugin } from "./lib/plugins/ip";
-import { validateGroup } from "./modules/private/validation.route";
-import { rateGroup } from "./modules/user/like.route";
+import { privated } from "./modules/private/validation.route";
+import { rate } from "./modules/user/like.route";
 import { initRedis } from "./shared/redis/init";
-import { sessionDerive } from "./lib/middlewares/session";
-import { userDerive } from "./lib/middlewares/user";
-import { startCacheWorker } from "./utils/workers/currencies";
-import { isProduction } from "./helpers/is-production";
-import { defineSession } from "./utils/auth/session";
+import { startJobs } from "./utils/cron";
+import { updateSession } from "./utils/auth/session";
 import { INTERNAl_FILES, loadInternalFiles } from "./utils/config/load-internal-files";
 import { store } from "./modules/store";
 import { auth } from "./modules/auth";
@@ -25,6 +22,9 @@ import { root } from "./modules/root";
 import { startNats } from "./shared/nats/init";
 import { loggerPlugin } from "./lib/plugins/logger";
 import { swaggerPlugin } from "./lib/plugins/swagger";
+import { isProduction } from "./shared/env";
+import { defineSession } from "./lib/middlewares/define";
+import { logger } from "./utils/config/logger";
 
 const appConfig: ElysiaConfig<string> = {
   prefix: "/minecraft",
@@ -48,32 +48,31 @@ const app = new Elysia(appConfig)
   .use(loggerPlugin())
   .use(ipPlugin())
   .use(root)
-  .use(sessionDerive())
-  .onBeforeHandle(async ({ cookie, session }) => {
-    defineSession(session, cookie)
+  .use(defineSession())
+  .onBeforeHandle(async ({ cookie, session: token }) => {
+    if (!token) return;
+    updateSession(token, cookie)
   })
-  .use(userDerive())
   .use(auth)
   .use(me)
   .use(shared)
   .use(server)
   .use(store)
-  .use(validateGroup)
-  .use(rateGroup)
+  .use(privated)
+  .use(rate)
   .onError(({ code, error }) => {
-    const data = { error: error.toString().slice(0, 128) ?? "Internal Server Error" }
-    console.error(error, code)
+    logger.error(error, code);
+    // @ts-expect-error
+    const message = error?.message ?? error.response.toString().slice(0, 128) ?? "Internal Server Error";
+    const data = { error: message }
     return data
   })
 
 async function startServices() {
-  function startWorkers() {
-    isProduction && startCacheWorker()
-  }
-
   async function startMinio() {
     await printBuckets()
     await initMinioBuckets()
+    await loadInternalFiles(INTERNAl_FILES);
   }
 
   await startNats()
@@ -83,10 +82,11 @@ async function startServices() {
     initRedis()
   ])
 
-  await loadInternalFiles(INTERNAl_FILES);
-
   bot.init();
-  startWorkers();
+
+  if (isProduction) {
+    startJobs()
+  }
 }
 
 async function start() {
@@ -96,10 +96,12 @@ async function start() {
 
   app.listen(4104);
 
-  console.log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);
+  logger
+    .withTag("App")
+    .log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);
 }
 
-await start()
+start()
 
 process.on('uncaughtException', handleFatalError);
 process.on('unhandledRejection', handleFatalError);

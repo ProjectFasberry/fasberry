@@ -1,17 +1,17 @@
-import Elysia, { Static, t } from "elysia";
-import { throwError } from "#/helpers/throw-error";
+import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { main } from "#/shared/database/main-db";
+import { general } from "#/shared/database/main-db";
 import { StoreItem } from "@repo/shared/types/entities/store";
 import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
+import z from "zod/v4";
 
 export const GAME_CURRENCIES = ["CHARISM", "BELKOIN"] as const;
 export type GameCurrency = typeof GAME_CURRENCIES[number]
 
-async function getItems(args: Static<typeof donatesSchema>) {
+async function getItems(args: z.infer<typeof donatesSchema>) {
   const limit = args.limit ?? 32
 
-  let storeQuery = main
+  let storeQuery = general
     .selectFrom("store_items")
     .select([
       "id",
@@ -99,25 +99,17 @@ async function getItems(args: Static<typeof donatesSchema>) {
   throw new Error("Selected type is not defined")
 }
 
-const donatesSchema = t.Object({
-  type: t.UnionEnum(["all", "donate", "events"]),
-  limit: t.Optional(
-    t.Number()
-  ),
-  wallet: t.UnionEnum(["game", "real", "all"], { default: "all" })
+const donatesSchema = z.object({
+  type: z.enum(["all", "donate", "events"]),
+  limit: z.coerce.number().optional(),
+  wallet: z.enum(["game", "real", "all"]).default("all")
 })
 
 export const storeItems = new Elysia()
-  .get("/items", async (ctx) => {
-    const { type, limit, wallet } = ctx.query;
+  .get("/items", async ({ status, query }) => {
+    const data: StoreItem[] = await getItems(query);
 
-    try {
-      const data: StoreItem[] = await getItems({ type, limit, wallet });
-
-      return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
-    } catch (e) {
-      return ctx.status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(e));
-    }
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     query: donatesSchema
   })

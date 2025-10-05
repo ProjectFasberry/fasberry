@@ -1,34 +1,11 @@
 import { reatomComponent } from "@reatom/npm-react"
-import { GetRatings, ratingByAtom } from "../models/ratings.model"
+import { ratingByAtom } from "../models/ratings.model"
 import { updateRatingAction } from "../models/update-ratings.model"
-import { HTMLAttributes } from "react";
 import { Typography } from "@repo/ui/typography";
-import { action, atom } from "@reatom/core";
+import { action, AtomState } from "@reatom/core";
+import { Tabs, TabsList, TabsTrigger } from "@repo/ui/tabs";
 
-interface NavigationBadgeProps extends HTMLAttributes<HTMLDivElement> {
-  title: string;
-}
-
-export const NavigationBadge = ({
-  title, ...props
-}: NavigationBadgeProps) => {
-  return (
-    <div
-      className="flex items-center duration-150 select-none ease-in data-[state=active]:bg-green-800/80
-       rounded-lg px-4 w-full group cursor-pointer justify-center py-4"
-      {...props}
-    >
-      <Typography
-        title={title}
-        className="text-neutral-50 text-nowrap font-semibold text-lg"
-      >
-        {title}
-      </Typography>
-    </div>
-  );
-};
-
-const RATING_NAVIGATION: { title: string, by: GetRatings["by"] }[] = [
+const RATING_NAVIGATION: { title: string, by: AtomState<typeof ratingByAtom> }[] = [
   { title: "Время игры", by: "playtime" },
   { title: "Харизма", by: "charism" },
   { title: "Белкоин", by: "belkoin" },
@@ -37,31 +14,32 @@ const RATING_NAVIGATION: { title: string, by: GetRatings["by"] }[] = [
   { title: "Репутация", by: "reputation" }
 ]
 
-const changeBy = action((ctx, target: GetRatings["by"]) => {
+const changeBy = action((ctx, target: AtomState<typeof ratingByAtom>) => {
   const currentType = ctx.get(ratingByAtom)
+  if (target === currentType) return;
 
-  if (target === currentType) return
-
-  ratingByAtom(ctx, target)
-  updateRatingAction(ctx, "update-filter")
+  updateRatingAction(ctx, target, "update-filter")
 }, "changeBy")
 
-const isActive = (target: string) => atom((ctx) => {
-  const currentType = ctx.spy(ratingByAtom)
-  return currentType === target;
-}, "isActive")
-
 export const RatingNavigation = reatomComponent(({ ctx }) => {
+  const value = ctx.spy(ratingByAtom);
+  
   return (
-    <div className="flex overflow-x-auto overflow-y-hidden gap-2 w-full pb-2">
-      {RATING_NAVIGATION.map(rating => (
-        <NavigationBadge
-          key={rating.by}
-          data-state={ctx.spy(isActive(rating.by)) ? "active" : "inactive"}
-          title={rating.title}
-          onClick={() => changeBy(ctx, rating.by)}
-        />
-      ))}
-    </div>
+    <Tabs
+      value={value}
+      onValueChange={v => changeBy(ctx, v as AtomState<typeof ratingByAtom>)}
+      className="flex flex-col gap-4 w-full border rounded-lg border-neutral-800"
+      activationMode="manual"
+    >
+      <TabsList className="flex w-full overflow-x-auto overflow-y-hidden">
+        {RATING_NAVIGATION.map(rating => (
+          <TabsTrigger key={rating.by} value={rating.by} className="w-full px-4 h-12">
+            <Typography className="text-lg">
+              {rating.title}
+            </Typography>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }, "RatingNavigation")

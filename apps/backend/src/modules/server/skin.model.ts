@@ -5,7 +5,7 @@ import { skins } from "#/shared/database/skins-db";
 import { AVATARS_BUCKET, minio, SKINS_BUCKET, STATIC_BUCKET } from "#/shared/minio/init";
 import { ItemBucketMetadata } from "minio";
 import { blobToUint8Array, nodeToWebStream } from "#/helpers/streams";
-import { getAvatarDestination, getObjectUrl, getSkinDestination } from "#/helpers/volume";
+import { getAvatarName, getObjectUrl, getSkinName } from "#/helpers/volume";
 
 type Skin = {
   textures: {
@@ -78,8 +78,8 @@ async function getCustomPlayerSkin(nickname: string): Promise<SkinOutput | null>
 
 async function putSkinInMinio(nickname: string, file: Uint8Array) {
   const metadata: ItemBucketMetadata = { 'Content-Type': 'image/png' }
-  const destination = getSkinDestination(nickname)
-  const avatarDest = getAvatarDestination(nickname)
+  const destination = getSkinName(nickname)
+  const avatarDest = getAvatarName(nickname)
 
   async function uploadSkin(buffer: Buffer<ArrayBuffer>) {
     await minio.putObject(SKINS_BUCKET, destination, buffer, buffer.length, metadata)
@@ -107,7 +107,7 @@ async function putSkinInMinio(nickname: string, file: Uint8Array) {
 
 export async function getRawSkin(nickname: string): Promise<SkinOutput> {
   try {
-    const stream = await minio.getObject(SKINS_BUCKET, getSkinDestination(nickname))
+    const stream = await minio.getObject(SKINS_BUCKET, getSkinName(nickname))
     const readable = nodeToWebStream(stream)
     const blob = await Bun.readableStreamToBlob(readable)
 
@@ -139,13 +139,13 @@ export async function getSkin(nickname: string): Promise<string> {
   let target: string = ""
 
   try {
-    const stream = await minio.getObject(SKINS_BUCKET, getSkinDestination(nickname))
+    const stream = await minio.getObject(SKINS_BUCKET, getSkinName(nickname))
 
     if (!stream) {
       throw new Error()
     }
 
-    const url = getObjectUrl(SKINS_BUCKET, getSkinDestination(nickname))
+    const url = getObjectUrl(SKINS_BUCKET, getSkinName(nickname))
 
     target = url
   } catch (e) {
@@ -162,17 +162,17 @@ export async function getSkin(nickname: string): Promise<string> {
   return target;
 }
 
-export async function getPlayerAvatar(nickname: string) {
+export async function getPlayerAvatar({ recipient: nickname }: { recipient: string }) {
   let target: string = "";
 
   try {
-    const stream = await minio.getObject(AVATARS_BUCKET, getAvatarDestination(nickname))
+    const stream = await minio.getObject(AVATARS_BUCKET, getAvatarName(nickname))
 
     if (!stream) {
       throw new Error()
     }
 
-    const res = getObjectUrl(AVATARS_BUCKET, getAvatarDestination(nickname))
+    const res = getObjectUrl(AVATARS_BUCKET, getAvatarName(nickname))
 
     target = res;
   } catch (e) {

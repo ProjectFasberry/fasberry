@@ -1,7 +1,7 @@
 import { GuardAsync } from "vike/types";
 import { validateSession } from "@/shared/lib/validators";
 import { redirect } from "vike/abort";
-import { logRouting } from "../store/i/@id/+data";
+import { logRouting } from "@/shared/lib/log";
 
 export const guard: GuardAsync = async (pageContext) => {
   const headers = pageContext.headers ?? undefined

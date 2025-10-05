@@ -23,7 +23,22 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export type PlayerActivityEvent = "join" | "quit";
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
+
+export interface ActivityHeatmap {
+  active_players: number;
+  date: Timestamp;
+  hour: number;
+}
+
+export interface ActivityUsers {
+  event: Timestamp;
+  id: Generated<Int8>;
+  nickname: string;
+  type: PlayerActivityEvent;
+}
 
 export interface Admins {
   created_at: Generated<string>;
@@ -79,11 +94,11 @@ export interface Findout {
   value: string;
 }
 
-export interface GameStatus {
+export interface FvItems {
+  created_at: Generated<Timestamp>;
   id: Generated<number>;
-  joined: Timestamp | null;
+  item_id: number;
   nickname: string;
-  quited: Timestamp | null;
 }
 
 export interface IpList {
@@ -131,6 +146,13 @@ export interface NewsViews {
   id: Generated<number>;
   initiator: string;
   news_id: number;
+}
+
+export interface Options {
+  id: Generated<number>;
+  name: string;
+  title: string;
+  value: boolean;
 }
 
 export interface Referrals {
@@ -223,6 +245,8 @@ export interface VotedUsers {
 }
 
 export interface DB {
+  activity_heatmap: ActivityHeatmap;
+  activity_users: ActivityUsers;
   admins: Admins;
   AUTH: AUTH;
   currencies: Currencies;
@@ -230,13 +254,14 @@ export interface DB {
   events_original: EventsOriginal;
   facts: Facts;
   findout: Findout;
-  game_status: GameStatus;
+  fv_items: FvItems;
   ip_list: IpList;
   items: Items;
   likes: Likes;
   modpacks: Modpacks;
   news: News;
   news_views: NewsViews;
+  options: Options;
   referrals: Referrals;
   rules: Rules;
   rules_termins: RulesTermins;

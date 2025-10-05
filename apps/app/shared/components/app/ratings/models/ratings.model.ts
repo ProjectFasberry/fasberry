@@ -1,9 +1,10 @@
-import { reatomAsync, withStatusesAtom } from "@reatom/async";
-import { atom } from "@reatom/core";
+import { AsyncCtx, reatomAsync, withStatusesAtom } from "@reatom/async";
+import { atom, batch, Ctx } from "@reatom/core";
 import { createSearchParams } from '@/shared/lib/create-search-params';
 import { client } from '@/shared/api/client';
 import { withReset } from "@reatom/framework";
 import { withHistory } from "@/shared/lib/reatom-helpers";
+import { logError } from "@/shared/lib/log";
 
 export type RatingData =
   | RatingPlaytime[]
@@ -28,8 +29,6 @@ type RatingMap = {
   belkoin: RatingBelkoin[]
   parkour: RatingParkour[]
 }
-
-export type RatingDataByKey<K extends keyof RatingMap> = RatingMap[K]
 
 export type RatingPlaytime = {
   total: number;
@@ -73,54 +72,65 @@ export type RatingLands = {
   blocks: any
 }
 
-export type GetRatingsResponse = { data: RatingData, meta: RatingMeta }
+export type RatingsPayload = {
+  data: RatingData,
+  meta: RatingMeta
+}
 
-export type GetRatings = {
-  by: keyof RatingMap,
+type Options = {
   cursor?: string,
   ascending: boolean,
   limit?: number
 }
 
-export async function getRatings({
-  by, cursor, ascending, signal, limit = 50
-}: GetRatings & RequestInit) {
-  const searchParams = createSearchParams({ by, limit: limit.toString(), cursor, ascending })
+export async function getRatings(
+  by: keyof RatingMap,
+  { cursor, ascending, limit = 50 }: Options,
+  init?: RequestInit
+) {
+  const searchParams = createSearchParams({ by, limit, cursor, ascending })
 
-  const res = await client("server/rating", { searchParams, throwHttpErrors: false, signal })
-  const data = await res.json<{ data: RatingData, meta: RatingMeta } | { error: string }>()
+  const res = await client("server/rating", { searchParams, retry: 1, throwHttpErrors: false, ...init })
+  const data = await res.json<WrappedResponse<RatingsPayload>>()
 
-  if ("error" in data) return null
+  if ("error" in data) throw new Error(data.error)
 
-  return data.data.length >= 1 ? data : null
+  return data.data
 }
 
 export const ratingDataAtom = atom<RatingData | null>(null, "ratingData").pipe(withReset())
 export const ratingMetaAtom = atom<RatingMeta | null>(null, "ratingMeta").pipe(withReset())
 
-export const ratingByAtom = atom<GetRatings["by"]>("playtime", "ratingBy").pipe(withHistory(1))
+export const ratingByAtom = atom<keyof RatingMap>("playtime", "ratingBy").pipe(withHistory(1))
 export const ratingFilterAtom = atom<{ ascending: boolean }>({ ascending: false }, "ratingFilter")
 
-ratingByAtom.onChange((ctx, target) => {
-  const prev = ctx.get(ratingByAtom.history)[1]
-
-  if (prev !== target) {
+export function resetRatings(ctx: Ctx) {
+  batch(ctx, () => {
     ratingMetaAtom.reset(ctx)
     ratingDataAtom.reset(ctx)
-  }
-})
+  })
+}
 
-export const ratingAction = reatomAsync(async (ctx) => {
-  const filter = ctx.get(ratingFilterAtom)
+export async function getRatingsFn(ctx: AsyncCtx) {
+  const opts = ctx.get(ratingFilterAtom)
   const by = ctx.get(ratingByAtom)
 
-  return await ctx.schedule(() => getRatings({ ...filter, by }))
+  return getRatings(by, opts, { signal: ctx.controller.signal })
+}
+
+export const ratingsAction = reatomAsync(async (ctx) => {
+  return await ctx.schedule(() => getRatingsFn(ctx))
 }, {
-  name: "ratingAction",
+  name: "ratingsAction",
   onFulfill: (ctx, res) => {
     if (!res) return;
 
-    ratingDataAtom(ctx, res.data)
-    ratingMetaAtom(ctx, res.meta)
+    batch(ctx, () => {
+      ratingDataAtom(ctx, res.data)
+      ratingMetaAtom(ctx, res.meta)
+    })
+  },
+  onReject: (ctx, e) => {
+    logError(e)
   }
 }).pipe(withStatusesAtom())

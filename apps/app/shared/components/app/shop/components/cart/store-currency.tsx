@@ -1,6 +1,6 @@
 import { Typography } from "@repo/ui/typography";
 import { reatomComponent } from "@reatom/npm-react";
-import { currenciesResource, storeCurrencyAtom, storePayMethodAtom } from "../../models/store.model";
+import { currenciesAction, storeCurrencyAtom, storePayMethodAtom } from "../../models/store.model";
 import { Button } from "@repo/ui/button";
 import { HTMLAttributes, useState } from 'react';
 import { PaymentCurrency } from '@repo/shared/constants/currencies';
@@ -9,6 +9,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import { action, atom } from '@reatom/core';
 import { Skeleton } from "@repo/ui/skeleton";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
+import { onConnect } from "@reatom/framework";
 
 const currencyItemVariants = tv({
   base: `flex cursor-pointer items-center gap-2 px-4 py-2 rounded-lg border-transparent`,
@@ -57,13 +58,15 @@ const selectCurrency = action((ctx, currency: PaymentCurrency | null) => {
   selectCurrencyDialogIsOpenAtom(ctx, false);
 }, "selectCurrency")
 
+onConnect(currenciesAction.dataAtom, currenciesAction)
+
 const List = reatomComponent(({ ctx }) => {
   const [previewCurrency, setPreviewCurrency] = useState<PaymentCurrency | null>(null);
   const [system, setSystem] = useState<typeof AGREGATORS[number] | null>(null)
 
-  const currencies = ctx.spy(currenciesResource.dataAtom);
+  const currencies = ctx.spy(currenciesAction.dataAtom);
 
-  if (ctx.spy(currenciesResource.statusesAtom).isPending) {
+  if (ctx.spy(currenciesAction.statusesAtom).isPending) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
         <Skeleton className="h-28 w-full" />

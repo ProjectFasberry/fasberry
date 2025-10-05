@@ -27,7 +27,7 @@ export async function getBasketData(args?: RequestInit) {
   const res = await client("store/basket/list", { ...args })
   const data = await res.json<WrappedResponse<BasketPayloadData>>();
 
-  if ("error" in data) throw new Error()
+  if ("error" in data) throw new Error(data.error)
 
   return data.data;
 }
