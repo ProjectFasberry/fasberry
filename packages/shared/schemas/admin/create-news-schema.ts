@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const createNewsSchema = z.object({
   title: z.string().max(1024),

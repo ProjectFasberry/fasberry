@@ -1,6 +1,10 @@
 import { IconBrandDiscordFilled, IconBrandTelegram } from "@tabler/icons-react"
 import { Link } from "../components/config/link"
 import { Typography } from "@repo/ui/typography"
+import { CONTACTS } from "../consts/contacts"
+
+const telegramHref = CONTACTS.find(t => t.value === 'tg')?.href as string
+const discordHref = CONTACTS.find(t => t.value === 'ds')?.href as string
 
 export const Footer = () => {
   return (
@@ -16,10 +20,10 @@ export const Footer = () => {
           </Typography>
         </div>
         <div className="flex items-center *:duration-150 gap-2">
-          <Link href='/' className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full">
+          <Link href={discordHref} className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full">
             <IconBrandDiscordFilled size={26} />
           </Link>
-          <Link href='/' className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full">
+          <Link href={telegramHref} className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full">
             <IconBrandTelegram size={26} />
           </Link>
         </div>

@@ -11,7 +11,7 @@ onConnect(serverStatusAction.dataAtom, serverStatusAction)
 const IntroStatus = reatomComponent(({ ctx }) => {
   const data = ctx.spy(serverStatusAction.dataAtom);
 
-  if (ctx.spy(serverStatusAction.statusesAtom).isPending && !ctx.spy(serverStatusAction.cacheAtom)) {
+  if (ctx.spy(serverStatusAction.statusesAtom).isPending) {
     return <Skeleton className="w-4 h-4 inline-flex rounded-sm" />
   }
 
@@ -37,9 +37,9 @@ const IntroActions = () => {
   )
 }
 
-export const Intro = () => {
-  const introImage = getStaticImage("arts/general-preview.jpg");
-  
+const introImage = getStaticImage("arts/general-preview.jpg");
+
+export const Intro = () => {  
   return (
     <div
       id="intro"

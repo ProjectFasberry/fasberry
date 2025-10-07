@@ -1,21 +1,24 @@
 import type { DB as skinsDBType } from "@repo/shared/types/db/skins-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
-import { createPool } from "mysql2";
+import { createPool, PoolOptions } from "mysql2";
 import { poolOptsHooks } from "./lobby-db";
+import { SKINS_MYSQL_DB, SKINS_MYSQL_HOST, SKINS_MYSQL_PASSWORD, SKINS_MYSQL_PORT, SKINS_MYSQL_USER } from "../env";
 
-console.log(Bun.env.SKINS_MYSQL_HOST)
+const config: PoolOptions = {
+  host: SKINS_MYSQL_HOST,
+  user: SKINS_MYSQL_USER,
+  password: SKINS_MYSQL_PASSWORD,
+  port: Number(SKINS_MYSQL_PORT),
+  database: SKINS_MYSQL_DB,
+  connectionLimit: 10
+}
+
+export const skinsPool = createPool(config)
 
 export const skins = new Kysely<skinsDBType>({
   dialect: new MysqlDialect({
-    pool: createPool({
-      host: Bun.env.SKINS_MYSQL_HOST,
-      user: Bun.env.MYSQL_USER,
-      password: Bun.env.MYSQL_ROOT_PASSWORD,
-      port: Number(Bun.env.SKINS_MYSQL_PORT),
-      database: Bun.env.SKINS_MYSQL_DB,
-      connectionLimit: 10
-    }),
+    pool: skinsPool,
     ...poolOptsHooks("Skins")
   })
 });

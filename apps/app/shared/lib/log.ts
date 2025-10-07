@@ -28,6 +28,6 @@ export function logError(
   }
 }
 
-export function logRouting(target: string, hook: string) {
-  routingLogger.log(`${target} called +${hook}`);
+export function logRouting(pathname: string, hook: string) {
+  routingLogger.log(`${pathname} called +${hook}`);
 }

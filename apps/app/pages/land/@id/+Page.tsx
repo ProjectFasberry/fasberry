@@ -11,9 +11,9 @@ const events = action((ctx) => {
   const pageContext = ctx.get(pageContextAtom)
   if (!pageContext) return;
 
-  const data = pageContext.data as Data
+  const { data } = pageContext.data as Data
 
-  landAtom(ctx, data.land)
+  landAtom(ctx, data)
 }, "events")
 
 export default function Page() {

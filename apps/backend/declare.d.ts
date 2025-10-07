@@ -67,17 +67,9 @@ declare global {
   interface PaginatedMeta {
     hasNextPage: boolean,
     hasPrevPage: boolean,
-    startCursor: string,
-    endCursor: string
+    startCursor?: string,
+    endCursor?: string
   }
-
-  interface DatabaseConnection {
-    host: string;
-    database: string;
-    user: string;
-    password: string;
-    port: number;
-  };
 }
 
 export { }

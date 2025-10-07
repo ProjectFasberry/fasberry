@@ -1,9 +1,9 @@
 import Elysia from "elysia";
 import { payments } from "#/shared/database/payments-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { getRedisClient } from "#/shared/redis/init";
+import { getRedis } from "#/shared/redis/init";
 import { PaymentCacheData } from "./payment/create-crypto-order";
-import z from "zod/v4";
+import z from "zod";
 import { defineInitiator } from "#/lib/middlewares/define";
 
 const ordersRouteSchema = z.object({
@@ -15,7 +15,7 @@ export const ordersRoute = new Elysia()
   .get("/orders", async ({ initiator, status, ...ctx }) => {
     const { type } = ctx.query
 
-    const redis = getRedisClient();
+    const redis = getRedis();
 
     const keys = await redis.smembers(`index:initiator:${initiator}`);
 

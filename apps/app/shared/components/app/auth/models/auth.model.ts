@@ -1,10 +1,10 @@
 import { client } from "@/shared/api/client"
-import { currentUserAtom } from "@/shared/models/current-user.model"
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
 import { action, atom, Ctx } from "@reatom/core"
 import { sleep, withAssign, withReset } from "@reatom/framework"
 import { toast } from "sonner"
+import { logError } from "@/shared/lib/log"
 
 type TypeAtom = "register" | "login"
 type ErrorType = "nickname" | "password" | "findout"
@@ -145,6 +145,8 @@ export const authorize = reatomAsync(async (ctx) => {
     }
   },
   onReject: (ctx, e) => {
+    logError(e);
+    
     if (e instanceof Error) {
       globalErrorAtom(ctx, e.message)
 
@@ -165,27 +167,25 @@ export const authorize = reatomAsync(async (ctx) => {
 
 export const logout = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
-    const res = await client.post("auth/invalidate-session", { signal: ctx.controller.signal })
+    const res = await client.post("auth/invalidate-session")
     const data = await res.json<{ status: string } | { error: string }>()
-
+    if ('error' in data) throw new Error(data.error)
     return data;
   })
 }, {
   name: "logout",
-  onFulfill: (ctx, res) => {
-    if (!res) return;
-
-    if ("error" in res) {
-      toast.error(res.error)
-      globalErrorAtom(ctx, res.error)
-      return;
-    }
-
-    currentUserAtom.reset(ctx);
+  onFulfill: (ctx, result) => {
+    if (!result) return;
 
     ctx.schedule(() => window.location.reload())
   },
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (ctx, e) => {
+    logError(e, { type: "toast" });
+
+    if (e instanceof Error) {
+      globalErrorAtom(ctx, e.message)
+    }
+  }
 }).pipe(
   withStatusesAtom(),
   withAssign(((target) => ({

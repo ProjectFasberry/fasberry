@@ -5,21 +5,7 @@ import { client } from '@/shared/api/client';
 import { withReset } from "@reatom/framework";
 import { withHistory } from "@/shared/lib/reatom-helpers";
 import { logError } from "@/shared/lib/log";
-
-export type RatingData =
-  | RatingPlaytime[]
-  | RatingLands[]
-  | RatingReputation[]
-  | RatingCharism[]
-  | RatingBelkoin[]
-  | RatingParkour[]
-
-type RatingMeta = {
-  hasNextPage: boolean,
-  startCursor?: string,
-  endCursor?: string,
-  hasPrevPage: boolean
-}
+import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation, RatingsPayload  } from "@repo/shared/types/entities/rating"
 
 type RatingMap = {
   playtime: RatingPlaytime[]
@@ -28,53 +14,6 @@ type RatingMap = {
   charism: RatingCharism[]
   belkoin: RatingBelkoin[]
   parkour: RatingParkour[]
-}
-
-export type RatingPlaytime = {
-  total: number;
-  nickname: string;
-}
-
-export type RatingParkour = {
-  gamesplayed: number | null
-  player: string | null,
-  score: number | null;
-  area: string | null;
-  nickname: string | null;
-}
-
-export type RatingBelkoin = {
-  nickname: string;
-  balance: number
-}
-
-export type RatingCharism = {
-  balance: number;
-  nickname: string;
-}
-
-export type RatingReputation = {
-  reputation: number;
-  uuid: string;
-  nickname: string;
-}
-
-export type RatingLands = {
-  land: string;
-  chunks_amount: number;
-  members: {
-    [key: string]: {
-      chunks: number;
-    }
-  };
-  name: string;
-  type: string;
-  blocks: any
-}
-
-export type RatingsPayload = {
-  data: RatingData,
-  meta: RatingMeta
 }
 
 type Options = {
@@ -92,14 +31,12 @@ export async function getRatings(
 
   const res = await client("server/rating", { searchParams, retry: 1, throwHttpErrors: false, ...init })
   const data = await res.json<WrappedResponse<RatingsPayload>>()
-
   if ("error" in data) throw new Error(data.error)
-
   return data.data
 }
 
-export const ratingDataAtom = atom<RatingData | null>(null, "ratingData").pipe(withReset())
-export const ratingMetaAtom = atom<RatingMeta | null>(null, "ratingMeta").pipe(withReset())
+export const ratingDataAtom = atom<RatingsPayload["data"] | null>(null, "ratingData").pipe(withReset())
+export const ratingMetaAtom = atom<RatingsPayload["meta"] | null>(null, "ratingMeta").pipe(withReset())
 
 export const ratingByAtom = atom<keyof RatingMap>("playtime", "ratingBy").pipe(withHistory(1))
 export const ratingFilterAtom = atom<{ ascending: boolean }>({ ascending: false }, "ratingFilter")

@@ -1,5 +1,5 @@
 import { nodeToWebStream } from "#/helpers/streams";
-import { INTERNAL_FILES_BUCKET, minio, minioLogger } from "#/shared/minio/init";
+import { getMinio, INTERNAL_FILES_BUCKET, minioLogger } from "#/shared/minio/init";
 import { extname } from "node:path";
 
 export const textSets: Record<string, Set<string>> = {};
@@ -27,6 +27,8 @@ export const INTERNAl_FILES: FileEntry[] = [
 ]
 
 export async function loadInternalFiles(entries: FileEntry[]) {
+  const minio = getMinio();
+  
   for (const { key: filename, value: callback } of entries) {
     const stream = await minio.getObject(INTERNAL_FILES_BUCKET, filename);
     const webStream = nodeToWebStream(stream);

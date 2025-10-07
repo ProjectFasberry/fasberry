@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import z from "zod/v4";
+import z from "zod";
 import { createCryptoOrder, rollbackOrder } from "./create-crypto-order";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { throwError } from "#/helpers/throw-error";

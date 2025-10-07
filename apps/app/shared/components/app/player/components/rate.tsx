@@ -12,6 +12,7 @@ import { Avatar } from "../../avatar/components/avatar"
 import dayjs from "@/shared/lib/create-dayjs"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog"
 import { Skeleton } from "@repo/ui/skeleton"
+import { currentUserAtom } from "@/shared/models/current-user.model"
 
 const likeButtonVariants = tv({
   base: `flex border-2 group rounded-full duration-150 *:duration-150 items-center gap-2`,
@@ -98,6 +99,10 @@ const RateList = reatomComponent<Pick<RateProps, "count">>(({ ctx, count }) => {
     return <Skeleton className="h-36 w-full" />
   }
 
+  const currentUser = ctx.get(currentUserAtom)
+
+  const isDisabled = !currentUser || ctx.spy(rateUser.statusesAtom).isPending
+
   return (
     <>
       <div className="hidden sm:block">
@@ -105,7 +110,7 @@ const RateList = reatomComponent<Pick<RateProps, "count">>(({ ctx, count }) => {
           <HoverCardTrigger asChild>
             <Button
               data-state="filled"
-              disabled={ctx.spy(rateUser.statusesAtom).isPending}
+              disabled={isDisabled}
               className={likeButtonVariants({ variant: "filled" })}
             >
               <IconHeart className={rateButtonChildVariants({ variant: "filled" })} />
@@ -147,16 +152,17 @@ export const Rate = reatomComponent<RateProps>(({
   ctx, isRated, nickname, count
 }) => {
   const isIdentity = ctx.spy(isIdentityAtom);
-
   if (isIdentity) return <RateList count={count} />
 
   const parentVariant = isRated ? "active" : "inactive"
   const childVariant = isRated ? "rated" : "default"
 
+  const isDisabled = ctx.spy(rateUser.statusesAtom).isPending
+  
   return (
     <Button
       data-state={isRated ? "rated" : "unrated"}
-      disabled={ctx.spy(rateUser.statusesAtom).isPending}
+      disabled={isDisabled}
       onClick={() => rateUser(ctx, nickname)}
       className={likeButtonVariants({ variant: parentVariant })}
     >

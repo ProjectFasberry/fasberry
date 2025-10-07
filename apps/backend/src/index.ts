@@ -1,9 +1,11 @@
+import "../imports"
+
 import { Elysia, ElysiaConfig } from "elysia";
 import { serverTiming as serverTimingPlugin } from '@elysiajs/server-timing'
 import { cors } from '@elysiajs/cors'
 import { me } from "#/modules/user/me.route";
 import { rateLimitPlugin } from "./lib/plugins/rate-limit";
-import { initMinioBuckets, printBuckets } from "./shared/minio/init";
+import { initMinio, initMinioBuckets, printBuckets } from "./shared/minio/init";
 import { bot } from "./shared/bot/logger";
 import { handleFatalError } from "./utils/config/handle-log";
 import { showRoutes } from "./utils/config/print-routes";
@@ -21,15 +23,17 @@ import { shared } from "./modules/shared";
 import { root } from "./modules/root";
 import { startNats } from "./shared/nats/init";
 import { loggerPlugin } from "./lib/plugins/logger";
-import { swaggerPlugin } from "./lib/plugins/swagger";
+import { openApiPlugin } from "./lib/plugins/openapi";
 import { isProduction } from "./shared/env";
 import { defineSession } from "./lib/middlewares/define";
 import { logger } from "./utils/config/logger";
+import { checkDatabasesHealth } from "./shared/database/init";
 
 const appConfig: ElysiaConfig<string> = {
   prefix: "/minecraft",
   serve: {
-    hostname: '0.0.0.0'
+    hostname: '0.0.0.0',
+    idleTimeout: 3
   },
   aot: true
 }
@@ -41,7 +45,7 @@ const corsPlugin = () => new Elysia().use(
 )
 
 const app = new Elysia(appConfig)
-  .use(swaggerPlugin())
+  .use(openApiPlugin())
   .use(rateLimitPlugin())
   .use(corsPlugin())
   .use(serverTimingPlugin())
@@ -67,20 +71,21 @@ const app = new Elysia(appConfig)
     const data = { error: message }
     return data
   })
+  
 
 async function startServices() {
+  await checkDatabasesHealth();
+  await startNats();
+
   async function startMinio() {
+    initMinio()
     await printBuckets()
     await initMinioBuckets()
     await loadInternalFiles(INTERNAl_FILES);
   }
 
-  await startNats()
-
-  await Promise.all([
-    startMinio(),
-    initRedis()
-  ])
+  await startMinio();
+  await initRedis()
 
   bot.init();
 

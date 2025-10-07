@@ -2,6 +2,7 @@ import { Typography } from "@repo/ui/typography"
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog"
 import { Button } from "@repo/ui/button"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
+import { MainWrapperPage } from "@/shared/components/config/wrapper"
 
 const EventsNotFound = () => {
   const eventImage = getStaticImage("arts/looking.jpg")
@@ -31,12 +32,12 @@ const Charism = ({ amount }: { amount: number }) => {
   )
 }
 
+const exampleImage = getStaticImage("arts/fishing_rod.webp");
+
 const ExampleEvent = () => {
-  const exampleImage = getStaticImage("arts/fishing_rod.webp");
-  
   return (
-    <div className="flex flex-col items-center 2xl:aspect-square gap-4 w-full rounded-md p-2 bg-shark-950">
-      <div className="border border-shark-700 w-full flex items-center justify-center rounded-md p-4">
+    <div className="flex flex-col items-center 2xl:aspect-square gap-4 w-full rounded-md p-2 bg-neutral-950">
+      <div className="border border-neutral-700 w-full flex items-center justify-center rounded-md p-4">
         <img src={exampleImage} alt="" width={96} height={96} />
       </div>
       <div className="flex flex-col justify-start w-full">
@@ -58,11 +59,11 @@ const ExampleEvent = () => {
           </DialogTrigger>
           <DialogContent>
             <div className="flex flex-col gap-y-4 items-center justify-center w-full">
-              <Typography className="text-xl font-semibold" color='white'>
+              <Typography className="text-xl font-semibold">
                 Ивент: Проголосовать за сервер
               </Typography>
               <div className="flex flex-col gap-2 p-2 w-full">
-                <Typography className="text-base">
+                <Typography className="text-lg font-semibold">
                   Награда:
                 </Typography>
                 <Charism amount={25} />
@@ -71,8 +72,8 @@ const ExampleEvent = () => {
           </DialogContent>
         </Dialog>
         <a href="https://hotmc.ru/minecraft-server-259308" target="_blank" rel="noreferrer">
-          <Button className="w-full lg:w-fit bg-green" >
-            <Typography className="text-base">
+          <Button className="w-full lg:w-fit bg-neutral-50">
+            <Typography className="text-lg text-neutral-950 font-semibold">
               Отдать голос
             </Typography>
           </Button>
@@ -84,20 +85,22 @@ const ExampleEvent = () => {
 
 export default function Page() {
   return (
-    <div className="flex lg:flex-row flex-col w-full min-h-dvh gap-2">
-      <div className="flex flex-col gap-y-4 w-full !p-4">
-        <Typography color="white" className="text-2xl font-semibold">
-          Задания
-        </Typography>
-        <div className="flex flex-col gap-2 w-full h-full">
-          <Typography className="text-xl">
-            Системные
+    <MainWrapperPage>
+      <div className="flex lg:flex-row flex-col w-full gap-2">
+        <div className="flex flex-col gap-y-4 w-full !p-4">
+          <Typography color="white" className="text-2xl font-semibold">
+            Задания
           </Typography>
-          <div className="grid lg:grid-cols-3 2xl:grid-cols-5 auto-rows-auto gap-4 w-full">
-            <ExampleEvent />
+          <div className="flex flex-col gap-2 w-full h-full">
+            <Typography className="text-xl">
+              Системные
+            </Typography>
+            <div className="grid lg:grid-cols-3 2xl:grid-cols-4 auto-rows-auto gap-4 w-full">
+              <ExampleEvent />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </MainWrapperPage>
   )
 }

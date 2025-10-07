@@ -1,42 +1,46 @@
 import { logger } from "#/utils/config/logger";
-import { connect, ConnectionOptions, type NatsConnection } from "nats"; 
+import { ConnectionOptions, type NatsConnection } from "@nats-io/nats-core";
+import { connect } from "@nats-io/transport-node";
 import { exit } from "node:process";
+import { NATS_HOST as host, NATS_TOKEN as token } from "#/shared/env"
 
-const servers = `nats://${Bun.env.NATS_HOST}`
+export const natsLogger = logger.withTag("Nats")
 
-const NATS_CONFIG: ConnectionOptions = {
-  servers,
-  token: Bun.env.NATS_AUTH_TOKEN,
+const config: ConnectionOptions = {
+  servers: [
+    `nats://${host}`
+  ],
+  token,
   reconnect: true,
   maxReconnectAttempts: -1,
-  reconnectTimeWait: 2000, 
+  reconnectTimeWait: 2000,
 }
 
 let nats: NatsConnection | null = null;
 
-export async function initNats() {
+export async function initNats(): Promise<void> {
   try {
-    nats = await connect(NATS_CONFIG);
-    logger.success(`Connected to ${NATS_CONFIG.servers}`)
+    nats = await connect(config);
+    natsLogger.success(`Connected to ${config.servers}`)
   } catch (e) {
-    logger.error("NATS ", e)
+    natsLogger.error(e)
     exit(1)
   }
 }
 
-export function getNatsConnection(): NatsConnection {
+export function getNats(): NatsConnection {
   if (!nats) throw new Error('NATS client is not initialized');
   return nats;
 }
 
-export async function closeNatsConnection() {
+export async function closeNats(): Promise<void> {
   if (!nats) return;
 
   try {
     await nats.drain();
-    logger.log('NATS connection closed.')
+    natsLogger.log('NATS connection closed.')
   } catch (err) {
-    logger.error('Error closing NATS connection:', err)
+    natsLogger.error('Error closing NATS connection:', err)
     exit(1)
   }
 }

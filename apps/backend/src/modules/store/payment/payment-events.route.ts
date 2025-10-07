@@ -1,11 +1,11 @@
 import Elysia from "elysia";
-import z from "zod/v4";
-import { getNatsConnection } from "#/shared/nats/client";
+import z from "zod";
+import { getNats } from "#/shared/nats/client";
 import { logger } from "#/utils/config/logger";
-import { Subscription } from "nats"
 import { getOrder } from "../order.route";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { orderEventPayloadSchema } from "@repo/shared/schemas/payment";
+import { Subscription } from "@nats-io/nats-core/lib/core";
 
 function formatSSE(event: string, data: string): string {
   const lines = data.split(/\r?\n/).map(line => `data: ${line}`).join('\n');
@@ -41,7 +41,7 @@ export const paymentEvents = new Elysia()
       async start(controller) {
         logger.log(`[SSE]: Connection opened for order ${uniqueId}`);
 
-        const nc = getNatsConnection();
+        const nc = getNats();
         sub = nc.subscribe(getPaymentEventsSubject(uniqueId));
         const decoder = new TextDecoder();
 

@@ -2,11 +2,11 @@ import Elysia from "elysia";
 import { payments } from "#/shared/database/payments-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getOrderKey, PaymentCacheData, } from "./payment/create-crypto-order";
-import { getRedisClient } from "#/shared/redis/init";
-import z from "zod/v4";
+import { getRedis } from "#/shared/redis/init";
+import z from "zod";
 
 async function getCachedOrder(uniqueId: string): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
-  const redis = getRedisClient()
+  const redis = getRedis()
   const redisKey = getOrderKey(uniqueId)
 
   const data = await redis.get(redisKey)

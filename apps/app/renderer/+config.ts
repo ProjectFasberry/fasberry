@@ -9,4 +9,8 @@ export default {
   reactStrictMode: false,
   passToClient: ['snapshot'],
   ssr: false,
+  redirects: {
+    '/private': '/private/config',
+    '/chat': "https://discord.gg/X4x6Unj89g"
+  }
 } satisfies Config;

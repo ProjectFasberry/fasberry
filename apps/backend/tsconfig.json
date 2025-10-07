@@ -27,15 +27,19 @@
     "paths": {
       "#/*": [
         "./src/*"
-      ]
+      ],
+      "@elysiajs/openapi/gen": ["../../node_modules/@elysiajs/openapi/gen/dist/gen"]
     }
   },
   "include": [
     "./**/*.ts",
-    "./**/*.tsx",
+    "./**/*.tsx"
   ],
   "exclude": [
     "node_modules",
     "dist"
-  ]
+  ],
+  "references": [
+    { "path": "../../packages/shared" }
+  ],
 }

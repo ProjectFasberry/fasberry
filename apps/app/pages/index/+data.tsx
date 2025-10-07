@@ -4,13 +4,15 @@ import { wrapTitle } from "@/shared/lib/wrap-title";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { logRouting } from "@/shared/lib/log";
 
-export async function data(pageContext: PageContextServer) {
-  const config = useConfig()
+const previewImage = getStaticImage("arts/adventure-in-blossom.jpg")
 
+export async function data(pageContext: PageContextServer) {
   logRouting(pageContext.urlPathname, "data");
+  
+  const config = useConfig()
   
   config({
     title: wrapTitle("Главная"),
-    image: getStaticImage("arts/adventure-in-blossom.jpg"),
+    image: previewImage,
   })
 }

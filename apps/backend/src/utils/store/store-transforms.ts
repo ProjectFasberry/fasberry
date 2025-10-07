@@ -2,7 +2,7 @@ import { getStaticUrl } from "#/helpers/volume";
 import { EXCHANGE_RATES_KEY } from "#/modules/store/payment/currencies.model";
 import { GAME_CURRENCIES, GameCurrency } from "#/modules/store/store-items.route";
 import { general } from "#/shared/database/main-db";
-import { getRedisClient } from "#/shared/redis/init";
+import { getRedis } from "#/shared/redis/init";
 import { ExchangeRate } from "#/shared/types/payment/payment-types";
 
 export function processImageUrl(target?: string | null) {
@@ -64,7 +64,7 @@ export async function defineGlobalPrice(
   currentCurrency: string = "RUB",
   initiator: string
 ): Promise<StorePrice> {
-  const redis = getRedisClient();
+  const redis = getRedis();
 
   const query = general
     .selectFrom("store_cart_items")

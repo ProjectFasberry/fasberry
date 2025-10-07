@@ -4,7 +4,16 @@ import { cartDataAtom, getBasketData, cartPriceAtom } from "./store-cart.model";
 import { client } from "@/shared/api/client";
 import { toast } from "sonner";
 import { isDeepEqual, sleep, withInit, withReset } from "@reatom/framework";
-import { z } from "zod/v4"
+import { z } from "zod"
+import { logError } from "@/shared/lib/log";
+import { StoreItem } from "./store.model";
+
+export async function getStoreItem(id: string, init?: RequestInit) {
+  const res = await client(`store/item/${id}`, { ...init, throwHttpErrors: false, })
+  const data = await res.json<WrappedResponse<StoreItem>>()
+  if ("error" in data) throw new Error(data.error)
+  return data.data
+}
 
 export const updateItemSelectedStatus = reatomAsync(async (ctx, id: number) => {
   const current = ctx.get(cartDataAtom).find(target => target.id === id);
@@ -134,7 +143,7 @@ export const removeItemFromCart = reatomAsync(async (ctx, id: number) => {
     throw new Error(res.error)
   }
 
-  await ctx.schedule(() => sleep(100))
+  await ctx.schedule(() => sleep(60))
 
   simulate(ctx, id, "unload")
 
@@ -147,7 +156,9 @@ export const removeItemFromCart = reatomAsync(async (ctx, id: number) => {
       updateItemStatus(ctx, res.id, { remove: true })
     })
   },
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (_, e) => {
+    logError(e)
+  }
 })
 
 export const addItemToCart = reatomAsync(async (ctx, id: number) => {
@@ -167,7 +178,9 @@ export const addItemToCart = reatomAsync(async (ctx, id: number) => {
 }, {
   name: "addItemToCart",
   onFulfill: (ctx, _) => updateCart(ctx),
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (_, e) => {
+    logError(e)
+  }
 }).pipe(withStatusesAtom())
 
 // Settings
@@ -221,7 +234,9 @@ export const changeRecipient = reatomAsync(async (ctx, id: number) => {
 
     changeRecipientDialogIsOpen(ctx, false)
   },
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (_, e) => {
+    logError(e)
+  }
 })
 
 export const changeRecipientIsValidAtom = atom<boolean>((ctx) => {

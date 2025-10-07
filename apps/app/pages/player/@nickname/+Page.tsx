@@ -1,4 +1,3 @@
-import { skinAction } from "@/shared/components/app/skin/models/skin.model"
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { pageContextAtom } from "@/shared/models/global.model"
 import { PlayerLands } from "@/shared/components/app/player/components/lands"
@@ -7,14 +6,15 @@ import { PlayerSkin } from "@/shared/components/app/player/components/skin"
 import { Balance } from "@/shared/components/app/player/components/balance";
 import { PlayerInfo } from "@/shared/components/app/player/components/info";
 import { PlayerAttributes } from "@/shared/components/app/player/components/attributes";
-import { Details } from "@/shared/components/app/player/components/details";
-import { useUpdate } from "@reatom/npm-react";
+import { ChangePassword, PurchasesHistory } from "@/shared/components/app/player/components/details";
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { PlayerActivity } from "@/shared/components/app/player/components/activity";
 import { playerActivityAction } from "@/shared/components/app/player/models/activity.model";
 import { action } from "@reatom/core";
 import { startPageEvents } from "@/shared/lib/events";
-import { targetUserAtom, userParamAtom } from "@/shared/components/app/player/models/player.model";
+import { isIdentityAtom, playerAtom, userParamAtom } from "@/shared/components/app/player/models/player.model";
 import { Data } from "./+data";
+import { Separator } from "@repo/ui/separator";
 
 userParamAtom.onChange((ctx, state) => {
   if (!state) return;
@@ -30,15 +30,44 @@ userParamAtom.onChange((ctx, state) => {
     const pageContext = ctx.get(pageContextAtom)
     if (!pageContext) return;
 
-    const data = pageContext.data as Data
-    targetUserAtom(ctx, data.user)
+    const { data } = pageContext.data as Data
+    playerAtom(ctx, data)
   }
 })
 
 const events = action((ctx) => {
-  skinAction(ctx)
   playerActivityAction(ctx)
 }, "events")
+
+const PlayerPrivated = reatomComponent(({ ctx }) => {
+  const isIdentity = ctx.spy(isIdentityAtom)
+  if (!isIdentity) return null;
+
+  return (
+    <>
+      <Balance />
+      <div className="flex flex-col gap-6 w-full h-fit">
+        <PurchasesHistory />
+        <ChangePassword />
+      </div>
+      <div className="flex flex-col w-full gap-4">
+        <Separator />
+        <Logout />
+      </div>
+    </>
+  )
+}, "PlayerPrivated")
+
+const PlayerPublic = () => {
+  return (
+    <>
+      <PlayerInfo />
+      <PlayerActivity />
+      <PlayerAttributes />
+      <PlayerLands />
+    </>
+  )
+}
 
 export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "player" }), [pageContextAtom]);
@@ -48,17 +77,8 @@ export default function Page() {
       <div className="flex flex-col lg:flex-row relative w-full h-full items-start gap-8">
         <PlayerSkin />
         <div className="flex flex-col w-full gap-12 lg:w-2/3 h-full">
-          <>
-            <PlayerInfo />
-            <PlayerActivity />
-            <PlayerAttributes />
-            <PlayerLands />
-          </>
-          <>
-            <Balance />
-            <Details />
-            <Logout />
-          </>
+          <PlayerPublic />
+          <PlayerPrivated />
         </div>
       </div>
     </MainWrapperPage>

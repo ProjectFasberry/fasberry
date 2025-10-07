@@ -8,7 +8,6 @@ import { ipPlugin } from '#/lib/plugins/ip';
 import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding";
 import { CROSS_SESSION_KEY, SESSION_KEY, setCookie } from '#/utils/auth/cookie';
 import { defineSession } from "#/lib/middlewares/define";
-import { createEvent } from "../server/events.route";
 
 const loginSchema = authSchema
 

@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Payment } from "./store.model";
 import { withReset } from "@reatom/framework";
 import { API_PREFIX_URL, isDevelopment } from "@/shared/env";
+import { logError } from "@/shared/lib/log";
+import { client } from "@/shared/api/client";
 
 export const msgAtom = atom<OrderEventPayload | null>(null, "msg")
 export const connectIsSuccessAtom = atom(false, "isSuccess")
@@ -46,7 +48,7 @@ esAtom.onChange((ctx, target) => {
   target.onopen = () => {
     isDevelopment && toast.success("Connected to payment events")
   }
-  
+
   target.addEventListener("payload", (event) => {
     try {
       msgAtom(ctx, JSON.parse(event.data))
@@ -67,5 +69,14 @@ export const connectToPaymentEvents = reatomAsync(async (ctx, target: string) =>
   return esAtom(ctx, es(url));
 }, {
   name: "connectToPaymentEvents",
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (_, e) => {
+    logError(e, { type: "toast" })
+  }
 })
+
+export async function getOrder(id: string, init: RequestInit) {
+  const res = await client(`store/order/${id}`, { ...init })
+  const data = await res.json<WrappedResponse<Payment>>()
+  if ("error" in data) throw new Error(data.error);
+  return data.data
+}

@@ -7,7 +7,7 @@ import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { userParamAtom } from "./player.model"
 
-type UserLands = {
+export type UserLands = {
   data: Land[],
   meta: {
     count: number
@@ -15,7 +15,7 @@ type UserLands = {
 }
 
 export async function getLands(nickname: string, init?: RequestInit) {
-  const res = await client(`server/lands/${nickname}`, { ...init })
+  const res = await client(`server/lands/list/${nickname}`, { ...init })
   const data = await res.json<WrappedResponse<UserLands>>()
   if ("error" in data) throw new Error(data.error)
   return data

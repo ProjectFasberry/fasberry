@@ -1,46 +1,45 @@
 import { playerpoints } from "#/shared/database/playerpoints-db"
-import { getNatsConnection } from "#/shared/nats/client"
+import { getNats } from "#/shared/nats/client"
 import { SERVER_EVENT_GIVE_BALANCE } from "#/shared/nats/subjects"
 import { logError } from "#/utils/config/logger"
+import { Msg } from "@nats-io/nats-core/lib/core"
 import { sql } from "kysely"
 
+async function handleGiveBalance(msg: Msg) {
+  const nickname = msg.data.toString();
+
+  try {
+    const res = await playerpoints
+      .updateTable("playerpoints_points")
+      .set({ points: sql`points + 5` })
+      .where("uuid", "=",
+        playerpoints
+          .selectFrom("playerpoints_username_cache")
+          .select("uuid")
+          .where("username", "=", nickname)
+      )
+      .executeTakeFirstOrThrow();
+
+    const payload = res.numUpdatedRows
+      ? JSON.stringify({ result: "ok" })
+      : JSON.stringify({ error: "not updated" });
+
+    msg.respond(payload);
+  } catch (e) {
+    logError(e);
+  }
+}
+
 export const subscribeGiveBalance = () => {
-  const nc = getNatsConnection()
+  const nc = getNats()
 
-  return nc.subscribe(SERVER_EVENT_GIVE_BALANCE, {
-    callback: async (e, msg) => {
-      if (e) {
-        logError(e)
-        return;
-      }
+  const subscription = nc.subscribe(SERVER_EVENT_GIVE_BALANCE, {
+    callback: (e, msg) => {
+      if (e) return logError(e);
 
-      const nickname: string = msg.data.toString()
-
-      try {
-        let payload: string | null = null;
-
-        const res = await playerpoints
-          .updateTable("playerpoints_points")
-          .set({ points: sql`points + 5` })
-          .where("uuid", "=",
-            playerpoints
-              .selectFrom("playerpoints_username_cache")
-              .select("uuid")
-              .where("username", "=", nickname)
-          )
-          .executeTakeFirstOrThrow()
-
-        if (res.numUpdatedRows) {
-          payload = JSON.stringify({ result: "ok" });
-          return msg.respond(payload)
-        }
-
-        payload = JSON.stringify({ error: "not updated" })
-
-        return msg.respond(payload)
-      } catch (e) {
-        logError(e)
-      }
+      void handleGiveBalance(msg)
     }
   })
+
+  return subscription
 }

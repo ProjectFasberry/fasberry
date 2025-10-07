@@ -36,7 +36,7 @@ async function getUserBalance(nickname: string) {
 
 export const playerBalance = new Elysia()
   .use(defineUser())
-  .get("/player-balance", async ({ nickname, status }) => {
+  .get("/balance", async ({ nickname, status }) => {
     if (!nickname) {
       return status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
     }
@@ -52,7 +52,9 @@ export const playerBalance = new Elysia()
 
 async function getSkills(nickname: string) {
   const query = await bisquite
+    // @ts-expect-error
     .selectFrom("ADAPT_DATA")
+    // @ts-expect-error
     .innerJoin("Players", "Players.UUID", "ADAPT_DATA.UUID")
     .select([
       "ADAPT_DATA.DATA"
@@ -168,7 +170,7 @@ type SkillsData = {
 };
 
 export const playerSkills = new Elysia()
-  .get("/player-skills/:nickname", async (ctx) => {
+  .get("/skills/:nickname", async (ctx) => {
     const nickname = ctx.params.nickname
 
     let skills = await getSkills(nickname)

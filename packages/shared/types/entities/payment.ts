@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { currencyCryptoSchema } from '../../schemas/entities/currencies-schema';
 import { donateSchema } from '../../schemas/entities/donate-schema';
 import { orderEventPayloadSchema, paymentCurrencySchema, paymentStatusSchema, paymentTypeSchema, paymentValueSchema } from '../../schemas/payment';

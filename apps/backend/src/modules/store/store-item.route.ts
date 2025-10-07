@@ -3,7 +3,7 @@ import { general } from "#/shared/database/main-db";
 import { StoreItem } from "@repo/shared/types/entities/store";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
-import z from "zod/v4";
+import z from "zod";
 
 async function getItem(id: number): Promise<StoreItem | null> {
   const query = await general

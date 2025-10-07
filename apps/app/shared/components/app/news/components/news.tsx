@@ -7,15 +7,6 @@ import { onConnect } from "@reatom/framework"
 import { isEmptyArray } from "@/shared/lib/array"
 import { NotFound } from "@/shared/ui/not-found"
 
-export type NewsType = {
-  id: string,
-  title: string
-  created_at: string,
-  description: string,
-  imageUrl: string,
-  views: number
-}
-
 const NewsSkeleton = () => {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 flex-col w-full h-full gap-4">

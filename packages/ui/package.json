@@ -9,7 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "exports": {
-    "./*": "./src/*"
+    "./*": "./src/components/*"
   },
   "sideEffects": [
     "**/*.css"

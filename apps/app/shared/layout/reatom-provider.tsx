@@ -3,8 +3,7 @@ import { reatomContext } from '@reatom/npm-react'
 import { PropsWithChildren, useRef } from 'react'
 import { usePageContext } from 'vike-react/usePageContext'
 import { snapshotAtom } from '../lib/ssr'
-
-const isSsr = typeof window !== 'undefined'
+import { isDevelopment } from '../env'
 
 export interface Fn<Args extends any[] = any[], Return = any> {
   (...a: Args): Return
@@ -28,7 +27,7 @@ export const ReatomProvider = ({ children }: PropsWithChildren) => {
   const ctx = useCreateCtx((ctx) => {
     snapshotAtom(ctx, snapshot)
 
-    if (isSsr && import.meta.env.DEV) {
+    if (typeof window !== 'undefined' && isDevelopment) {
       connectLogger(ctx)
     }
   })

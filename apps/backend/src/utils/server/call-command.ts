@@ -1,4 +1,4 @@
-import { getNatsConnection } from "#/shared/nats/client"
+import { getNats } from "#/shared/nats/client"
 import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
 import { withAbort } from "#/helpers/abortable"
 
@@ -29,7 +29,7 @@ export async function callServerCommand(
   { parent, value }: CallServerCommand,
   { signal }: AbortableCommandArgs
 ): Promise<{ result: "success" }> {
-  const nc = getNatsConnection()
+  const nc = getNats()
 
   try {
     const message = { event: "executeCommand", command: `${parent} ${value}` }

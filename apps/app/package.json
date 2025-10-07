@@ -48,7 +48,7 @@
     "vike": "0.4.240",
     "vike-react": "0.6.6",
     "vike-server": "1.0.24",
-    "zod": "3.25.67"
+    "zod": "4.1.11"
   },
   "devDependencies": {
     "@repo/config-typescript": "workspace:*",

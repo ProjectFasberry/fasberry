@@ -1,13 +1,19 @@
 {
 	"extends": "@repo/config-typescript/base.json",
-	"include": [
-		".", 
-	],
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx"
+  ],
 	"compilerOptions": {
 		"jsx": "react-jsx",
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"skipLibCheck": true,
-		"strict": true
+		"strict": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "incremental": true,
+    "outDir": "dist",
 	},
 }

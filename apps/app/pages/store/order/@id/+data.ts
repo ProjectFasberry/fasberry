@@ -1,44 +1,29 @@
 import { PageContextServer } from "vike/types";
 import { useConfig } from 'vike-react/useConfig'
-import { wrapTitle } from "@/shared/lib/wrap-title";
-import { client } from "@/shared/api/client";
-import { Payment } from "@/shared/components/app/shop/models/store.model";
 import { logRouting } from "@/shared/lib/log";
+import { getOrder } from "@/shared/components/app/shop/models/store-checkout.model";
+import { Payment } from "@/shared/components/app/shop/models/store.model";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getOrder(
-  id: string,
-  args: RequestInit
-) {
-  const res = await client(`store/order/${id}`, { throwHttpErrors: false, ...args })
-  const data = await res.json<WrappedResponse<Payment>>()
-  
-  if ("error" in data) throw new Error(data.error);
-
-  return data.data
+function metadata(order: Payment) {
+  return {
+    title: `Заказ ${order.unique_id}`
+  }
 }
 
 export async function data(pageContext: PageContextServer) {
+  logRouting(pageContext.urlPathname, "data")
+  
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
 
-  const item = await getOrder(pageContext.routeParams.id, { headers })
+  const order = await getOrder(pageContext.routeParams.id, { headers })
 
-  let title = `Заказ ${item.unique_id}`
-
-  if (!item) {
-    title = wrapTitle(`Заказ устарел`)
-  }
-
-  config({
-    title
-  })
-
-  logRouting(pageContext.urlPathname, "data")
+  config(metadata(order))
 
   return {
     id: pageContext.routeParams.id,
-    item
+    data: order
   }
 }

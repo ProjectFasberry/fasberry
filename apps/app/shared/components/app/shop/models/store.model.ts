@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { client } from '@/shared/api/client';
 import type { Currencies } from "@repo/shared/types/db/sqlite-database-types"
 import type { Selectable } from "kysely"

@@ -3,17 +3,17 @@ import { getUserNickname } from "#/modules/auth/auth.model";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { general } from "#/shared/database/main-db";
 import { isProduction } from "#/shared/env";
-import { setCookie } from "#/utils/auth/cookie";
+import { SESSION_KEY, setCookie } from "#/utils/auth/cookie";
 import { nanoid } from "nanoid";
 import { logger } from "#/utils/config/logger";
 
 export const defineOptionalUser = () => new Elysia()
   .use(defineSession())
-  .derive({ as: "scoped" }, async ({ session: token }) => {
+  .derive({ as: "scoped" }, async ({ session }) => {
     let nickname: string | null = null;
 
-    if (token) {
-      nickname = await getUserNickname(token);
+    if (session) {
+      nickname = await getUserNickname(session);
     }
 
     return { nickname }
@@ -21,12 +21,12 @@ export const defineOptionalUser = () => new Elysia()
 
 export const defineUser = () => new Elysia()
   .use(defineSession())
-  .derive({ as: "scoped" }, async ({ session: token, status }) => {
-    if (!token) {
+  .derive({ as: "scoped" }, async ({ session, status }) => {
+    if (!session) {
       throw status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
     }
 
-    const nickname = await getUserNickname(token);
+    const nickname = await getUserNickname(session);
 
     if (!nickname) {
       throw status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
@@ -38,7 +38,7 @@ export const defineUser = () => new Elysia()
 export const defineSession = () => new Elysia()
   .derive(
     { as: "global" },
-    ({ cookie }) => ({ session: cookie["session"].value as string | undefined ?? null })
+    ({ cookie }) => ({ session: cookie[SESSION_KEY].value as string | undefined ?? null })
   )
 
 export function defineClientId(cookie: Context["cookie"]) {
@@ -87,13 +87,21 @@ export const defineInitiator = () => new Elysia()
   })
 
 export async function validateAdmin(nickname: string) {
-  const result = await general
-    .selectFrom("admins")
-    .select("id")
-    .where("nickname", "=", nickname)
-    .executeTakeFirst()
+  const { exists } = await general
+    .selectFrom("players")
+    .innerJoin("roles", "roles.id", "players.role_id")
+    .select(eb =>
+      eb.exists(
+        eb.selectFrom('players')
+          .innerJoin('roles', 'roles.id', 'players.role_id')
+          .where('players.nickname', '=', nickname)
+          .where('roles.name', '=', 'admin')
+      ).as('exists')
+    )
+    .where("players.nickname", "=", nickname)
+    .executeTakeFirstOrThrow()
 
-  return Boolean(result?.id)
+  return exists
 }
 
 export const defineAdmin = () => new Elysia()

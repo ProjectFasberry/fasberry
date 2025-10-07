@@ -17,7 +17,7 @@ const events = action((ctx) => {
 }, "events")
 
 const NewsItem = reatomComponent(({ ctx }) => {
-  const data = useData<Data>().news
+  const data = useData<Data>().data
   if (!data) return null;
 
   return (

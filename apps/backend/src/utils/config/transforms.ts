@@ -5,3 +5,12 @@ export function safeJsonParse<T>(str: string): { ok: true; value: T } | { ok: fa
     return { ok: false, error: err as Error };
   }
 }
+
+export function wrapMeta(res: Partial<PaginatedMeta>): PaginatedMeta {
+  return {
+    hasNextPage: res.hasNextPage ?? false,
+    hasPrevPage: res.hasPrevPage ?? false,
+    endCursor: res.endCursor,
+    startCursor: res.startCursor
+  }
+}

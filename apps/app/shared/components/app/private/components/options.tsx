@@ -33,7 +33,7 @@ const OptionsList = reatomComponent(({ ctx }) => {
       {data.map((option) => (
         <div key={option.name} className="flex items-center justify-between w-full gap-1">
           <Typography className="text-lg">
-            Регистрация
+            {option.title}
           </Typography>
           <Switch
             checked={option.value}

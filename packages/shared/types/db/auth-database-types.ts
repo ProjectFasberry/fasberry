@@ -40,12 +40,6 @@ export interface ActivityUsers {
   type: PlayerActivityEvent;
 }
 
-export interface Admins {
-  created_at: Generated<string>;
-  id: Generated<number>;
-  nickname: string;
-}
-
 export interface AUTH {
   HASH: string;
   IP: string | null;
@@ -58,6 +52,20 @@ export interface AUTH {
   REGDATE: Int8 | null;
   TOTPTOKEN: string | null;
   UUID: string | null;
+}
+
+export interface Banners {
+  created_at: Generated<Timestamp>;
+  description: string | null;
+  href_title: string;
+  href_value: string;
+  id: Generated<number>;
+  title: string;
+}
+
+export interface BannersViews {
+  banner_id: Generated<number>;
+  nickname: string;
 }
 
 export interface Currencies {
@@ -155,12 +163,37 @@ export interface Options {
   value: boolean;
 }
 
+export interface Permissions {
+  id: Generated<number>;
+  name: string;
+}
+
+export interface Players {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  lower_case_nickname: string;
+  nickname: string;
+  premium_uuid: string | null;
+  role_id: Generated<number>;
+  uuid: string;
+}
+
 export interface Referrals {
   completed: Generated<boolean>;
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   initiator: string;
   recipient: string;
+}
+
+export interface RolePermissions {
+  permission_id: number;
+  role_id: number;
+}
+
+export interface Roles {
+  id: Generated<number>;
+  name: string;
 }
 
 export interface Rules {
@@ -247,8 +280,9 @@ export interface VotedUsers {
 export interface DB {
   activity_heatmap: ActivityHeatmap;
   activity_users: ActivityUsers;
-  admins: Admins;
   AUTH: AUTH;
+  banners: Banners;
+  banners_views: BannersViews;
   currencies: Currencies;
   events: Events;
   events_original: EventsOriginal;
@@ -262,7 +296,11 @@ export interface DB {
   news: News;
   news_views: NewsViews;
   options: Options;
+  permissions: Permissions;
+  players: Players;
   referrals: Referrals;
+  role_permissions: RolePermissions;
+  roles: Roles;
   rules: Rules;
   rules_termins: RulesTermins;
   SOCIAL: SOCIAL;

@@ -1,22 +1,6 @@
 import { client } from "@/shared/api/client";
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-
-type StatusPayload = {
-  proxy: {
-    status: string;
-    online: number;
-    max: number;
-    players: string[];
-  };
-  servers: {
-    bisquite: {
-      online: number;
-      max: number;
-      players: string[];
-      status: string;
-    };
-  };
-}
+import { StatusPayload } from "@repo/shared/types/entities/other"
 
 export const serverStatusAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {

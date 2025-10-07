@@ -1,7 +1,7 @@
-import { getNatsConnection } from "#/shared/nats/client"
+import { getNats } from "#/shared/nats/client"
 import { PAYMENT_FIAT_START_SUBJECT } from "#/shared/nats/subjects"
 import { paymentFiatMethodSchema } from "@repo/shared/schemas/payment"
-import type { z } from "zod/v4"
+import type { z } from "zod"
 
 type CreateFiatOrder = { nickname: string, paymentValue: string, paymentType: string, type: z.infer<typeof paymentFiatMethodSchema> }
 
@@ -15,7 +15,7 @@ type CreateFiatOrderResponse = {
 export async function createFiatOrder({
   paymentValue, paymentType, nickname, type
 }: CreateFiatOrder) {
-  const nc = getNatsConnection()
+  const nc = getNats()
 
   const payload: CreateFiatOrder = {
     nickname, paymentType, paymentValue: String(paymentValue), type

@@ -1,14 +1,15 @@
 import { CRYPTO_PAY_API } from "#/shared/api/crypto-api";
 import { DEFAULT_EXPIRATION_DATE } from "#/shared/constants/invoice-defaults";
 import { payments } from "#/shared/database/payments-db";
-import { getRedisClient } from "#/shared/redis/init";
+import { getRedis } from "#/shared/redis/init";
 import { ExchangeRate, InvoiceType } from "#/shared/types/payment/payment-types";
 import { logger } from "#/utils/config/logger";
 import { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema";
 import { PaymentStatus } from "@repo/shared/types/db/payments-database-types";
 import { nanoid } from "nanoid";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { EXCHANGE_RATES_KEY } from "./currencies.model";
+import { FRONTEND_ENDPOINT } from "#/shared/env";
 
 type CreateInvoicePayload = Pick<InvoiceType,
   | "currency_type"
@@ -52,7 +53,7 @@ async function getPriceInCurrency(
   inputPrice: number,
   currency: z.infer<typeof currencyCryptoSchema>
 ): Promise<number> {
-  const redis = getRedisClient()
+  const redis = getRedis()
 
   const data = await redis.get(EXCHANGE_RATES_KEY)
 
@@ -81,7 +82,7 @@ export async function rollbackOrder({
   invoiceId: number, uniqueId: string, initiator: string
 }) {
   const deleteInvoice = await payments.transaction().execute(async (trx) => {
-    const redis = getRedisClient();
+    const redis = getRedis();
 
     const deleteInvoice = await CRYPTO_PAY_API
       .post(`deleteInvoice`, { json: { invoice_id: invoiceId } })
@@ -102,7 +103,7 @@ export async function rollbackOrder({
   return deleteInvoice ?? false
 }
 
-export const getOrderLink = (uniqueId: string) => `${process.env.FRONTEND_ENDPOINT}/store/order/${uniqueId}`
+export const getOrderLink = (uniqueId: string) => `${FRONTEND_ENDPOINT}/store/order/${uniqueId}`
 export const getOrderKey = (uniqueId: string) => `order:${uniqueId}`
 export const getOrderInitiatorIndexKey = (initiator: string) => `index:initiator:${initiator}`
 const getOrderRateKey = (initiator: string) => `rate:order_limit:${initiator}`
@@ -124,7 +125,7 @@ const ORDER_LIMIT = 64;
 const WINDOW_SECONDS = 10 * 60;
 
 async function validateOrderLimit(initiator: string): Promise<boolean> {
-  const redis = getRedisClient();
+  const redis = getRedis();
   const key = getOrderRateKey(initiator)
 
   const count = await redis.incr(key);
@@ -145,7 +146,7 @@ export async function createCryptoOrder({
     throw new Error("Вы превысили лимит заказов. Подождите и попробуйте позже.");
   }
 
-  const redis = getRedisClient()
+  const redis = getRedis()
 
   const amount = await getPriceInCurrency(totalPrice, asset)
   const uniqueId = nanoid(10)

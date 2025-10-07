@@ -12,13 +12,6 @@ declare global {
       Page: () => React.JSX.Element
     }
   }
-
-  interface CurrentUser {
-    nickname: string
-    uuid: string
-    issued_time: string | Date,
-    reg_date: string | Date
-  }
 }
 
 export { }

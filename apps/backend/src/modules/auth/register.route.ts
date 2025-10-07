@@ -5,11 +5,11 @@ import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-reques
 import ky from "ky";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { ipPlugin } from "#/lib/plugins/ip";
-import { logError, logger } from "#/utils/config/logger";
+import { logger } from "#/utils/config/logger";
 import { textSets } from "#/utils/config/load-internal-files";
 import { general } from "#/shared/database/main-db";
 import { validateAuthStatus } from "./login.route";
-import { createEvent } from "../server/events.route";
+import { createEvent } from "../server/events/events.model";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -28,25 +28,25 @@ export function validatePasswordSafe(pwd: string): boolean {
 
 async function getUserUUID(nickname: string) {
   let uuid: string | null = null;
+  let type: "offline" | "license" = "license"
 
   try {
     const license = await getLicense(nickname)
 
-    logger.info(`Player ${nickname} has a ${"error" in license ? "offline" : "license"} account`)
-
     if ("error" in license) {
-      const error = new Error(license.reason);
-      logError(error)
-      throw error
+      type = "offline";
+      throw new Error(license.reason)
     }
 
     if (license.uuid) {
       uuid = license.uuid
     }
   } catch (e) {
-    logError(e);
+    // generate offline uuid if user is not licensed
     uuid = generateOfflineUUID(nickname)
   }
+
+  logger.log(`Player ${nickname} has a ${type} account`)
 
   return uuid;
 }
@@ -63,7 +63,7 @@ async function checkRegistrationState() {
 
 function afterRegistrationEvents({ nickname }: { nickname: string }) {
   createEvent({ 
-    description: `Игрок ${nickname} зарегистрирован`,
+    description: `Игрок ${nickname} был зарегистрирован`,
     type: "log",
     initiator: "system",
     title: "Регистрация"

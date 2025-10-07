@@ -17,7 +17,7 @@ const events = action((ctx) => {
 }, "events")
 
 const SelectedDonate = reatomComponent(({ ctx }) => {
-  const data = useData<Data>().item
+  const data = useData<Data>().data
 
   const desc = data.description ? data.description as [] : []
 

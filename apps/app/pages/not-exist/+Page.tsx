@@ -5,8 +5,9 @@ import { usePageContext } from "vike-react/usePageContext"
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const TITLE = {
-  "user": "Игрок не найден",
+  "player": "Игрок не найден",
   "land": "Похоже этого региона уже нет",
+  "store-item": "Товар не найден"
 } as const;
 
 const allayImage = getStaticImage("gifs/allay.gif")
@@ -16,7 +17,7 @@ export default function Page() {
 
   return (
     <MainWrapperPage>
-      <div className="flex flex-col items-center h-dvh justify-center gap-4 w-full">
+      <div className="flex flex-col items-center h-[80vh] justify-center gap-4 w-full">
         <img src={allayImage} height={102} width={102} alt="Allay" />
         <Typography className="font-semibold text-xl">
           {type ? TITLE[type] : "Ресурс не найден"}

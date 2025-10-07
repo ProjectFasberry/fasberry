@@ -1,3 +1,3 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const donateSchema = z.enum(['authentic', 'arkhont', 'loyal']);

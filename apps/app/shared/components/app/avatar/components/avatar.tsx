@@ -2,13 +2,13 @@ import { HTMLAttributes } from 'react';
 import { tv, VariantProps } from 'tailwind-variants';
 import { reatomComponent, useUpdate } from '@reatom/npm-react';
 import { Skeleton } from '@repo/ui/skeleton';
-import { avatarAction, selectAvatar, selectAvatarStatus } from '../models/avatar.model';
+import { avatarAction, getAvatar, getAvatarState } from '../models/avatar.model';
 
 const avatarVariants = tv({
-  base: `relative rounded-lg border border-neutral-600/20`,
+  base: `relative rounded-lg aspect-square border border-neutral-600/20`,
   variants: {
     variant: {
-      default: 'max-w-[68px] max-h-[68px]',
+      default: 'min-h-16 min-w-16 max-w-16 max-h-16',
     }
   },
 })
@@ -21,25 +21,11 @@ interface AvatarProps extends HTMLAttributes<HTMLDivElement>,
   nickname: string;
 }
 
-const SyncAvatar = ({ nickname }: { nickname: string }) => {
-  useUpdate((ctx) => avatarAction(ctx, nickname), [nickname])
-  return null;
-}
-
-export const Avatar = reatomComponent<AvatarProps>(({ ctx, ...values }) => {
-  return (
-    <>
-      <SyncAvatar nickname={values.nickname} />
-      <AvatarImage {...values} />
-    </>
-  )
-}, "Avatar")
-
 const AvatarImage = reatomComponent<AvatarProps>(({
   ctx, className, children, withStatus, variant, propWidth, propHeight, nickname, ...props
 }) => {
-  const url = ctx.spy(selectAvatar(nickname))
-  const isLoading = ctx.spy(selectAvatarStatus(nickname))
+  const url = getAvatar(ctx, nickname)
+  const isLoading = getAvatarState(ctx, nickname)
 
   if (isLoading) {
     return <Skeleton style={{ height: propHeight, width: propWidth }} />
@@ -55,10 +41,18 @@ const AvatarImage = reatomComponent<AvatarProps>(({
         src={url}
         width={propWidth}
         height={propHeight}
-        className={`rounded-sm`}
+        className="rounded-sm"
         loading="eager"
         alt=""
       />
     </div>
   );
 }, "AvatarImage")
+
+export const Avatar = reatomComponent<AvatarProps>(({ ctx, ...values }) => {
+  const nickname = values.nickname;
+
+  useUpdate((ctx) => avatarAction(ctx, nickname), [nickname])
+
+  return <AvatarImage {...values} />
+}, "Avatar")

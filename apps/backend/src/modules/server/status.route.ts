@@ -1,12 +1,17 @@
 import Elysia from "elysia";
-import { getNatsConnection } from "#/shared/nats/client";
+import { getNats } from "#/shared/nats/client";
 import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import ky from "ky";
 import { logger } from "#/utils/config/logger";
 import { general } from "#/shared/database/main-db";
-import z from "zod/v4";
+import z from "zod";
 import { isProduction } from "#/shared/env";
+import { StatusPayload } from "@repo/shared/types/entities/other"
+import { throwError } from "#/helpers/throw-error";
+import { getRedis } from "#/shared/redis/init";
+import { getRedisKey } from "#/helpers/redis";
+import { safeJsonParse } from "#/utils/config/transforms";
 
 type ServerStatus = {
   online: boolean;
@@ -64,7 +69,7 @@ const statusSchema = z.object({
   type: z.enum(["servers", "services"])
 })
 
-type StatusPayload = {
+type StatusPayloadGlobal = {
   maxPlayers: number,
   players: Array<string>,
   tps: Array<number>,
@@ -94,75 +99,102 @@ async function getProxyStats(): Promise<ServerStatus | null> {
   return data
 }
 
-async function getBisquiteStats(): Promise<StatusPayload | null> {
-  const nc = getNatsConnection()
+export async function updateServerStatus() {
+  const redis = getRedis()
+
+  async function getData() {
+    const rawProxy = await getProxyStats()
+
+    if (rawProxy && rawProxy.online === false) {
+      const data = {
+        proxy: initial,
+        servers: { bisquite: initial }
+      }
+
+      return data;
+    }
+
+    let rawBisquite: StatusPayloadGlobal | null = null;
+
+    try {
+      rawBisquite = await getBisquiteStats()
+    } catch (e) {
+      if (e instanceof Error) {
+        logger.warn(e.message, e.stack)
+      }
+    }
+
+    const proxy = rawProxy as ServerStatus
+
+    const bisquite = (rawBisquite && "players" in rawBisquite) ? {
+      online: rawBisquite.currentOnline,
+      max: rawBisquite.maxPlayers,
+      players: rawBisquite.players,
+      status: "online"
+    } : initial
+
+    const data: StatusPayload = {
+      proxy: {
+        status: "online",
+        online: proxy.players?.online ?? 0,
+        max: proxy.players?.max ?? 200,
+        players: proxy.players?.list ? proxy.players.list.map((player) => player.name_raw) : []
+      },
+      servers: { bisquite }
+    }
+
+    return data;
+  }
+ 
+  const data = await getData()
+
+  await redis.set(SERVER_STATUS_KEY, JSON.stringify(data))
+}
+
+async function getBisquiteStats(): Promise<StatusPayloadGlobal | null> {
+  const nc = getNats()
 
   const res = await nc.request(
-    SERVER_USER_EVENT_SUBJECT, JSON.stringify({ event: "getServerStats" }), { timeout: 300 }
+    SERVER_USER_EVENT_SUBJECT, JSON.stringify({ event: "getServerStats" }), { timeout: 1000 }
   )
 
   if (!res) return null;
 
   if ("mspt" in res) {
-    return res.json<StatusPayload>()
+    return res.json<StatusPayloadGlobal>()
   }
 
   return null;
 }
 
+const SERVER_STATUS_KEY = getRedisKey("internal", "server-status:data")
+
+async function getServerStatus(type: z.infer<typeof statusSchema>["type"]) {
+  const redis = getRedis()
+
+  const dataStr = await redis.get(SERVER_STATUS_KEY)
+  if (!dataStr) return null;
+  
+  const result = safeJsonParse<StatusPayload>(dataStr)
+  if (!result.ok) return null;
+
+  const data = result.value
+  return data;
+}
+
 export const status = new Elysia()
-  .get("/status", async ({ status, set, ...ctx }) => {
-    const type = ctx.query.type;
+  .get("/status", async ({ status, set, query }) => {
+    const type = query.type;
 
-    if (type === 'servers') {
-      const rawProxy = await getProxyStats()
-
-      if (rawProxy && rawProxy.online === false) {
-        const data = {
-          proxy: initial,
-          servers: { bisquite: initial }
-        }
-
-        return status(HttpStatusEnum.HTTP_200_OK, { data })
-      }
-
-      let rawBisquite: StatusPayload | null = null;
-
-      try {
-        rawBisquite = await getBisquiteStats()
-      } catch (e) {
-        !isProduction && e instanceof Error && logger.warn(e.message, e.stack)
-      }
-
-      const proxy = rawProxy as ServerStatus
-
-      const bisquite = (rawBisquite && "players" in rawBisquite) ? {
-        online: rawBisquite.currentOnline,
-        max: rawBisquite.maxPlayers,
-        players: rawBisquite.players,
-        status: "online"
-      } : initial
-
-      const data = {
-        proxy: {
-          status: "online",
-          online: proxy.players?.online ?? 0,
-          max: proxy.players?.max ?? 200,
-          players: proxy.players?.list ? proxy.players.list.map((player) => player.name_raw) : []
-        },
-        servers: { bisquite }
-      }
-
-      set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
-
-      return status(HttpStatusEnum.HTTP_200_OK, { data })
-    }
+    const data = await getServerStatus(type)
 
     if (type === 'services') {
-      return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, "Not supported")
+      return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Not supported"))
     }
 
-    return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, "Not supported")
+    set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     query: statusSchema
   })

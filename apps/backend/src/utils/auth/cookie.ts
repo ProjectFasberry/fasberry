@@ -1,4 +1,4 @@
-import { isProduction } from "#/shared/env"
+import { DOMAIN_NAME, isProduction } from "#/shared/env"
 import { Context } from "elysia"
 
 type Properties = {
@@ -11,7 +11,7 @@ type SetCookie = Properties & {
   expires: Date
 }
 
-export const DOMAIN = `.${process.env.DOMAIN_NAME}`
+export const DOMAIN = `.${DOMAIN_NAME}`
 export const SESSION_KEY = "session";
 export const CROSS_SESSION_KEY = "logged_nickname"
 

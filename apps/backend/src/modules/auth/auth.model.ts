@@ -1,7 +1,9 @@
 import { normalizeIp } from "#/helpers/normalize-ip"
 import { general } from "#/shared/database/main-db"
-import { getRedisClient } from "#/shared/redis/init"
-import z from "zod/v4"
+import { getRedis } from "#/shared/redis/init"
+import { logger } from "#/utils/config/logger"
+import { safeJsonParse } from "#/utils/config/transforms"
+import z from "zod"
 
 export const DEFAULT_SESSION_EXPIRE = 60 * 60 * 24 * 30 // 30 days
 export const DEFAULT_SESSION_EXPIRE_MS = 60 * 60 * 24 * 30 * 1000
@@ -39,22 +41,15 @@ type UserSessionPayload = {
 }
 
 export async function getUserNickname(token: string): Promise<string | null> {
-  const redis = getRedisClient()
-  const cacheKey = getUserKey(token)
+  const redis = getRedis()
 
-  const cachedUser = await redis.get(cacheKey);
+  const data = await redis.get(getUserKey(token));
+  if (!data) return null;
 
-  if (!cachedUser) {
-    return null;
-  }
+  const result = safeJsonParse<UserSessionPayload>(data)
+  if (!result.ok) return null;
 
-  const parsed = JSON.parse(cachedUser) as UserSessionPayload
-
-  if ("nickname" in parsed) {
-    return parsed.nickname
-  }
-
-  return null
+  return result.value.nickname ?? null
 }
 
 export async function getIsExistsSession(token: string) {
@@ -65,7 +60,7 @@ export async function getIsExistsSession(token: string) {
 export async function createSession(
   { token, info, nickname }: CreateSession
 ): Promise<CreateSession & { expires_at: Date }> {
-  const redis = getRedisClient()
+  const redis = getRedis()
 
   const userSessionsKey = getUserSessionsKey(nickname)
   const newSessionKey = getUserKey(token)
@@ -131,7 +126,7 @@ export async function createSession(
 }
 
 export async function deleteSession(token: string): Promise<boolean> {
-  const redis = getRedisClient()
+  const redis = getRedis()
   const sessionKey = getUserKey(token)
   const nickname = await redis.get(sessionKey);
 
@@ -154,7 +149,7 @@ export async function deleteSession(token: string): Promise<boolean> {
 }
 
 export async function refreshSession(token: string) {
-  const redis = getRedisClient()
+  const redis = getRedis()
   const sessionKey = getUserKey(token)
   const remainingTtlMs = await redis.pttl(sessionKey);
 
@@ -220,23 +215,45 @@ export async function createUser({
   nickname, findout, password, referrer, uuid, ip
 }: CreateUser) {
   return general.transaction().execute(async (trx) => {
-    const user = await trx
-      .insertInto("AUTH")
-      .values({
-        NICKNAME: nickname, LOWERCASENICKNAME: nickname.toLowerCase(),
-        IP: normalizeIp(ip),
-        HASH: password,
-        UUID: uuid,
-        REGDATE: new Date().getTime()
-      })
-      .returning(["NICKNAME as nickname", "REGDATE"])
-      .executeTakeFirstOrThrow()
+    const regDateMs = new Date().getTime();
+    const lowerCaseNickname = nickname.toLowerCase();
+    
+    const [user, _] = await Promise.all([
+      trx
+        .insertInto("players")
+        .values({
+          nickname,
+          lower_case_nickname: lowerCaseNickname,
+          uuid
+        })
+        .returning(["nickname"])
+        .executeTakeFirstOrThrow(),
+      trx
+        .insertInto("AUTH")
+        .values({
+          NICKNAME: nickname, 
+          LOWERCASENICKNAME: lowerCaseNickname,
+          IP: normalizeIp(ip),
+          HASH: password,
+          UUID: uuid,
+          REGDATE: regDateMs
+        })
+        .returning(["NICKNAME", "REGDATE"])
+        .executeTakeFirstOrThrow()
+    ])
 
-    await general.insertInto("findout").values({ nickname, value: findout }).executeTakeFirst()
+    await general
+      .insertInto("findout")
+      .values({ nickname, value: findout })
+      .executeTakeFirst()
 
     if (referrer) {
       await registerReferrer({ initiator: nickname, recipient: referrer })
     }
+
+    logger
+      .withTag("Auth")
+      .log(`New player ${nickname}. Registered ${new Date().toISOString()}`)
 
     return user;
   })

@@ -4,37 +4,7 @@ import { IconArrowRight } from "@tabler/icons-react";
 import { News } from "@/shared/components/app/news/components/news";
 import { Intro } from "@/shared/components/app/intro/components/intro";
 import { Events } from "@/shared/components/app/events/components/events";
-
-const CONTACTS = [
-  {
-    title: "Telegram",
-    value: "tg",
-    img: "https://cristalix.gg/content/icons/tg.svg",
-    color: "bg-[#007CBD]",
-    href: "https://t.me/fasberry",
-  },
-  {
-    title: "VK",
-    value: "vk",
-    img: "https://cristalix.gg/content/icons/vk.svg",
-    color: "bg-[#0b5aba]",
-    href: "https://vk.com/fasberry",
-  },
-  {
-    title: "Discord",
-    value: "ds",
-    img: "https://cristalix.gg/content/icons/discord.svg",
-    color: "bg-[#5865F2]",
-    href: "https://discord.gg/X4x6Unj89g",
-  },
-  {
-    title: "X",
-    value: "x",
-    img: "https://cristalix.gg/content/icons/x.svg",
-    color: "bg-black",
-    href: "https://x.com/fasberry",
-  },
-]
+import { CONTACTS } from "@/shared/consts/contacts";
 
 const Contacts = () => {
   return (

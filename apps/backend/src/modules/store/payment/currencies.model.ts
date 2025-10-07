@@ -1,6 +1,6 @@
 import { getRedisKey } from "#/helpers/redis";
 import { CRYPTO_PAY_API } from "#/shared/api/crypto-api";
-import { getRedisClient } from "#/shared/redis/init";
+import { getRedis } from "#/shared/redis/init";
 import { ExchangeRate } from "#/shared/types/payment/payment-types";
 import { logger } from "#/utils/config/logger";
 import { CryptoPayPayload } from "./create-crypto-order";
@@ -9,7 +9,7 @@ export const EXCHANGE_RATES_KEY = getRedisKey("external", "exchange-rates:data")
 export const EXCHANGE_RATES_PREVIOUS_KEY = getRedisKey("external", "exchange-rates:data:previous");
 
 export async function updateExchangeRates() {
-  const redis = getRedisClient();
+  const redis = getRedis();
 
   try {
     const data = await CRYPTO_PAY_API("getExchangeRates").json<CryptoPayPayload<ExchangeRate[]>>()

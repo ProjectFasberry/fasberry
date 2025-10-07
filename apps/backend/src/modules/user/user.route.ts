@@ -3,13 +3,15 @@ import dayjs from "dayjs"
 import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { luckperms } from "#/shared/database/luckperms-db";
-import { getPlayerAvatar } from "../server/skin.model";
+import { getPlayerAvatar } from "../server/skin/skin.model";
 import { Donate } from "@repo/shared/types/entities/donate";
 import { defineOptionalUser } from "#/lib/middlewares/define";
+import { sql } from "kysely";
+import { Player } from "@repo/shared/types/entities/user";
 
 async function getDonate(
   { recipient }: { recipient: string }
-): Promise<{ group: Donate }> {
+): Promise<Donate> {
   const query = await luckperms
     .selectFrom("luckperms_user_permissions")
     .innerJoin("luckperms_players", "luckperms_players.uuid", "luckperms_user_permissions.uuid")
@@ -20,14 +22,14 @@ async function getDonate(
     .where("luckperms_players.username", "=", recipient)
     .executeTakeFirst()
 
-  if (!query) return { group: "default" as Donate }
+  if (!query) return "default" as Donate
 
-  return { group: query.group.slice(6) as Donate }
+  return query.group.slice(6) as Donate
 }
 
-type PlayerRatePayload = { 
-  count: number; 
-  isRated: boolean 
+type PlayerRatePayload = {
+  count: number;
+  isRated: boolean
 }
 
 async function getRate(
@@ -51,56 +53,39 @@ async function getRate(
   };
 }
 
-type PlayerMainPayload = {
-  nickname: string;
-  lowercase_nickname: string,
-  uuid: string;
-  details: {
-    reg_date: Date,
-    login_date: Date
-  }
-}
-
 async function getMain(
   { recipient }: { recipient: string }
-): Promise<PlayerMainPayload | null> {
+): Promise<Omit<Player, "rate" | "avatar" | "group"> | null> {
   const query = await general
-    .selectFrom("AUTH")
+    .selectFrom("players")
+    .leftJoin(
+      "activity_users", (join) => join
+        .on("activity_users.nickname", "=", "players.nickname")
+        .on("activity_users.type", "=", sql`'quit'`)
+    )
     .select([
-      "NICKNAME as nickname",
-      "REGDATE as reg_date",
-      "LOGINDATE as login_date",
-      "UUID as uuid",
-      "LOWERCASENICKNAME as lowercase_nickname",
+      "players.nickname",
+      "players.created_at as reg_date",
+      "activity_users.event as login_date",
+      "players.uuid",
+      "players.lower_case_nickname",
     ])
-    .where("NICKNAME", "=", recipient)
+    .where("players.nickname", "=", recipient)
     .executeTakeFirst()
 
   if (!query) return null;
 
-  if (!query.uuid) {
-    console.warn(`Player "${recipient}" has no UUID`);
-    return null;
-  }
+  const { reg_date, login_date, ...base } = query;
 
-  const reg_date = dayjs(Number(query.reg_date)).toDate();
-  const login_date = dayjs(Number(query.login_date)).toDate()
+  const regDate = dayjs(Number(query.reg_date)).toDate();
+  const loginDate = dayjs(Number(query.login_date)).toDate()
 
   return {
-    nickname: query.nickname,
-    lowercase_nickname: query.lowercase_nickname,
-    uuid: query.uuid,
-    details: {
-      reg_date,
-      login_date
+    ...base,
+    meta: {
+      reg_date: regDate,
+      login_date: loginDate
     }
-  }
-}
-
-type PlayerPayload = Omit<PlayerMainPayload, "details"> & {
-  avatar: string;
-  details: Pick<PlayerMainPayload, "details">["details"] & {
-    rate: PlayerRatePayload
   }
 }
 
@@ -109,26 +94,26 @@ export const player = new Elysia()
   .get("/player/:nickname", async ({ status, nickname: initiator, params }) => {
     const recipient = params.nickname;
 
-    const [main, group, avatar, details] = await Promise.all([
+    const [main, group, avatar, rate] = await Promise.all([
       getMain({ recipient }),
       getDonate({ recipient }),
       getPlayerAvatar({ recipient }),
       getRate({ recipient, initiator }),
     ]);
 
-    if (!main || !group || !avatar || !details) {
+    if (!main || !group || !avatar || !rate) {
       return status(HttpStatusEnum.HTTP_404_NOT_FOUND, { data: null });
     }
 
-    const user: PlayerPayload = {
-      ...main,
-      ...group,
+    const { meta, ...some } = main
+
+    const user: Player = {
+      ...some,
+      group,
       avatar,
-      details: {
-        ...main.details,
-        rate: details,
-      },
+      meta,
+      rate,
     };
-    
+
     return status(HttpStatusEnum.HTTP_200_OK, { data: user });
   })

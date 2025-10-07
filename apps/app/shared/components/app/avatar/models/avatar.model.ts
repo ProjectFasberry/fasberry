@@ -1,38 +1,38 @@
 import { reatomAsync } from "@reatom/async"
-import { atom } from "@reatom/core"
 import { getSkinDetails } from "../../skin/models/skin.model"
+import { batch, CtxSpy, reatomMap } from "@reatom/framework"
+import { logError } from "@/shared/lib/log"
 
-export const avatarsUrls = atom<Record<string, string>>({}, "avatarUrls")
-const avatarsIsLoading = atom<Record<string, boolean>>({}, "avatarUrls")
+export const avatarsAtom = reatomMap<string, string>(new Map(), "avatars")
+export const avatarsLoadingAtom = reatomMap<string, boolean>(new Map(), "avatarsLoading")
 
-export const selectAvatar = (target: string) => atom((ctx) => {
-  return ctx.spy(avatarsUrls)[target]
-}, `${target}.avatar`)
-
-export const selectAvatarStatus = (target: string) => atom((ctx) => {
-  return ctx.spy(avatarsIsLoading)[target]
-}, `${target}.avatarStatus`)
+export const getAvatar = (ctx: CtxSpy, nickname: string) => ctx.spy(avatarsAtom).get(nickname)
+export const getAvatarState = (ctx: CtxSpy, nickname: string) => ctx.spy(avatarsLoadingAtom).get(nickname)
 
 export const avatarAction = reatomAsync(async (ctx, nickname: string) => {
-  const cache = ctx.get(selectAvatar(nickname))
+  const cachedUrl = avatarsAtom.get(ctx, nickname)
+  if (cachedUrl) return;
 
-  if (cache) {
-    return { target: nickname, url: cache }
-  }
+  avatarsLoadingAtom.set(ctx, nickname, true)
 
-  avatarsIsLoading(ctx, (state) => ({ ...state, [nickname]: true }))
+  const url = await ctx.schedule(() => getSkinDetails(
+    { type: "head", nickname }, { signal: ctx.controller.signal })
+  )
 
-  const url = await ctx.schedule(() => getSkinDetails({ type: "head", nickname }))
-
-  return { url, target: nickname }
+  return { url, nickname }
 }, {
   name: "avatarAction",
-  onFulfill: (ctx, res) => {
-    if (!res) return;
+  onFulfill: (ctx, result) => {
+    if (!result) return;
 
-    const { url, target } = res
+    const { url, nickname } = result
 
-    avatarsUrls(ctx, (state) => ({ ...state, [target]: url }))
-    avatarsIsLoading(ctx, (state) => ({ ...state, [target]: false }))
+    batch(ctx, () => {
+      avatarsAtom.getOrCreate(ctx, nickname, () => url)
+      avatarsLoadingAtom.set(ctx, nickname, false)
+    })
+  },
+  onReject: (_, e) => {
+    logError(e)
   }
 })

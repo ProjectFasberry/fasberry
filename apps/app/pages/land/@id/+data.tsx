@@ -16,9 +16,7 @@ async function getLand(
 ) {
   const res = await client(`server/land/${ulid}`, { throwHttpErrors: false, ...args })
   const data = await res.json<WrappedResponse<Land>>()
-
   if ('error' in data) throw new Error(data.error)
-
   return data.data
 }
 
@@ -49,27 +47,21 @@ function metadata(
 }
 
 export async function data(pageContext: PageContextServer) {
+  logRouting(pageContext.urlPathname, "data");
+
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
 
-  let land: Land | null = null;
-
-  try {
-    land = await getLand(pageContext.routeParams.id, { headers })
-  } catch (e) {
-    console.error(e)
-  }
+  const land = await getLand(pageContext.routeParams.id, { headers })
 
   if (!land) {
     throw render("/not-exist?type=land")
   }
 
   config(metadata(land, pageContext))
-
-  logRouting(pageContext.urlPathname, "data");
   
   return {
     id: pageContext.routeParams.id,
-    land
+    data: land
   }
 }

@@ -176,7 +176,7 @@ services:
       MARIADB_USER: ${MYSQL_USER}
       MARIADB_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - ${SKINS_PROXY_MYSQL_PORT}:3306/tcp
+      - ${SKINS_MYSQL_PORT}:3306/tcp
     volumes:
       - ./data/fasberry/db/minecraft/skins_proxy/data:/var/lib/mysql
     networks:

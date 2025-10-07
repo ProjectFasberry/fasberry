@@ -3,7 +3,7 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { general } from "#/shared/database/main-db";
 import { StoreItem } from "@repo/shared/types/entities/store";
 import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
-import z from "zod/v4";
+import z from "zod";
 
 export const GAME_CURRENCIES = ["CHARISM", "BELKOIN"] as const;
 export type GameCurrency = typeof GAME_CURRENCIES[number]

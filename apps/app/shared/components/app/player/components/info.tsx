@@ -1,18 +1,18 @@
 import { reatomComponent } from "@reatom/npm-react";
 import { Rate } from "./rate";
-import { targetUserAtom } from "../models/player.model";
+import { playerAtom } from "../models/player.model";
 import dayjs from "@/shared/lib/create-dayjs"
 import { DONATE_COLORS, DONATE_TITLE } from "@repo/shared/constants/donate-aliases";
 
 export const PlayerInfo = reatomComponent(({ ctx }) => {
-  const user = ctx.spy(targetUserAtom)
+  const user = ctx.spy(playerAtom)
   if (!user) return null;
 
   const { nickname, group } = user;
 
-  const loginAt = (user.details.login_date as string).includes("1970")
+  const loginAt = (user.meta.login_date as string).includes("1970")
     ? "был на сервере давно"
-    : dayjs(user.details.login_date).format("был на сервере D MMM YYYY")
+    : dayjs(user.meta.login_date).format("был на сервере D MMM YYYY")
 
   return (
     <div className="flex justify-between h-full items-center w-full">
@@ -31,7 +31,7 @@ export const PlayerInfo = reatomComponent(({ ctx }) => {
         </div>
       </div>
       <div className="flex items-center justify-center w-min">
-        <Rate isRated={user.details.rate.isRated} nickname={nickname} count={user.details.rate.count} />
+        <Rate isRated={user.rate.isRated} nickname={nickname} count={user.rate.count} />
       </div>
     </div>
   )

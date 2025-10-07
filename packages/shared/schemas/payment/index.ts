@@ -1,4 +1,4 @@
-import { z, ZodType } from 'zod/v4';
+import { z } from 'zod';
 import { donateSchema } from '../entities/donate-schema';
 import { currencyCryptoSchema, currencyFiatSchema } from '../entities/currencies-schema';
 import { JsonValue } from '../../types/db/auth-database-types';

@@ -1,5 +1,12 @@
 import { Bot } from "gramio";
+import { LGOGER_BOT_TOKEN as token } from "../env";
+import { logger } from "#/utils/config/logger";
 
-const token = Bun.env.BOT_TOKEN
+const botLogger = logger.withTag("Bot.Logger")
 
-export const bot = new Bot(token).onStart(() => console.log("Bot started"))
+export const bot = new Bot(token)
+  .onStart(() => botLogger.success("Started"))
+  .onError((ctx) => {
+    const error = ctx.error;
+    botLogger.error(error)
+  })

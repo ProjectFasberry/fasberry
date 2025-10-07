@@ -1,24 +1,22 @@
 import { client } from "@/shared/api/client";
-import { NewsType } from "@/shared/components/app/news/components/news";
 import { logRouting } from "@/shared/lib/log";
 import { wrapTitle } from "@/shared/lib/wrap-title";
+import { News } from "@repo/shared/types/entities/news";
 import { useConfig } from "vike-react/useConfig";
 import { render } from "vike/abort";
 import { PageContextServer } from "vike/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getNews({ id, ...args }: { id: string } & RequestInit) {
-  const res = await client(`shared/news/${id}`, { ...args })
-  const data = await res.json<WrappedResponse<NewsType>>()
-
+async function getNews(id: string, init: RequestInit) {
+  const res = await client(`shared/news/${id}`, { ...init })
+  const data = await res.json<WrappedResponse<News>>()
   if ('error' in data) throw new Error(data.error)
-
   return data.data
 }
 
 function metadata(
-  news: NewsType
+  news: News
 ) {
   return {
     title: wrapTitle(news.title),
@@ -27,17 +25,12 @@ function metadata(
 }
 
 export async function data(pageContext: PageContextServer) {
+  logRouting(pageContext.urlPathname, "data");
+
   const config = useConfig()
-
-  let news: NewsType | null = null;
-
-  try {
-    news = await getNews({ 
-      id: pageContext.routeParams.id, headers: pageContext.headers ?? undefined 
-    })
-  } catch (e) {
-    console.error(e)
-  }
+  const headers = pageContext.headers ?? undefined;
+  
+  const news = await getNews(pageContext.routeParams.id, { headers })
 
   if (!news) {
     throw render("/not-exist")
@@ -45,10 +38,8 @@ export async function data(pageContext: PageContextServer) {
 
   config(metadata(news))
 
-  logRouting(pageContext.urlPathname, "data");
-
   return {
     id: pageContext.routeParams.id,
-    news
+    data: news
   }
 }

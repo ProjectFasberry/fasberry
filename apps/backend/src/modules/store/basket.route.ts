@@ -2,7 +2,7 @@ import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { general } from "#/shared/database/main-db";
 import { defineGlobalPrice, definePrice, processImageUrl, StorePrice } from "#/utils/store/store-transforms";
-import z from "zod/v4";
+import z from "zod";
 import { defineInitiator } from "#/lib/middlewares/define";
 
 const itemBasketBaseSchema = z.object({

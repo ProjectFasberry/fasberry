@@ -4,7 +4,7 @@ import { createLink, Link } from "@/shared/components/config/link";
 import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { tv, VariantProps } from "tailwind-variants";
 import { currentUserAtom } from "@/shared/models/current-user.model";
-import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation } from "../models/ratings.model";
+import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation } from "@repo/shared/types/entities/rating";
 import "dayjs/locale/ru";
 import { Typography } from "@repo/ui/typography";
 import { atom } from "@reatom/core";

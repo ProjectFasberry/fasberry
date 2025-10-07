@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const getNewsSchema = z.object({
   limit: z.string().transform(Number).optional(),

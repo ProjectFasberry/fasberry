@@ -1,7 +1,6 @@
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { getObjectUrl } from "@/shared/lib/volume-helpers";
 import { client } from "@/shared/api/client";
-import { userParamAtom } from "../../player/models/player.model";
 
 export async function getSkinDetails(
   { type, nickname }: { type: "head" | "skin", nickname: string },
@@ -19,18 +18,15 @@ export async function getSkinDetails(
     ...init
   })
 
-  if (!res.ok) {
-    return fallback
-  }
+  if (!res.ok) return fallback;
 
   const data = await res.text()
-
   return data
 }
 
-export const skinAction = reatomAsync(async (ctx) => {
-  const nickname = ctx.get(userParamAtom)
-  if (!nickname) return null;
-
-  return await ctx.schedule(() => getSkinDetails({ type: "skin", nickname }, { signal: ctx.controller.signal }))
-}, "skinAction").pipe(withDataAtom(null), withCache(), withStatusesAtom())
+export const skinAction = reatomAsync(async (ctx, nickname: string) => {
+  return await ctx.schedule(() => getSkinDetails(
+    { type: "skin", nickname }, 
+    { signal: ctx.controller.signal })
+  )
+}, "skinAction").pipe(withDataAtom(null), withCache({ swr: false }), withStatusesAtom())

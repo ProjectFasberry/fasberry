@@ -1,7 +1,7 @@
-import { general } from "#/shared/database/main-db";
 import Elysia from "elysia";
+import z from "zod";
+import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import z from "zod/v4";
 
 const optionsList = new Elysia()
   .get("/list", async (ctx) => {
@@ -33,7 +33,7 @@ async function updateOptions({ name, value }: z.infer<typeof updateOptionsSchema
   return query;
 }
 
-const updateOptionsRoute = new Elysia()
+const optionsUpdate = new Elysia()
   .post("/update", async ({ body, status }) => {
     const data = await updateOptions(body)
     return status(HttpStatusEnum.HTTP_200_OK, { data })
@@ -44,5 +44,5 @@ const updateOptionsRoute = new Elysia()
 export const options = new Elysia()
   .group("/options", app => app
     .use(optionsList)
-    .use(updateOptionsRoute)
+    .use(optionsUpdate)
   )

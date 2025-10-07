@@ -3,12 +3,7 @@ import { logError } from "@/shared/lib/log";
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { userParamAtom } from "./player.model";
 import { take } from "@reatom/framework";
-
-type PlayerActivityPayload = {
-  nickname: string;
-  type: string;
-  issued_date: Date | null;
-}
+import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
 
 export const playerActivityAction = reatomAsync(async (ctx) => {
   let nickname = ctx.get(userParamAtom)

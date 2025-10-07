@@ -2,20 +2,23 @@ import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog";
 import { Typography } from "@repo/ui/typography";
-import { currentUserAtom } from "@/shared/models/current-user.model";
-import { isIdentityAtom } from "../models/player.model";
 import { reatomAsync, withDataAtom } from "@reatom/async";
 import { getOrders } from "../../shop/models/store-cart.model";
 import { useState } from "react";
 import { isEmptyArray } from "@/shared/lib/array";
 import { NotFound } from "@/shared/ui/not-found";
 
-const ChangePassword = reatomComponent(({ ctx }) => {
+export const ChangePassword = reatomComponent(({ ctx }) => {
   return (
-    <div className="flex items-center justify-between w-full">
-      <Typography color="white" className="text-2xl font-semibold">
-        Пароль
-      </Typography>
+    <div className="flex items-center gap-2 justify-between w-full">
+      <div className="flex flex-col min-w-0">
+        <Typography color="white" className="text-2xl font-semibold">
+          Пароль
+        </Typography>
+        <Typography color="gray" className="truncate">
+          Изменение пароля от аккаунта
+        </Typography>
+      </div>
       <Dialog>
         <DialogTrigger asChild>
           <Button className="bg-neutral-50 w-fit">
@@ -59,16 +62,21 @@ const PurchasesList = reatomComponent(({ ctx }) => {
   )
 }, "PurchasesList")
 
-const PurchasesHistory = () => {
+export const PurchasesHistory = () => {
   const [open, setOpen] = useState(false);
 
   useUpdate((ctx) => open && ordersHistory(ctx), [open])
 
   return (
-    <div className="flex items-center justify-between w-full">
-      <Typography color="white" className="text-2xl font-semibold">
-        Покупки
-      </Typography>
+    <div className="flex items-center gap-2 justify-between w-full">
+      <div className="flex flex-col min-w-0">
+        <Typography color="white" className="text-2xl font-semibold">
+          Покупки
+        </Typography>
+        <Typography color="gray" className="truncate">
+          Здесь отображена история ваших покупок
+        </Typography>
+      </div>
       <Dialog open={open} onOpenChange={v => setOpen(v)}>
         <DialogTrigger asChild>
           <Button className="bg-neutral-50 w-fit">
@@ -85,18 +93,3 @@ const PurchasesHistory = () => {
     </div>
   )
 }
-
-export const Details = reatomComponent(({ ctx }) => {
-  const currentUser = ctx.spy(currentUserAtom)
-  if (!currentUser) return null;
-
-  const isIdentity = ctx.spy(isIdentityAtom)
-  if (!isIdentity) return null;
-
-  return (
-    <div className="flex flex-col gap-4 w-full h-fit">
-      <PurchasesHistory />
-      <ChangePassword />
-    </div>
-  )
-}, "Details")

@@ -1,11 +1,12 @@
 import { RatingBelkoinCard, RatingCharismCard, RatingLandsCard, RatingParkourCard, RatingPlaytimeCard, RatingReputationCard } from "./rating-cards";
 import { 
-  RatingBelkoin, ratingByAtom, 
-  RatingCharism, ratingDataAtom,
-  RatingLands, ratingMetaAtom, 
+  RatingBelkoin,
+  RatingCharism,
+  RatingLands,
   RatingParkour, 
   RatingPlaytime, 
-  RatingReputation } from "../models/ratings.model"
+  RatingReputation
+} from "@repo/shared/types/entities/rating"
 import { useInView } from "react-intersection-observer";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { updateRatingAction } from "../models/update-ratings.model";
@@ -13,6 +14,7 @@ import { Skeleton } from "@repo/ui/skeleton";
 import { tv } from "tailwind-variants";
 import { ReactNode } from "react";
 import { AtomState } from "@reatom/core";
+import { ratingByAtom, ratingDataAtom, ratingMetaAtom } from "../models/ratings.model";
 
 const RatingsSkeleton = () => {
   return (

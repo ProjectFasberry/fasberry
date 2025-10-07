@@ -1,26 +1,30 @@
+import Redis, { RedisOptions } from 'ioredis';
+import { exit } from 'node:process';
 import { logger } from "#/utils/config/logger";
-import Redis from 'ioredis';
-import { isProduction } from "../env";
+import { isProduction, REDIS_HOST as host, REDIS_PORT, REDIS_PASSWORD, REDIS_USER } from "../env";
 
-let rc: Redis | null = null;
+const redisLogger = logger.withTag("Redis")
 
-const redis = new Redis({
-  host: isProduction ? Bun.env.REDIS_HOST : "127.0.0.1",
-  port: Bun.env.REDIS_PORT,
-  password: Bun.env.REDIS_USER_PASSWORD,
-  username: Bun.env.REDIS_USER
-});
+let redis: Redis | null = null;
 
-export const getRedisClient = (): Redis => {
-  if (!rc) throw new Error('Redis client is not initialized');
-  return rc;
+const config: RedisOptions = {
+  host: isProduction ? host : "127.0.0.1",
+  port: REDIS_PORT,
+  password: REDIS_PASSWORD,
+  username: REDIS_USER
+}
+
+export const getRedis = (): Redis => {
+  if (!redis) throw new Error('Redis client is not initialized');
+  return redis;
 }
 
 export async function initRedis() {
   try {
-    rc = redis
-    logger.success("Redis client is connected")
+    redis = new Redis(config);
+    redisLogger.success(`Connected to ${config.host}:${config.port}`)
   } catch (e) {
-    logger.error(`Redis`, e)
+    redisLogger.error(e)
+    exit(1)
   }
 }

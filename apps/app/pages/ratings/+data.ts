@@ -4,13 +4,15 @@ import { getStaticImage } from '@/shared/lib/volume-helpers'
 import { PageContextServer } from 'vike/types'
 import { logRouting } from '@/shared/lib/log'
 
-export const data = async (pageContext: PageContextServer) => {
-  const config = useConfig()
+const previewImage = getStaticImage("arts/adventure-in-blossom.jpg")
 
-  logRouting(pageContext.urlPathname, "data")
+export const data = async (pageContext: PageContextServer) => {
+  logRouting(pageContext.urlPathname, "data");
+
+  const config = useConfig()
 
   config({
     title: wrapTitle(`Рейтинг игроков`),
-    image: getStaticImage("arts/adventure-in-blossom.jpg"),
+    image: previewImage,
   })
 }

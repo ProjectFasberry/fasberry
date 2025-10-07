@@ -14,4 +14,13 @@ declare global {
       SQLITE_DATABASE_URL: string;
     }
   }
+
+  interface PaginatedMeta {
+    hasNextPage: false,
+    hasPrevPage: false,
+    endCursor?: string,
+    startCursor?: string
+  }
 }
+
+export { }

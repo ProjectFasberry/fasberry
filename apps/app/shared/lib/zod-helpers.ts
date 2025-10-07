@@ -1,4 +1,4 @@
-import { ZodError } from "zod/v4";
+import { ZodError } from "zod";
 
 export function parseZodErrorMessages(error: ZodError): string[] {
   return error.issues.map(issue => issue.message);

@@ -13,17 +13,17 @@ survival, smp, fasberry project, minecraft fasberry, minecraft server play"/>
       <meta name="format-detection" content="email=yes, address=yes, telephone=yes" />
       <meta property="og:title" content="Fasberry Project" />
       <meta property="og:description" content="Получите доступ к уникальным привилегиям, товарам и монетам на нашем сервере. Ваша поддержка помогает проекту развиваться!" />
-      <meta property="og:url" content="https://mc.fasberry.su/store" />
+      <meta property="og:url" content="https://app.fasberry.su/store" />
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Официальный сайт майнкрафт сервера Fasberry." />
-      <meta property="og:image" content="https://mc.fasberry.su/images/community/market-seller.webp" />
+      <meta property="og:image" content="https://app.fasberry.su/images/community/market-seller.webp" />
       <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta name="twitter:title" content="Fasberry Project" />
       <meta name="twitter:description" content="Получите доступ к уникальным привилегиям, товарам и монетам на нашем сервере. Ваша поддержка помогает проекту развиваться!" />
-      <meta name="twitter:image" content="https://mc.fasberry.su/images/community/market-seller.webp" />
+      <meta name="twitter:image" content="https://app.fasberry.su/images/community/market-seller.webp" />
       <meta property="twitter:image:type" content="image/jpeg" />
       <meta property="twitter:image:width" content="1200" />
       <meta property="twitter:image:height" content="630" />

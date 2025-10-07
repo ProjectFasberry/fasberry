@@ -42,3 +42,14 @@ export type Land = {
     gallery: string[]
   }
 }
+
+export type Lands = Pick<Land, "ulid" | "title" | "name" | "level" | "created_at" | "type" | "stats"> & {
+  members: {
+    [key: string]: number
+  }
+}
+
+export type LandsPayload = {
+  data: Lands[],
+  meta: PaginatedMeta
+}

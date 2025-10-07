@@ -1,13 +1,15 @@
 import { logger } from '../config/logger';
-import { cleanOldEvents } from '#/modules/server/events.route';
 import { updateExchangeRates } from '#/modules/store/payment/currencies.model';
-import { Cron } from "croner";
+import { Cron, CronOptions } from "croner";
+import { cleanOldEvents } from '#/modules/server/events/events.model';
+import { updateServerStatus } from '#/modules/server/status.route';
 
 type Job = {
   name: string;
   cron: string;
   callback: () => Promise<void>;
   immediately: boolean;
+  schedule: boolean;
 }
 
 const cronLogger = logger.withTag("Cron")
@@ -28,7 +30,8 @@ const JOBS: Job[] = [
     callback: async function () {
       await wrapJobCb(this.name, updateExchangeRates)
     },
-    immediately: true
+    immediately: true,
+    schedule: true
   },
   {
     name: "warn-before-update-exchange-rates",
@@ -36,7 +39,8 @@ const JOBS: Job[] = [
     callback: async function () {
       cronLogger.log(`"${this.name}" job will be started in 5 minutes`);
     },
-    immediately: true
+    immediately: true,
+    schedule: true
   },
   {
     name: "clean-old-events",
@@ -44,7 +48,8 @@ const JOBS: Job[] = [
     callback: async function () {
       await wrapJobCb(this.name, cleanOldEvents)
     },
-    immediately: true
+    immediately: true,
+    schedule: true
   },
   {
     name: "warn-before-clean-old-events",
@@ -52,7 +57,17 @@ const JOBS: Job[] = [
     callback: async function () {
       cronLogger.log(`"${this.name}" job will be started in 5 minutes`);
     },
-    immediately: true
+    immediately: true,
+    schedule: true
+  },
+  {
+    name: "update-server-status",
+    cron: "* * * * *",
+    callback: async function () {
+      await wrapJobCb(this.name, updateServerStatus)
+    },
+    immediately: false,
+    schedule: false
   }
 ]
 
@@ -60,18 +75,24 @@ export function startJobs() {
   const immediatelyJobs: Array<() => void> = [];
 
   for (const job of JOBS) {
-    const temp = new Cron(job.cron);
-    const nextRun = temp.nextRun();
+    let config: CronOptions = {}
 
-    if (!nextRun) continue;
+    if (job.schedule) {
+      const temp = new Cron(job.cron);
+      const nextRun = temp.nextRun();
 
-    const delayedStart = new Date(nextRun.getTime() + 5 * 60 * 1000);
+      if (!nextRun) continue;
+
+      const delayedStart = new Date(nextRun.getTime() + 5 * 60 * 1000);
+
+      config = {
+        startAt: delayedStart,
+      }
+    }
 
     const cronJob = new Cron(
       job.cron,
-      {
-        startAt: delayedStart,
-      },
+      config,
       async () => await job.callback()
     );
 

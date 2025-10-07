@@ -5,9 +5,10 @@ import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { paymentMetaSchema } from "@repo/shared/schemas/payment";
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
-import { getRedisClient } from "#/shared/redis/init";
+import { getRedis } from "#/shared/redis/init";
 import { getOrderKey, PaymentCacheData } from "./create-crypto-order";
 import { logger } from "#/utils/config/logger";
+import { CRYPTO_PAY_TESTNET_TOKEN } from "#/shared/env";
 
 type CheckOrderBody = {
   update_id: number,
@@ -21,7 +22,7 @@ export function validateSignatureCryptoPay(
   resSignature: string
 ) {
   const secret = createHash('sha256')
-    .update(Bun.env.CRYPTO_PAY_TESTNET_TOKEN)
+    .update(CRYPTO_PAY_TESTNET_TOKEN)
     .digest()
 
   const hmac = createHmac('sha256', secret)
@@ -51,7 +52,7 @@ export const checkOrderRoute = new Elysia()
     }
 
     try {
-      const redis = getRedisClient()
+      const redis = getRedis()
 
       const body: CheckOrderBody = JSON.parse(text)
       console.log(body)

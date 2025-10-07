@@ -1,18 +1,23 @@
 import { Kysely, PostgresDialect } from "kysely";
-import { Pool } from "pg";
+import { Pool, PoolConfig } from "pg";
 import type { DB as authDBType } from "@repo/shared/types/db/auth-database-types";
 import { poolOptsHooks } from "./lobby-db";
+import { GENERAL_POSTGRES_DB, GENERAL_POSTGRES_HOST, GENERAL_POSTGRES_PASSWORD, GENERAL_POSTGRES_PORT, GENERAL_POSTGRES_USER } from "../env";
+
+const config: PoolConfig = {
+  host: GENERAL_POSTGRES_HOST,
+  database: GENERAL_POSTGRES_DB,
+  user: GENERAL_POSTGRES_USER,
+  password: GENERAL_POSTGRES_PASSWORD,
+  port: Number(GENERAL_POSTGRES_PORT),
+  max: 10
+}
+
+export const generalPool = new Pool(config)
 
 export const general = new Kysely<authDBType>({
   dialect: new PostgresDialect({
-    pool: new Pool({
-      host: Bun.env.GENERAL_POSTGRES_HOST,
-      database: Bun.env.GENERAL_POSTGRES_DB,
-      user: Bun.env.GENERAL_POSTGRES_USER,
-      password: Bun.env.GENERAL_POSTGRES_PASSWORD,
-      port: Number(Bun.env.GENERAL_POSTGRES_PORT),
-      max: 10
-    }),
+    pool: generalPool,
     ...poolOptsHooks("General")
   })
 })

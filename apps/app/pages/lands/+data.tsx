@@ -11,9 +11,9 @@ function metadata() {
 }
 
 export async function data(pageContext: PageContextServer) {
-  const config = useConfig()
-
   logRouting(pageContext.urlPathname, "data");
+  
+  const config = useConfig()
 
   config(metadata())
 }

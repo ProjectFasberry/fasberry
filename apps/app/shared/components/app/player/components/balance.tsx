@@ -1,14 +1,10 @@
 import { currentUserAtom } from "@/shared/models/current-user.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { isIdentityAtom } from "../models/player.model";
 import { Button } from "@repo/ui/button";
 import { Link } from "@/shared/components/config/link";
 
 export const Balance = reatomComponent(({ ctx }) => {
-  const isIdentity = ctx.spy(isIdentityAtom)
-  if (!isIdentity) return null;
-  
   const currentUser = ctx.spy(currentUserAtom)
   if (!currentUser) return null;
 

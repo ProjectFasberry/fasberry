@@ -1,5 +1,5 @@
 import Elysia from "elysia"
-import { getNatsConnection } from "#/shared/nats/client"
+import { getNats } from "#/shared/nats/client"
 import { SERVER_EVENT_GET_USER_LOCATION, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 import { defineUser } from "#/lib/middlewares/define"
@@ -15,7 +15,7 @@ type UserLocation = {
 }
 
 async function getLocation(nickname: string) {
-  const nc = getNatsConnection()
+  const nc = getNats()
 
   const payload = { event: SERVER_EVENT_GET_USER_LOCATION, nickname }
   
@@ -99,7 +99,7 @@ function getCustomLocation({
   return null;
 }
 
-export const userLocation = new Elysia()
+export const playerLocation = new Elysia()
   .use(defineUser())
   .get("/location/:nickname", async ({ status, nickname: initiator, ...ctx }) => {
     const recipient = ctx.params.nickname;

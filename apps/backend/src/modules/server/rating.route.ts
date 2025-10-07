@@ -5,7 +5,7 @@ import { lobby } from "#/shared/database/lobby-db";
 import { playerpoints } from "#/shared/database/playerpoints-db";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { reputation } from "#/shared/database/reputation-db";
-import z from "zod/v4";
+import z from "zod";
 import { getDirection } from "#/utils/config/paginate";
 
 const ratingSchema = z.object({
@@ -226,11 +226,11 @@ export const ratingBy = new Elysia()
   .get("/rating", async ({ status, set, query }) => {
     const { by, limit, cursor, ascending } = query;
 
-    const response = await getRatingBy(by, { limit, cursor, ascending })
+    const data = await getRatingBy(by, { limit, cursor, ascending })
 
     set.headers["Cache-Control"] = "public, max-age=60"
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data: response })
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     query: ratingSchema
   })

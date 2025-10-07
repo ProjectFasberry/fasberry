@@ -2,10 +2,10 @@ import { action, atom, createCtx } from "@reatom/core";
 import { reatomAsync, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
 import { getStoreItems, Payment, StoreItem, storeItemsDataAtom } from "./store.model";
 import { client } from "@/shared/api/client";
-import { toast } from "sonner";
-import { snapshotAtom, withSsr } from "@/shared/lib/ssr";
+import { withSsr } from "@/shared/lib/ssr";
 import { PageContextServer } from "vike/types";
-import { isDevelopment } from "@/shared/env";
+import { logError } from "@/shared/lib/log";
+import { mergeSnapshot } from "@/shared/lib/snapshot";
 
 export type CartBasket = Pick<StoreItem,
   | "id" | "title" | "description" | "summary" | "price" | "command" | "currency" | "type" | "value" | "imageUrl"
@@ -26,9 +26,7 @@ type BasketPayloadData = { products: CartBasket[], price: CartPrice }
 export async function getBasketData(args?: RequestInit) {
   const res = await client("store/basket/list", { ...args })
   const data = await res.json<WrappedResponse<BasketPayloadData>>();
-
   if ("error" in data) throw new Error(data.error)
-
   return data.data;
 }
 
@@ -86,17 +84,17 @@ export async function getOrders(
 ) {
   const res = await client("store/orders", { searchParams: { type }, throwHttpErrors: false, ...init })
   const data = await res.json<WrappedResponse<Payment[]>>()
-
   if ("error" in data) throw new Error(data.error)
-
   return data.data
 }
 
 export const storeOrdersListAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => getOrders({ type: "all" }, { signal: ctx.controller.signal }))
+  return await ctx.schedule(() => getOrders({ type: "all" }, { signal: ctx.controller.signal }))
 }, {
   name: "storeOrdersListAction",
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (_, e) => {
+    logError(e)
+  }
 }).pipe(withDataAtom([]), withStatusesAtom())
 
 // Filters
@@ -125,8 +123,9 @@ export const storeCartFilteresOrdersAtom = atom((ctx) => {
 }, "storeCartFilteresOrders")
 
 export async function defineCartData(pageContext: PageContextServer) {
-  const ctx = createCtx()
   const headers = pageContext.headers
+
+  const ctx = createCtx();
 
   if (headers) {
     const data = await getBasketData({ headers })
@@ -135,19 +134,15 @@ export async function defineCartData(pageContext: PageContextServer) {
     cartDataAtom(ctx, data.products)
   }
 
-  const snapshot = ctx.get(snapshotAtom)
-
-  const prevSnapshot = pageContext.snapshot
-  const newSnapshot = { ...prevSnapshot, ...snapshot }
-
-  isDevelopment && console.log("defineCartData")
+  const newSnapshot = mergeSnapshot(ctx, pageContext)
 
   pageContext.snapshot = newSnapshot
 }
 
 export async function defineStoreItemsData(pageContext: PageContextServer) {
-  const ctx = createCtx()
   const headers = pageContext.headers
+
+  const ctx = createCtx()
 
   if (headers) {
     const res = await getStoreItems({ type: "all", wallet: "all" }, { headers })
@@ -171,12 +166,7 @@ export async function defineStoreItemsData(pageContext: PageContextServer) {
     storeItemsDataAtom(ctx, payload)
   }
 
-  const snapshot = ctx.get(snapshotAtom)
-
-  const prevSnapshot = pageContext.snapshot
-  const newSnapshot = { ...prevSnapshot, ...snapshot }
-
-  isDevelopment && console.log("defineStoreItemsData")
+  const newSnapshot = mergeSnapshot(ctx, pageContext)
 
   pageContext.snapshot = newSnapshot
 }

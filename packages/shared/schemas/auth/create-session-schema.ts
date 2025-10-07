@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 export const tokenSchema = process.env.NODE_ENV === 'production' ? z.string() : z.nullable(z.string())
 
