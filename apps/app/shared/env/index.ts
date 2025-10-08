@@ -9,3 +9,5 @@ export const PORT = import.meta.env.VITE_APP_PORT
 export const API_PREFIX_URL = import.meta.env.VITE_API_PREFIX
 
 export const LANDING_ENDPOINT = import.meta.env.VITE_LANDING_ENDPOINT
+
+export const VOLUME_PREFIX = import.meta.env.VITE_VOLUME_PREFIX

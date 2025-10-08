@@ -3,7 +3,7 @@ import { pageContextAtom } from "@/shared/models/global.model"
 import { PlayerLands } from "@/shared/components/app/player/components/lands"
 import { Logout } from "@/shared/components/app/player/components/logout"
 import { PlayerSkin } from "@/shared/components/app/player/components/skin"
-import { Balance } from "@/shared/components/app/player/components/balance";
+import { Finance } from "@/shared/components/app/player/components/balance";
 import { PlayerInfo } from "@/shared/components/app/player/components/info";
 import { PlayerAttributes } from "@/shared/components/app/player/components/attributes";
 import { ChangePassword, PurchasesHistory } from "@/shared/components/app/player/components/details";
@@ -15,6 +15,9 @@ import { startPageEvents } from "@/shared/lib/events";
 import { isIdentityAtom, playerAtom, userParamAtom } from "@/shared/components/app/player/models/player.model";
 import { Data } from "./+data";
 import { Separator } from "@repo/ui/separator";
+import { PlayerSeemsLikePlayers } from "@/shared/components/app/player/components/seems-like-players";
+import { Typography } from "@repo/ui/typography";
+import { playerSeemsLikeAction } from "@/shared/components/app/player/models/player-seems-like.model";
 
 userParamAtom.onChange((ctx, state) => {
   if (!state) return;
@@ -37,6 +40,7 @@ userParamAtom.onChange((ctx, state) => {
 
 const events = action((ctx) => {
   playerActivityAction(ctx)
+  playerSeemsLikeAction(ctx)
 }, "events")
 
 const PlayerPrivated = reatomComponent(({ ctx }) => {
@@ -44,17 +48,25 @@ const PlayerPrivated = reatomComponent(({ ctx }) => {
   if (!isIdentity) return null;
 
   return (
-    <>
-      <Balance />
-      <div className="flex flex-col gap-6 w-full h-fit">
-        <PurchasesHistory />
-        <ChangePassword />
+    <div className="flex flex-col gap-6 p-4 rounded-xl border border-neutral-800">
+      <Typography className="text-neutral-400 text-sm">
+        Видно только вам
+      </Typography>
+      <div className="flex flex-col gap-4 w-full h-full">
+        <Finance />
+        <div className="flex flex-col gap-6 w-full h-fit">
+          <PurchasesHistory />
+        </div>
+        <div className="flex flex-col w-full gap-4">
+          <Separator />
+          <ChangePassword />
+        </div>
+        <div className="flex flex-col w-full gap-4">
+          <Separator />
+          <Logout />
+        </div>
       </div>
-      <div className="flex flex-col w-full gap-4">
-        <Separator />
-        <Logout />
-      </div>
-    </>
+    </div>
   )
 }, "PlayerPrivated")
 
@@ -65,6 +77,7 @@ const PlayerPublic = () => {
       <PlayerActivity />
       <PlayerAttributes />
       <PlayerLands />
+      <PlayerSeemsLikePlayers />
     </>
   )
 }

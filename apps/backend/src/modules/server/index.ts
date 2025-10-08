@@ -6,11 +6,13 @@ import { playerBalance, playerSkills, playerStats } from "#/modules/server/playe
 import { ratingBy } from "#/modules/server/rating.route";
 import { playerSkin } from "#/modules/server/skin";
 import { status } from "#/modules/server/status.route";
-import { player } from "#/modules/user/user.route";
+import { player } from "#/modules/user/player.route";
 import { events } from "./events";
 import { lands } from "./lands";
 import { playerAchievements } from "./achievements";
 import { playerActivity } from "./activity";
+import { seemsPlayers } from "../user/seems-players.route";
+import { balance } from "../user/balance.route";
 
 const playerGroup = new Elysia()
   .group("", app => app
@@ -23,6 +25,8 @@ const playerGroup = new Elysia()
     .use(playerAchievements)
     .use(playerLocation)
     .use(favoriteItem)
+    .use(seemsPlayers)
+    .use(balance)
   )
 
 const globalGroup = new Elysia()

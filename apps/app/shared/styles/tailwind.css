@@ -4,6 +4,8 @@
 @source "../../../../apps/frontend/**/*.{ts,tsx}";
 @source "../../../../packages/ui/**/*.{ts,tsx}";
 
+@plugin 'tailwind-scrollbar';
+
 :root {
   --bprogress-color: #00AA00;
 }

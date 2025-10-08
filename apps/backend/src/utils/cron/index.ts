@@ -3,6 +3,7 @@ import { updateExchangeRates } from '#/modules/store/payment/currencies.model';
 import { Cron, CronOptions } from "croner";
 import { cleanOldEvents } from '#/modules/server/events/events.model';
 import { updateServerStatus } from '#/modules/server/status.route';
+import { updateSeemsLikeList } from '#/modules/user/seems-players.model';
 
 type Job = {
   name: string;
@@ -68,14 +69,27 @@ const JOBS: Job[] = [
     },
     immediately: false,
     schedule: false
+  },
+  {
+    name: "update-seems-like",
+    cron: "0 0 */3 * * *",
+    callback: async function () {
+      await wrapJobCb(this.name, updateSeemsLikeList)
+    },
+    immediately: true,
+    schedule: false
   }
 ]
 
 export function startJobs() {
-  const immediatelyJobs: Array<() => void> = [];
+  const immediatelyJobs: Array<() => Promise<void>> = [];
 
   for (const job of JOBS) {
     let config: CronOptions = {}
+
+    if (job.immediately) {
+      immediatelyJobs.push(async () => await job.callback());
+    }
 
     if (job.schedule) {
       const temp = new Cron(job.cron);
@@ -101,5 +115,5 @@ export function startJobs() {
     );
   }
 
-  immediatelyJobs.forEach(fn => fn())
+  immediatelyJobs.forEach((fn) => void fn());
 }

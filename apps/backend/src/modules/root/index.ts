@@ -4,18 +4,21 @@ import { AppOptionsPayload } from "@repo/shared/types/entities/other";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bannerExists } from "../shared/banner/banner.model";
 
-const appOptions = new Elysia()
+const appOptionsList = new Elysia()
   .use(defineOptionalUser())
-  .group("/app", app => app
-    .get("/options", async ({ status, nickname }) => {
-      const bannerIsExists = await bannerExists(nickname)
-      
-      const data: AppOptionsPayload = {
-        bannerIsExists
-      }
+  .get("/options", async ({ status, nickname }) => {
+    const bannerIsExists = await bannerExists(nickname)
 
-      return status(HttpStatusEnum.HTTP_200_OK, { data })
-    })
+    const data: AppOptionsPayload = {
+      bannerIsExists
+    }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
+  })
+
+const appOptions = new Elysia()
+  .group("/app", app => app
+    .use(appOptionsList)
   )
 
 export const root = new Elysia()

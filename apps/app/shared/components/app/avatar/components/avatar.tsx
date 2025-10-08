@@ -4,11 +4,11 @@ import { reatomComponent, useUpdate } from '@reatom/npm-react';
 import { Skeleton } from '@repo/ui/skeleton';
 import { avatarAction, getAvatar, getAvatarState } from '../models/avatar.model';
 
-const avatarVariants = tv({
+export const avatarVariants = tv({
   base: `relative rounded-lg aspect-square border border-neutral-600/20`,
   variants: {
     variant: {
-      default: 'min-h-16 min-w-16 max-w-16 max-h-16',
+      default: 'min-h-16 min-w-16 w-16 h-16 max-w-16 max-h-16',
     }
   },
 })

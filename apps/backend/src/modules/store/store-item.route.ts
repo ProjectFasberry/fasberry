@@ -39,12 +39,10 @@ const storeItemSchema = z.object({
 })
 
 export const storeItem = new Elysia()
-  .get("/item/:id", async (ctx) => {
-    const id = ctx.params.id
-
+  .get("/item/:id", async ({ params, status }) => {
+    const id = params.id
     const data: StoreItem | null = await getItem(id)
-
-    return ctx.status(HttpStatusEnum.HTTP_200_OK, { data })
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     params: storeItemSchema
   })

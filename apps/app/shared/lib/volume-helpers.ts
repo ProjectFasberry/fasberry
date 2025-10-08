@@ -1,2 +1,4 @@
-export const getStaticImage = (target: string) => `https://volume.fasberry.su/static/${target}`
-export const getObjectUrl = (bucket: string, key: string) => `https://volume.fasberry.su/${bucket}/${key}`
+import { VOLUME_PREFIX } from "../env"
+
+export const getStaticImage = (target: string) => `${VOLUME_PREFIX}/static/${target}`
+export const getObjectUrl = (bucket: string, key: string) => `${VOLUME_PREFIX}/${bucket}/${key}`

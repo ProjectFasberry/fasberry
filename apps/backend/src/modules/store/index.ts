@@ -12,9 +12,7 @@ import { checkOrderRoute } from "./payment/check-order.route";
 import { defineClientId } from "#/lib/middlewares/define";
 
 export const store = new Elysia()
-  .derive(({ cookie }) => {
-    defineClientId(cookie);
-  })
+  .use(defineClientId())
   .group("/store", app => app
     .group("/order", app => app
       .use(orderRoute)

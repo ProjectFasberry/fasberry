@@ -1,5 +1,4 @@
 import Elysia from "elysia"; 
-import { throwError } from "#/helpers/throw-error";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { deleteSession } from "./auth.model";
 import { CROSS_SESSION_KEY, SESSION_KEY, unsetCookie } from "#/utils/auth/cookie";
@@ -18,7 +17,7 @@ export const invalidate = new Elysia()
     const result = await deleteSession(session);
 
     if (!result) {
-      return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError("Internal Server Error"))
+      throw status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
     }
 
     unsetCookie({ cookie, key: SESSION_KEY })

@@ -52,15 +52,9 @@ export async function getOrder(uniqueId: string): Promise<Omit<PaymentCacheData,
   return persisted
 }
 
-const orderRouteSchema = z.object({
-  id: z.string()
-})
-
 export const orderRoute = new Elysia()
   .get("/:id", async ({ status, params }) => {
     const id = params.id;
     const data = await getOrder(id)
     return status(HttpStatusEnum.HTTP_200_OK, { data })
-  }, {
-    params: orderRouteSchema
   })

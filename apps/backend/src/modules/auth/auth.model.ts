@@ -132,7 +132,6 @@ export async function deleteSession(token: string): Promise<boolean> {
 
   if (!nickname) {
     console.warn(`Attempted to delete a non-existent session with token: ${token}`);
-
     return false;
   }
 

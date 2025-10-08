@@ -5,11 +5,14 @@ import { defineAdmin } from "#/lib/middlewares/define";
 import { newsSolo } from "./news-solo.route";
 import { newsDeleteRoute } from "./news-delete.route";
 
+const actions = new Elysia()
+  .use(defineAdmin())
+  .use(newsCreateRoute)
+  .use(newsDeleteRoute)
+
 export const news = new Elysia()
   .group("/news", app => app
     .use(newsList)
     .use(newsSolo)
-    .use(defineAdmin())
-    .use(newsCreateRoute)
-    .use(newsDeleteRoute)
+    .use(actions)
   )

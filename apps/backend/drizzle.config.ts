@@ -53,7 +53,7 @@ function getDatabase(db: keyof typeof DATABASES) {
   };
 }
 
-const selectedDatabase = getDatabase("general");
+const selectedDatabase = getDatabase("bisquite");
 
 console.log(`Selected database in drizzle: ${selectedDatabase.dialect} ${selectedDatabase.url}`)
 

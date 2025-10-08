@@ -7,4 +7,6 @@ export function showRoutes(app: App) {
       .withTag("App")
       .log(`${path} - ${method}`)
   }
+
+  logger.withTag("App").log(`Total ${app.routes.length} a routes`)
 }

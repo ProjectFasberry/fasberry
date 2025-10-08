@@ -29,3 +29,16 @@ export type EventPayload = {
 export type AppOptionsPayload = {
   bannerIsExists: boolean
 }
+
+export type SeemsLikePlayer = {
+  nickname: string,
+  uuid: string,
+  seemsRate: number
+}
+
+export type SeemsLikePlayersPayload = {
+  data: SeemsLikePlayer[],
+  meta: {
+    count: number
+  }
+}

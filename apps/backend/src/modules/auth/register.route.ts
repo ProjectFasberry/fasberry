@@ -8,8 +8,8 @@ import { ipPlugin } from "#/lib/plugins/ip";
 import { logger } from "#/utils/config/logger";
 import { textSets } from "#/utils/config/load-internal-files";
 import { general } from "#/shared/database/main-db";
-import { validateAuthStatus } from "./login.route";
 import { createEvent } from "../server/events/events.model";
+import { validateAuthStatus } from "#/lib/middlewares/validators";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 

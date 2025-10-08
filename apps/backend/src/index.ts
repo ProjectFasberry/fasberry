@@ -10,7 +10,7 @@ import { bot } from "./shared/bot/logger";
 import { handleFatalError } from "./utils/config/handle-log";
 import { showRoutes } from "./utils/config/print-routes";
 import { ipPlugin } from "./lib/plugins/ip";
-import { privated } from "./modules/private/validation.route";
+import { privated } from "./modules/private";
 import { rate } from "./modules/user/like.route";
 import { initRedis } from "./shared/redis/init";
 import { startJobs } from "./utils/cron";

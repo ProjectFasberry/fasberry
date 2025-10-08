@@ -1,6 +1,6 @@
 import { client } from "@/shared/api/client";
 import { logError } from "@/shared/lib/log";
-import { reatomAsync, withStatusesAtom } from "@reatom/async";
+import { reatomAsync, withCache, withStatusesAtom } from "@reatom/async";
 import { reatomMap } from "@reatom/framework";
 
 type Option = {
@@ -46,4 +46,4 @@ export const optionsAction = reatomAsync(async (ctx) => {
   onReject: (ctx, e) => {
     logError(e)
   }
-}).pipe(withStatusesAtom())
+}).pipe(withStatusesAtom(), withCache({ swr: false }))
