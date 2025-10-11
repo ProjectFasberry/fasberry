@@ -1,19 +1,8 @@
 import { bisquite } from "#/shared/database/bisquite-db"
-import { Land } from "@repo/shared/types/entities/land"
+import { PlayerLands, PlayerLandsPayload } from "@repo/shared/types/entities/land"
 import Elysia from "elysia"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 import z from "zod"
-
-type PlayerLands = {
-  data: Array<Pick<Land, "ulid" | "name" | "title" | "created_at" | "type"> & {
-    members: Array<{
-      nickname: string,
-      uuid: string,
-      chunks: number
-    }>
-  }>,
-  meta: { count: number }
-}
 
 const landsByNicknameSchema = z.object({
   exclude: z.string().optional()
@@ -54,7 +43,9 @@ export const landsByPlayer = new Elysia()
       }
     }
 
-    return status(HttpStatusEnum.HTTP_200_OK, data)
+    const payload: PlayerLandsPayload = { data }
+
+    return status(HttpStatusEnum.HTTP_200_OK, payload)
   }, {
     query: landsByNicknameSchema
   })

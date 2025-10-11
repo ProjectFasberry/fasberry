@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import { createUser, generateOfflineUUID, getExistsUser, registerSchema } from "./auth.model";
+import { createUser, generateOfflineUUID, getExistsUser } from "./auth.model";
 import { throwError } from "#/helpers/throw-error";
 import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
 import ky from "ky";
@@ -10,6 +10,7 @@ import { textSets } from "#/utils/config/load-internal-files";
 import { general } from "#/shared/database/main-db";
 import { createEvent } from "../server/events/events.model";
 import { validateAuthStatus } from "#/lib/middlewares/validators";
+import { registerSchema } from "@repo/shared/types/entities/auth";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 

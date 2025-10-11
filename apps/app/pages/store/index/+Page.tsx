@@ -1,5 +1,6 @@
 import { StoreFilters } from "@/shared/components/app/shop/components/filters/store-filters";
 import { StoreList } from "@/shared/components/app/shop/components/items/store-list";
+import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { validateNumber } from "@/shared/lib/validate-primitives";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
@@ -7,7 +8,9 @@ import { atom } from "@reatom/core";
 import { withReset } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { Input } from "@repo/ui/input";
+import { Switch } from "@repo/ui/switch";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
@@ -132,6 +135,7 @@ const DefaultStore = () => {
           <div className="flex flex-col w-full lg:w-4/5 min-h-[85vh] bg-neutral-900 gap-8 rounded-lg">
             <div className="flex flex-col items-start w-full h-fit p-2 sm:p-3 lg:p-4 gap-4">
               <StoreList />
+              <SetRecipientDialog />
             </div>
           </div>
         </div>

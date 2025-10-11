@@ -3,23 +3,73 @@ import { Skeleton } from "@repo/ui/skeleton"
 import { Typography } from "@repo/ui/typography"
 import { newsAction } from "../models/news.model"
 import { createLink, Link } from "@/shared/components/config/link"
-import { onConnect } from "@reatom/framework"
+import { AtomState, onConnect } from "@reatom/framework"
 import { isEmptyArray } from "@/shared/lib/array"
 import { NotFound } from "@/shared/ui/not-found"
+import { isClientAtom } from "@/shared/models/global.model"
+import { tv } from "tailwind-variants"
 
 const NewsSkeleton = () => {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 flex-col w-full h-full gap-4">
-      <Skeleton className="w-full h-[100px] sm:h-[200px]" />
-      <Skeleton className="w-full h-[100px] sm:h-[200px]" />
-      <Skeleton className="w-full h-[100px] sm:h-[200px]" />
+      {Array.from({ length: 3 }).map((_, idx) => (
+        <div key={idx} className={newsItemVariant().base()}>
+          <Skeleton className="w-full h-full max-h-[100px] sm:max-h-[200px]" />
+          <div className={newsItemVariant().content()}>
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
 
 onConnect(newsAction.dataAtom, newsAction)
 
+const newsItemVariant = tv({
+  base: `flex flex-col h-full w-full h-72  hover:bg-neutral-800 duration-150 border border-neutral-800 rounded-lg overflow-hidden`,
+  slots: {
+    img: `object-cover max-h-[100px] sm:max-h-[200px]`,
+    content: `flex flex-col gap-1 justify-between p-2 md:p-4 w-full`
+  }
+})
+
+const NewsItem = ({ 
+  id, description, title, imageUrl
+}: NonNullable<AtomState<typeof newsAction.dataAtom>>["data"][number]) => {
+  return (
+    <div
+      className={newsItemVariant().base()}
+    >
+      <img
+        draggable={false}
+        src={imageUrl!}
+        alt=""
+        width={1920}
+        loading="lazy"
+        height={1080}
+        className={newsItemVariant().img()}
+      />
+      <div className={newsItemVariant().content()}>
+        <Typography className="text-lg font-semibold text-nowrap truncate">
+          {title}
+        </Typography>
+        <Link href={createLink("news", id)} className="w-fit">
+          <Typography className="text-blue-500">
+            подробнее
+          </Typography>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 const NewsList = reatomComponent(({ ctx }) => {
+  if (!ctx.spy(isClientAtom)) {
+    return <NewsSkeleton />
+  }
+
   const data = ctx.spy(newsAction.dataAtom)
 
   if (ctx.spy(newsAction.statusesAtom).isPending) {
@@ -37,31 +87,7 @@ const NewsList = reatomComponent(({ ctx }) => {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 flex-col w-full h-full gap-4">
       {data.data.map(news => (
-        <div
-          key={news.id}
-          className="flex flex-col h-full w-full 
-          hover:bg-neutral-800 duration-150 border border-neutral-800 rounded-lg overflow-hidden"
-        >
-          <img
-            draggable={false}
-            src={news.imageUrl}
-            alt=""
-            width={1920}
-            loading="lazy"
-            height={1080}
-            className="object-cover max-h-[100px] sm:max-h-[200px]"
-          />
-          <div className="flex flex-col justify-between p-2 md:p-4 w-full">
-            <Typography className="text-lg font-semibold text-nowrap truncate">
-              {news.title}
-            </Typography>
-            <Link href={createLink("news", news.id)} className="w-fit">
-              <Typography className="text-blue-500">
-                подробнее
-              </Typography>
-            </Link>
-          </div>
-        </div>
+        <NewsItem key={news.id} {...news} />
       ))}
     </div>
   )

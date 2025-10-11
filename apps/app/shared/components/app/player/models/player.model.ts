@@ -5,7 +5,7 @@ import { withReset } from "@reatom/framework"
 import { Player } from "@repo/shared/types/entities/user"
 import { withSsr } from "@/shared/lib/ssr"
 import { pageContextAtom } from "@/shared/models/global.model"
-import { client } from "@/shared/api/client"
+import { client } from "@/shared/lib/client-wrapper"
 
 export const playerAtom = atom<Player | null>(null, "player").pipe(withSsr("player"))
 
@@ -24,8 +24,5 @@ export const isIdentityAtom = atom<boolean>((ctx) => {
 }, "isIdentity")
 
 export async function getPlayer(nickname: string, init: RequestInit) {
-  const res = await client(`server/player/${nickname}`, { throwHttpErrors: false, ...init })
-  const data = await res.json<WrappedResponse<Player>>()
-  if ('error' in data) throw new Error(data.error)
-  return data.data
+  return client<Player>(`server/player/${nickname}`, { ...init, throwHttpErrors: false }).exec()
 }

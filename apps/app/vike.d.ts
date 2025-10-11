@@ -1,5 +1,6 @@
 import { Rec } from "@reatom/core"
 import { PersistRecord } from "@reatom/persist"
+import { Locale } from "./shared/locales"
 
 declare global {
   namespace Vike {
@@ -9,6 +10,7 @@ declare global {
     
     interface PageContext {
       snapshot: Rec<PersistRecord<unknown>>,
+      locale: Locale,
       Page: () => React.JSX.Element
     }
   }

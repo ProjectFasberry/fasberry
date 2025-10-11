@@ -12,10 +12,16 @@ import { Separator } from "@repo/ui/separator";
 import { logout } from "../components/app/auth/models/auth.model";
 import { atom, spawn } from "@reatom/framework";
 import { Fragment } from "react/jsx-runtime";
+import { isAuthAtom } from "../models/global.model";
+import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
+import { Switch } from "@repo/ui/switch";
+import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "../components/app/player/models/player-seems-like.model";
 
 export const AuthorizeButton = () => {
   return (
     <Button
+      id="authorize"
+      aria-label="Авторизоваться"
       onClick={() => navigate("/auth")}
       className="h-10 p-0 sm:px-4 sm:py-2 aspect-square sm:aspect-auto bg-green-700 rounded-lg"
     >
@@ -53,7 +59,7 @@ const validatedLinksAtom = atom((ctx) => {
         return opts.includes(s.permission)
       }
     }
-    
+
     return true
   }) as MenuLink[]
 
@@ -65,7 +71,17 @@ const HeaderMenuActions = reatomComponent(({ ctx }) => {
 
   return (
     <>
-      <PopoverClose>
+      <PopoverClose asChild>
+        <Button
+          className="flex items-center justify-start gap-2 hover:bg-neutral-800 w-full rounded-lg px-2 py-1"
+          onClick={() => userSettingsDialogIsOpenAtom(ctx, true)}
+        >
+          <Typography className="font-semibold">
+            Настройки
+          </Typography>
+        </Button>
+      </PopoverClose>
+      <PopoverClose asChild>
         <Button
           className="flex items-center justify-start gap-2 hover:bg-neutral-800 w-full rounded-lg px-2 py-1"
           disabled={ctx.spy(logout.isLoading)}
@@ -84,49 +100,54 @@ const HeaderMenu = reatomComponent(({ ctx }) => {
   const links = ctx.spy(validatedLinksAtom)
 
   return (
-    <Popover>
-      <PopoverTrigger className="group h-full">
-        <IconChevronUp
-          size={20}
-          className="group-data-[state=open]:rotate-0 group-data-[state=closed]:rotate-180 
+    <>
+      <UserSettingsDialog />
+      <Popover>
+        <PopoverTrigger className="group h-full">
+          <IconChevronUp
+            size={20}
+            className="group-data-[state=open]:rotate-0 group-data-[state=closed]:rotate-180 
               duration-150 ease-in-out text-neutral-400"
-        />
-      </PopoverTrigger>
-      <PopoverContent align="end" side="bottom">
-        <div className="flex flex-col gap-2 w-full">
-          {links.map((link, idx, arr) => {
-            const isPrivated = link.type === 'privated'
-            const firstPrivatedIndex = arr.findIndex(l => l.type === 'privated')
-            const lastPrivatedIndex = arr.map(l => l.type).lastIndexOf('privated')
+          />
+        </PopoverTrigger>
+        <PopoverContent align="end" side="bottom">
+          <div className="flex flex-col gap-2 w-full">
+            {links.map((link, idx, arr) => {
+              const isPrivated = link.type === 'privated'
+              const firstPrivatedIndex = arr.findIndex(l => l.type === 'privated')
+              const lastPrivatedIndex = arr.map(l => l.type).lastIndexOf('privated')
 
-            return (
-              <Fragment key={link.href}>
-                {isPrivated && idx === firstPrivatedIndex && <Separator />}
-                <PopoverClose>
-                  <Link
-                    href={link.href}
-                    className="flex items-center gap-2 hover:bg-neutral-800 rounded-lg px-2 py-1"
-                  >
-                    <Typography className="font-semibold text-neutral-200">
-                      {link.title}
-                    </Typography>
-                  </Link>
-                </PopoverClose>
-                {isPrivated && idx === lastPrivatedIndex && <Separator />}
-              </Fragment>
-            )
-          })}
-          <HeaderMenuActions />
-        </div>
-      </PopoverContent>
-    </Popover>
+              return (
+                <Fragment key={link.href}>
+                  {isPrivated && idx === firstPrivatedIndex && <Separator />}
+                  <PopoverClose>
+                    <Link
+                      href={link.href}
+                      className="flex items-center gap-2 hover:bg-neutral-800 rounded-lg px-2 py-1"
+                    >
+                      <Typography className="font-semibold text-neutral-200">
+                        {link.title}
+                      </Typography>
+                    </Link>
+                  </PopoverClose>
+                  {isPrivated && idx === lastPrivatedIndex && <Separator />}
+                </Fragment>
+              )
+            })}
+            <HeaderMenuActions />
+          </div>
+        </PopoverContent>
+      </Popover>
+    </>
   )
 }, "HeaderMenu")
 
 const HeaderUser = reatomComponent(({ ctx }) => {
-  const currentUser = ctx.spy(currentUserAtom)
+  const isAuth = ctx.spy(isAuthAtom)
+  if (!isAuth) return <AuthorizeButton />
 
-  if (!currentUser) return <AuthorizeButton />
+  const currentUser = ctx.spy(currentUserAtom);
+  if (!currentUser) return null;
 
   return (
     <div className="flex items-center gap-3 bg-neutral-900 pr-2 rounded-lg">
@@ -145,6 +166,29 @@ const HeaderUser = reatomComponent(({ ctx }) => {
     </div>
   )
 }, "HeaderUser")
+
+const userSettingsDialogIsOpenAtom = atom(false, "userSettingsDialogIsOpen")
+
+const UserSettingsDialog = reatomComponent(({ ctx }) => {
+  return (
+    <Dialog open={ctx.spy(userSettingsDialogIsOpenAtom)} onOpenChange={v => userSettingsDialogIsOpenAtom(ctx, v)}>
+      <DialogContent>
+        <DialogTitle className="text-center font-bold text-2xl leading-tight">Настройки</DialogTitle>
+        <div className="flex flex-col gap-4 w-full h-full">
+          <div className="flex items-center justify-between w-full gap-1">
+            <Typography className="font-semibold">
+              Показывать похожих игроков
+            </Typography>
+            <Switch
+              checked={ctx.spy(playerSeemsLikePlayersIsShowAtom)}
+              onClick={() => toggleShowAction(ctx)}
+            />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}, "UserSettingsDialog")
 
 const LINKS = [
   {

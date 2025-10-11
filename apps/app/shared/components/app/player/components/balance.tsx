@@ -2,17 +2,26 @@ import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Button } from "@repo/ui/button";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
-import { IconPlus, IconSettings } from "@tabler/icons-react";
+import { IconPencil, IconPlus, IconSettings } from "@tabler/icons-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { Switch } from "@repo/ui/switch";
-import { Image } from "lucide-react";
 import { belkoinBalanceAtom, charismBalanceAtom, financeAction } from "../models/finance.model";
+import { AnimatedNumber } from "@repo/ui/animated-number"
+import { atom } from "@reatom/core";
+import { withLocalStorage } from "@reatom/persist-web-storage";
 
 const cardImage = getStaticImage("arts/steve_night.jpg")
 const belkoinImage = getStaticImage("items/belkoin_wallet.png")
 const charismImage = getStaticImage("items/charism_wallet.png")
 
-const BalanceCard = ({ title, value, image }: { title: string, value: number, image: string }) => {
+const animateBalanceAtom = atom(true, "animateBalance").pipe(withLocalStorage({ key: "animate-balance" }))
+
+const animateOptions = {
+  bounce: 0,
+  duration: 2000,
+}
+
+const BalanceCard = reatomComponent<{ title: string, value: number, image: string }>(({ ctx, title, value, image }) => {
   return (
     <div className="relative rounded-2xl min-w-80 overflow-hidden w-full h-56">
       <img
@@ -27,15 +36,21 @@ const BalanceCard = ({ title, value, image }: { title: string, value: number, im
         <div className="absolute inset-y-1/3 bottom-0 backdrop-blur-[10px] bg-black/40"></div>
       </div>
       <div className="absolute inset-0 flex flex-col justify-between p-6 z-20">
-        <Typography className="select-none font-semibold text-neutral-50 text-xl">
+        <Typography className="select-none font-mono font-semibold text-neutral-50 text-2xl">
           {title}
         </Typography>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <img src={image} width={28} height={28} alt="" draggable={false} className='select-none' />
-            <Typography className="text-neutral-50 text-2xl font-semibold">
-              {value}
-            </Typography>
+            {ctx.spy(animateBalanceAtom) ? (
+              <AnimatedNumber
+                className='inline-flex items-center font-mono text-neutral-50 text-2xl font-light'
+                springOptions={animateOptions}
+                value={value}
+              />
+            ) : (
+              <span className="inline-flex items-center font-mono text-neutral-50 text-2xl font-light">{value}</span>
+            )}
           </div>
           <Button className="cursor-pointer bg-neutral-50/80 rounded-lg p-1">
             <IconPlus size={24} className="text-neutral-950" />
@@ -44,7 +59,7 @@ const BalanceCard = ({ title, value, image }: { title: string, value: number, im
       </div>
     </div>
   )
-}
+}, "BalanceCard")
 
 const BelkoinCard = reatomComponent(({ ctx }) => {
   const data = ctx.spy(belkoinBalanceAtom);
@@ -61,7 +76,7 @@ const FinanceSettingsDesign = reatomComponent(({ ctx }) => {
     <Popover>
       <PopoverTrigger asChild>
         <Button className="cursor-pointer bg-neutral-900 rounded-lg p-1">
-          <Image size={18} className="text-neutral-50" />
+          <IconPencil size={18} className="text-neutral-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" side="bottom">
@@ -94,7 +109,7 @@ const FinanceSettingsOptions = reatomComponent(({ ctx }) => {
               <Typography className="cursor-pointer text-neutral-100">
                 Показывать анимацию
               </Typography>
-              <Switch />
+              <Switch checked={ctx.spy(animateBalanceAtom)} onCheckedChange={v => animateBalanceAtom(ctx, v)} />
             </div>
           </div>
         </div>

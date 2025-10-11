@@ -1,5 +1,4 @@
-import { client } from "@/shared/api/client";
-import { createSearchParams } from "@/shared/lib/create-search-params";
+import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { atom } from "@reatom/core";
 import { EventPayload } from "@repo/shared/types/entities/other";
@@ -10,13 +9,10 @@ export const eventsAction = reatomAsync(async (ctx) => {
   const opts = {
     type: ctx.get(eventsTypeAtom)
   }
-  
-  const searchParams = createSearchParams(opts)
 
-  return await ctx.schedule(async () => {
-    const res = await client("server/events/list", { searchParams, signal: ctx.controller.signal });
-    const data = await res.json<WrappedResponse<EventPayload[]>>();
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<EventPayload[]>("server/events/list")
+      .pipe(withQueryParams(opts), withAbort(ctx.controller.signal))
+      .exec()
+  )
 }, "eventsAction").pipe(withDataAtom([]), withStatusesAtom())

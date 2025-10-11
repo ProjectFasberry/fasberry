@@ -1,10 +1,12 @@
-import { client } from "@/shared/api/client"
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
-import { action, atom, Ctx } from "@reatom/core"
-import { sleep, withAssign, withReset } from "@reatom/framework"
+import { action, atom, batch, Ctx } from "@reatom/core"
+import { withAssign, withReset } from "@reatom/framework"
 import { toast } from "sonner"
 import { logError } from "@/shared/lib/log"
+import { client, withJsonBody } from "@/shared/lib/client-wrapper"
+import z, { ZodError } from "zod"
+import { registerSchema, authSchema as loginSchema } from "@repo/shared/types/entities/auth"
 
 type TypeAtom = "register" | "login"
 type ErrorType = "nickname" | "password" | "findout"
@@ -20,14 +22,16 @@ export const globalErrorAtom = atom("", "globalError").pipe(withReset())
 export const errorTypeAtom = atom<ErrorType[]>([], "errorType").pipe(withReset())
 
 function resetAuth(ctx: Ctx) {
-  nicknameAtom.reset(ctx)
-  passwordAtom.reset(ctx)
-  findoutAtom.reset(ctx)
-  referrerAtom.reset(ctx)
-  tokenAtom.reset(ctx)
-  acceptRulesAtom.reset(ctx)
-  globalErrorAtom.reset(ctx)
-  errorTypeAtom.reset(ctx)
+  batch(ctx, () => {
+    nicknameAtom.reset(ctx)
+    passwordAtom.reset(ctx)
+    findoutAtom.reset(ctx)
+    referrerAtom.reset(ctx)
+    tokenAtom.reset(ctx)
+    acceptRulesAtom.reset(ctx)
+    globalErrorAtom.reset(ctx)
+    errorTypeAtom.reset(ctx)
+  })
 }
 
 typeAtom.onChange((ctx, target) => {
@@ -64,89 +68,81 @@ export const isValidAtom = atom<boolean>((ctx) => {
   return result
 })
 
-type ValidationResponse = {
-  property: string,
-  errors: {
-    schema: {
-      errorMessage: {
-        minLength: string,
-        maxLength: string,
-        pattern: string
-      }
-    },
-  }[]
+function registerCb(ctx: Ctx) {
+  resetAuth(ctx)
+  toast.success("Всё ок! Теперь войдите в аккаунт")
+  typeAtom(ctx, "login")
+}
+
+function loginCb(ctx: Ctx) {
+  ctx.schedule(() => window.location.reload())
+}
+
+const target = {
+  "register": {
+    schema: registerSchema,
+    event: registerCb
+  },
+  "login": {
+    schema: loginSchema,
+    event: loginCb
+  }
 }
 
 export const authorize = reatomAsync(async (ctx) => {
   const type = ctx.get(typeAtom)
-  const nickname = ctx.get(nicknameAtom)
-  const password = ctx.get(passwordAtom)
-  const findout = ctx.get(findoutAtom)
-  const referrer = ctx.get(referrerAtom)
-  const token = ctx.get(tokenAtom)
 
-  if (type === 'register') {
-    const accept = ctx.get(acceptRulesAtom)
-
-    if (!accept) {
-      toast.error("Вы должны принять правила")
-      return;
-    }
+  const raw = {
+    nickname: ctx.get(nicknameAtom),
+    password: ctx.get(passwordAtom),
+    findout: ctx.get(findoutAtom),
+    referrer: ctx.get(referrerAtom),
+    token: ctx.get(tokenAtom)
   }
 
-  return await ctx.schedule(async () => {
-    await sleep(200)
+  if (type === 'register') {
+    const accept = ctx.get(acceptRulesAtom);
 
-    const res = await client.post(`auth/${type}`, {
-      throwHttpErrors: false,
-      signal: ctx.controller.signal,
-      json: {
-        nickname, password, findout, referrer, token
-      },
-    })
+    if (!accept) {
+      toast.error("Вы должны принять правила");
+      return;
+    };
+  }
 
-    const data = await res.json<WrappedResponse<{ id: string, nickname: string }> | ValidationResponse>()
+  const { success, error, data } = z.safeParse(target[type].schema, raw)
+  if (!success) return error;
 
-    if ("error" in data) {
-      throw new Error(data.error)
-    }
-
-    return data;
-  })
+  return await ctx.schedule(() =>
+    client
+      .post(`auth/${type}`, { throwHttpErrors: false })
+      .pipe(withJsonBody(data))
+      .exec()
+  )
 }, {
   name: "authorize",
   onFulfill: async (ctx, res) => {
-    if (!res) return
+    if (!res) return;
 
-    if ("property" in res) {
-      const target = res as ValidationResponse
+    if (res instanceof ZodError) {
+      const issue = res.issues.map(d => d)[0];
+      console.log(issue);
 
-      const property = target.property.slice(1) as ErrorType
-      const message = target.errors[0].schema.errorMessage.pattern
+      const property = issue.path[0].toString() as ErrorType;
 
-      globalErrorAtom(ctx, message)
-      errorTypeAtom(ctx, state => [...state, property])
+      batch(ctx, () => {
+        globalErrorAtom(ctx, issue.message)
+        errorTypeAtom(ctx, state => [...state, property])
+      })
 
       return;
     }
 
-    if (res.data) {
-      const type = ctx.get(typeAtom)
-
-      if (type === 'register') {
-        resetAuth(ctx)
-        toast.success("Всё ок! Теперь войдите в аккаунт")
-        typeAtom(ctx, "login")
-      }
-
-      if (type === 'login') {
-        ctx.schedule(() => window.location.reload())
-      }
-    }
+    const type = ctx.get(typeAtom);
+    target[type].event(ctx);
   },
   onReject: (ctx, e) => {
     logError(e);
-    
+
     if (e instanceof Error) {
       globalErrorAtom(ctx, e.message)
 
@@ -161,21 +157,21 @@ export const authorize = reatomAsync(async (ctx) => {
   }
 }).pipe(
   withStatusesAtom(),
-  withAssign(((target) => ({
-    isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
-  }))))
+  withAssign((
+    (target) => ({
+      isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
+    }))
+  )
+)
 
 export const logout = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client.post("auth/invalidate-session")
-    const data = await res.json<{ status: string } | { error: string }>()
-    if ('error' in data) throw new Error(data.error)
-    return data;
-  })
+  return await ctx.schedule(() =>
+    client.post("auth/invalidate-session").exec()
+  )
 }, {
   name: "logout",
-  onFulfill: (ctx, result) => {
-    if (!result) return;
+  onFulfill: (ctx, res) => {
+    if (!res) return;
 
     ctx.schedule(() => window.location.reload())
   },
@@ -188,6 +184,9 @@ export const logout = reatomAsync(async (ctx) => {
   }
 }).pipe(
   withStatusesAtom(),
-  withAssign(((target) => ({
-    isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
-  }))))
+  withAssign((
+    (target) => ({
+      isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
+    }))
+  )
+)

@@ -11,12 +11,11 @@ const FILTERS = [
     title: "Тип товара",
     origin: "category",
     atom: storeCategoryAtom,
-    updater: (ctx: Ctx, value: string) =>
-      storeCategoryAtom(ctx, value as AtomState<typeof storeCategoryAtom>),
+    updater: (ctx: Ctx, value: string) => storeCategoryAtom(ctx, value as AtomState<typeof storeCategoryAtom>),
     filters: [
       { name: "Все", value: "all" },
       { name: "Привилегии", value: "donate", },
-      { name: "Ивенты", value: "events" },
+      { name: "Ивенты", value: "event" },
     ]
   },
   {
@@ -26,9 +25,9 @@ const FILTERS = [
     updater: (ctx: Ctx, value: string) =>
       storeWalletFilterAtom(ctx, value as AtomState<typeof storeWalletFilterAtom>),
     filters: [
-      { name: "Все", value: "all" },
-      { name: "Игровая", value: "game", },
-      { name: "Реальная", value: "real" },
+      { name: "Все", value: "ALL", },
+      { name: "Харизма", value: "CHARISM" },
+      { name: "Белкоин", value: "BELKOIN", }
     ]
   }
 ]
@@ -41,7 +40,7 @@ const StoreFilterList = reatomComponent(({ ctx }) => {
   ) => {
     if (typeof isChecked !== 'boolean') return;
 
-    updater(ctx, isChecked ? target : "all");
+    updater(ctx, isChecked ? target : "ALL");
   }
 
   const getUniqueFilterId = (v1: string, v2: string) => `${v1}${v2}`

@@ -2,12 +2,13 @@ import Elysia from "elysia"
 import bcrypt from 'bcryptjs';
 import { UAParser } from 'ua-parser-js';
 import { throwError } from '#/helpers/throw-error';
-import { authSchema, createSession, getExistsUser } from './auth.model';
+import { createSession, getExistsUser } from './auth.model';
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { ipPlugin } from '#/lib/plugins/ip';
 import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding";
 import { CROSS_SESSION_KEY, SESSION_KEY, setCookie } from '#/utils/auth/cookie';
 import { validateAuthStatus } from "#/lib/middlewares/validators";
+import { authSchema } from "@repo/shared/types/entities/auth";
 
 const loginSchema = authSchema
 

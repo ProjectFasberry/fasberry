@@ -2,7 +2,7 @@ import { Data } from "./+data";
 import { Typography } from "@repo/ui/typography";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { connectToPaymentEvents, esAtom, orderDataAtom, orderRequestEventAtom } from "@/shared/components/app/shop/models/store-checkout.model";
+import { connectToOrderEvents, esAtom, orderDataAtom, orderRequestEventAtom } from "@/shared/components/app/shop/models/store-order.model";
 import { PageLoader } from "@/shared/ui/page-loader";
 import { action, atom } from "@reatom/core";
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog";
@@ -65,7 +65,7 @@ onConnect(esAtom, (ctx) => {
 
   if (pageContext.urlPathname.includes('/order')) {
     const uniqueId = pageContext.routeParams.id;
-    connectToPaymentEvents(ctx, uniqueId)
+    connectToOrderEvents(ctx, uniqueId)
   }
 })
 

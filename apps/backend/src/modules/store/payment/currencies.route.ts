@@ -19,8 +19,7 @@ async function getCurrencies() {
 }
 
 export const currencies = new Elysia()
-  .get("/currencies", async (ctx) => {
-    const currencies = await getCurrencies()
-
-    return ctx.status(HttpStatusEnum.HTTP_200_OK, { data: currencies })
+  .get("/currencies", async ({ status }) => {
+    const data = await getCurrencies()
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   })

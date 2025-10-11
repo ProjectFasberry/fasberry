@@ -1,18 +1,18 @@
 import { reatomAsync, withStatusesAtom } from "@reatom/async";
 import { action, atom, batch, Ctx } from "@reatom/core";
-import { cartDataAtom, getBasketData, cartPriceAtom } from "./store-cart.model";
-import { client } from "@/shared/api/client";
-import { toast } from "sonner";
-import { isDeepEqual, sleep, withInit, withReset } from "@reatom/framework";
-import { z } from "zod"
+import { cartDataAtom, getCartData, cartPriceAtom } from "./store-cart.model";
+import { sleep, withInit, withReset } from "@reatom/framework";
 import { logError } from "@/shared/lib/log";
-import { StoreItem } from "./store.model";
+import { isAuthAtom } from "@/shared/models/global.model";
+import { getRecipient, setRecipientDialogIsOpenAtom, setRecipientValueAtom, storeRecipientAtom } from "./store-recipient.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
+import type { StoreItem } from "@repo/shared/types/entities/store"
+import { client, withJsonBody, withLogging } from "@/shared/lib/client-wrapper";
 
-export async function getStoreItem(id: string, init?: RequestInit) {
-  const res = await client(`store/item/${id}`, { ...init, throwHttpErrors: false, })
-  const data = await res.json<WrappedResponse<StoreItem>>()
-  if ("error" in data) throw new Error(data.error)
-  return data.data
+export async function getStoreItem(id: string, init: RequestInit) {
+  return client<StoreItem>(`store/item/${id}`, { ...init, throwHttpErrors: false, })
+    .pipe(withLogging())
+    .exec()
 }
 
 export const updateItemSelectedStatus = reatomAsync(async (ctx, id: number) => {
@@ -20,31 +20,24 @@ export const updateItemSelectedStatus = reatomAsync(async (ctx, id: number) => {
   if (!current) throw new Error("Current is not defined")
 
   const json = { id, key: "selected", value: !current.selected };
-  const res = await client.post("store/basket/edit", { json }).json<WrappedResponse<boolean>>()
 
-  if ("error" in res) throw new Error(res.error)
+  const result = await ctx.schedule(() =>
+    client
+      .post<boolean>("store/cart/edit")
+      .pipe(withJsonBody(json), withLogging())
+      .exec()
+  )
 
-  return { id, result: res.data }
+  return { id, result }
 }, {
   name: "updateItemSelectedStatus",
   onFulfill: (ctx, { result, id }) => {
     updateCart(ctx)
-
-    cartDataAtom(ctx, (state) => {
-      const idx = state.findIndex(target => target.id === id);
-      if (idx === -1) return state;
-
-      const item = state[idx]
-
-      return [
-        ...state.slice(0, idx),
-        { ...item, selected: result },
-        ...state.slice(idx + 1)
-      ]
-    })
   },
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
-})
+  onReject: (_, e) => {
+    logError(e, { type: "combined" })
+  }
+}).pipe(withStatusesAtom())
 
 type SelectItemToCartOptions = {
   isSelected: boolean,
@@ -71,14 +64,12 @@ const itemStatusesAtom = atom<SelectItemToCartStatus | null>(null, `itemStatuses
   withReset()
 );
 
-export const updateItemStatus = action((
-  ctx,
-  id: number,
-  options:
-    | { patch: Partial<SelectItemToCartOptions> }
-    | { remove: true }
-    | { set: { isSelected: boolean; isLoading: boolean } }
-) => {
+type UpdateItemStatusOptions =
+  | { patch: Partial<SelectItemToCartOptions> }
+  | { remove: true }
+  | { set: { isSelected: boolean; isLoading: boolean } }
+
+export const updateItemStatus = action((ctx, id: number, options: UpdateItemStatusOptions) => {
   itemStatusesAtom(ctx, (state) => {
     if (!state) return state;
 
@@ -111,146 +102,150 @@ export const handleItemToCart = action((ctx, id: number) => {
   const isSelected = ctx.get(getItemStatus(id))?.isSelected ?? false;
 
   if (isSelected) {
-    removeItemFromCart(ctx, id)
+    removeItemFromCartAction(ctx, id)
   } else {
-    addItemToCart(ctx, id)
+    addItemToCartAction(ctx, id)
   }
 }, "handleItemToCart")
 
-async function updateCart(ctx: Ctx) {
-  const data = await getBasketData()
-  cartDataAtom(ctx, data.products)
-  cartPriceAtom(ctx, data.price)
+export async function updateCart(ctx: Ctx) {
+  const data = await getCartData()
+
+  batch(ctx, () => {
+    cartDataAtom(ctx, data.products)
+    cartPriceAtom(ctx, data.price);
+  })
 }
 
-function simulate(ctx: Ctx, id: number, type: "load" | "unload") {
-  const isLoading = type === "load";
+function simulate(ctx: Ctx, id: number, type: "load" | "select" | "unload" | "unselect") {
+  itemStatusesAtom(ctx, (state) => {
+    const prev = state?.[id] ?? { isLoading: false, isSelected: false };
+    const next = { ...prev };
 
-  itemStatusesAtom(ctx, (state) => ({
-    ...state,
-    [id]: { isSelected: !isLoading, isLoading },
-  }));
+    switch (type) {
+      case "load":
+        next.isLoading = true;
+        break;
+      case "unload":
+        next.isLoading = false;
+        break;
+      case "select":
+        next.isSelected = true;
+        break;
+      case "unselect":
+        next.isSelected = false;
+        break;
+    }
+
+    return {
+      ...state,
+      [id]: next,
+    };
+  });
 }
 
-export const removeItemFromCart = reatomAsync(async (ctx, id: number) => {
+export const removeItemFromCartAction = reatomAsync(async (ctx, id: number) => {
   simulate(ctx, id, "load")
 
-  const json = { id }
-  const res = await client.delete("store/basket/remove", { json }).json<WrappedResponse<boolean>>()
+  try {
+    const result = await ctx.schedule(() =>
+      client
+        .delete<boolean>("store/cart/remove")
+        .pipe(withJsonBody({ id }), withLogging())
+        .exec()
+    )
 
-  if ("error" in res) {
-    simulate(ctx, id, "unload")
-    throw new Error(res.error)
+    return { id, result }
+  } catch (e) {
+    simulate(ctx, id, "unload");
+    throw e
   }
-
-  await ctx.schedule(() => sleep(60))
-
-  simulate(ctx, id, "unload")
-
-  return { id }
 }, {
-  name: "removeItemFromCart",
-  onFulfill: (ctx, res) => {
+  name: "removeItemFromCartAction",
+  onFulfill: (ctx, { id, result }) => {
+    if (!id) {
+      console.warn("Store target id is not defined")
+      throw new Error("Store target id is not defined")
+    }
+
+    batch(ctx, () => {
+      simulate(ctx, id, "select")
+      simulate(ctx, id, "unload");
+    })
+
     batch(ctx, () => {
       updateCart(ctx)
-      updateItemStatus(ctx, res.id, { remove: true })
-    })
+      updateItemStatus(ctx, id, { remove: true })
+    });
   },
-  onReject: (_, e) => {
-    logError(e)
-  }
-})
-
-export const addItemToCart = reatomAsync(async (ctx, id: number) => {
-  simulate(ctx, id, "load")
-
-  const json = { id }
-  const res = await client.post("store/basket/add", { json }).json<WrappedResponse<boolean>>()
-
-  if ("error" in res) {
-    simulate(ctx, id, "unload")
-    throw new Error(res.error)
-  }
-
-  await ctx.schedule(() => sleep(100))
-
-  simulate(ctx, id, "unload")
-}, {
-  name: "addItemToCart",
-  onFulfill: (ctx, _) => updateCart(ctx),
-  onReject: (_, e) => {
-    logError(e)
-  }
+  onReject: (ctx, e) => {
+    logError(e, { type: "combined" })
+  },
 }).pipe(withStatusesAtom())
 
-// Settings
-const nicknameSchema = z.string()
-  .min(3, "Минимум 3 символа")
-  .max(16, "Максимум 16 символов")
-  .regex(/^[a-zA-Z0-9_]+$/, "Только латинские буквы, цифры и подчёркивание");
+export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
+  const isAuth = ctx.get(isAuthAtom);
 
-export const newRecipientAtom = atom<string | null>(null, "newRecipient").pipe(withReset())
-export const oldRecipientAtom = atom<string | null>(null, "oldRecipientAtom").pipe(withReset())
-export const changeRecipientDialogIsOpen = atom(false, "changeRecipientDialogIsOpen")
+  if (!isAuth) {
+    const currentRecipient = ctx.get(setRecipientValueAtom);
 
-changeRecipientDialogIsOpen.onChange((ctx, state) => {
-  if (!state) {
-    newRecipientAtom.reset(ctx)
-    oldRecipientAtom.reset(ctx)
+    if (!currentRecipient) {
+      const globalRecipient = ctx.get(storeRecipientAtom);
+
+      if (!globalRecipient) {
+        setRecipientDialogIsOpenAtom(ctx, true);
+        return;
+      }
+    }
+  } else {
+    const currentUser = ctx.get(currentUserAtom)
+    if (!currentUser) throw new Error('Current user is not defined')
+
+    setRecipientValueAtom(ctx, currentUser.nickname)
   }
-})
 
-export const changeRecipient = reatomAsync(async (ctx, id: number) => {
-  const newRecipient = ctx.get(newRecipientAtom)
-  if (!newRecipient) return;
+  simulate(ctx, id, "load")
 
-  if (newRecipient.length <= 2) return;
+  const recipient = getRecipient(ctx)
 
-  const json = { id, key: "for", value: newRecipient }
-  const res = await client.post("store/basket/edit", { json }).json<WrappedResponse<string | boolean>>()
+  try {
+    await ctx.schedule(() => sleep(60));
 
-  if ("error" in res) throw new Error(res.error)
+    const result = await ctx.schedule(() =>
+      client
+        .post<boolean>("store/cart/add")
+        .pipe(withJsonBody({ id, recipient }), withLogging())
+        .exec()
+    )
 
-  return { id, result: res.data }
+    return { id, result }
+  } catch (e) {
+    simulate(ctx, id, 'unload');
+    throw e
+  }
 }, {
-  name: "changeRecipient",
+  name: "addItemToCartAction",
   onFulfill: (ctx, res) => {
     if (!res) return;
 
-    const { id, result } = res;
+    const { result, id } = res
 
-    cartDataAtom(ctx, (state) => {
-      const idx = state.findIndex(target => target.id === id);
-      if (idx === -1) return state;
+    if (!id) {
+      console.warn("Store target id is not defined")
+      throw new Error("Store target id is not defined")
+    }
 
-      const item = state[idx]
-
-      return [
-        ...state.slice(0, idx),
-        { ...item, for: result.toString() },
-        ...state.slice(idx + 1)
-      ]
+    batch(ctx, () => {
+      simulate(ctx, id, "select")
+      simulate(ctx, id, "unload");
     })
 
-    changeRecipientDialogIsOpen(ctx, false)
+    updateCart(ctx)
+    setRecipientValueAtom.reset(ctx);
   },
-  onReject: (_, e) => {
-    logError(e)
+  onReject: (ctx, e) => {
+    logError(e, { type: "combined" })
+
+    setRecipientValueAtom.reset(ctx);
   }
-})
-
-export const changeRecipientIsValidAtom = atom<boolean>((ctx) => {
-  const newValue = ctx.spy(newRecipientAtom) ?? ""
-  const oldValue = ctx.spy(oldRecipientAtom)
-  const isEqual = isDeepEqual(oldValue, newValue)
-
-  const result = newValue.length >= 1 ? isEqual : true
-
-  return !result
-}, "changeRecipientIsValid")
-
-export const openRecipientChangeDialog = action((ctx, recipient: string | null) => {
-  changeRecipientDialogIsOpen(ctx, true)
-  oldRecipientAtom(ctx, recipient)
-  newRecipientAtom(ctx, recipient)
-}, "openRecipientChangeDialog")
+}).pipe(withStatusesAtom())

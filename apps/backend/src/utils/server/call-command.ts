@@ -23,7 +23,7 @@ export type AbortableCommandArgs = {
   signal: AbortSignal
 }
 
-const timeout = 5000
+const timeout = 2000
 
 export async function callServerCommand(
   { parent, value }: CallServerCommand,

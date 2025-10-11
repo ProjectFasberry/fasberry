@@ -53,3 +53,18 @@ export type LandsPayload = {
   data: Lands[],
   meta: PaginatedMeta
 }
+
+export type PlayerLands = {
+  data: Array<Pick<Land, "ulid" | "name" | "title" | "created_at" | "type"> & {
+    members: Array<{
+      nickname: string,
+      uuid: string,
+      chunks: number
+    }>
+  }>,
+  meta: { count: number }
+}
+
+export type PlayerLandsPayload = {
+  data: PlayerLands
+}

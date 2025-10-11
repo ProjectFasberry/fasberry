@@ -1,4 +1,4 @@
-import { client } from "@/shared/api/client";
+import { client, withJsonBody } from "@/shared/lib/client-wrapper";
 import { logError } from "@/shared/lib/log";
 import { reatomAsync, withCache, withStatusesAtom } from "@reatom/async";
 import { reatomMap } from "@reatom/framework";
@@ -14,12 +14,12 @@ export const optionsAtom = reatomMap<string, Option>();
 export const updateOptionAction = reatomAsync(async (ctx, name: Option["name"], value: Option["value"]) => {
   const json = { name, value }
 
-  return await ctx.schedule(async () => {
-    const res = await client.post("privated/options/update", { json })
-    const data = await res.json<WrappedResponse<Option>>();
-    if ("error" in data) throw new Error(data.error)
-    return data.data;
-  })
+  return await ctx.schedule(() =>
+    client
+      .post<Option>("privated/options/update",)
+      .pipe(withJsonBody(json))
+      .exec()
+  )
 }, {
   name: "updateOptionAction",
   onFulfill: (ctx, updatedOption) => {
@@ -31,12 +31,9 @@ export const updateOptionAction = reatomAsync(async (ctx, name: Option["name"], 
 })
 
 export const optionsAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client("privated/options/list");
-    const data = await res.json<WrappedResponse<Option[]>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<Option[]>("privated/options/list").exec()
+  )
 }, {
   name: "optionsAction",
   onFulfill: (ctx, res) => {

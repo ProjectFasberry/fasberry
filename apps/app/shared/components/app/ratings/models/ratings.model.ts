@@ -1,11 +1,10 @@
 import { AsyncCtx, reatomAsync, withStatusesAtom } from "@reatom/async";
 import { atom, batch, Ctx } from "@reatom/core";
-import { createSearchParams } from '@/shared/lib/create-search-params';
-import { client } from '@/shared/api/client';
 import { withReset } from "@reatom/framework";
 import { withHistory } from "@/shared/lib/reatom-helpers";
 import { logError } from "@/shared/lib/log";
-import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation, RatingsPayload  } from "@repo/shared/types/entities/rating"
+import { RatingBelkoin, RatingCharism, RatingLands, RatingParkour, RatingPlaytime, RatingReputation, RatingsPayload } from "@repo/shared/types/entities/rating"
+import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
 
 type RatingMap = {
   playtime: RatingPlaytime[]
@@ -25,14 +24,13 @@ type Options = {
 export async function getRatings(
   by: keyof RatingMap,
   { cursor, ascending, limit = 50 }: Options,
-  init?: RequestInit
+  init: RequestInit
 ) {
-  const searchParams = createSearchParams({ by, limit, cursor, ascending })
+  const opts = { by, limit, cursor, ascending }
 
-  const res = await client("server/rating", { searchParams, retry: 1, throwHttpErrors: false, ...init })
-  const data = await res.json<WrappedResponse<RatingsPayload>>()
-  if ("error" in data) throw new Error(data.error)
-  return data.data
+  return client<RatingsPayload>("server/rating", { ...init, retry: 1, throwHttpErrors: false })
+    .pipe(withQueryParams(opts), withAbort(init.signal))
+    .exec()
 }
 
 export const ratingDataAtom = atom<RatingsPayload["data"] | null>(null, "ratingData").pipe(withReset())

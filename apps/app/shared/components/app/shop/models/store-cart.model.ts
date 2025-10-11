@@ -1,79 +1,40 @@
-import { action, atom, createCtx } from "@reatom/core";
+import { atom, createCtx } from "@reatom/core";
 import { reatomAsync, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
-import { getStoreItems, Payment, StoreItem, storeItemsDataAtom } from "./store.model";
-import { client } from "@/shared/api/client";
+import { Payment } from "./store.model";
 import { withSsr } from "@/shared/lib/ssr";
 import { PageContextServer } from "vike/types";
 import { logError } from "@/shared/lib/log";
 import { mergeSnapshot } from "@/shared/lib/snapshot";
+import { CartFinalPrice } from "@repo/shared/types/entities/store";
+import type { CartItem, CartPayload } from "@repo/shared/types/entities/store"
+import { client, withQueryParams } from "@/shared/lib/client-wrapper";
 
-export type CartBasket = Pick<StoreItem,
-  | "id" | "title" | "description" | "summary" | "price" | "command" | "currency" | "type" | "value" | "imageUrl"
-> & {
-  quantity: number;
-  selected: boolean;
-  for: string | null;
+export async function getCartData(init?: RequestInit) {
+  return client<CartPayload>("store/cart/list", init).exec()
 }
 
-export type CartPrice = {
-  REAL: number,
-  CHARISM: number,
-  BELKOIN: number
-}
+export const cartDataAtom = atom<CartPayload["products"]>([], "cartData").pipe(withSsr("cartData"))
 
-type BasketPayloadData = { products: CartBasket[], price: CartPrice }
-
-export async function getBasketData(args?: RequestInit) {
-  const res = await client("store/basket/list", { ...args })
-  const data = await res.json<WrappedResponse<BasketPayloadData>>();
-  if ("error" in data) throw new Error(data.error)
-  return data.data;
-}
-
-export const cartDataAtom = atom<CartBasket[]>([], "cartData").pipe(withSsr("cartData"))
-
-export const cartDataSelectedAtom = atom(
-  (ctx) => ctx.spy(cartDataAtom).filter(t => t.selected), "cardDataSelected"
+export const cartDataSelectedAtom = atom<CartItem[]>(
+  (ctx) => ctx.spy(cartDataAtom).filter(t => t.selected)
 ).pipe(
-  withInit((ctx) => {
-    const data = ctx.get(cartDataAtom)
-    return data.filter(target => target.selected)
-  })
-)
+  withInit((ctx) => ctx.get(cartDataAtom).filter(t => t.selected))
+);
 
-const cartPriceInit = { REAL: 0, BELKOIN: 0, CHARISM: 0 }
-export const cartPriceAtom = atom<CartPrice>(cartPriceInit, "cartPrice").pipe(withSsr("cartPrice"))
+export const cartDataItemIsSelectAtom = (id: number) => atom((ctx) => {
+  const data = ctx.spy(cartDataSelectedAtom).find(d => d.id === id)
+
+  return data?.selected ?? false
+}, `${id}.selectedStatus`)
+
+export const cartPriceAtom = atom<CartFinalPrice>({ BELKOIN: 0, CHARISM: 0 }, "cartPrice").pipe(withSsr("cartPrice"))
 
 export const cartWarningDialogIsOpenAtom = atom(false, "cartWarningDialogIsOpen")
 export const cartWarningDialogDataAtom = atom<{ title: string, description: string } | null>(null, "cartWarningDialogData")
-export const cartWarningDialogIsContinueAtom = atom(false, "cartWarningDialogIsContinue")
-
-export const validateBeforeSubmit = action((ctx) => {
-  const isContinue = ctx.get(cartWarningDialogIsContinueAtom)
-
-  if (!isContinue) {
-    const recipientExists = ctx.get(cartDataSelectedAtom)
-      .every(target => typeof target.for === 'string')
-
-    if (!recipientExists) {
-      cartWarningDialogDataAtom(ctx, {
-        title: "У некоторых товаров нет получателя",
-        description: "При оформлении они не будут учтены!"
-      })
-
-      cartWarningDialogIsOpenAtom(ctx, true)
-      return;
-    }
-  }
-
-  cartWarningDialogIsContinueAtom(ctx, true)
-}, "validateBeforeSubmit")
 
 export const cartIsValidAtom = atom((ctx) => {
   const productsLengthValidate = ctx.spy(cartDataSelectedAtom).length >= 1;
-
-  const productsRecipientValidate = ctx.spy(cartDataSelectedAtom)
-    .filter(target => target.for).length >= 1;
+  const productsRecipientValidate = ctx.spy(cartDataSelectedAtom).filter(target => target.recipient).length >= 1
 
   return productsLengthValidate && productsRecipientValidate
 }, "cartIsValidAtom")
@@ -82,10 +43,9 @@ export async function getOrders(
   { type }: { type?: "all" | "succeeded" | "pending" },
   init?: RequestInit
 ) {
-  const res = await client("store/orders", { searchParams: { type }, throwHttpErrors: false, ...init })
-  const data = await res.json<WrappedResponse<Payment[]>>()
-  if ("error" in data) throw new Error(data.error)
-  return data.data
+  return client<Payment[]>("store/orders", { ...init, throwHttpErrors: false })
+    .pipe(withQueryParams({ type }))
+    .exec()
 }
 
 export const storeOrdersListAction = reatomAsync(async (ctx) => {
@@ -97,7 +57,6 @@ export const storeOrdersListAction = reatomAsync(async (ctx) => {
   }
 }).pipe(withDataAtom([]), withStatusesAtom())
 
-// Filters
 export const storeCartFilterAtom = atom<"pending" | "succeeded" | "all">("all", "storeCartFilter")
 
 export const storeCartFilteresOrdersAtom = atom((ctx) => {
@@ -128,42 +87,10 @@ export async function defineCartData(pageContext: PageContextServer) {
   const ctx = createCtx();
 
   if (headers) {
-    const data = await getBasketData({ headers })
+    const data = await getCartData({ headers })
 
     cartPriceAtom(ctx, data.price)
     cartDataAtom(ctx, data.products)
-  }
-
-  const newSnapshot = mergeSnapshot(ctx, pageContext)
-
-  pageContext.snapshot = newSnapshot
-}
-
-export async function defineStoreItemsData(pageContext: PageContextServer) {
-  const headers = pageContext.headers
-
-  const ctx = createCtx()
-
-  if (headers) {
-    const res = await getStoreItems({ type: "all", wallet: "all" }, { headers })
-    const data = await res.json<WrappedResponse<StoreItem[]>>();
-
-    let payload: StoreItem[] = [];
-
-    if ("error" in data) {
-      payload = []
-    } else {
-      payload = data.data
-
-      // set/update the client_id
-      const setCookieValue = res.headers.getSetCookie()
-
-      if (setCookieValue.length >= 1) {
-        pageContext.headersResponse = res.headers
-      }
-    }
-
-    storeItemsDataAtom(ctx, payload)
   }
 
   const newSnapshot = mergeSnapshot(ctx, pageContext)

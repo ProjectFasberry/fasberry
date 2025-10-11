@@ -1,16 +1,17 @@
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { cartDataSelectedAtom, cartDataAtom, cartIsValidAtom } from "../../models/store-cart.model";
+import { cartDataAtom, cartIsValidAtom, cartDataSelectedAtom } from "../../models/store-cart.model";
 import { StorePrice } from "./store-price";
 import { Link } from "@/shared/components/config/link";
 import { Button } from "@repo/ui/button";
 import { StoreSelectCurrency } from "./store-currency";
 import { spawn } from "@reatom/framework";
-import { createPaymentAction } from "../../models/store.model";
+import { createOrderAction } from "../../models/store.model";
 import { CartItem } from "./cart-item";
 import { tv } from "tailwind-variants";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
+import { ChangeRecipientDialog } from "../recipient/change-recipient";
 
 const sectionVariant = tv({
   base: `bg-neutral-900 gap-4 p-2 sm:p-3 lg:p-4 rounded-lg w-full`
@@ -20,9 +21,12 @@ const CartContentData = reatomComponent(({ ctx }) => {
   const data = ctx.spy(cartDataAtom);
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      {data.map(item => <CartItem key={item.id} {...item} />)}
-    </div>
+    <>
+      <ChangeRecipientDialog />
+      <div className="flex flex-col gap-4 w-full">
+        {data.map(item => <CartItem key={item.id} {...item} />)}
+      </div>
+    </>
   )
 }, "CartContentData")
 
@@ -33,7 +37,7 @@ const CartActionsSubmit = reatomComponent(({ ctx }) => {
   const isValid = ctx.spy(cartIsValidAtom);
 
   const handle = () => {
-    void spawn(ctx, async (spawnCtx) => createPaymentAction(spawnCtx))
+    void spawn(ctx, async (spawnCtx) => createOrderAction(spawnCtx))
   }
 
   return (

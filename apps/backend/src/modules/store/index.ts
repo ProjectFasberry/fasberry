@@ -1,31 +1,23 @@
 import Elysia from "elysia";
-import { orderRoute } from "./order.route";
-import { paymentEvents } from "./payment/payment-events.route";
 import { storeItem } from "./store-item.route";
 import { storeItems } from "./store-items.route";
-import { createOrderRoute } from "./payment/create-order.route";
 import { currencies } from "./payment/currencies.route";
-import { ordersRoute } from "./orders.route";
-import { basket } from "./basket.route";
+import { cart } from "./cart.route";
 import { processPlayerVote } from "../server/process-vote.route";
 import { checkOrderRoute } from "./payment/check-order.route";
 import { defineClientId } from "#/lib/middlewares/define";
+import { order } from "./payment";
 
 export const store = new Elysia()
   .use(defineClientId())
   .group("/store", app => app
-    .group("/order", app => app
-      .use(orderRoute)
-      .use(paymentEvents)
-    )
     .group("/hooks", app => app
       .use(processPlayerVote)
       .use(checkOrderRoute)
     )
     .use(storeItem)
     .use(storeItems)
-    .use(createOrderRoute)
+    .use(order)
     .use(currencies)
-    .use(ordersRoute)
-    .use(basket)
+    .use(cart)
   )

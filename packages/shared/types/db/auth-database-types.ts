@@ -25,6 +25,8 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type PlayerActivityEvent = "join" | "quit";
 
+export type StoreCurrency = "BELKOIN" | "CHARISM";
+
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface ActivityHeatmap {
@@ -64,7 +66,8 @@ export interface Banners {
 }
 
 export interface BannersViews {
-  banner_id: Generated<number>;
+  banner_id: number | null;
+  id: Generated<number>;
   nickname: string;
 }
 
@@ -222,12 +225,12 @@ export interface SOCIAL {
 
 export interface StoreCartItems {
   created_at: Generated<Timestamp>;
-  for: string | null;
   id: Generated<number>;
   initiator: string;
   price_snapshot: string;
   product_id: number;
   quantity: number;
+  recipient: string;
   selected: Generated<boolean>;
 }
 
@@ -242,7 +245,7 @@ export interface StoreEconomy {
 
 export interface StoreItems {
   command: string | null;
-  currency: string;
+  currency: StoreCurrency;
   description: Json | null;
   id: Generated<number>;
   imageUrl: string | null;

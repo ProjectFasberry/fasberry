@@ -1,23 +1,19 @@
-import { client } from "@/shared/api/client";
+import dayjs from "@/shared/lib/create-dayjs"
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { useConfig } from "vike-react/useConfig";
 import { render } from "vike/abort";
 import { PageContextServer } from "vike/types";
-import dayjs from "@/shared/lib/create-dayjs"
 import { Land } from "@repo/shared/types/entities/land";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { logRouting } from "@/shared/lib/log";
+import { client, withLogging } from "@/shared/lib/client-wrapper";
+
+const previewImage = getStaticImage("arts/adventure-in-blossom.jpg")
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getLand(
-  ulid: string, 
-  args: RequestInit
-) {
-  const res = await client(`server/land/${ulid}`, { throwHttpErrors: false, ...args })
-  const data = await res.json<WrappedResponse<Land>>()
-  if ('error' in data) throw new Error(data.error)
-  return data.data
+async function getLand(ulid: string, init: RequestInit) {
+  return client<Land>(`server/land/${ulid}`, init).pipe(withLogging()).exec()
 }
 
 function metadata(
@@ -32,15 +28,14 @@ function metadata(
   return {
     title,
     description,
-    image: getStaticImage("arts/adventure-in-blossom.jpg"),
+    image: previewImage,
     Head: (
       <>
         <meta property="og:url" content={pageContext.urlPathname} />
         <meta property="og:type" content="website" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="keywords" content={keywords}
-        />
+        <meta name="keywords" content={keywords} />
       </>
     ),
   }
@@ -52,14 +47,18 @@ export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
 
-  const land = await getLand(pageContext.routeParams.id, { headers })
+  let land: Land | null = null;
+
+  try {
+    land = await getLand(pageContext.routeParams.id, { headers })
+  } catch {}
 
   if (!land) {
     throw render("/not-exist?type=land")
   }
 
   config(metadata(land, pageContext))
-  
+
   return {
     id: pageContext.routeParams.id,
     data: land

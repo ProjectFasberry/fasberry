@@ -1,34 +1,28 @@
-import { client } from "@/shared/api/client"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
-import { Land } from "@repo/shared/types/entities/land"
+import { PlayerLandsPayload } from "@repo/shared/types/entities/land"
 import { logError } from "@/shared/lib/log"
 import { withSsr } from "@/shared/lib/ssr"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { userParamAtom } from "./player.model"
-
-export type UserLands = {
-  data: Land[],
-  meta: {
-    count: number
-  }
-}
+import { client, withLogging } from "@/shared/lib/client-wrapper"
 
 export async function getLands(nickname: string, init?: RequestInit) {
-  const res = await client(`server/lands/list/${nickname}`, { ...init })
-  const data = await res.json<WrappedResponse<UserLands>>()
-  if ("error" in data) throw new Error(data.error)
-  return data
+  return client<PlayerLandsPayload>(`server/lands/list/${nickname}`, init)
+    .pipe(withLogging())
+    .exec()
 }
 
-export const playerLandsAtom = atom<UserLands | null>(null).pipe(withSsr("lands"), withReset())
+export const playerLandsAtom = atom<PlayerLandsPayload | null>(null).pipe(withSsr("lands"), withReset())
 
 userParamAtom.onChange((ctx, state) => {
   if (!state) return;
 
-  const nickname = state
+  const history = ctx.get(userParamAtom.history)
 
-  playerLandsAction(ctx, nickname)
+  if (history.length > 1) {
+    playerLandsAction(ctx, state)
+  }
 })
 
 export const playerLandsAction = reatomAsync(async (ctx, nickname: string) => {
@@ -36,7 +30,7 @@ export const playerLandsAction = reatomAsync(async (ctx, nickname: string) => {
 }, {
   name: "playerLandsAction",
   onFulfill: (ctx, res) => {
-    playerLandsAtom(ctx, res.data)
+    playerLandsAtom(ctx, res)
   },
   onReject: (ctx, e) => {
     logError(e)

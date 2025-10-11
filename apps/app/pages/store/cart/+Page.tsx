@@ -4,15 +4,13 @@ import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { atom, CtxSpy, onDisconnect, withReset } from "@reatom/framework";
-import { createPaymentAction } from "@/shared/components/app/shop/models/store.model";
+import { createOrderAction } from "@/shared/components/app/shop/models/store.model";
 import { ReactNode } from "react";
 import { CartOrders } from "@/shared/components/app/shop/components/cart/cart-orders";
 import { CartContent } from "@/shared/components/app/shop/components/cart/cart-content";
-import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
-import { cartWarningDialogDataAtom, cartWarningDialogIsContinueAtom, cartWarningDialogIsOpenAtom } from "@/shared/components/app/shop/models/store-cart.model";
 
 const StoreLoader = reatomComponent(({ ctx }) => {
-  const isLoading = ctx.spy(createPaymentAction.statusesAtom).isPending;
+  const isLoading = ctx.spy(createOrderAction.statusesAtom).isPending;
 
   ctx.schedule(() => {
     if (isLoading) {
@@ -86,43 +84,6 @@ const StoreNavigation = reatomComponent(({ ctx }) => {
 
 const StoreContent = reatomComponent(({ ctx }) => STORE_COMPONENTS[ctx.spy(storeCartTypeAtom)])
 
-const StoreCartWarningDialog = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(cartWarningDialogDataAtom);
-
-  if (!data) return null;
-
-  const handle = (value: boolean) => {
-    if (!value) {
-      cartWarningDialogIsOpenAtom(ctx, value)
-      cartWarningDialogIsContinueAtom(ctx, true)
-    }
-  }
-
-  return (
-    <Dialog open={ctx.spy(cartWarningDialogIsOpenAtom)} onOpenChange={v => handle(v)}>
-      <DialogContent>
-        <DialogTitle>Предупреждение</DialogTitle>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col">
-            <Typography className="text-xl font-semibold">
-              {data.title}
-            </Typography>
-            <Typography color="gray" className="text-lg">
-              {data.description}
-            </Typography>
-          </div>
-          <Button
-            className="w-fit self-end font-semibold bg-neutral-50 text-neutral-950"
-            onClick={() => handle(false)}
-          >
-            Продолжить
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}, "StoreCartWarningDialog")
-
 export default function StoreCart() {
   return (
     <>
@@ -136,7 +97,6 @@ export default function StoreCart() {
           </div>
           <StoreNavigation />
           <StoreContent />
-          <StoreCartWarningDialog />
         </div>
       </MainWrapperPage>
     </>

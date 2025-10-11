@@ -7,6 +7,7 @@ import { action } from "@reatom/core";
 import { pageContextAtom } from "@/shared/models/global.model";
 import { startPageEvents } from "@/shared/lib/events";
 import { useData } from "vike-react/useData"
+import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";
 
 const events = action((ctx) => {
   const pageContext = ctx.get(pageContextAtom);
@@ -24,7 +25,7 @@ const SelectedDonate = reatomComponent(({ ctx }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start gap-8 w-full justify-center h-full">
       <div className="flex w-full items-center justify-center sm:w-1/4 bg-neutral-800/40 p-4 rounded-3xl">
-        <img src={data.imageUrl} width={256} height={256} alt={data.title}/>
+        <img src={data.imageUrl} width={256} height={256} alt={data.title} />
       </div>
       <div className="flex flex-col gap-4 w-full sm:w-3/4 h-full">
         <div className="flex flex-col w-full ">
@@ -53,7 +54,7 @@ const SelectedDonate = reatomComponent(({ ctx }) => {
         )}
         <div className="flex flex-col items-start gap-4 w-fit">
           <ItemPrice currency={data.currency} price={data.price} />
-          <ItemSelectToCart id={data.id}/>
+          <ItemSelectToCart id={data.id} />
         </div>
       </div>
     </div>
@@ -66,6 +67,7 @@ export default function Page() {
   return (
     <MainWrapperPage>
       <SelectedDonate />
+      <SetRecipientDialog />
     </MainWrapperPage>
   )
 }

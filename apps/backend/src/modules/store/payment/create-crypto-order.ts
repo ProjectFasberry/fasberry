@@ -9,7 +9,7 @@ import { PaymentStatus } from "@repo/shared/types/db/payments-database-types";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { EXCHANGE_RATES_KEY } from "./currencies.model";
-import { FRONTEND_ENDPOINT } from "#/shared/env";
+import { FRONTEND_PREFIX } from "#/shared/env";
 
 type CreateInvoicePayload = Pick<InvoiceType,
   | "currency_type"
@@ -103,7 +103,7 @@ export async function rollbackOrder({
   return deleteInvoice ?? false
 }
 
-export const getOrderLink = (uniqueId: string) => `${FRONTEND_ENDPOINT}/store/order/${uniqueId}`
+export const getOrderLink = (uniqueId: string) => `${FRONTEND_PREFIX}/store/order/${uniqueId}`
 export const getOrderKey = (uniqueId: string) => `order:${uniqueId}`
 export const getOrderInitiatorIndexKey = (initiator: string) => `index:initiator:${initiator}`
 const getOrderRateKey = (initiator: string) => `rate:order_limit:${initiator}`

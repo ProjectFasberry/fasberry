@@ -1,34 +1,45 @@
-import type { PageContext } from 'vike/types';
-import { createCtx } from '@reatom/core';
+import type { PageContextServer } from 'vike/types';
+import { AtomState, createCtx } from '@reatom/core';
 import { currentUserAtom, getMe } from "@/shared/models/current-user.model";
 import { snapshotAtom } from '@/shared/lib/ssr';
-import { appOptionsAtom, getAppOptions, isAuthAtom } from '@/shared/models/global.model';
-import { MePayload } from '@repo/shared/types/entities/user';
+import { appOptionsAtom, appOptionsInit, getAppOptions, isAuthAtom, localeAtom } from '@/shared/models/global.model';
 import { logRouting } from '@/shared/lib/log';
+import { isBotRequest } from '@/shared/lib/bot-guard';
+import { initCookieOpts } from '@/shared/lib/sync';
 
-export const onCreatePageContext = async (pageContext: PageContext) => {
+export const onCreatePageContext = async (pageContext: PageContextServer) => {
   logRouting(pageContext.urlPathname, "onCreatePageContext");
-  
-  const headers = pageContext.headers
-  
-  let user: MePayload | null = null;
-  
-  const ctx = createCtx()
-  
-  if (headers) {
-    const [userData, options] = await Promise.all([
-      getMe({ headers }),
-      getAppOptions({ headers })
-    ])
 
-    user = userData
-    
-    currentUserAtom(ctx, user);
-    isAuthAtom(ctx, !!user);
-    appOptionsAtom(ctx, options)
+  const { headers, urlPathname } = pageContext;
+  if (!headers) return;
+
+  const ctx = createCtx();
+  const updateSnapshot = () => (pageContext.snapshot = ctx.get(snapshotAtom));
+
+  const setupApp = (options: AtomState<typeof appOptionsAtom>, me?: AtomState<typeof currentUserAtom>) => {
+    if (me !== undefined) {
+      currentUserAtom(ctx, me);
+      isAuthAtom(ctx, Boolean(me));
+    }
+
+    appOptionsAtom(ctx, options);
+    localeAtom(ctx, pageContext.locale)
+    initCookieOpts(ctx, pageContext);
+    updateSnapshot();
+  };
+
+  if (isBotRequest(headers, urlPathname)) {
+    setupApp(appOptionsInit);
+    return;
   }
-  
-  const snapshot = ctx.get(snapshotAtom)
-  
-  pageContext.snapshot = snapshot
+
+  const [me, options] = await Promise.allSettled([
+    getMe({ headers }),
+    getAppOptions({ headers }),
+  ]);
+
+  setupApp(
+    options.status === 'fulfilled' ? options.value : appOptionsInit,
+    me.status === 'fulfilled' ? me.value : undefined
+  );
 };

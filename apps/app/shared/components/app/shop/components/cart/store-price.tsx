@@ -3,21 +3,16 @@ import { Typography } from "@repo/ui/typography"
 import { cartPriceAtom } from "../../models/store-cart.model"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
 
-export const CURRENCIES: Record<string, { img: string | null, symbol: string }> = {
-  "CHARISM": { img: getStaticImage("donates/charism_wallet.png"), symbol: "C" },
-  "BELKOIN": { img: getStaticImage("donates/belkoin_wallet.png"), symbol: "B" },
-  "RUB": { img: null, symbol: "₽" },
-  "USDT": { img: null, symbol: "T" }
+export const belkoinImage = getStaticImage("donates/belkoin_wallet.png")
+export const charismImage = getStaticImage("donates/charism_wallet.png")
+
+export const CURRENCIES: Record<string, { img: string, symbol: string }> = {
+  "CHARISM": { img: charismImage, symbol: "C" },
+  "BELKOIN": { img: belkoinImage, symbol: "B" },
 }
 
 export const StorePrice = reatomComponent(({ ctx }) => {
-  const { REAL, BELKOIN, CHARISM } = ctx.spy(cartPriceAtom)
-
-  const prices = {
-    RUB: REAL,
-    BELKOIN,
-    CHARISM,
-  }
+  const prices = ctx.spy(cartPriceAtom)
 
   return (
     <div className="space-y-1">
@@ -26,7 +21,7 @@ export const StorePrice = reatomComponent(({ ctx }) => {
 
         return (
           <Typography key={currency} className="text-lg leading-5 font-semibold flex items-center gap-1">
-            {value} {img ? <img src={img} alt={symbol} className="w-4 h-4 inline-block" /> : symbol}
+            {img ? <img src={img} alt={symbol} className="w-5 h-5 inline-block" /> : symbol} {value}
           </Typography>
         )
       })}

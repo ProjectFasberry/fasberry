@@ -61,6 +61,9 @@ declare global {
       DOMAIN_NAME: string;
       VOLUME_ENDPOINT: string;
       FRONTEND_ENDPOINT: string;
+      HELEKET_MERCHANT_KEY: string;
+      HELEKET_PAYMENT_KEY: string;
+      HELEKET_PAYOUT_KEY: string;
     }
   }
 

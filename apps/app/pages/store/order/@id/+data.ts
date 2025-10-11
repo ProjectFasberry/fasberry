@@ -1,8 +1,9 @@
 import { PageContextServer } from "vike/types";
 import { useConfig } from 'vike-react/useConfig'
 import { logRouting } from "@/shared/lib/log";
-import { getOrder } from "@/shared/components/app/shop/models/store-checkout.model";
+import { getOrder } from "@/shared/components/app/shop/models/store-order.model";
 import { Payment } from "@/shared/components/app/shop/models/store.model";
+import { render } from "vike/abort";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -18,7 +19,15 @@ export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
 
-  const order = await getOrder(pageContext.routeParams.id, { headers })
+  let order: Payment | null = null;
+
+  try {
+    order = await getOrder(pageContext.routeParams.id, { headers })
+  } catch {}
+
+  if (!order) {
+    throw render("/not-exist")
+  }
 
   config(metadata(order))
 

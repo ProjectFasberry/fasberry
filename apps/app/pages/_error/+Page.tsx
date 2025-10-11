@@ -46,7 +46,7 @@ export default function Page() {
 
   return (
     <MainWrapperPage>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col h-[80vh] justify-center items-center gap-2">
         <Typography color="gray" className="text-neutral-400 text-base md:text-xl font-normal">
           Отключено
         </Typography>

@@ -17,7 +17,6 @@ import { Data } from "./+data";
 import { Separator } from "@repo/ui/separator";
 import { PlayerSeemsLikePlayers } from "@/shared/components/app/player/components/seems-like-players";
 import { Typography } from "@repo/ui/typography";
-import { playerSeemsLikeAction } from "@/shared/components/app/player/models/player-seems-like.model";
 
 userParamAtom.onChange((ctx, state) => {
   if (!state) return;
@@ -40,7 +39,6 @@ userParamAtom.onChange((ctx, state) => {
 
 const events = action((ctx) => {
   playerActivityAction(ctx)
-  playerSeemsLikeAction(ctx)
 }, "events")
 
 const PlayerPrivated = reatomComponent(({ ctx }) => {

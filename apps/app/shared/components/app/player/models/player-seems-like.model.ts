@@ -1,8 +1,41 @@
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { SeemsLikePlayersPayload } from "@repo/shared/types/entities/other";
 import { userParamAtom } from "./player.model";
-import { take } from "@reatom/framework";
-import { client } from "@/shared/api/client";
+import { action, atom, take } from "@reatom/framework";
+import { withSsr } from "@/shared/lib/ssr";
+import { toast } from "sonner";
+import { setCookie } from "@/shared/lib/cookie";
+import dayjs from "@/shared/lib/create-dayjs";
+import { client, withQueryParams } from "@/shared/lib/client-wrapper";
+
+export const playerSeemsLikePlayersIsShowKey = "playerSeemsLikeShow"
+
+export const playerSeemsLikePlayersIsShowAtom = atom(true, 'playerSeemsLikePlayersIsShow').pipe(withSsr(playerSeemsLikePlayersIsShowKey))
+
+export const toggleShowAction = action((ctx) => {
+  const value = !ctx.get(playerSeemsLikePlayersIsShowAtom);
+
+  setCookie(playerSeemsLikePlayersIsShowKey, String(value), {
+    maxAgeMs: dayjs().add(1, "month").diff(dayjs()), path: "/"
+  })
+
+  playerSeemsLikePlayersIsShowAtom(ctx, value);
+
+  if (!value) {
+    toast.success(`Блок скрыт на 30 дней`)
+  }
+}, "toggleShowAction")
+
+userParamAtom.onChange((ctx, state) => {
+  if (!state) return;
+
+  const history = ctx.get(userParamAtom.history)
+
+  if (history.length > 1) {
+    playerSeemsLikeAction.dataAtom.reset(ctx)
+    playerSeemsLikeAction(ctx)
+  }
+})
 
 export const playerSeemsLikeAction = reatomAsync(async (ctx) => {
   let nickname = ctx.get(userParamAtom)
@@ -13,10 +46,9 @@ export const playerSeemsLikeAction = reatomAsync(async (ctx) => {
 
   if (!nickname) return null;
 
-  return await ctx.schedule(async () => {
-    const res = await client(`server/seems-like/${nickname}`, { searchParams: { limit: 6 } });
-    const data = await res.json<WrappedResponse<SeemsLikePlayersPayload>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<SeemsLikePlayersPayload>(`server/seems-like/${nickname}`)
+      .pipe(withQueryParams({ limit: 6 }))
+      .exec()
+  )
 }, "playerSeemsLikeAction").pipe(withDataAtom(), withStatusesAtom())

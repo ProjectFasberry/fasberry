@@ -2,10 +2,10 @@ import Elysia from "elysia";
 import z from "zod";
 import { getNats } from "#/shared/nats/client";
 import { logger } from "#/utils/config/logger";
-import { getOrder } from "../order.route";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { orderEventPayloadSchema } from "@repo/shared/schemas/payment";
 import { Subscription } from "@nats-io/nats-core/lib/core";
+import { getOrder } from "./order.model";
 
 function formatSSE(event: string, data: string): string {
   const lines = data.split(/\r?\n/).map(line => `data: ${line}`).join('\n');
@@ -16,7 +16,7 @@ const PING_TIMEOUT = 5000
 
 const getPaymentEventsSubject = (uniqueId: string) => `payment.events.${uniqueId}`
 
-export const paymentEvents = new Elysia()
+export const orderEvents = new Elysia()
   .get("/:id/events", async (ctx) => {
     const uniqueId = ctx.params.id;
 

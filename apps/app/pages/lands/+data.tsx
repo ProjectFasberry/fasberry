@@ -2,11 +2,16 @@ import { PageContextServer } from "vike/types";
 import { useConfig } from 'vike-react/useConfig'
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { logRouting } from "@/shared/lib/log";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
+
+const title = wrapTitle("Территории");
+const previewImage = getStaticImage("arts/clan-preview.jpg");
 
 function metadata() {
   return {
-    title: wrapTitle("Территории"),
+    title,
     description: "Территории сервера",
+    image: previewImage
   }
 }
 

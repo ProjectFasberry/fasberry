@@ -17,19 +17,13 @@ export type PaymentMeta = {
 }
 
 export type CreateOrderRoutePayload = {
-  realPurchase: {
-    url: string;
-    invoiceId: number;
+  purchase: {
     uniqueId: string;
-  } | null,
-  gamePurchase: {
-    isSuccess: boolean
-  } | null,
+  },
   payload: {
     price: {
       BELKOIN: number,
       CHARISM: number,
-      global: number
     }
   }
 }

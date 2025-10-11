@@ -1,11 +1,11 @@
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
-import { client } from "@/shared/api/client";
 import { currentUserAtom } from "@/shared/models/current-user.model";
 import { withHistory } from "@/shared/lib/reatom-helpers";
 import type { Land } from "@repo/shared/types/entities/land"
 import { logError } from "@/shared/lib/log";
+import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
 
 export const landAtom = atom<Land | null>(null, "land").pipe(withReset());
 
@@ -61,17 +61,11 @@ type AnotherLands = {
 export const anotherLandsByOwnerAction = reatomAsync(async (ctx, nickname: string) => {
   const exclude = ctx.get(landParamAtom)
 
-  return await ctx.schedule(async () => {
-    const res = await client(`server/lands/list/${nickname}`, {
-      searchParams: { exclude }, throwHttpErrors: false, signal: ctx.controller.signal
-    })
-
-    const data = await res.json<WrappedResponse<AnotherLands>>()
-
-    if ('error' in data) throw new Error(data.error)
-
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<AnotherLands>(`server/lands/list/${nickname}`, { throwHttpErrors: false })
+      .pipe(withQueryParams({ exclude }), withAbort(ctx.controller.signal))
+      .exec()
+  )
 }, {
   name: "anotherLandsByOwnerAction",
   onReject: (_, e) => {

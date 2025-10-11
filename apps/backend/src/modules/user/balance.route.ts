@@ -1,10 +1,11 @@
 import { defineUser } from "#/lib/middlewares/define";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { playerpoints } from "#/shared/database/playerpoints-db";
+import { CartFinalPrice } from "@repo/shared/types/entities/store";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 
-async function getBalance(nickname: string) {
+export async function getBalance(nickname: string): Promise<CartFinalPrice> {
   const [charism, belkoin] = await Promise.all([
     bisquite
       .selectFrom("CMI_users")
@@ -24,8 +25,8 @@ async function getBalance(nickname: string) {
   ])
 
   return {
-    charism: Number(charism?.data ?? 0),
-    belkoin: Number(belkoin?.data ?? 0)
+    CHARISM: Number(charism?.data ?? 0),
+    BELKOIN: Number(belkoin?.data ?? 0)
   }
 }
 

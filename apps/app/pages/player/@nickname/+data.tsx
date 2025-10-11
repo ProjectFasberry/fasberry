@@ -6,10 +6,11 @@ import { wrapTitle } from "@/shared/lib/wrap-title";
 import { DONATE_TITLE } from "@repo/shared/constants/donate-aliases";
 import { logRouting } from "@/shared/lib/log";
 import { createCtx, Ctx } from "@reatom/core";
-import { getLands, playerLandsAtom, UserLands } from "@/shared/components/app/player/models/player-lands.model";
+import { getLands, playerLandsAtom } from "@/shared/components/app/player/models/player-lands.model";
 import { getPlayer, playerAtom } from "@/shared/components/app/player/models/player.model";
 import { mergeSnapshot } from "@/shared/lib/snapshot";
 import dayjs from "@/shared/lib/create-dayjs"
+import { PlayerLandsPayload } from "@repo/shared/types/entities/land";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -37,7 +38,7 @@ function metadata(
         <meta property="og:type" content="website" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <link rel="preload" as="image" href={image} imageSrcSet="" imageSizes="" />
+        <link rel="preload" as="image" href={image} imageSrcSet={`${image} 1x`}  imageSizes="128px" fetchPriority="high" />
         <meta name="keywords" content={`${nickname}, fasberry, fasberry page, профиль ${nickname}`} />
       </>
     ),
@@ -49,10 +50,10 @@ async function processPlayer(
 ) {
   playerAtom(ctx, player);
 
-  let lands: UserLands | null = null
+  let lands: PlayerLandsPayload | null = null
 
   try {
-    const { data } = await getLands(player.nickname, { headers })
+    const data = await getLands(player.nickname, { headers })
     lands = data
   } catch (e) {
     console.error(e)
@@ -67,7 +68,11 @@ export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
 
-  const player = await getPlayer(pageContext.routeParams.nickname, { headers })
+  let player: Player | null = null;
+
+  try {
+    player = await getPlayer(pageContext.routeParams.nickname, { headers })
+  } catch {}
 
   if (!player) {
     throw redirect("/not-exist?type=player")

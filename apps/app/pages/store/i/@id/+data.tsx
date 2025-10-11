@@ -41,7 +41,11 @@ export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
 
-  const item = await getStoreItem(pageContext.routeParams.id, { headers })
+  let item: StoreItem | null =null
+
+  try {
+    item = await getStoreItem(pageContext.routeParams.id, { headers })
+  } catch {}
 
   if (!item) {
     throw render("/not-exist?type=store-item")

@@ -6,7 +6,7 @@ import { Payment } from "./store.model";
 import { withReset } from "@reatom/framework";
 import { API_PREFIX_URL, isDevelopment } from "@/shared/env";
 import { logError } from "@/shared/lib/log";
-import { client } from "@/shared/api/client";
+import { client, withAbort } from "@/shared/lib/client-wrapper";
 
 export const msgAtom = atom<OrderEventPayload | null>(null, "msg")
 export const connectIsSuccessAtom = atom(false, "isSuccess")
@@ -46,7 +46,9 @@ esAtom.onChange((ctx, target) => {
   if (!target) return;
 
   target.onopen = () => {
-    isDevelopment && toast.success("Connected to payment events")
+    if (isDevelopment) {
+      toast.success("Connected to order events")
+    }
   }
 
   target.addEventListener("payload", (event) => {
@@ -58,14 +60,12 @@ esAtom.onChange((ctx, target) => {
   })
 })
 
-export const targetPaymentIdAtom = atom<string>("", "targetPaymentId")
+export const targetOrderIdAtom = atom<string>("", "targetOrderId")
 export const orderDataAtom = atom<Payment | null>(null, "orderData")
 
-export const connectToPaymentEvents = reatomAsync(async (ctx, target: string) => {
-  const url = `${API_PREFIX_URL}/store/order/${target}/events`;
-
-  targetPaymentIdAtom(ctx, target);
-
+export const connectToOrderEvents = reatomAsync(async (ctx, orderId: string) => {
+  const url = `${API_PREFIX_URL}/store/order/${orderId}/events`;
+  targetOrderIdAtom(ctx, orderId);
   return esAtom(ctx, es(url));
 }, {
   name: "connectToPaymentEvents",
@@ -75,8 +75,7 @@ export const connectToPaymentEvents = reatomAsync(async (ctx, target: string) =>
 })
 
 export async function getOrder(id: string, init: RequestInit) {
-  const res = await client(`store/order/${id}`, { ...init })
-  const data = await res.json<WrappedResponse<Payment>>()
-  if ("error" in data) throw new Error(data.error);
-  return data.data
+  return client<Payment>(`store/order/${id}`, init)
+    .pipe(withAbort(init.signal))
+    .exec()
 }

@@ -1,4 +1,3 @@
-import { RotateCw } from "lucide-react";
 import { HTMLAttributes } from "react";
 import { skinRotatingAtom, skinAnimationAtom, SKIN_ANIMATIONS } from "../models/skin-animation.model";
 import { SkinDownloadLink } from "./skin-download";
@@ -7,6 +6,7 @@ import { tv, VariantProps } from "tailwind-variants";
 import { SkinHowToChange } from "./skin-change";
 import { isIdentityAtom } from "../../player/models/player.model";
 import { isAuthAtom } from "@/shared/models/global.model";
+import { IconRotate } from "@tabler/icons-react";
 
 const skinControlVariants = tv({
   base: `flex items-center justify-center cursor-pointer border border-neutral-800 rounded-xl h-12 w-12`,
@@ -35,7 +35,7 @@ const SkinControlRotate = reatomComponent(({ ctx }) => {
       onClick={() => skinRotatingAtom(ctx, (state) => !state)}
       variant={ctx.spy(skinRotatingAtom) ? "active" : "default"}
     >
-      <RotateCw size={20} />
+      <IconRotate size={20} />
     </SkinControl>
   )
 }, "SkinControlRotate")

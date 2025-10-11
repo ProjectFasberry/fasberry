@@ -1,11 +1,6 @@
-import { toast } from 'sonner';
 import { reatomComponent } from '@reatom/npm-react';
 import { Typography } from '@repo/ui/typography';
-import { spawn } from '@reatom/framework';
-import { Button } from '@repo/ui/button';
-import { FormEvent } from 'react';
-import { createPaymentAction, storePrivacyAtom } from '../../models/store.model';
-import { StorePrice } from './store-price';
+import { storePrivacyAtom } from '../../models/store.model';
 
 const PrivacyField = reatomComponent(({ ctx }) => {
   return (

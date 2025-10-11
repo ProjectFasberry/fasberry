@@ -1,5 +1,6 @@
 import { Action, Ctx } from "@reatom/core";
 import { pageContextAtom } from "../models/global.model";
+import { isDevelopment } from "../env";
 
 export function startPageEvents(
   ctx: Ctx,
@@ -9,26 +10,19 @@ export function startPageEvents(
   const pageContext = ctx.get(pageContextAtom);
   if (!pageContext) return;
 
-  const key = opts.key ?? opts.urlTarget
+  const key = opts.key ?? opts.urlTarget ?? 'page';
 
   if (opts.urlTarget) {
-    function validate(ctx: Ctx, key: string) {
-      console.log(`[${key}] Start page validation`);
-  
-      const urlPathname = ctx.get(pageContextAtom)?.urlPathname ?? "";
-      const isIdentity = urlPathname.includes(`/${key}`)
-  
-      return { isIdentity }
+    const urlPathname = pageContext.urlPathname ?? '';
+    
+    if (!urlPathname.includes(`/${opts.urlTarget}`)) {
+      if (isDevelopment) console.log(`[${key}] Skip: URL not matching target`);
+      return;
     }
-  
-    const { isIdentity } = validate(ctx, opts.urlTarget);
-  
-    if (!isIdentity) {
-      console.log(`[${key}] Stop page validation. Reason: not identity`)
-      return
-    }
+
+    if (isDevelopment) console.log(`[${key}] URL match confirmed`);
   }
 
-  console.log(`[${key}] Start page events`)
-  events(ctx)
+  if (isDevelopment) console.log(`[${key}] Triggering page events`);
+  events(ctx);
 }

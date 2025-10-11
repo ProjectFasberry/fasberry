@@ -43,8 +43,7 @@ export const orderItemSchema = z.object({
 })
 
 export const orderDetailsSchema = z.object({
-  method: paymentFiatMethodSchema.optional(),
-  currency: paymentCurrencySchema,
+  method: paymentFiatMethodSchema.optional()
 })
 
 export const createOrderSchema = orderDetailsSchema

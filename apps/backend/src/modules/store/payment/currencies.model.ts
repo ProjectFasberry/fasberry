@@ -6,7 +6,7 @@ import { logger } from "#/utils/config/logger";
 import { CryptoPayPayload } from "./create-crypto-order";
 
 export const EXCHANGE_RATES_KEY = getRedisKey("external", "exchange-rates:data");
-export const EXCHANGE_RATES_PREVIOUS_KEY = getRedisKey("external", "exchange-rates:data:previous");
+const EXCHANGE_RATES_PREVIOUS_KEY = getRedisKey("external", "exchange-rates:data:previous");
 
 export async function updateExchangeRates() {
   const redis = getRedis();

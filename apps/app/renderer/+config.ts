@@ -7,10 +7,9 @@ export default {
   extends: [vikeReact, vikeServer],
   server: 'server/index.js',
   reactStrictMode: false,
-  passToClient: ['snapshot'],
+  passToClient: ['snapshot', 'locale'],
   ssr: false,
   redirects: {
-    '/private': '/private/config',
     '/chat': "https://discord.gg/X4x6Unj89g"
   }
 } satisfies Config;

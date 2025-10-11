@@ -1,334 +1,89 @@
 import Elysia from "elysia";
 import z from "zod";
-import { createCryptoOrder, rollbackOrder } from "./create-crypto-order";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { throwError } from "#/helpers/throw-error";
-import { currencyCryptoSchema, currencyFiatSchema } from "@repo/shared/schemas/entities/currencies-schema";
-import { createOrderSchema, paymentCurrencySchema } from "@repo/shared/schemas/payment";
-import { GAME_CURRENCIES, GameCurrency } from "../store-items.route";
-import { general } from "#/shared/database/main-db";
 import { logger } from "#/utils/config/logger";
-import { callServerCommand } from "#/utils/server/call-command";
-import { processDonatePayment } from "#/utils/payment/process-donate-payment";
-import { executeSaga, TransactionalTask } from "#/utils/config/saga";
 import type { CreateOrderRoutePayload } from "@repo/shared/types/entities/payment"
 import { isProduction } from "#/shared/env";
 import { defineInitiator } from "#/lib/middlewares/define";
+import { throwError } from "#/helpers/throw-error";
+import { getCartSelectedItems } from "../cart.model";
+import { processStoreGamePurchase } from "./order.model";
+import { defineGlobalPrice } from "#/utils/store/store-transforms";
+import { getBalance } from "#/modules/user/balance.route";
+import { nanoid } from "nanoid";
 
-function getParamFromUrl(url: string, param: string): string | null {
-  const parsedUrl = new URL(url);
-  return parsedUrl.searchParams.get(param);
-}
+const createOrderTopUpSchema = z.object({
+  currency: z.string()
+})
 
-type TaskItem = {
-  type: string,
-  value: string
-  recipient: string,
-}
+export const createOrderTopUp = new Elysia()
+  .use(defineInitiator())
+  .post("/top-up", async ({ status, body }) => {
+    const { } = body;
 
-function createTasksForItem({ recipient, type, value }: TaskItem): TransactionalTask[] {
-  const tasks: TransactionalTask[] = [];
+    const data = null;
 
-  if (type === 'donate') {
-    tasks.push(...processDonatePayment({ recipient, type: "donate", value }));
-  }
-
-  if (type === 'event') {
-    tasks.push({
-      name: "notify-player",
-      execute: (signal) => callServerCommand(
-        { parent: "cmi", value: `toast ${recipient} Поздравляем с покупкой!` }, { signal }
-      )
-    })
-  }
-
-  return tasks;
-}
-
-type Item = {
-  id: number;
-  title: string;
-  price: string;
-  type: string;
-  value: string;
-}
-
-type GameItems = Item & { currency: GameCurrency }
-type RealItems = Item & { currency: string }
-
-type ProcessStoreGamePurchase = {
-  items: GameItems[],
-  itemsMap: Map<number, string>
-}
-
-type ProcessStoreGamePurchasePayload = {
-  data: {
-    isSuccess: boolean;
-    totalPrice: Record<"CHARISM" | "BELKOIN", number>;
-  } | null,
-  error: string | null
-}
-
-const initialPrices = Object.fromEntries(
-  GAME_CURRENCIES.map(currency => [currency, 0])
-) as Record<GameCurrency, number>;
-
-async function processStoreGamePurchase({
-  items, itemsMap
-}: ProcessStoreGamePurchase): Promise<ProcessStoreGamePurchasePayload> {
-  if (!items.length) return { data: null, error: null }
-
-  const finishPrice = items.reduce((acc, item) => {
-    const { currency, price } = item;
-
-    if (currency in acc) {
-      acc[currency] += parseFloat(price);
-    } else {
-      acc[currency] = parseFloat(price);
-    }
-
-    return acc;
-  }, initialPrices);
-
-  async function execute() {
-    const globalTasks: TransactionalTask[] = []
-
-    if (finishPrice.BELKOIN > 0) {
-      const takeBelkoinTask: TransactionalTask = {
-        name: "take-belkoin",
-        execute: (signal) => callServerCommand(
-          { parent: "p", value: `take ${finishPrice.BELKOIN}` },
-          { signal }
-        ),
-        rollback: (signal) => callServerCommand(
-          { parent: "p", value: `give ${finishPrice.BELKOIN}` },
-          { signal }
-        )
-      };
-
-      globalTasks.push(takeBelkoinTask);
-    }
-
-    if (finishPrice.CHARISM > 0) {
-      const takeCharismTask: TransactionalTask = {
-        name: "take-charism",
-        execute: (signal) => callServerCommand(
-          { parent: "p", value: `take ${finishPrice.CHARISM}` },
-          { signal }
-        ),
-        rollback: (signal) => callServerCommand(
-          { parent: "p", value: `give ${finishPrice.CHARISM}` },
-          { signal }
-        )
-      };
-
-      globalTasks.push(takeCharismTask);
-    }
-
-    const products = items.map(target => ({
-      ...target,
-      recipient: itemsMap.get(target.id)!
-    }));
-
-    products.forEach(product => {
-      const productTasks = createTasksForItem(product);
-      globalTasks.push(...productTasks);
-    });
-
-    const results = await executeSaga(globalTasks)
-
-    console.log(results)
-
-    return results;
-  }
-
-  try {
-    const result = await execute()
-
-    if (result.status === 'error') {
-      console.error("Game currency purchase failed and was rolled back.", result.error);
-
-      return {
-        data: null,
-        error: `${result.error instanceof Error ? result.error.message : 'Unknown error'}`
-      };
-    }
-
-    const data = { isSuccess: result.results.length >= 1, totalPrice: finishPrice }
-
-    return { data, error: null }
-  } catch (e) {
-    if (e instanceof Error) {
-      return { data: null, error: e.message }
-    }
-  }
-
-  return { data: null, error: null }
-}
-
-type ProcessStoreFiatOrCryptoPurchase = {
-  items: RealItems[],
-  itemsMap: Map<number, string>,
-  currency: z.infer<typeof paymentCurrencySchema>,
-  details: {
-    initiator: string
-  }
-}
-
-type ProcessStoreFiatOrCryptoPurchasePayload = {
-  data: {
-    url: string,
-    orderId: string,
-    invoiceId: number,
-    totalPrice: number;
-    uniqueId: string;
-  } | null,
-  error: string | null
-}
-
-async function processStoreFiatOrCryptoPurchase({
-  items, itemsMap, currency, details: { initiator }
-}: ProcessStoreFiatOrCryptoPurchase): Promise<ProcessStoreFiatOrCryptoPurchasePayload> {
-  if (!items.length) return { data: null, error: null }
-
-  const { success: isCrypto, data: cryptoCurrency } = currencyCryptoSchema.safeParse(currency);
-  const { success: isFiat, data: fiatCurrency } = currencyFiatSchema.safeParse(currency);
-
-  let totalPrice = 0;
-
-  for (const product of items) {
-    const price = Number(product.price) / 100
-    totalPrice += price
-  }
-
-  if (isCrypto) {
-    const products = items.map(target => ({
-      ...target,
-      recipient: itemsMap.get(target.id)!
-    }));
-
-    const payment = await createCryptoOrder({
-      products,
-      details: {
-        totalPrice,
-        type: "store",
-        asset: cryptoCurrency,
-        initiator
-      }
-    });
-
-    const data = {
-      invoiceId: payment.result.invoice_id,
-      orderId: payment.result.hash,
-      url: payment.result.pay_url,
-      uniqueId: payment.result.uniqueId,
-      totalPrice
-    };
-
-    return { data, error: null }
-  }
-
-  if (isFiat && fiatCurrency) {
-    // todo: impl fiat processing
-    return { data: null, error: "Платежи в фиатной валюте временно недоступны" }
-  }
-
-  throw new Error("Некорректная валюта")
-}
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
+  }, {
+    body: createOrderTopUpSchema
+  })
 
 const ERRORS_MAP: Record<string, string> = {
   "TIMEOUT": "Похоже игровой сервер не доступен"
 }
 
-function isGameCurrency(value: string): value is GameCurrency {
-  return GAME_CURRENCIES.includes(value as GameCurrency);
-}
-
-export const createOrderRoute = new Elysia()
+export const createOrder = new Elysia()
   .use(defineInitiator())
-  .post('/create-order', async ({ initiator, status, body }) => {
-    const { currency } = body
+  .post('/create', async ({ initiator, status }) => {
+    if (!isProduction) logger.debug(`Initiator ${initiator}`)
 
-    !isProduction && logger.debug(`Initiator ${initiator}`)
-
-    const query = await general
-      .selectFrom("store_cart_items")
-      .innerJoin("store_items", "store_items.id", "store_cart_items.product_id")
-      .select([
-        "store_items.id",
-        "store_items.currency",
-        "store_items.title",
-        "store_items.price",
-        "store_items.type",
-        "store_items.value",
-        "store_cart_items.for as recipient"
-      ])
-      .where("store_cart_items.initiator", "=", initiator)
-      .where("store_cart_items.selected", "=", true)
-      .execute()
-
-    if (query.length === 0) {
-      throw new Error("Товары не найдены или устарели")
-    }
-
-    const items = query.filter(
-      (target): target is typeof target & { recipient: string } =>
-        typeof target.recipient === 'string'
-    );
-
-    const gameItems = items.filter(
-      (target): target is typeof target & { currency: GameCurrency } => isGameCurrency(target.currency)
-    );
-
-    const realItems = query.filter((target) => !isGameCurrency(target.currency));
-
-    const itemsMap = new Map(
-      items.map(item => [item.id, item.recipient])
-    );
-
-    const [realResult, gameResult] = await Promise.all([
-      processStoreFiatOrCryptoPurchase({ items: realItems, itemsMap, currency, details: { initiator } }),
-      processStoreGamePurchase({ items: gameItems, itemsMap })
+    const [balance, finalPrice] = await Promise.all([
+      getBalance(initiator),
+      defineGlobalPrice(initiator)
     ])
 
-    if (realResult.error) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError(realResult.error));
+    if (
+      balance.BELKOIN < finalPrice.BELKOIN
+      || balance.CHARISM < finalPrice.CHARISM
+    ) {
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("insufficient"))
     }
 
-    if (gameResult.error) {
-      if (realResult.data) {
-        const { uniqueId, invoiceId } = realResult.data
+    const items = await getCartSelectedItems(initiator);
 
-        await rollbackOrder({
-          uniqueId: uniqueId, invoiceId, initiator
-        })
-      }
-
-      const error = ERRORS_MAP[gameResult.error] ?? gameResult.error
-
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError(error));
+    if (items.length === 0) {
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("items-not-found"))
     }
 
-    const data: CreateOrderRoutePayload = {
-      realPurchase: realResult.data
-        ? {
-          url:
-            realResult.data.url,
-          invoiceId: realResult.data.invoiceId,
-          uniqueId: realResult.data.uniqueId
-        }
-        : null,
-      gamePurchase: gameResult.data ? { isSuccess: gameResult.data.isSuccess } : null,
-      payload: {
-        price: {
-          BELKOIN: gameResult.data?.totalPrice.BELKOIN ?? 0,
-          CHARISM: gameResult.data?.totalPrice.CHARISM ?? 0,
-          global: realResult.data?.totalPrice ?? 0
-        }
-      }
-    };
+    const itemsMap = new Map(items.map(item => [item.id, item.recipient]));
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
-  }, {
-    body: createOrderSchema
-  });
+    try {
+      const result = await processStoreGamePurchase({ items, itemsMap });
+
+      if (!result.data) {
+        throw status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, result.error)
+      }
+
+      const { totalPrice } = result.data;
+      const uniqueId = nanoid(9);
+
+      const price = {
+        BELKOIN: Number(totalPrice.BELKOIN ?? 0),
+        CHARISM: Number(totalPrice.CHARISM ?? 0),
+      }
+
+      const data: CreateOrderRoutePayload = {
+        purchase: { uniqueId },
+        payload: { price }
+      };
+
+      return status(HttpStatusEnum.HTTP_200_OK, { data })
+    } catch (e) {
+      if (e instanceof Error) {
+        const message = ERRORS_MAP[e.message] ?? e.message
+        return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, throwError(message))
+      }
+
+      throw status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
+    }
+  })

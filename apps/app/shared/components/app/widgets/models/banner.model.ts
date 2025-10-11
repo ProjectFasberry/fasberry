@@ -1,9 +1,9 @@
-import { client } from "@/shared/api/client";
+import { client } from "@/shared/lib/client-wrapper";
 import { logError } from "@/shared/lib/log";
 import { appOptionsAtom } from "@/shared/models/global.model";
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { atom } from "@reatom/core";
-import { BannerPayload } from "@repo/shared/types/entities/other";
+import { BannerPayload } from "@repo/shared/types/entities/banner";
 
 export const bannerIsExistsAtom = atom((ctx) => ctx.spy(appOptionsAtom).bannerIsExists, "bannerIsExists")
 
@@ -14,25 +14,20 @@ bannerIsExistsAtom.onChange((ctx, state) => {
 })
 
 export const bannerAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client("shared/banner/latest");
-    const data = await res.json<WrappedResponse<BannerPayload | null>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() => 
+    client<BannerPayload | null>("shared/banner/latest").exec()
+  )
 }, "bannerAction").pipe(withDataAtom(null), withCache({ swr: false }), withStatusesAtom())
 
 export const viewBannerAction = reatomAsync(async (ctx, id: number) => {
-  return await ctx.schedule(async () => {
-    const res = await client.post(`shared/banner/view/${id}`)
-    const data = await res.json<WrappedResponse<unknown>>()
-    if ('error' in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() => 
+    client.post<unknown>(`shared/banner/view/${id}`).exec()
+  )
 }, {
   name: "viewBannerAction",
   onFulfill: (ctx, res) => {
-    appOptionsAtom(ctx, { bannerIsExists: false })
+    appOptionsAtom(ctx, (state) => ({ ...state, bannerIsExists: false }))
+    bannerAction.dataAtom.reset(ctx);
   },
   onReject: (ctx, e) => {
     logError(e)

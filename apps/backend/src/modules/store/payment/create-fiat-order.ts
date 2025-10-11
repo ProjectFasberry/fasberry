@@ -3,7 +3,12 @@ import { PAYMENT_FIAT_START_SUBJECT } from "#/shared/nats/subjects"
 import { paymentFiatMethodSchema } from "@repo/shared/schemas/payment"
 import type { z } from "zod"
 
-type CreateFiatOrder = { nickname: string, paymentValue: string, paymentType: string, type: z.infer<typeof paymentFiatMethodSchema> }
+type CreateFiatOrder = { 
+  nickname: string, 
+  paymentValue: string, 
+  paymentType: string, 
+  type: z.infer<typeof paymentFiatMethodSchema> 
+}
 
 type CreateFiatOrderResponse = {
   IsSuccess: boolean,

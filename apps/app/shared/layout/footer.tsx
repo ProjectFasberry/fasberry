@@ -20,10 +20,18 @@ export const Footer = () => {
           </Typography>
         </div>
         <div className="flex items-center *:duration-150 gap-2">
-          <Link href={discordHref} className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full">
+          <Link
+            href={discordHref}
+            aria-label="Дискорд"
+            className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full"
+          >
             <IconBrandDiscordFilled size={26} />
           </Link>
-          <Link href={telegramHref} className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full">
+          <Link
+            href={telegramHref}
+            aria-label="Телеграм"
+            className="flex items-center justify-center p-2 hover:bg-white/20 rounded-full"
+          >
             <IconBrandTelegram size={26} />
           </Link>
         </div>

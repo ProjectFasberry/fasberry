@@ -3,7 +3,8 @@ import { tv } from "tailwind-variants";
 import { usePageContext } from "vike-react/usePageContext";
 
 type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
-  href: string
+  href: string,
+  locale?: string
 }
 
 const LINKS = (target: string | number) => ({
@@ -15,8 +16,17 @@ const LINKS = (target: string | number) => ({
 
 export const createLink = (type: keyof ReturnType<typeof LINKS>, target: string | number) => LINKS(target)[type]
 
-export function Link({ href, className, ...props }: LinkProps) {
-  const pathname = usePageContext().urlPathname;
+export function Link({ href, locale, className, ...props }: LinkProps) {
+  const pageContext = usePageContext()
+  const pathname = pageContext.urlPathname;
+
+  const initWithLocale = !!locale
+
+  locale = locale ?? pageContext.locale;
+
+  if (locale !== "ru") {
+    href = '/' + locale + href
+  }
 
   const isActive = href ? href === "/" ? pathname === href : pathname.startsWith(href) : false;
   const isIdentity = href === pathname
@@ -25,9 +35,9 @@ export function Link({ href, className, ...props }: LinkProps) {
     <a
       href={href}
       data-state={isActive ? "active" : "inactive"}
-      style={isIdentity ? { pointerEvents: 'none' } : {}}
+      style={isIdentity && !initWithLocale ? { pointerEvents: 'none' } : {}}
       onClick={(e) => {
-        if (isIdentity) {
+        if (isIdentity && !initWithLocale) {
           e.preventDefault();
         }
       }}

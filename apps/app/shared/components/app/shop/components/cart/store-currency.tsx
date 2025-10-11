@@ -60,7 +60,7 @@ const selectCurrency = action((ctx, currency: PaymentCurrency | null) => {
 
 onConnect(currenciesAction.dataAtom, currenciesAction)
 
-const List = reatomComponent(({ ctx }) => {
+const CurrenciesList = reatomComponent(({ ctx }) => {
   const [previewCurrency, setPreviewCurrency] = useState<PaymentCurrency | null>(null);
   const [system, setSystem] = useState<typeof AGREGATORS[number] | null>(null)
 
@@ -189,7 +189,7 @@ export const StoreSelectCurrency = reatomComponent(({ ctx }) => {
           Выберите способ оплаты
         </DialogTitle>
         <div className="flex flex-col items-center gap-4 h-fit w-full">
-          <List />
+          <CurrenciesList />
         </div>
       </DialogContent>
     </Dialog>

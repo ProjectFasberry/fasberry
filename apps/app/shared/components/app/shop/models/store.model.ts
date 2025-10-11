@@ -1,121 +1,147 @@
-import { createOrderSchema } from '@repo/shared/schemas/payment';
-import { toast } from 'sonner';
+import { createOrderSchema, paymentCurrencySchema } from '@repo/shared/schemas/payment';
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
-import { atom } from "@reatom/core"
-import { withReset } from "@reatom/framework"
+import { atom, batch, createCtx } from "@reatom/core"
+import { sleep, withReset } from "@reatom/framework"
 import { z } from 'zod';
-import { client } from '@/shared/api/client';
 import type { Currencies } from "@repo/shared/types/db/sqlite-database-types"
 import type { Selectable } from "kysely"
-import type { StoreItem as item } from "@repo/shared/types/entities/store"
-import { cartWarningDialogIsContinueAtom, validateBeforeSubmit } from './store-cart.model';
+import type { StoreItemsPayload } from "@repo/shared/types/entities/store"
 import { CreateOrderRoutePayload } from "@repo/shared/types/entities/payment"
 import { navigate } from 'vike/client/router';
 import { Payments } from "@repo/shared/types/db/payments-database-types"
 import { withSsr } from '@/shared/lib/ssr';
-import { isDevelopment } from '@/shared/env';
+import { logError } from '@/shared/lib/log';
+import { mergeSnapshot } from '@/shared/lib/snapshot';
+import { PageContextServer } from 'vike/types';
+import { toast } from 'sonner';
+import { client, withAbort, withQueryParams } from '@/shared/lib/client-wrapper';
+import { clientInstance } from "@/shared/api/client"
 
-export type StoreItem = item
 export type Payment = Selectable<Payments>
 
-type StoreCategory = "donate" | "events" | "all"
-type StoreWalletFilter = "game" | "real" | "all"
+type StoreCategory = "donate" | "event" | "all"
+type StoreWalletFilter = "CHARISM" | "BELKOIN" | "ALL"
 
 export const storeTargetNicknameAtom = atom<string>("", "storeTargetNickname").pipe(withReset())
-export const storeCurrencyAtom = atom<CreateOrder["currency"]>("RUB", "storeCurrency").pipe(withReset())
+export const storeCurrencyAtom = atom<z.infer<typeof paymentCurrencySchema>>("RUB", "storeCurrency").pipe(withReset())
 export const storePayMethodAtom = atom<CreateOrder["method"]>("card", "storePayMethod").pipe(withReset())
 export const storeCategoryAtom = atom<StoreCategory>("all", "storeCategory").pipe(withReset())
-export const storeWalletFilterAtom = atom<StoreWalletFilter>("all", "storeWalletFilter")
+export const storeWalletFilterAtom = atom<StoreWalletFilter>("ALL", "storeWalletFilter")
 export const storePrivacyAtom = atom(false, "privacy").pipe(withReset())
 
-export async function getStoreItems(
+async function getStoreItems(
   { type, wallet }: { type: StoreCategory, wallet: StoreWalletFilter },
-  args?: RequestInit
+  init?: RequestInit
 ) {
-  return client("store/items", { searchParams: { type, wallet }, ...args })
+  return client<StoreItemsPayload>("store/items", init)
+    .pipe(withQueryParams({ type, wallet }))
+    .exec()
 }
 
-export const storeItemsDataAtom = atom<StoreItem[]>([], "storeItemsData").pipe(withSsr("storeItemsData"))
+export const storeItemsDataAtom = atom<StoreItemsPayload["data"] | null>(null, "storeItemsData").pipe(withSsr("storeItemsData"))
+export const storeItemsMetaAtom = atom<StoreItemsPayload["meta"] | null>(null, "storeItemsMeta").pipe(withSsr("storeItemsMeta"))
 
-storeCategoryAtom.onChange((ctx, v) => {
-  isDevelopment && console.log("storeCategoryAtom", v)
-  itemsAction(ctx)
-})
+export const storeItemsIsPendingAtom = atom((ctx) => ctx.spy(storeItemsAction.statusesAtom).isPending, "storeItemsIsPending")
 
-storeWalletFilterAtom.onChange((ctx, v) => {
-  isDevelopment && console.log("storeWalletFilterAtom", v)
-  itemsAction(ctx)
-})
-
-export const itemsAction = reatomAsync(async (ctx) => {
+export const storeItemsAction = reatomAsync(async (ctx) => {
   const type = ctx.get(storeCategoryAtom)
   const wallet = ctx.get(storeWalletFilterAtom)
 
-  return await ctx.schedule(async () => {
-    const res = await getStoreItems({ type, wallet })
-    const data = await res.json<WrappedResponse<StoreItem[]>>();
+  await ctx.schedule(() => sleep(200));
 
-    if ("error" in data) return []
+  return await ctx.schedule(() => getStoreItems({ type, wallet }))
+}, {
+  name: "storeItemsAction",
+  onFulfill: (ctx, { data, meta }) => {
+    batch(ctx, () => {
+      storeItemsDataAtom(ctx, data)
+      storeItemsMetaAtom(ctx, meta)
+    })
+  },
+  onReject: (_, e) => {
+    logError(e)
+  }
+}).pipe(withStatusesAtom())
 
-    storeItemsDataAtom(ctx, data.data)
-  })
-}, "itemsAction").pipe(withStatusesAtom())
+storeCategoryAtom.onChange((ctx) => storeItemsAction(ctx))
+storeWalletFilterAtom.onChange((ctx) => storeItemsAction(ctx))
+
+type CurrenciesPayload = Selectable<Currencies>[]
 
 export const currenciesAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client("store/currencies", { throwHttpErrors: false, signal: ctx.controller.signal })
-    const data = await res.json<WrappedResponse<Selectable<Currencies>[]>>()
-
-    if ("error" in data) throw new Error(data.error)
-
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<CurrenciesPayload>("store/currencies", { throwHttpErrors: false })
+      .pipe(withAbort(ctx.controller.signal))
+      .exec()
+  )
 }, "currenciesAction").pipe(withStatusesAtom(), withCache(), withDataAtom(null))
 
 type CreateOrder = z.infer<typeof createOrderSchema>
 
-export const createdPaymentDataAtom = atom<CreateOrderRoutePayload | null>(null)
+export const createdOrderDataAtom = atom<CreateOrderRoutePayload | null>(null)
 
-export const createPaymentAction = reatomAsync(async (ctx) => {
-  validateBeforeSubmit(ctx);
+const getOrderUrl = (id: string) => `/store/order/${id}`
 
-  const isContinue = ctx.get(cartWarningDialogIsContinueAtom)
-  if (!isContinue) return;
-
-  const method = ctx.get(storePayMethodAtom)
-  const currency = ctx.get(storeCurrencyAtom);
-
-  const json: CreateOrder = { method, currency: "USDT" }
-
-  return await ctx.schedule(async () => {
-    const res = await client.post("store/create-order", { json, throwHttpErrors: false })
-    const data = await res.json<WrappedResponse<CreateOrderRoutePayload>>()
-
-    if ("error" in data) throw new Error(data.error)
-
-    const { data: { gamePurchase, realPurchase, payload } } = data;
-
-    if (!gamePurchase && !realPurchase) {
-      throw new Error("Произошла какая-то ошибка")
-    }
-
-    return { gamePurchase, realPurchase, payload }
-  })
+export const createOrderAction = reatomAsync(async (ctx) => {
+  return await ctx.schedule(() =>
+    client
+      .post<CreateOrderRoutePayload>("store/order/create", { throwHttpErrors: false })
+      .exec()
+  )
 }, {
-  name: "createPaymentAction",
+  name: "createOrderAction",
   onFulfill: (ctx, res) => {
     if (!res) return;
 
-    let navigateTo: string;
-
-    if (res.realPurchase) {
-      navigateTo = `/store/order/${res.realPurchase.uniqueId}`
-    }
-
     ctx.schedule(() => {
-      createdPaymentDataAtom(ctx, res)
-      navigate(navigateTo)
+      createdOrderDataAtom(ctx, res);
+      navigate(getOrderUrl(res.purchase.uniqueId))
     })
   },
-  onReject: (_, e) => e instanceof Error && toast.error(e.message)
+  onReject: (_, e) => {
+    logError(e);
+
+    console.log(e);
+    
+    if (e instanceof Error) {
+      if (e.message === 'insufficient') {
+        toast.error("Недостаточно баланса")
+      }
+
+      if (e.message === 'items-not-found') {
+        toast.error("Товары не найдены или устарели")
+      }
+    }
+  }
 }).pipe(withStatusesAtom())
+
+export async function defineStoreItemsData(pageContext: PageContextServer) {
+  const headers = pageContext.headers;
+
+  const ctx = createCtx();
+
+  if (headers) {
+    const res = await clientInstance("store/items", { searchParams: { type: "all", wallet: "ALL" }, headers });
+    const data = await res.json<WrappedResponse<StoreItemsPayload>>();
+
+    if ("error" in data) {
+      throw new Error(data.error)
+    }
+
+    const payload = data.data
+
+    // set/update the client_id
+    const setCookieValue = res.headers.getSetCookie()
+
+    if (setCookieValue.length >= 1) {
+      pageContext.headersResponse = res.headers
+    }
+
+    storeItemsDataAtom(ctx, payload.data);
+    storeItemsMetaAtom(ctx, payload.meta);
+  }
+
+  const newSnapshot = mergeSnapshot(ctx, pageContext)
+
+  pageContext.snapshot = newSnapshot
+}

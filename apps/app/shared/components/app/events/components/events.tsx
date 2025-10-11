@@ -6,6 +6,7 @@ import { AtomState, onConnect } from "@reatom/framework";
 import { NotFound } from "@/shared/ui/not-found";
 import { isEmptyArray } from "@/shared/lib/array";
 import dayjs from "@/shared/lib/create-dayjs"
+import { isClientAtom } from "@/shared/models/global.model";
 
 const EventsSkeleton = () => {
   return (
@@ -51,6 +52,10 @@ const EventCard = ({
 }
 
 const EventsList = reatomComponent(({ ctx }) => {
+  if (!ctx.spy(isClientAtom)) {
+    return <EventsSkeleton />
+  }
+
   const data = ctx.spy(eventsAction.dataAtom)
 
   if (ctx.spy(eventsAction.statusesAtom).isPending) {

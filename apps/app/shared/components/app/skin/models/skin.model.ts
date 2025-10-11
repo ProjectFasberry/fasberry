@@ -1,6 +1,6 @@
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { getObjectUrl } from "@/shared/lib/volume-helpers";
-import { client } from "@/shared/api/client";
+import { clientInstance } from "@/shared/api/client";
 
 export async function getSkinDetails(
   { type, nickname }: { type: "head" | "skin", nickname: string },
@@ -11,7 +11,7 @@ export async function getSkinDetails(
     type === 'skin' ? "steve_skin.png" : "steve_head.png"
   )
 
-  const res = await client(`server/skin/${nickname}`, {
+  const res = await clientInstance(`server/skin/${nickname}`, {
     searchParams: {
       type: type === 'head' ? "head" : "full"
     },

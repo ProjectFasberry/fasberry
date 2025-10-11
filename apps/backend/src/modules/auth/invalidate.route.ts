@@ -1,4 +1,4 @@
-import Elysia from "elysia"; 
+import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { deleteSession } from "./auth.model";
 import { CROSS_SESSION_KEY, SESSION_KEY, unsetCookie } from "#/utils/auth/cookie";
@@ -23,7 +23,5 @@ export const invalidate = new Elysia()
     unsetCookie({ cookie, key: SESSION_KEY })
     unsetCookie({ cookie, key: CROSS_SESSION_KEY })
 
-    const data = { data: null, status: "success" }
-
-    return status(HttpStatusEnum.HTTP_200_OK, data)
+    return status(HttpStatusEnum.HTTP_200_OK, { data: true })
   })

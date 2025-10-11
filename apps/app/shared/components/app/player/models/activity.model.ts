@@ -1,9 +1,9 @@
-import { client } from "@/shared/api/client";
 import { logError } from "@/shared/lib/log";
-import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { userParamAtom } from "./player.model";
 import { take } from "@reatom/framework";
 import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
+import { client } from "@/shared/lib/client-wrapper";
 
 export const playerActivityAction = reatomAsync(async (ctx) => {
   let nickname = ctx.get(userParamAtom)
@@ -14,19 +14,21 @@ export const playerActivityAction = reatomAsync(async (ctx) => {
 
   if (!nickname) return null;
 
-  return await ctx.schedule(async () => {
-    const res = await client(`server/activity/now/${nickname}`)
-    const data = await res.json<WrappedResponse<PlayerActivityPayload>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  const result = await ctx.schedule(() => 
+    client<PlayerActivityPayload>(`server/activity/now/${nickname}`).exec()
+  )
+
+  return { nickname, result }
 }, {
   name: "playerActivityAction",
-  onFulfill: (ctx, result) => {
+  onFulfill: (ctx, res) => {
+    if (!res) return;
+
+    const { result, nickname } = res;
     if (!result) return;
 
     if (result.type === 'online') {
-      playerActivityAction(ctx)
+      playerLocationAction(ctx, nickname)
     }
   },
   onReject: (ctx, e) => {
@@ -45,10 +47,7 @@ type PlayerLocation = {
 }
 
 export const playerLocationAction = reatomAsync(async (ctx, nickname: string) => {
-  return await ctx.schedule(async () => {
-    const res = await client(`server/location/${nickname}`)
-    const data = await res.json<WrappedResponse<PlayerLocation>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
-}).pipe(withDataAtom(null), withStatusesAtom())
+  return await ctx.schedule(() => 
+    client<PlayerLocation>(`server/location/${nickname}`).exec()
+  )
+}).pipe(withDataAtom(null), withStatusesAtom(), withCache({ swr: false }))

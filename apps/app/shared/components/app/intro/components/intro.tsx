@@ -15,7 +15,11 @@ const IntroStatus = reatomComponent(({ ctx }) => {
     return <Skeleton className="w-4 h-4 inline-flex rounded-sm" />
   }
 
-  return data?.proxy.online ?? 0
+  return (
+    <Typography>
+      {data?.proxy.online ?? 0}
+    </Typography>
+  )
 }, "IntroStatus")
 
 const IntroActions = () => {
@@ -29,9 +33,15 @@ const IntroActions = () => {
         </Button>
       </a>
       <div className="hidden sm:flex items-center px-4 py-2 rounded-md bg-neutral-800 cursor-default">
-        <Typography className="truncate inline-flex items-center gap-2 text-base lg:text-lg font-semibold">
-          Онлайн: <IntroStatus /> игроков
-        </Typography>
+        <div className="flex items-center gap-1 *:inline *:truncate *:items-center *:gap-2 *:text-base *:lg:text-lg *:font-semibold">
+          <Typography>
+            Онлайн:
+          </Typography>
+          <IntroStatus />
+          <Typography>
+            игроков
+          </Typography>
+        </div>
       </div>
     </div>
   )

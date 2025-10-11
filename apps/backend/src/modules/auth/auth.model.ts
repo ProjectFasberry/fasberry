@@ -3,6 +3,7 @@ import { general } from "#/shared/database/main-db"
 import { getRedis } from "#/shared/redis/init"
 import { logger } from "#/utils/config/logger"
 import { safeJsonParse } from "#/utils/config/transforms"
+import { registerSchema } from "@repo/shared/types/entities/auth"
 import z from "zod"
 
 export const DEFAULT_SESSION_EXPIRE = 60 * 60 * 24 * 30 // 30 days
@@ -182,23 +183,6 @@ export async function refreshSession(token: string) {
 
   return null;
 }
-
-export const authSchema = z.object({
-  nickname: z.string()
-    .min(2, { error: "Поле обязательно для заполнения!" })
-    .max(16, { error: "Ник не содержит больше 16 символов!" })
-    .regex(/^(?!.*[\u0400-\u04FF])\S*$/, { error: "Ник содержит недопустимые символы или пробелы" }),
-  password: z.string().min(6),
-  token: z.string().min(4)
-})
-
-export const registerSchema = z.intersection(
-  authSchema,
-  z.object({
-    findout: z.string().min(1),
-    referrer: z.string().optional()
-  })
-)
 
 type CreateUser = Omit<z.infer<typeof registerSchema>, "token"> & {
   uuid: string,

@@ -61,7 +61,9 @@ export const LandBanner = reatomComponent(({ ctx }) => {
   }
 
   const handleOpen = () => {
-    editIsAllow && ref.current?.click()
+    if (editIsAllow) {
+      ref.current?.click()
+    }
   }
 
   return (

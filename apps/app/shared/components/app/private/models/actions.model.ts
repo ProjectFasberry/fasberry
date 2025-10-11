@@ -1,4 +1,3 @@
-import { client } from "@/shared/api/client"
 import { logError } from "@/shared/lib/log"
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom, batch, Ctx } from "@reatom/core"
@@ -7,7 +6,7 @@ import { BannerPayload, BannersPayload } from "@repo/shared/types/entities/banne
 import { toast } from "sonner"
 import { newsAction } from "../../news/models/news.model"
 import { News } from "@repo/shared/types/entities/news"
-import { EventPayload } from "@repo/shared/types/entities/other"
+import { client, withJsonBody, withLogging } from "@/shared/lib/client-wrapper"
 
 export const eventTitleAtom = atom("", "eventTitle").pipe(withReset())
 export const eventDescriptionAtom = atom("", "eventDescription").pipe(withReset())
@@ -31,12 +30,12 @@ export const createEventAction = reatomAsync(async (ctx) => {
     type: ctx.get(eventTypeAtom)
   }
 
-  return await ctx.schedule(async () => {
-    const res = await client.post("server/events/create", { json })
-    const data = await res.json<WrappedResponse<EventPayload>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data;
-  })
+  return await ctx.schedule(() =>
+    client
+      .post("server/events/create", { throwHttpErrors: false })
+      .pipe(withJsonBody(json), withLogging())
+      .exec()
+  )
 }, {
   name: "createEventAction",
   onFulfill: (ctx, res) => {
@@ -65,12 +64,12 @@ export const createNewsAction = reatomAsync(async (ctx) => {
     imageUrl: ctx.get(newsImageAtom)
   }
 
-  return await ctx.schedule(async () => {
-    const res = await client.post("shared/news/create", { json })
-    const data = await res.json<WrappedResponse<News>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data;
-  })
+  return await ctx.schedule(() =>
+    client
+      .post<News>("shared/news/create")
+      .pipe(withJsonBody(json), withLogging())
+      .exec()
+  )
 }, {
   name: "createNewsAction",
   onFulfill: (ctx, res) => {
@@ -90,12 +89,11 @@ export const createNewsAction = reatomAsync(async (ctx) => {
 })
 
 export const deleteNewsAction = reatomAsync(async (ctx, id: number) => {
-  return await ctx.schedule(async () => {
-    const res = await client.delete(`shared/news/${id}`);
-    const data = await res.json<WrappedResponse<{ id: number }>>()
-    if ('error' in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client
+      .delete<{ id: number }>(`shared/news/${id}`)
+      .exec()
+  )
 }, {
   name: "deleteNewsAction",
   onFulfill: (ctx, res) => {
@@ -115,12 +113,11 @@ export const deleteNewsAction = reatomAsync(async (ctx, id: number) => {
 }).pipe(withStatusesAtom())
 
 export const deleteBannerAction = reatomAsync(async (ctx, id: number) => {
-  return await ctx.schedule(async () => {
-    const res = await client.delete(`shared/banner/${id}`);
-    const data = await res.json<WrappedResponse<{ id: number }>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client
+      .delete<{ id: number }>(`shared/banner/${id}`)
+      .exec()
+  )
 }, {
   name: "deleteBannerAction",
   onFulfill: (ctx, res) => {
@@ -138,12 +135,10 @@ export const deleteBannerAction = reatomAsync(async (ctx, id: number) => {
 }).pipe(withStatusesAtom())
 
 export const bannersAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(async () => {
-    const res = await client(`shared/banner/list`);
-    const data = await res.json<WrappedResponse<BannersPayload>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<BannersPayload>(`shared/banner/list`)
+      .exec()
+  )
 }).pipe(withDataAtom(null), withStatusesAtom())
 
 export const bannerTitleAtom = atom("").pipe(withReset())
@@ -168,12 +163,12 @@ export const createBannerAction = reatomAsync(async (ctx) => {
     }
   }
 
-  return await ctx.schedule(async () => {
-    const res = await client.post("shared/banner/create", { json });
-    const data = await res.json<WrappedResponse<BannerPayload>>()
-    if ("error" in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client
+      .post<BannerPayload>("shared/banner/create")
+      .pipe(withJsonBody(json))
+      .exec()
+  )
 }, {
   name: 'createBannerAction',
   onFulfill: (ctx, res) => {

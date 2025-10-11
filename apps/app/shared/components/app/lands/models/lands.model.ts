@@ -1,4 +1,4 @@
-import { client } from "@/shared/api/client";
+import { client, withAbort } from "@/shared/lib/client-wrapper";
 import { logError } from "@/shared/lib/log";
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { sleep } from "@reatom/framework";
@@ -7,12 +7,11 @@ import { LandsPayload } from "@repo/shared/types/entities/land";
 export const landsAction = reatomAsync(async (ctx) => {
   await ctx.schedule(() => sleep(160))
 
-  return await ctx.schedule(async () => {
-    const res = await client("server/lands/list", { signal: ctx.controller.signal })
-    const data = await res.json<WrappedResponse<LandsPayload>>()
-    if ('error' in data) throw new Error(data.error)
-    return data.data
-  })
+  return await ctx.schedule(() =>
+    client<LandsPayload>("server/lands/list")
+      .pipe(withAbort(ctx.controller.signal))
+      .exec()
+  )
 }, {
   onReject: (ctx, e) => {
     logError(e, { type: "combined" })

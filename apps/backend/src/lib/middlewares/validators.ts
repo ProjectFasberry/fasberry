@@ -37,9 +37,10 @@ export const validatePermission = () => new Elysia()
 
 export const validateAuthStatus = () => new Elysia()
   .use(defineSession())
-  .onBeforeHandle(async ({ session: token, status }) => {
-    if (token) {
-      const nickname = await getUserNickname(token);
+  .onBeforeHandle(async ({ session, status }) => {
+    if (session) {
+      const nickname = await getUserNickname(session);
+      console.log(session, nickname);
 
       if (nickname) {
         throw status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, "Authorized")

@@ -1,5 +1,6 @@
-import { client } from "@/shared/api/client";
+import { client } from "@/shared/lib/client-wrapper";
 import { logRouting } from "@/shared/lib/log";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { News } from "@repo/shared/types/entities/news";
 import { useConfig } from "vike-react/useConfig";
@@ -9,10 +10,7 @@ import { PageContextServer } from "vike/types";
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getNews(id: string, init: RequestInit) {
-  const res = await client(`shared/news/${id}`, { ...init })
-  const data = await res.json<WrappedResponse<News>>()
-  if ('error' in data) throw new Error(data.error)
-  return data.data
+  return client<News>(`shared/news/${id}`, init).exec()
 }
 
 function metadata(
@@ -20,7 +18,8 @@ function metadata(
 ) {
   return {
     title: wrapTitle(news.title),
-    description: news.description.slice(0, 256)
+    description: news.description.slice(0, 256),
+    image: getStaticImage(news.imageUrl!.slice(1))
   }
 }
 
@@ -30,7 +29,11 @@ export async function data(pageContext: PageContextServer) {
   const config = useConfig()
   const headers = pageContext.headers ?? undefined;
   
-  const news = await getNews(pageContext.routeParams.id, { headers })
+  let news: News | null = null;
+
+  try {
+    news = await getNews(pageContext.routeParams.id, { headers })
+  } catch {}
 
   if (!news) {
     throw render("/not-exist")
