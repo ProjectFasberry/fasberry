@@ -6,6 +6,11 @@ import { getStaticImage } from "@/shared/lib/volume-helpers"
 export const belkoinImage = getStaticImage("donates/belkoin_wallet.png")
 export const charismImage = getStaticImage("donates/charism_wallet.png")
 
+export const TARGET_TITLE = {
+  "CHARISM": "Харизма",
+  "BELKOIN": "Белкоин"
+} as const;
+
 export const CURRENCIES: Record<string, { img: string, symbol: string }> = {
   "CHARISM": { img: charismImage, symbol: "C" },
   "BELKOIN": { img: belkoinImage, symbol: "B" },

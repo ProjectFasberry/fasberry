@@ -29,8 +29,6 @@ export const data = async (pageContext: PageContextServer) => {
   
   const config = useConfig()
 
-  console.log(pageContext.urlParsed);
-
   const type = pageContext.urlParsed.search["type"] as TitleType | undefined ?? "default"
 
   const locale = getServerLocale(pageContext);

@@ -4,8 +4,10 @@ import { withSsr } from "../lib/ssr";
 import { MePayload } from "@repo/shared/types/entities/user"
 import { client, withAbort } from "../lib/client-wrapper";
 
+export const CURRENT_USER_KEY = 'currentUser'
+
 export const currentUserAtom = atom<MePayload | null>(null, "currentUser").pipe(
-  withReset(), withSsr("currentUser")
+  withReset(), withSsr(CURRENT_USER_KEY)
 );
 
 export const currentUserOptionsAtom = atom((ctx) => ctx.spy(currentUserAtom)?.options ?? null, "currentUserOptions")

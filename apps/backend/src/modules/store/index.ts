@@ -7,6 +7,8 @@ import { processPlayerVote } from "../server/process-vote.route";
 import { checkOrderRoute } from "./payment/check-order.route";
 import { defineClientId } from "#/lib/middlewares/define";
 import { order } from "./payment";
+import { exchangeRates } from "./exchange-rates";
+import { paymentMethods } from "./payment-methods";
 
 export const store = new Elysia()
   .use(defineClientId())
@@ -18,6 +20,8 @@ export const store = new Elysia()
     .use(storeItem)
     .use(storeItems)
     .use(order)
+    .use(paymentMethods)
     .use(currencies)
     .use(cart)
+    .use(exchangeRates)
   )

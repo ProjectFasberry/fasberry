@@ -7,10 +7,12 @@ import { logError } from "@/shared/lib/log";
 import { mergeSnapshot } from "@/shared/lib/snapshot";
 import { CartFinalPrice } from "@repo/shared/types/entities/store";
 import type { CartItem, CartPayload } from "@repo/shared/types/entities/store"
-import { client, withQueryParams } from "@/shared/lib/client-wrapper";
+import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
 
 export async function getCartData(init?: RequestInit) {
-  return client<CartPayload>("store/cart/list", init).exec()
+  return client<CartPayload>("store/cart/list", init)
+    .pipe(withAbort(init?.signal))
+    .exec()
 }
 
 export const cartDataAtom = atom<CartPayload["products"]>([], "cartData").pipe(withSsr("cartData"))
@@ -39,12 +41,13 @@ export const cartIsValidAtom = atom((ctx) => {
   return productsLengthValidate && productsRecipientValidate
 }, "cartIsValidAtom")
 
-export async function getOrders(
-  { type }: { type?: "all" | "succeeded" | "pending" },
-  init?: RequestInit
-) {
-  return client<Payment[]>("store/orders", { ...init, throwHttpErrors: false })
-    .pipe(withQueryParams({ type }))
+type OrdersParams = {
+  type?: "all" | "succeeded" | "pending"
+}
+
+export async function getOrders(params: OrdersParams, init: RequestInit) {
+  return client<Payment[]>("store/order/list", { ...init, throwHttpErrors: false })
+    .pipe(withQueryParams(params))
     .exec()
 }
 

@@ -5,13 +5,13 @@ import { cartDataAtom, cartIsValidAtom, cartDataSelectedAtom } from "../../model
 import { StorePrice } from "./store-price";
 import { Link } from "@/shared/components/config/link";
 import { Button } from "@repo/ui/button";
-import { StoreSelectCurrency } from "./store-currency";
 import { spawn } from "@reatom/framework";
 import { createOrderAction } from "../../models/store.model";
 import { CartItem } from "./cart-item";
 import { tv } from "tailwind-variants";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { ChangeRecipientDialog } from "../recipient/change-recipient";
+import { navigate } from "vike/client/router";
 
 const sectionVariant = tv({
   base: `bg-neutral-900 gap-4 p-2 sm:p-3 lg:p-4 rounded-lg w-full`
@@ -44,7 +44,7 @@ const CartActionsSubmit = reatomComponent(({ ctx }) => {
     <Button
       disabled={!isValid}
       onClick={handle}
-      className="bg-green-700 hover:bg-green-800 rounded-xl"
+      className="bg-green-700 hover:bg-green-800"
     >
       <Typography color="white" className="text-lg font-semibold">
         Перейти к оформлению
@@ -97,7 +97,12 @@ export const CartContent = reatomComponent(({ ctx }) => {
       <div className={sectionVariant({ className: "flex flex-col lg:w-1/3" })}>
         <div className="flex flex-col gap-4">
           <CartActionsSubmit />
-          <div className="flex flex-col gap-4 w-full h-full">
+          <Button onClick={() => navigate("/store/topup")} className="bg-neutral-50 px-4">
+            <Typography className="text-neutral-950 text-lg font-semibold">
+              Пополнить баланс
+            </Typography>
+          </Button>
+          {/* <div className="flex flex-col gap-4 w-full h-full">
             <div className="flex justify-between w-full items-center gap-2">
               <div className="flex flex-col">
                 <Typography color="white" className="text-lg font-semibold">
@@ -111,7 +116,7 @@ export const CartContent = reatomComponent(({ ctx }) => {
                 <StoreSelectCurrency />
               </div>
             </div>
-          </div>
+          </div> */}
           <div
             className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full h-full"
           >

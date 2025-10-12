@@ -2,30 +2,18 @@ import { Data } from "./+data";
 import { Typography } from "@repo/ui/typography";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { connectToOrderEvents, esAtom, orderDataAtom, orderRequestEventAtom } from "@/shared/components/app/shop/models/store-order.model";
+import { connectToOrderEventsAction, esAtom, orderDataAtom, orderRequestEventAtom } from "@/shared/components/app/shop/models/store-order.model";
 import { PageLoader } from "@/shared/ui/page-loader";
 import { action, atom } from "@reatom/core";
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog";
 import { IconCheck, IconCopy, IconEye } from "@tabler/icons-react";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useRef, useState } from "react";
-import { CreateOrderRoutePayload } from '@repo/shared/types/entities/payment';
+import { useEffect, useState } from "react";
 import { Payment } from "@/shared/components/app/shop/models/store.model";
-import { createLink, Link } from "@/shared/components/config/link";
-import { Button } from "@repo/ui/button";
-import { onConnect, onDisconnect, sleep } from "@reatom/framework";
+import { onDisconnect, sleep } from "@reatom/framework";
 import { pageContextAtom } from "@/shared/models/global.model";
 import { startPageEvents } from "@/shared/lib/events";
-
-type Product = {
-  id: number;
-  price: string;
-  title: string;
-  type: string;
-  value: string;
-  currency: string;
-  recipient: string
-}
+import { AutoWidthInput } from "@/shared/ui/autowidth-input";
 
 const STATUSES: Record<Payment["status"], { title: string, color: string }> = {
   "canceled": {
@@ -47,8 +35,10 @@ const events = action((ctx) => {
   if (!pageContext) return;
 
   const { data } = pageContext.data as Data
+  const uniqueId = pageContext.routeParams.id;
 
   orderDataAtom(ctx, data)
+  connectToOrderEventsAction(ctx, uniqueId)
 }, "events")
 
 orderRequestEventAtom.onChange(async (ctx, target) => {
@@ -59,23 +49,12 @@ orderRequestEventAtom.onChange(async (ctx, target) => {
   }
 })
 
-onConnect(esAtom, (ctx) => {
-  const pageContext = ctx.get(pageContextAtom);
-  if (!pageContext) return;
-
-  if (pageContext.urlPathname.includes('/order')) {
-    const uniqueId = pageContext.routeParams.id;
-    connectToOrderEvents(ctx, uniqueId)
-  }
-})
-
 onDisconnect(esAtom, (ctx) => {
   const source = ctx.get(esAtom);
+  if (!source) return;
 
-  if (source) {
-    source.close()
-    esAtom.reset(ctx)
-  }
+  source.close()
+  esAtom.reset(ctx)
 })
 
 const showOrderLoaderAtom = atom(false, "showOrderLoader")
@@ -121,68 +100,25 @@ const OrderLoader = reatomComponent(({ ctx }) => {
 }, "OrderLoader")
 
 const orderIsLoadingAtom = atom<boolean>((ctx) => {
-  let result = true;
-
   const target = ctx.spy(orderDataAtom)
   const es = ctx.spy(esAtom)
-
-  if (target && es) result = false
-
-  return result
+  const result = Boolean(target && es)
+  console.log("orderIsLoadingAtom", result)
+  return !result
 }, "orderIsLoading")
 
-function generatePricePayload(data: CreateOrderRoutePayload["payload"]["price"]): string {
-  const parts = [
-    data.global && `${data.global} ₽`,
-    data.CHARISM && `${data.CHARISM} харизмы`,
-    data.BELKOIN && `${data.BELKOIN} белкоинов`,
-  ];
+const isCopiedAtom = atom(false, "isCopied")
 
-  return parts.filter(Boolean).join("\n");
-}
-
-function AutoWidthInput({ value }: { value: string }) {
-  const spanRef = useRef<HTMLSpanElement>(null);
-  const [inputWidth, setInputWidth] = useState(0);
-
-  useEffect(() => {
-    if (spanRef.current) {
-      setInputWidth(spanRef.current.offsetWidth);
-    }
-  }, [value]);
-
-  return (
-    <>
-      <input
-        readOnly
-        value={value}
-        style={{ width: inputWidth }}
-        className="bg-transparent border-none outline-none text-neutral-50"
-      />
-      <span
-        ref={spanRef}
-        className="invisible absolute whitespace-pre"
-        style={{ fontFamily: "monospace" }}
-      >
-        {value}
-      </span>
-    </>
-  );
-}
+const copyHrefAction = action(async (ctx, value: string) => {
+  await navigator.clipboard.writeText(value);
+  isCopiedAtom(ctx, true)
+  await sleep(2000)
+  isCopiedAtom(ctx, false)
+})
 
 const OrderDetails = reatomComponent(({ ctx }) => {
-  const [copied, setCopied] = useState(false);
-
   const data = ctx.spy(orderDataAtom)
   if (!data) return null
-
-  const handleCopy = async () => {
-    const paymentUrl = data.pay_url
-
-    await navigator.clipboard.writeText(paymentUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -192,11 +128,11 @@ const OrderDetails = reatomComponent(({ ctx }) => {
         </Typography>
         <div className="flex items-center relative cursor-pointer w-fit gap-2 bg-neutral-700 rounded-lg py-2 px-3 text-base">
           <AutoWidthInput value={data.pay_url} />
-          <button onClick={handleCopy} className="group">
+          <button onClick={() => copyHrefAction(ctx, data.pay_url)} className="group">
             <IconCopy size={16} className="text-neutral-400 group-hover:text-neutral-50" />
           </button>
         </div>
-        {copied && <p className="text-green-500 text-base mt-1">Скопировано</p>}
+        {ctx.spy(isCopiedAtom) && <p className="text-green-500 text-base mt-1">Скопировано</p>}
       </div>
     </div>
   )
@@ -232,7 +168,7 @@ const Order = reatomComponent(({ ctx }) => {
 
   if (!data) return null
 
-  const payload: Product[] | null = JSON.parse(data.payload) ?? null;
+  const payload: string = data.payload;
   const status = STATUSES[data.status]
 
   return (
@@ -257,30 +193,7 @@ const Order = reatomComponent(({ ctx }) => {
           <Typography className="font-semibold text-xl">
             Содержимое:
           </Typography>
-          {payload && (
-            <div className="flex flex-col gap-1 sm:w-2/3 bg-neutral-800/60 p-2 rounded-lg w-full">
-              {payload.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex flex-col gap-1 bg-neutral-700/60 rounded-lg p-2"
-                >
-                  <Typography className="font-semibold">{product.title}
-                    <span className="font-normal text-neutral-400"> ({product.value})</span>
-                  </Typography>
-                  <span>Получатель: {product.recipient}</span>
-                  <Link
-                    href={createLink("store", product.id.toString())}
-                    className="font-semibold w-fit"
-                    target="_blank"
-                  >
-                    <Button className="bg-neutral-50 text-neutral-950 text-md py-1">
-                      К товару
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          )}
+          <span>{payload}</span>
         </div>
         <OrderDetails />
       </div>

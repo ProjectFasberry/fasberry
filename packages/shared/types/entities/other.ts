@@ -42,3 +42,20 @@ export type SeemsLikePlayersPayload = {
     count: number
   }
 }
+
+export type TaskItem = {
+  id: number,
+  description: string;
+  created_at: Date;
+  title: string;
+  expires: Date | null;
+  action_type: string;
+  action_value: string | null;
+  reward_currency: string;
+  reward_value: number;
+}
+
+export type TasksPayload = {
+  data: TaskItem[],
+  meta: PaginatedMeta
+}

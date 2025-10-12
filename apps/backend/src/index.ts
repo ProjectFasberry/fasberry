@@ -33,7 +33,7 @@ const appConfig: ElysiaConfig<string> = {
   prefix: "/minecraft",
   serve: {
     hostname: '0.0.0.0',
-    idleTimeout: 3
+    // idleTimeout: 3
   },
   aot: true
 }

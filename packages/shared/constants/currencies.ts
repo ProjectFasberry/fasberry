@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const currencyCryptoSchema = z.enum(["USDT", "TON", "BTC", "ETH", "LTC", "BNB", "TRX", "USDC",]);
+export const currencyCryptoSchema = z.enum(["USDT", "TON", "BTC", "ETH", "LTC", "BNB", "TRX", "USDC"]);
 
 export type PaymentCryptoCurrency = z.infer<typeof currencyCryptoSchema>
 

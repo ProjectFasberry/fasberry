@@ -13,6 +13,7 @@ import { playerAchievements } from "./achievements";
 import { playerActivity } from "./activity";
 import { seemsPlayers } from "../user/seems-players.route";
 import { balance } from "../user/balance.route";
+import { tasks } from "./tasks.route";
 
 const playerGroup = new Elysia()
   .group("", app => app
@@ -36,6 +37,7 @@ const globalGroup = new Elysia()
     .use(status)
     .use(events)
     .use(minecraftItems)
+    .use(tasks)
   )
 
 export const server = new Elysia()

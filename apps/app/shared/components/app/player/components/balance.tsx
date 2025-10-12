@@ -9,6 +9,7 @@ import { belkoinBalanceAtom, charismBalanceAtom, financeAction } from "../models
 import { AnimatedNumber } from "@repo/ui/animated-number"
 import { atom } from "@reatom/core";
 import { withLocalStorage } from "@reatom/persist-web-storage";
+import { navigate } from "vike/client/router";
 
 const cardImage = getStaticImage("arts/steve_night.jpg")
 const belkoinImage = getStaticImage("items/belkoin_wallet.png")
@@ -19,6 +20,11 @@ const animateBalanceAtom = atom(true, "animateBalance").pipe(withLocalStorage({ 
 const animateOptions = {
   bounce: 0,
   duration: 2000,
+}
+
+const D = {
+  "Харизма": "CHARISM",
+  "Белкоин": "BELKOIN"
 }
 
 const BalanceCard = reatomComponent<{ title: string, value: number, image: string }>(({ ctx, title, value, image }) => {
@@ -52,7 +58,11 @@ const BalanceCard = reatomComponent<{ title: string, value: number, image: strin
               <span className="inline-flex items-center font-mono text-neutral-50 text-2xl font-light">{value}</span>
             )}
           </div>
-          <Button className="cursor-pointer bg-neutral-50/80 rounded-lg p-1">
+          <Button
+            className="cursor-pointer bg-neutral-50/80 rounded-lg p-1"
+            // @ts-expect-error
+            onClick={() => navigate(`/store/topup?target=${D[title]}`)}
+          >
             <IconPlus size={24} className="text-neutral-950" />
           </Button>
         </div>

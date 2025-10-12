@@ -1,14 +1,12 @@
 import { general } from "#/shared/database/main-db";
 import { getDirection } from "#/utils/config/paginate";
 import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
+import { GAME_CURRENCIES } from "@repo/shared/schemas/payment";
 import { StoreItemsPayload } from "@repo/shared/types/entities/store";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 
-export const GAME_CURRENCIES = ["CHARISM", "BELKOIN"] as const;
 const STORE_LIST_TYPE = ["all", "donate", "event"] as const;
-
-export type GameCurrency = typeof GAME_CURRENCIES[number]
 
 export const storeListSchema = z.object({
   type: z.enum(STORE_LIST_TYPE).optional().default("all"),

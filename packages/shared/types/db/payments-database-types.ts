@@ -19,33 +19,9 @@ export type PaymentStatus = "canceled" | "pending" | "succeeded" | "waitingForCa
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export interface CronJob {
-  active: Generated<boolean>;
-  command: string;
-  database: Generated<string>;
-  jobid: Generated<Int8>;
-  jobname: string | null;
-  nodename: Generated<string>;
-  nodeport: Generated<number>;
-  schedule: string;
-  username: Generated<string>;
-}
-
-export interface CronJobRunDetails {
-  command: string | null;
-  database: string | null;
-  end_time: Timestamp | null;
-  job_pid: number | null;
-  jobid: Int8 | null;
-  return_message: string | null;
-  runid: Generated<Int8>;
-  start_time: Timestamp | null;
-  status: string | null;
-  username: string | null;
-}
-
 export interface Payments {
   asset: string;
+  comment: string | null;
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   initiator: string;
@@ -82,8 +58,6 @@ export interface PaymentsFiat {
 }
 
 export interface DB {
-  "cron.job": CronJob;
-  "cron.job_run_details": CronJobRunDetails;
   payments: Payments;
   payments_crypto: PaymentsCrypto;
   payments_fiat: PaymentsFiat;

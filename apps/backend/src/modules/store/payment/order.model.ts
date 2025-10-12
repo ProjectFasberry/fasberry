@@ -1,60 +1,62 @@
-import { Heleket } from "heleket-api-sdk";
-import { GAME_CURRENCIES, GameCurrency } from "../store.model";
 import { executeSaga, TransactionalTask } from "#/utils/config/saga";
 import { callServerCommand } from "#/utils/server/call-command";
-import { paymentCurrencySchema } from "@repo/shared/schemas/payment";
-import { currencyCryptoSchema, currencyFiatSchema } from "@repo/shared/constants/currencies";
-import { createCryptoOrder, getOrderKey, PaymentCacheData } from "./create-crypto-order";
+import { GAME_CURRENCIES, GameCurrency } from "@repo/shared/schemas/payment";
+import { getOrderKey, PaymentCacheData } from "./create-crypto-order";
 import { processDonatePayment } from "#/utils/payment/process-donate-payment";
 import { payments } from "#/shared/database/payments-db";
 import { getRedis } from "#/shared/redis/init";
 import z from "zod";
-
-async function getCachedOrder(uniqueId: string): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
-  const redis = getRedis()
-  const redisKey = getOrderKey(uniqueId)
-
-  const data = await redis.get(redisKey)
-  if (!data) return null;
-
-  const payload: PaymentCacheData = JSON.parse(data);
-  return payload
-}
-
-async function getPersistedOrder(uniqueId: string): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
-  const dbResult = await payments
-    .selectFrom("payments")
-    .select([
-      "created_at",
-      "order_id",
-      "price",
-      "status",
-      "payload",
-      "unique_id",
-      "pay_url",
-      "invoice_id",
-      "asset",
-      "initiator"
-    ])
-    .where("unique_id", "=", uniqueId)
-    .executeTakeFirst()
-
-  if (dbResult) {
-    return { 
-      ...dbResult, 
-      asset: dbResult.asset as Omit<PaymentCacheData, "expires_in">["asset"] 
-    }
-  }
-
-  return null;
-}
+import { safeJsonParse } from "#/utils/config/transforms";
 
 export async function getOrder(uniqueId: string): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
-  const cached = await getCachedOrder(uniqueId);
-  if (cached) return cached;
+  async function getCachedOrder(): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
+    const redis = getRedis()
+    const key = getOrderKey(uniqueId)
 
-  const persisted = await getPersistedOrder(uniqueId);
-  return persisted
+    const dataStr = await redis.get(key)
+    if (!dataStr) return null;
+
+    const result = safeJsonParse<PaymentCacheData>(dataStr);
+    if (!result.ok) return null;
+
+    const data = result.value
+    return data
+  }
+
+  async function getPersistedOrder(): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
+    const query = await payments
+      .selectFrom("payments")
+      .select([
+        "created_at",
+        "order_id",
+        "price",
+        "status",
+        "payload",
+        "unique_id",
+        "pay_url",
+        "invoice_id",
+        "asset",
+        "initiator",
+        "comment"
+      ])
+      .where("unique_id", "=", uniqueId)
+      .executeTakeFirst()
+
+    if (!query) return null;
+
+    const data = {
+      ...query,
+      asset: query.asset as Omit<PaymentCacheData, "expires_in">["asset"]
+    }
+
+    return data
+  }
+
+  const cache = await getCachedOrder();
+  if (cache) return cache;
+
+  const data = await getPersistedOrder();
+  return data
 }
 
 export const ordersRouteSchema = z.object({
@@ -100,16 +102,6 @@ export async function getOrders(
   // @ts-expect-error
   const data: PaymentCacheData[] = [...orders, ...queryData]
   return data;
-}
-
-const MERCHANT_KEY = Bun.env.HELEKET_MERCHANT_KEY;
-const PAYMENT_KEY = Bun.env.HELEKET_PAYMENT_KEY;
-const PAYOUT_KEY = Bun.env.HELEKET_PAYOUT_KEY;
-
-const heleket = new Heleket(MERCHANT_KEY, PAYMENT_KEY, PAYOUT_KEY);
-
-export async function createPayment() {
-  
 }
 
 type TaskItem = {
@@ -253,78 +245,4 @@ export async function processStoreGamePurchase({
   }
 
   return { data: null, error: null }
-}
-
-type ProcessStoreFiatOrCryptoPurchase = {
-  itemsMap: Map<number, string>,
-  currency: z.infer<typeof paymentCurrencySchema>,
-  details: {
-    initiator: string
-  }
-}
-
-type ProcessStoreFiatOrCryptoPurchasePayload = {
-  data: {
-    url: string,
-    orderId: string,
-    invoiceId: number,
-    totalPrice: number;
-    uniqueId: string;
-  } | null,
-  error: string | null
-}
-
-export async function processStoreFiatOrCryptoPurchase({
-  itemsMap, currency, details: { initiator }
-}: ProcessStoreFiatOrCryptoPurchase): Promise<ProcessStoreFiatOrCryptoPurchasePayload> {
-  // @ts-expect-error
-  const items = [];
-  
-  if (!items.length) return { data: null, error: null }
-
-  const { success: isCrypto, data: cryptoCurrency } = currencyCryptoSchema.safeParse(currency);
-  const { success: isFiat, data: fiatCurrency } = currencyFiatSchema.safeParse(currency);
-
-  let totalPrice = 0;
-
-  // @ts-expect-error
-  for (const product of items) {
-    const price = Number(product.price) / 100
-    totalPrice += price
-  }
-
-  if (isCrypto) {
-    // @ts-expect-error
-    const products = items.map(target => ({
-      ...target,
-      recipient: itemsMap.get(target.id)!
-    }));
-
-    const payment = await createCryptoOrder({
-      products,
-      details: {
-        totalPrice,
-        type: "store",
-        asset: cryptoCurrency,
-        initiator
-      }
-    });
-
-    const data = {
-      invoiceId: payment.result.invoice_id,
-      orderId: payment.result.hash,
-      url: payment.result.pay_url,
-      uniqueId: payment.result.uniqueId,
-      totalPrice
-    };
-
-    return { data, error: null }
-  }
-
-  if (isFiat && fiatCurrency) {
-    // todo: impl fiat processing
-    return { data: null, error: "Платежи в фиатной валюте временно недоступны" }
-  }
-
-  throw new Error("Некорректная валюта")
 }

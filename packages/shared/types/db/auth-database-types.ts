@@ -166,6 +166,15 @@ export interface Options {
   value: boolean;
 }
 
+export interface PaymentMethods {
+  description: string | null;
+  id: Generated<number>;
+  imageUrl: string;
+  isAvailable: Generated<boolean>;
+  title: string;
+  value: string;
+}
+
 export interface Permissions {
   id: Generated<number>;
   name: string;
@@ -274,6 +283,18 @@ export interface StorePromotionStyles {
   type: string;
 }
 
+export interface Tasks {
+  action_type: string;
+  action_value: string | null;
+  created_at: Generated<Timestamp>;
+  description: string;
+  expires: Timestamp | null;
+  id: Generated<number>;
+  reward_currency: string;
+  reward_value: number;
+  title: string;
+}
+
 export interface VotedUsers {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -299,6 +320,7 @@ export interface DB {
   news: News;
   news_views: NewsViews;
   options: Options;
+  payment_methods: PaymentMethods;
   permissions: Permissions;
   players: Players;
   referrals: Referrals;
@@ -312,5 +334,6 @@ export interface DB {
   store_items: StoreItems;
   store_promotion_styles: StorePromotionStyles;
   store_promotions: StorePromotions;
+  tasks: Tasks;
   voted_users: VotedUsers;
 }

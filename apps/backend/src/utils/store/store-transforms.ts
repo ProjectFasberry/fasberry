@@ -1,6 +1,6 @@
 import { getStaticUrl } from "#/helpers/volume";
-import { GameCurrency } from "#/modules/store/store.model";
 import { general } from "#/shared/database/main-db";
+import { GameCurrency } from "@repo/shared/schemas/payment";
 import { CartFinalPrice } from "@repo/shared/types/entities/store";
 
 export function processImageUrl(target?: string | null) {

@@ -20,14 +20,22 @@ function extractLocale(pathname: string) {
 }
 
 export function onBeforeRoute(pageContext: PageContext) {
-  const url = pageContext.urlParsed;
-  
-  const { locale, pathnameWithoutLocale } = extractLocale(url.pathname);
-  
-  const urlWithoutLocale = pathnameWithoutLocale.startsWith('/')
-    ? pathnameWithoutLocale
-    : '/' + pathnameWithoutLocale
+  const url = pageContext.urlParsed
+  const { locale, pathnameWithoutLocale } = extractLocale(url.pathname)
 
+  const searchObj = url.search as Record<string, string>
+  const search =
+    searchObj && Object.keys(searchObj).length > 0
+      ? '?' +
+      Object.entries(searchObj)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join('&')
+      : ''
+
+  const urlWithoutLocale =
+    (pathnameWithoutLocale.startsWith('/') ? pathnameWithoutLocale : '/' + pathnameWithoutLocale) +
+    search
+    
   return {
     pageContext: {
       locale,

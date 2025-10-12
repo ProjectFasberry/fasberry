@@ -23,12 +23,11 @@ const MESSAGE_ACTIONS: Record<OrderEventPayload["type"], MessageHandler> = {
     orderDataAtom(ctx, (state) => state ? ({ ...state, status: "succeeded" }) : null)
 
     const source = ctx.get(esAtom)
+    if (!source) return;
 
-    if (source) {
-      esDisconnectReasonAtom(ctx, "invoice_paid")
-      toast.warning(`Event source is disconnected. Reason: ${ctx.get(esDisconnectReasonAtom)}`)
-      source.close()
-    }
+    esDisconnectReasonAtom(ctx, "invoice_paid")
+    toast.warning(`Event source is disconnected. Reason: ${ctx.get(esDisconnectReasonAtom)}`)
+    source.close()
   },
   "canceled": ({ ctx }) => {
     orderDataAtom(ctx, (state) => state ? ({ ...state, status: "canceled" }) : null)
@@ -44,12 +43,20 @@ msgAtom.onChange((ctx, target) => {
 
 esAtom.onChange((ctx, target) => {
   if (!target) return;
-
+  
   target.onopen = () => {
     if (isDevelopment) {
       toast.success("Connected to order events")
     }
   }
+
+  target.addEventListener("config", (event) => {
+    console.log(event)
+  })
+
+  target.addEventListener("ping", (event) => {
+    console.log(event)
+  })
 
   target.addEventListener("payload", (event) => {
     try {
@@ -63,12 +70,13 @@ esAtom.onChange((ctx, target) => {
 export const targetOrderIdAtom = atom<string>("", "targetOrderId")
 export const orderDataAtom = atom<Payment | null>(null, "orderData")
 
-export const connectToOrderEvents = reatomAsync(async (ctx, orderId: string) => {
+export const connectToOrderEventsAction = reatomAsync(async (ctx, orderId: string) => {
   const url = `${API_PREFIX_URL}/store/order/${orderId}/events`;
   targetOrderIdAtom(ctx, orderId);
-  return esAtom(ctx, es(url));
+  const source = esAtom(ctx, es(url))
+  return source
 }, {
-  name: "connectToPaymentEvents",
+  name: "connectToOrderEventsAction",
   onReject: (_, e) => {
     logError(e, { type: "toast" })
   }

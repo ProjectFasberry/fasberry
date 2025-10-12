@@ -15,6 +15,8 @@ const StoreLoader = reatomComponent(({ ctx }) => {
   ctx.schedule(() => {
     if (isLoading) {
       document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
   });
 

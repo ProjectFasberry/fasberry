@@ -1,9 +1,6 @@
 import Elysia from "elysia";
-import z from "zod";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { logger } from "#/utils/config/logger";
 import type { CreateOrderRoutePayload } from "@repo/shared/types/entities/payment"
-import { isProduction } from "#/shared/env";
 import { defineInitiator } from "#/lib/middlewares/define";
 import { throwError } from "#/helpers/throw-error";
 import { getCartSelectedItems } from "../cart.model";
@@ -11,22 +8,7 @@ import { processStoreGamePurchase } from "./order.model";
 import { defineGlobalPrice } from "#/utils/store/store-transforms";
 import { getBalance } from "#/modules/user/balance.route";
 import { nanoid } from "nanoid";
-
-const createOrderTopUpSchema = z.object({
-  currency: z.string()
-})
-
-export const createOrderTopUp = new Elysia()
-  .use(defineInitiator())
-  .post("/top-up", async ({ status, body }) => {
-    const { } = body;
-
-    const data = null;
-
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
-  }, {
-    body: createOrderTopUpSchema
-  })
+import { GameCurrency } from "@repo/shared/schemas/payment";
 
 const ERRORS_MAP: Record<string, string> = {
   "TIMEOUT": "Похоже игровой сервер не доступен"
@@ -35,8 +17,6 @@ const ERRORS_MAP: Record<string, string> = {
 export const createOrder = new Elysia()
   .use(defineInitiator())
   .post('/create', async ({ initiator, status }) => {
-    if (!isProduction) logger.debug(`Initiator ${initiator}`)
-
     const [balance, finalPrice] = await Promise.all([
       getBalance(initiator),
       defineGlobalPrice(initiator)
@@ -64,12 +44,12 @@ export const createOrder = new Elysia()
         throw status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, result.error)
       }
 
-      const { totalPrice } = result.data;
       const uniqueId = nanoid(9);
+      const { BELKOIN, CHARISM } = result.data.totalPrice;
 
-      const price = {
-        BELKOIN: Number(totalPrice.BELKOIN ?? 0),
-        CHARISM: Number(totalPrice.CHARISM ?? 0),
+      const price: Record<GameCurrency, number> = {
+        BELKOIN: Number(BELKOIN ?? 0),
+        CHARISM: Number(CHARISM ?? 0),
       }
 
       const data: CreateOrderRoutePayload = {

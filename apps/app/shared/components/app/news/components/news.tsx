@@ -28,7 +28,7 @@ const NewsSkeleton = () => {
 onConnect(newsAction.dataAtom, newsAction)
 
 const newsItemVariant = tv({
-  base: `flex flex-col h-full w-full h-72  hover:bg-neutral-800 duration-150 border border-neutral-800 rounded-lg overflow-hidden`,
+  base: `flex flex-col h-full w-full h-44 sm:h-72 hover:bg-neutral-800 duration-150 border border-neutral-800 rounded-lg overflow-hidden`,
   slots: {
     img: `object-cover max-h-[100px] sm:max-h-[200px]`,
     content: `flex flex-col gap-1 justify-between p-2 md:p-4 w-full`
@@ -39,9 +39,7 @@ const NewsItem = ({
   id, description, title, imageUrl
 }: NonNullable<AtomState<typeof newsAction.dataAtom>>["data"][number]) => {
   return (
-    <div
-      className={newsItemVariant().base()}
-    >
+    <div className={newsItemVariant().base()}>
       <img
         draggable={false}
         src={imageUrl!}

@@ -29,6 +29,11 @@ const Navigation = () => {
           Аналитика
         </Typography>
       </Link>
+      <Link href="/private/store" className={linkVariant().base()}>
+        <Typography className={linkVariant().text()}>
+          Магазин
+        </Typography>
+      </Link>
     </div>
   )
 }
