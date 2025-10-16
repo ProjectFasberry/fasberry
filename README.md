@@ -1,52 +1,75 @@
-#  fasberry-minecraft
+# Fasberry Minecraft
 
 [![License](https://img.shields.io/github/license/ProjectFasberry/fasberry?style=for-the-badge)](./LICENSE)
 
-This repository contains all the code for the Fasberry Minecraft ecosystem, including multiple frontend applications and shared packages, developed in a unified environment.
+Unified monorepo containing all applications and shared packages for the Fasberry Minecraft ecosystem.  
+Includes frontends, backend, build tooling, and internal libraries, developed under a single dependency graph using **Bun**.
 
-## 🚀 Getting Started
+---
 
-To get the project up and running locally, follow these steps:
+## 1. Overview
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/ProjectFasberry/fasberry.git
-    cd fasberry-minecraft
-    ```
+Fasberry Minecraft provides a modular environment for developing, deploying, and maintaining the Minecraft-related applications of the Fasberry platform.  
+The repository includes:
 
-2.  **Install dependencies:**
-    This project uses `bun` as the package manager.
-    ```bash
-    bun install
-    ```
+- `landing` - Public-facing landing application.  
+- `app` - User-facing Minecraft control and visualization frontend.  
+- `backend` - Core backend services for Minecraft integration.  
+- `ui` - Shared UI component library.  
+- `shared` - Shared types, lib and configs.
+- `config-biome` - Biome config.
+- `config-typescript` - TS config. 
 
-3.  **Run the development server:**
-    This command will start all applications in development mode simultaneously.
-    ```bash
-    bun run dev
-    ```
+---
 
-## 🛠️ Available Scripts
+## 2. Requirements
 
-The most common scripts available at the root level are:
+- **Bun** ≥ 1.2.0  
+- **Node.js** ≥ 22  
+- **Git** ≥ 2.40
+- OS: macOS, Linux, or WSL2 (Windows)
 
-| Command      | Description                                                 |
-|--------------|-------------------------------------------------------------|
-| `bun run dev`   | Starts all applications in development mode.                |
-| `bun run build` | Builds all applications and packages for production.        |
-| `bun run start` | Starts all applications.                                    |
+Install Bun globally if not present:
 
-## 📚 Documentation
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
 
-This README provides a high-level overview of the monorepo structure. For comprehensive information on specific applications, the build system, and shared libraries, please visit the **[Official Documentation](https://deepwiki.com/ProjectFasberry/fasberry/1-overview)**.
+### 3. Installation
 
-The documentation covers:
-*   **Landing App Frontend Application**
-*   **Minecraft App Frontend Application**
-*   **Minecraft Backend Application**
-*   **Build System & Architecture**
-*   **UI Component Library**
+Clone and initialize the repository:
 
-## 📄 License
+git clone https://github.com/ProjectFasberry/fasberry.git
+cd fasberry
+bun install
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+### 4. Development
+
+Run all applications in development mode:
+
+```bash
+bun run dev
+```
+
+Applications are automatically launched with shared environment settings.
+Check logs to see port assignments for each sub-application.
+
+### Common Commands
+
+| Command         | Description                                         |
+|-----------------|-----------------------------------------------------|
+| `bun run dev`   | Starts all applications in development mode.        |
+| `bun run build` | Builds all applications and packages for production.|
+| `bun run start` | Launches built applications.                        |
+
+### 5. Documentation
+
+Full system and API documentation:
+https://deepwiki.com/ProjectFasberry/fasberry/1-overview
+
+Direct API reference:
+https://api.fasberry.su/minecraft/openapi
+
+### 6. License
+
+Distributed under the MIT License. See LICENSE for full text.
