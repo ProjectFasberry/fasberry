@@ -5,7 +5,7 @@ import { z } from "zod"
 import { logError, logger } from '#/utils/config/logger';
 import { general } from '#/shared/database/main-db';
 import { safeJsonParse } from '#/utils/config/transforms';
-import { Msg } from '@nats-io/nats-core/lib/core';
+import { Msg } from '@nats-io/nats-core';
 
 const userJoinSchema = z.object({
   date: z.string(),

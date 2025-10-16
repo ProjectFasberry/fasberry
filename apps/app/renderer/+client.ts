@@ -1,6 +1,6 @@
-import { initSentry } from "@/shared/sentry"
+// import { initSentry } from "@/shared/sentry"
 
-initSentry()
+// initSentry()
 
 window.addEventListener('error', (err) => {
   console.error('An error occurred:', err)

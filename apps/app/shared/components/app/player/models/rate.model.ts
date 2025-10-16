@@ -53,7 +53,7 @@ export const rateListAction = reatomAsync(async (ctx) => {
   if (!currentUser) return;
 
   return await ctx.schedule(() =>
-    client<RateList>(`rates/${currentUser.nickname}`)
+    client<RateList>(`rate/list/${currentUser.nickname}`)
       .pipe(withAbort(ctx.controller.signal))
       .exec()
   )

@@ -1,20 +1,20 @@
 import Elysia from "elysia";
 import { general } from "#/shared/database/main-db";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import z from "zod";
+import { PrivatedMethodsPayload } from "@repo/shared/types/entities/other";
 
 export const storeMethodsList = new Elysia()
-  .get("/list", async ({ status }) => {
-    const data = await general
+  .get("/list", async (ctx) => {
+    const data: PrivatedMethodsPayload = await general
       .selectFrom("payment_methods")
       .selectAll()
       .execute()
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   })
 
 export const storeMethodsEdit = new Elysia()
-  .post("/edit/:method", async ({ params, body, status }) => {
+  .post("/edit/:method", async ({ params, body }) => {
     const method = params.method;
     const { key, value } = body;
 
@@ -25,10 +25,10 @@ export const storeMethodsEdit = new Elysia()
       .returning([key])
       .executeTakeFirstOrThrow()
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     body: z.object({
       key: z.enum(["isAvailable", "title", "imageUrl", "value"]),
-      value: z.string().or(z.stringbool())
+      value: z.string().or(z.stringbool()).or(z.boolean())
     })
   })

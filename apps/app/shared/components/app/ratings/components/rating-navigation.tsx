@@ -1,6 +1,5 @@
 import { reatomComponent } from "@reatom/npm-react"
 import { ratingByAtom } from "../models/ratings.model"
-import { updateRatingAction } from "../models/update-ratings.model"
 import { Typography } from "@repo/ui/typography";
 import { action, AtomState } from "@reatom/core";
 import { Tabs, TabsList, TabsTrigger } from "@repo/ui/tabs";
@@ -18,7 +17,7 @@ const changeBy = action((ctx, target: AtomState<typeof ratingByAtom>) => {
   const currentType = ctx.get(ratingByAtom)
   if (target === currentType) return;
 
-  updateRatingAction(ctx, target, "update-filter")
+  ratingByAtom(ctx, target)
 }, "changeBy")
 
 export const RatingNavigation = reatomComponent(({ ctx }) => {

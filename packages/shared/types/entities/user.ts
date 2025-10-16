@@ -1,4 +1,4 @@
-import { Donate } from "./donate"
+import type { Donate } from "./donate"
 
 export type MePayload = {
   nickname: string,

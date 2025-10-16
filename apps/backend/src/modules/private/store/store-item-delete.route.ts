@@ -1,6 +1,5 @@
 import Elysia from "elysia";
 import { general } from "#/shared/database/main-db";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { z } from "zod"
 
 async function removeStoreItem(id: number) {
@@ -32,10 +31,10 @@ const storeItemEditSchema = z.object({
 })
 
 export const storeItemEdit = new Elysia()
-  .post("/edit/:id", async ({ params, body, status }) => { 
+  .post("/edit/:id", async ({ params, body }) => { 
     const id = params.id;
     const data = await editStoreItem(id, body);
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     params: z.object({
       id: z.coerce.number()
@@ -44,10 +43,10 @@ export const storeItemEdit = new Elysia()
 })
 
 export const storeItemDelete = new Elysia()
-  .delete("/:id", async ({ status, params }) => {
+  .delete("/:id", async ({ params }) => {
     const id = params.id;
     const data = await removeStoreItem(id);
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     params: z.object({
       id: z.coerce.number()

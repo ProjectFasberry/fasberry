@@ -1,10 +1,10 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { getStaticUrl } from "#/helpers/volume";
 import { defineUser } from "#/lib/middlewares/define";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { VOLUME_ENDPOINT } from "#/shared/env";
 import { Land } from "@repo/shared/types/entities/land";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
+import { withData } from "#/shared/schemas";
 
 async function getLand({
   id, initiator
@@ -134,13 +134,75 @@ async function getLand({
   }
 }
 
+const landPayload = t.Object({
+  ulid: t.String(),
+  name: t.String(),
+  area: t.Union([
+    t.Object({
+      ulid: t.String(),
+      holder: t.Object({
+        roles: t.Array(t.Unknown()),
+        trusted: t.Array(t.String()),
+      }),
+      settings: t.Array(t.String()),
+      invites: t.Array(t.Unknown()),
+      tax: t.Object({
+        current: t.Number(),
+        time: t.Number(),
+        before: t.Number(),
+      }),
+      banned: t.Array(t.Unknown()),
+    }),
+    t.Null()
+  ]),
+  type: t.String(),
+  created_at: t.Date(),
+  title: t.Nullable(t.String()),
+  chunks_amount: t.Nullable(t.Number()),
+  areas_amount: t.Nullable(t.Number()),
+  balance: t.Number(),
+  stats: t.Object({
+    kills: t.Number(),
+    deaths: t.Number(),
+    wins: t.Number(),
+    defeats: t.Number(),
+    captures: t.Number()
+  }),
+  level: t.Number(),
+  limits: t.Union([
+    t.Array(t.String()), t.Null()
+  ]),
+  members: t.Array(
+    t.Object({
+      nickname: t.String(),
+      uuid: t.String(),
+      role: t.Number()
+    })
+  ),
+  spawn: t.Nullable(t.String()),
+  details: t.Object({
+    banner: t.Nullable(t.String()),
+    gallery: t.Array(t.String())
+  })
+})
+
 export const landsSolo = new Elysia()
   .use(defineUser())
-  .get("/:id", async ({ nickname: initiator, params, set, status }) => {
+  .model({
+    "land-by-id": withData(
+      t.Nullable(landPayload)
+    )
+  })
+  .get("/:id", async ({ nickname: initiator, params, set }) => {
     const id = params.id
     const data = await getLand({ id, initiator })
 
     set.headers["Cache-Control"] = "public, max-age=15, s-maxage=15"
+    set.headers["vary"] = "Origin";
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
+  }, {
+    response: {
+      200: "land-by-id"
+    }
   })

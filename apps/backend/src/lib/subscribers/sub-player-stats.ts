@@ -2,7 +2,7 @@ import { bisquite } from "#/shared/database/bisquite-db"
 import { reputation } from "#/shared/database/reputation-db"
 import { getNats } from "#/shared/nats/client"
 import { logError } from "#/utils/config/logger"
-import { Msg } from "@nats-io/nats-core/lib/core"
+import { Msg } from "@nats-io/nats-core"
 
 type PlayerStats = {
   charism: number

@@ -1,27 +1,35 @@
 import { defineUser } from "#/lib/middlewares/define";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { playerpoints } from "#/shared/database/playerpoints-db";
+import { withData } from "#/shared/schemas";
 import { CartFinalPrice } from "@repo/shared/types/entities/store";
-import Elysia from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
+import Elysia, { t } from "elysia";
+
+async function getBelkoin(nickname: string) {
+  return playerpoints
+    .selectFrom("playerpoints_points")
+    .innerJoin("playerpoints_username_cache", "playerpoints_username_cache.uuid", "playerpoints_points.uuid")
+    .select([
+      "playerpoints_points.points as data"
+    ])
+    .where("playerpoints_username_cache.username", "=", nickname)
+    .executeTakeFirst()
+}
+
+async function getCharism(nickname: string) {
+  return bisquite
+    .selectFrom("CMI_users")
+    .select([
+      "Balance as data"
+    ])
+    .where("username", "=", nickname)
+    .executeTakeFirst()
+}
 
 export async function getBalance(nickname: string): Promise<CartFinalPrice> {
   const [charism, belkoin] = await Promise.all([
-    bisquite
-      .selectFrom("CMI_users")
-      .select([
-        "Balance as data"
-      ])
-      .where("CMI_users.nickname", "=", nickname)
-      .executeTakeFirst(),
-    playerpoints
-      .selectFrom("playerpoints_points")
-      .innerJoin("playerpoints_username_cache", "playerpoints_username_cache.uuid", "playerpoints_points.uuid")
-      .select([
-        "playerpoints_points.points as data"
-      ])
-      .where("playerpoints_username_cache.username", "=", nickname)
-      .executeTakeFirst()
+    getCharism(nickname),
+    getBelkoin(nickname)
   ])
 
   return {
@@ -30,9 +38,21 @@ export async function getBalance(nickname: string): Promise<CartFinalPrice> {
   }
 }
 
+const balancePayload = t.Object({
+  CHARISM: t.Number(),
+  BELKOIN: t.Number()
+})
+
 export const balance = new Elysia()
   .use(defineUser())
-  .get("/balance", async ({ nickname, status }) => {
+  .model({
+    "balance": withData(balancePayload)
+  })
+  .get("/balance", async ({ nickname }) => {
     const data = await getBalance(nickname)
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
+  }, {
+    response: {
+      200: "balance"
+    }
   })

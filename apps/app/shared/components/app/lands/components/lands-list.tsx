@@ -10,12 +10,11 @@ import { DefaultBanner } from "../../land/components/land-banner"
 import { Avatar } from "../../avatar/components/avatar"
 import { IconCircleFilled } from "@tabler/icons-react"
 import { MasonryGrid } from "@repo/ui/masonry-grid"
-import { Land } from "@repo/shared/types/entities/land"
+import { Lands } from "@repo/shared/types/entities/land"
 import { onConnect } from "@reatom/framework"
-import { isEmptyArray } from "@/shared/lib/array"
 import { NotFound } from "@/shared/ui/not-found"
 
-type LandCard = Pick<Land, "ulid" | "name" | "members" | "level" | "title" | "balance">
+type LandCard = Lands
 
 const landCardVariants = tv({
   base: `flex items-start justify-between gap-6 duration-150 relative w-full rounded-lg p-3 sm:p-4 lg:p-6 border 
@@ -101,17 +100,13 @@ export const LandsList = reatomComponent(({ ctx }) => {
     return <LandsSkeleton />
   }
 
-  if (!data) return null;
-
-  const isEmpty = isEmptyArray(data?.data);
-
-  if (isEmpty) {
+  if (!data) {
     return <NotFound title="Пока ничего нет" />
   }
 
   return (
     <MasonryGrid
-      items={data.data}
+      items={data}
       renderItem={(land) => <LandCard key={land.ulid} {...land} />}
       {...masonryOpts}
     />

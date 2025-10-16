@@ -1,9 +1,9 @@
 import { getRedis } from "#/shared/redis/init";
 import { EventPayload } from "@repo/shared/types/entities/other";
-import Elysia from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
+import Elysia, { t } from "elysia";
 import z from "zod";
 import { EVENTS_ALL_KEY, EVENTS_TARGET_KEY, EVENTS_TYPE_KEY, eventTypeSchema } from "./events.model";
+import { withData } from "#/shared/schemas";
 
 const eventsListSchema = z.object({
   type: eventTypeSchema.optional()
@@ -38,10 +38,31 @@ async function getEvents(
   return getObjects(keys);
 }
 
+export const eventPayload = t.Object({
+  id: t.String(),
+  type: t.String(),
+  title: t.String(),
+  content: t.Object({
+    created_at: t.Union([t.String(), t.Date()]),
+    description: t.Nullable(t.String()),
+    initiator: t.String(),
+  })
+})
+
+const eventsListPayload = t.Array(
+  eventPayload
+)
+
 export const eventsList = new Elysia()
-  .get("/list", async ({ status, query }) => {
+  .model({
+    "events-list": withData(eventsListPayload)
+  })
+  .get("/list", async ({ query }) => {
     const data = await getEvents(query);
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
-    query: eventsListSchema
+    query: eventsListSchema,
+    response: {
+      200: "events-list"
+    }
   })

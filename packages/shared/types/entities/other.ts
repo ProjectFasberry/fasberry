@@ -59,3 +59,37 @@ export type TasksPayload = {
   data: TaskItem[],
   meta: PaginatedMeta
 }
+
+export type MethodsPayload = {
+  id: number;
+  description: string | null;
+  imageUrl: string;
+  title: string;
+  value: string
+}[]
+
+export type PrivatedMethodsPayload = {
+  id: number;
+  description: string | null;
+  imageUrl: string;
+  isAvailable: boolean;
+  title: string;
+  value: string
+}[]
+
+export type PrivatedUser = {
+  id: number;
+  lower_case_nickname: string;
+  premium_uuid: string | null;
+  uuid: string;
+  created_at: Date;
+  nickname: string;
+  role_id: number;
+  role_name: string;
+  status: "default" | "banned" | "muted"
+}
+
+export type PrivatedUsersPayload = {
+  data: PrivatedUser[],
+  meta: PaginatedMeta
+}

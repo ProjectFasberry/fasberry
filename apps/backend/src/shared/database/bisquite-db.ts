@@ -1,7 +1,7 @@
 import type { DB as bisquiteDBType } from "@repo/shared/types/db/bisquite-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
-import { createPool, PoolOptions } from "mysql2";
+import { createPool, type Pool, type PoolOptions } from "mysql2";
 import { poolOptsHooks } from "./lobby-db";
 import { BISQUITE_MYSQL_DB, BISQUITE_MYSQL_HOST, BISQUITE_MYSQL_PASSWORD, BISQUITE_MYSQL_PORT, BISQUITE_MYSQL_USER } from "../env";
 
@@ -14,7 +14,7 @@ const config: PoolOptions = {
   connectionLimit: 10
 }
 
-export const bisquitePool = createPool(config)
+export const bisquitePool: Pool = createPool(config)
 
 export const bisquite = new Kysely<bisquiteDBType>({
   dialect: new MysqlDialect({

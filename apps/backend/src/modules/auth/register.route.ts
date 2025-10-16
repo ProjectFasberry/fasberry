@@ -1,16 +1,17 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { createUser, generateOfflineUUID, getExistsUser } from "./auth.model";
-import { throwError } from "#/helpers/throw-error";
+import { wrapError } from "#/helpers/wrap-error";
 import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
 import ky from "ky";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { ipPlugin } from "#/lib/plugins/ip";
 import { logger } from "#/utils/config/logger";
-import { textSets } from "#/utils/config/load-internal-files";
+import { textSets } from "#/utils/minio/load-internal-files";
 import { general } from "#/shared/database/main-db";
 import { createEvent } from "../server/events/events.model";
 import { validateAuthStatus } from "#/lib/middlewares/validators";
 import { registerSchema } from "@repo/shared/types/entities/auth";
+import { withData, withError } from "#/shared/schemas";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -63,7 +64,7 @@ async function checkRegistrationState() {
 }
 
 function afterRegistrationEvents({ nickname }: { nickname: string }) {
-  createEvent({ 
+  createEvent({
     description: `Игрок ${nickname} был зарегистрирован`,
     type: "log",
     initiator: "system",
@@ -80,7 +81,7 @@ export const register = new Elysia()
     const registrationIsEnabled = await checkRegistrationState();
 
     if (!registrationIsEnabled) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("Authorization is disabled"));
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("Authorization is disabled"));
     }
 
     // const validateResult = await validateAuthenticationRequest({ token: cfToken, ip: ctx.ip })
@@ -92,19 +93,19 @@ export const register = new Elysia()
     const existsUser = await getExistsUser(nickname)
 
     if (existsUser.result) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("User already exists"))
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("User already exists"))
     }
 
     const isPasswordSafe = validatePasswordSafe(password)
 
     if (!isPasswordSafe) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, throwError("Unsafe password"))
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("Unsafe password"))
     }
 
     const uuid = await getUserUUID(nickname)
 
     if (!uuid) {
-      return status(HttpStatusEnum.HTTP_409_CONFLICT, throwError("UUID must be required"))
+      return status(HttpStatusEnum.HTTP_409_CONFLICT, wrapError("UUID must be required"))
     }
 
     const hash = Bun.password.hashSync(password, {
@@ -119,7 +120,16 @@ export const register = new Elysia()
 
     afterRegistrationEvents({ nickname });
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
-    body: registerSchema
+    body: registerSchema,
+    response: {
+      200: withData(
+        t.Object({
+          nickname: t.String()
+        })
+      ),
+      409: withError,
+      400: withError,
+    }
   })

@@ -3,7 +3,7 @@ import { getNats } from "#/shared/nats/client"
 import { USER_REFERAL_REWARD_SUBJECT } from "#/shared/nats/subjects"
 import { logError } from "#/utils/config/logger"
 import { callServerCommand } from "#/utils/server/call-command"
-import { Msg } from "@nats-io/nats-core/lib/core"
+import { Msg } from "@nats-io/nats-core"
 
 type ReferalRewardPayload = {
   referrer: string,

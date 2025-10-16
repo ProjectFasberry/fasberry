@@ -7,7 +7,7 @@ import { defineUser } from "#/lib/middlewares/define";
 export const restore = new Elysia()
   .use(ipPlugin())
   .use(defineUser())
-  .post("/restore", async (ctx) => {
+  .post("/restore", async ({ status }) => {
 
-    return ctx.status(HttpStatusEnum.HTTP_200_OK)
+    return status(HttpStatusEnum.HTTP_200_OK)
   })

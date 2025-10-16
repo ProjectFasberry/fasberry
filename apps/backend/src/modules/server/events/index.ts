@@ -4,8 +4,10 @@ import { eventsList } from "./events-list.route";
 import { eventsSolo } from "./events-solo.route";
 import { eventsCreate } from "./events-create.route";
 import { validatePermission } from "#/lib/middlewares/validators";
+import { hideOpenApiConfig, openApiPlugin } from "#/lib/plugins/openapi";
 
-const actions = new Elysia()
+const actions = new Elysia(hideOpenApiConfig)
+  .use(openApiPlugin())
   .use(validatePermission())
   .use(eventsCreate)
   .use(eventsDelete);

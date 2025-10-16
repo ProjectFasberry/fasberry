@@ -1,14 +1,14 @@
 import Elysia from "elysia";
-import { storeItem } from "./store-item.route";
-import { storeItems } from "./store-items.route";
-import { currencies } from "./payment/currencies.route";
-import { cart } from "./cart.route";
-import { processPlayerVote } from "../server/process-vote.route";
-import { checkOrderRoute } from "./payment/check-order.route";
+import { storeItem } from "./items/store-item.route";
+import { storeItems } from "./items/store-items.route";
+import { currencies } from "./order/currencies.route";
+import { cart } from "./cart/cart.route";
+import { processPlayerVote } from "../server/votes/process-vote.route";
+import { checkOrderRoute } from "./order/check-order.route";
 import { defineClientId } from "#/lib/middlewares/define";
-import { order } from "./payment";
+import { order } from "./order";
 import { exchangeRates } from "./exchange-rates";
-import { paymentMethods } from "./payment-methods";
+import { paymentMethods } from "./order/order-methods.route";
 
 export const store = new Elysia()
   .use(defineClientId())

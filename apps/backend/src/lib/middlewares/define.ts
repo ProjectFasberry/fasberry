@@ -106,7 +106,7 @@ export const defineAdmin = () => new Elysia()
   .onBeforeHandle(async ({ nickname, status }) => {
     validateLogger.log("defineAdmin");
 
-    const exists = await general
+    const result = await general
       .selectFrom("players")
       .innerJoin("roles", "roles.id", "players.role_id")
       .select(eb =>
@@ -120,8 +120,8 @@ export const defineAdmin = () => new Elysia()
       .where("players.nickname", "=", nickname)
       .executeTakeFirstOrThrow()
 
-    if (!exists) {
-      throw status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE)
+    if (!result.exists) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
     }
   })
   .as("scoped")

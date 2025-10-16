@@ -1,21 +1,20 @@
-import { getRedis } from "#/shared/redis/init";
-import Elysia from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { EVENTS_TARGET_KEY } from "./events.model";
-
-async function getEvent(id: string) {
-  const redis = getRedis();
-
-  const eventStr = await redis.get(EVENTS_TARGET_KEY(id));
-  if (!eventStr) return null;
-
-  const event = JSON.parse(eventStr);
-  return event;
-}
+import Elysia, { t } from "elysia";
+import { getEvent } from "./events.model";
+import { withData } from "#/shared/schemas";
+import { eventPayload } from "./events-list.route";
 
 export const eventsSolo = new Elysia()
-  .get("/:id", async ({ status, params }) => {
+  .model({
+    "event": withData(
+      t.Nullable(eventPayload)
+    )
+  })
+  .get("/:id", async ({ params }) => {
     const id = params.id;
     const data = await getEvent(id)
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
+  }, {
+    response: {
+      200: "event"
+    }
   })

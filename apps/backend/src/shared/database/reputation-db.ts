@@ -1,7 +1,7 @@
 import type { DB as reputationDBType } from "@repo/shared/types/db/reputation-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
-import { createPool, PoolOptions } from "mysql2";
+import { createPool, type Pool, type PoolOptions } from "mysql2";
 import { poolOptsHooks } from "./lobby-db";
 import { REPUTATION_MYSQL_DB, REPUTATION_MYSQL_HOST, REPUTATION_MYSQL_PASSWORD, REPUTATION_MYSQL_PORT, REPUTATION_MYSQL_USER } from "../env";
 
@@ -14,7 +14,7 @@ const config: PoolOptions = {
   connectionLimit: 10
 }
 
-export const reputationPool = createPool(config)
+export const reputationPool: Pool = createPool(config)
 
 export const reputation = new Kysely<reputationDBType>({
   dialect: new MysqlDialect({

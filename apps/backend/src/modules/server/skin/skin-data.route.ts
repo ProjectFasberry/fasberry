@@ -1,39 +1,38 @@
-import Elysia from "elysia";
-import z from "zod";
+import Elysia, { t } from "elysia";
 import { getPlayerAvatar, getSkin } from "./skin.model";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 
-const skinSchema = z.object({
-  type: z.enum(["full", "head"])
-})
+const head = new Elysia()
+  .get("/head/:nickname", async ({ set, params }) => {
+    const nickname = params.nickname;
+    const data = await getPlayerAvatar({ recipient: nickname })
 
-export const skinData = new Elysia()
-  .get('/:nickname', async ({ status, set, ...ctx }) => {
-    const nickname = ctx.params.nickname
-    const type = ctx.query.type;
+    set.headers["Cache-Control"] = "public, max-age=60";
+    set.headers["vary"] = "Origin"
 
-    let result: string = ""
-
-    switch (type) {
-      case "full":
-        const skin = await getSkin(nickname)
-        result = skin
-        break;
-      case "head":
-        const avatar = await getPlayerAvatar({ recipient: nickname })
-        result = avatar
-        break;
-      default:
-        break;
-    }
-
-    if (result) {
-      set.headers["Cache-Control"] = "public, max-age=60";
-
-      return status(HttpStatusEnum.HTTP_200_OK, result)
-    }
-
-    return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR)
+    return data
   }, {
-    query: skinSchema
-  });
+    response: {
+      200: t.String()
+    }
+  })
+
+const skinData = new Elysia()
+  .get('/skin/:nickname', async ({ set, params }) => {
+    const nickname = params.nickname
+    const data = await getSkin(nickname)
+
+    set.headers["Cache-Control"] = "public, max-age=60";
+    set.headers["vary"] = "Origin"
+
+    return data
+  }, {
+    response: {
+      200: t.String()
+    }
+  })
+
+export const skin = new Elysia()
+  .group("", app => app
+    .use(head)
+    .use(skinData)
+  )

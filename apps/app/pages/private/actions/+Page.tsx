@@ -1,5 +1,13 @@
 import { newsAction } from "@/shared/components/app/news/models/news.model"
-import {  BannersList, CreateBanner, CreateBannerFields, CreateEvent, CreateNews, CreateNewsFields, NewsList } from "@/shared/components/app/private/components/actions"
+import { 
+  BannersList, 
+  CreateBanner, 
+  CreateBannerFields, 
+  CreateEvent, 
+  CreateNews, 
+  CreateNewsFields, 
+  NewsList 
+} from "@/shared/components/app/private/components/actions"
 import { bannersAction } from "@/shared/components/app/private/models/actions.model"
 import { startPageEvents } from "@/shared/lib/events"
 import { pageContextAtom } from "@/shared/models/global.model"

@@ -150,16 +150,19 @@ const HeaderUser = reatomComponent(({ ctx }) => {
   if (!currentUser) return null;
 
   return (
-    <div className="flex items-center gap-3 bg-neutral-900 pr-2 rounded-lg">
+    <div className="flex items-center w-fit min-w-0 gap-2 h-10 bg-neutral-800 px-3 rounded-xl">
       <Link
         href={createLink("player", currentUser.nickname)}
-        className="w-10 h-10 overflow-hidden rounded-md"
+        className="flex items-center gap-3 h-8 overflow-hidden"
       >
+        <Typography className="text-base font-semibold truncate">
+          {currentUser.nickname.slice(0, 32)}
+        </Typography>
         <Avatar
           nickname={currentUser.nickname}
-          propHeight={38}
-          propWidth={38}
-          className="min-w-10 min-h-10 w-10 h-10 aspect-square"
+          propHeight={32}
+          propWidth={32}
+          className="min-w-8 min-h-8 w-8 h-8 aspect-square"
         />
       </Link>
       <HeaderMenu />
@@ -181,7 +184,7 @@ const UserSettingsDialog = reatomComponent(({ ctx }) => {
             </Typography>
             <Switch
               checked={ctx.spy(playerSeemsLikePlayersIsShowAtom)}
-              onClick={() => toggleShowAction(ctx)}
+              onCheckedChange={v => toggleShowAction(ctx)}
             />
           </div>
         </div>
@@ -191,35 +194,15 @@ const UserSettingsDialog = reatomComponent(({ ctx }) => {
 }, "UserSettingsDialog")
 
 const LINKS = [
-  {
-    title: "Главная",
-    icon: IconCategory,
-    label: "Перейти на главную",
-    href: "/",
-  },
-  {
-    title: "Территории",
-    icon: IconUsersGroup,
-    label: "Перейти к территориям",
-    href: "/lands",
-  },
-  {
-    title: "Рейтинг",
-    icon: IconStars,
-    label: "Перейти к рейтингу",
-    href: "/ratings",
-  },
-  {
-    title: "Магазин",
-    icon: IconBasket,
-    label: "Перейти к магазину",
-    href: "/store",
-  },
+  { title: "Главная", icon: IconCategory, label: "Перейти на главную", href: "/", },
+  { title: "Территории", icon: IconUsersGroup, label: "Перейти к территориям", href: "/lands", },
+  { title: "Рейтинг", icon: IconStars, label: "Перейти к рейтингу", href: "/ratings", },
+  { title: "Магазин", icon: IconBasket, label: "Перейти к магазину", href: "/store", },
 ]
 
 const MobileBottomBar = () => {
   return (
-    <div className="md:hidden z-[20] fixed flex items-center justify-center bottom-0 px-4 border-t border-neutral-700 bg-neutral-800 h-20 w-full">
+    <div className="md:hidden z-[50] fixed flex items-center justify-center bottom-0 px-4 border-t border-neutral-700 bg-neutral-800 h-20 w-full">
       <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-50 *:data-[state=active]:text-green-500">
         {LINKS.map(link => (
           <Link key={link.title} aria-label={link.label} href={link.href}>
@@ -234,6 +217,17 @@ const MobileBottomBar = () => {
   )
 }
 
+const HeaderCartTrigger = () => {
+  return (
+    <Link
+      href="/store/cart"
+      className="flex items-center h-10 justify-center bg-neutral-800 p-2 rounded-xl"
+    >
+      <IconBasket size={26} className="text-neutral-400" />
+    </Link>
+  )
+}
+
 export const Header = () => {
   const pathname = usePageContext().urlPathname;
 
@@ -241,18 +235,18 @@ export const Header = () => {
     <>
       <MobileBottomBar />
       <div className="flex items-center justify-start w-full border-b border-neutral-800 relative z-[20] h-20 top-0">
-        <div className="flex items-center justify-between px-2 sm:px-6 w-full">
+        <div className="flex items-center justify-between px-2 gap-2 sm:px-6 w-full">
           <div className="w-1/5 bg-transparent h-14 relative">
             <Link aria-label="Перейти на главную" href="/" className="flex h-full w-fit items-center gap-3">
-              <img src="/favicon.ico" width={48} height={48} alt="" />
-              <Typography className="font-bold text-2xl">
+              <img src="/favicon.ico" width={48} height={48} alt="" className="min-w-12 w-12 max-h-12 min-h-12" />
+              <Typography className="hidden md:inline font-bold text-2xl">
                 Fasberry
               </Typography>
             </Link>
           </div>
           <div
             className="hidden md:flex w-3/5 justify-center items-center h-20 text-neutral-400
-            *:flex *:items-center *:justify-center *:border-b *:h-full *:px-6 
+            *:flex *:items-center *:justify-center *:border-b *:h-full *:px-4 
             *:data-[state=inactive]:border-transparent *:data-[state=active]:border-green-500"
           >
             {LINKS.map(link => (
@@ -261,15 +255,8 @@ export const Header = () => {
               </Link>
             ))}
           </div>
-          <div className="flex gap-2 items-center w-full md:w-1/5 justify-end">
-            {pathname.includes("/store") && (
-              <Link
-                href="/store/cart"
-                className="flex items-center h-10 justify-center bg-neutral-900 p-2 rounded-lg"
-              >
-                <IconBasket size={26} className="text-neutral-400" />
-              </Link>
-            )}
+          <div className="flex gap-1 items-center w-full md:w-1/5 justify-end">
+            {pathname.includes("/store") && <HeaderCartTrigger/>}
             <HeaderUser />
           </div>
         </div>

@@ -22,7 +22,7 @@ import {
   newsTitleAtom
 } from "../models/actions.model"
 import { IconX } from "@tabler/icons-react"
-import { newsAction } from "../../news/models/news.model"
+import { newsAction, newsDataAtom } from "../../news/models/news.model"
 import { Skeleton } from "@repo/ui/skeleton"
 
 export const CreateEvent = reatomComponent(({ ctx }) => {
@@ -178,7 +178,7 @@ export const DeleteNews = reatomComponent<{ id: number }>(({ ctx, id }) => {
 }, "DeleteNews")
 
 export const NewsList = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(newsAction.dataAtom)?.data;
+  const data = ctx.spy(newsDataAtom);
 
   if (ctx.spy(newsAction.statusesAtom).isPending) {
     return <Skeleton className="h-12 w-full" />

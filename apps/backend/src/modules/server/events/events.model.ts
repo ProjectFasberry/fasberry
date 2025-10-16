@@ -97,3 +97,13 @@ export async function cleanOldEvents(bs = 100) {
     start += bs;
   }
 }
+
+export async function getEvent(id: string): Promise<EventPayload | null> {
+  const redis = getRedis();
+
+  const eventStr = await redis.get(EVENTS_TARGET_KEY(id));
+  if (!eventStr) return null;
+
+  const event = JSON.parse(eventStr);
+  return event;
+}

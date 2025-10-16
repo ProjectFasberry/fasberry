@@ -2,7 +2,7 @@ import { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 import { tv } from 'tailwind-variants';
 
 const Table = ({ className, ...props }: HTMLAttributes<HTMLTableElement>) => (
-  <div className="relative w-full overflow-x-auto">
+  <div className="relative rounded-t-lg w-full overflow-x-auto">
     <table
       className={tv({ base: "w-full caption-bottom text-sm" })({ className })}
       {...props}
@@ -23,14 +23,14 @@ const TableBody = ({ className, ...props }: HTMLAttributes<HTMLTableSectionEleme
 
 const TableFooter = ({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) => (
   <tfoot
-    className={tv({ base: "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0" })({ className })}
+    className={tv({ base: "border-t border-neutral-700 bg-neutral-800/50 font-medium [&>tr]:last:border-b-0" })({ className })}
     {...props}
   />
 )
 
 const TableRow = ({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) => (
   <tr
-    className={tv({ base: "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted" })({ className })}
+    className={tv({ base: "border-b border-neutral-700 transition-colors hover:bg-neutral-800/50 data-[state=selected]:bg-neutral-700" })({ className })}
     {...props}
   />
 )
@@ -51,7 +51,7 @@ const TableCell = ({ className, ...props }: TdHTMLAttributes<HTMLTableCellElemen
 
 const TableCaption = ({ className, ...props }: HTMLAttributes<HTMLTableCaptionElement>) => (
   <caption
-    className={tv({ base: 'mt-4 text-sm text-muted-foreground' })({ className })}
+    className={tv({ base: 'mt-4 text-sm text-neutral-50' })({ className })}
     {...props}
   />
 )

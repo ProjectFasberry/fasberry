@@ -1,3 +1,5 @@
+/// <reference path="../declare.d.ts" />
+
 import "../imports"
 
 import { Elysia, ElysiaConfig } from "elysia";
@@ -15,7 +17,7 @@ import { rate } from "./modules/user/like.route";
 import { initRedis } from "./shared/redis/init";
 import { startJobs } from "./utils/cron";
 import { updateSession } from "./utils/auth/session";
-import { INTERNAl_FILES, loadInternalFiles } from "./utils/config/load-internal-files";
+import { INTERNAl_FILES, loadInternalFiles } from "./utils/minio/load-internal-files";
 import { store } from "./modules/store";
 import { auth } from "./modules/auth";
 import { server } from "./modules/server";
@@ -28,6 +30,7 @@ import { isProduction } from "./shared/env";
 import { defineSession } from "./lib/middlewares/define";
 import { logger } from "./utils/config/logger";
 import { checkDatabasesHealth } from "./shared/database/init";
+import { corsPlugin } from "./lib/plugins/cors";
 
 const appConfig: ElysiaConfig<string> = {
   prefix: "/minecraft",
@@ -35,27 +38,21 @@ const appConfig: ElysiaConfig<string> = {
     hostname: '0.0.0.0',
     // idleTimeout: 3
   },
-  aot: true
+  aot: true,
 }
-
-const corsPlugin = () => new Elysia().use(
-  cors({
-    credentials: true
-  })
-)
 
 const app = new Elysia(appConfig)
   .use(openApiPlugin())
   .use(rateLimitPlugin())
-  .use(corsPlugin())
   .use(serverTimingPlugin())
   .use(loggerPlugin())
   .use(ipPlugin())
+  .use(corsPlugin())
   .use(root)
   .use(defineSession())
-  .onBeforeHandle(async ({ cookie, session: token }) => {
-    if (!token) return;
-    updateSession(token, cookie)
+  .onBeforeHandle(async ({ cookie, session }) => {
+    if (!session) return;
+    updateSession(session, cookie)
   })
   .use(auth)
   .use(me)
@@ -66,12 +63,15 @@ const app = new Elysia(appConfig)
   .use(rate)
   .onError(({ code, error }) => {
     logger.error(error, code);
-    // @ts-expect-error
-    const message = error?.message ?? error.response.toString().slice(0, 128) ?? "Internal Server Error";
-    const data = { error: message }
-    return data
+    
+    const message =
+      (error instanceof Error && error.message) ||
+      (typeof (error as any)?.response !== "undefined"
+        ? String((error as any).response).slice(0, 128)
+        : "Internal Server Error");
+
+    return { error: message };
   })
-  
 
 async function startServices() {
   await checkDatabasesHealth();

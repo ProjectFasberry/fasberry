@@ -11,29 +11,28 @@ const linkVariant = tv({
   }
 })
 
+const links = [
+  { title: "Конфиг", value: "/private/config" },
+  { title: "Действия", value: "/private/actions" },
+  { title: "Аналитика", value: "/private/analytics" },
+  { title: "Магазин", value: "/private/store" },
+  { title: "Юзеры", value: "/private/users" },
+  { title: "Test", value: "/private/test" },
+]
+
 const Navigation = () => {
   return (
-    <div className="flex items-center justify-start w-full overflow-x-auto gap-2 rounded-lg">
-      <Link href="/private/config" className={linkVariant().base()}>
-        <Typography className={linkVariant().text()}>
-          Конфиг
-        </Typography>
-      </Link>
-      <Link href="/private/actions" className={linkVariant().base()}>
-        <Typography className={linkVariant().text()}>
-          Действия
-        </Typography>
-      </Link>
-      <Link href="/private/analytics" className={linkVariant().base()}>
-        <Typography className={linkVariant().text()}>
-          Аналитика
-        </Typography>
-      </Link>
-      <Link href="/private/store" className={linkVariant().base()}>
-        <Typography className={linkVariant().text()}>
-          Магазин
-        </Typography>
-      </Link>
+    <div
+      className="flex items-center justify-start w-full
+        scrollbar scrollbar-thumb-neutral-300 scrollbar-track-background-dark  overflow-x-auto gap-2 rounded-lg"
+    >
+      {links.map((link) => (
+        <Link key={link.title} href={link.value} className={linkVariant().base()}>
+          <Typography className={linkVariant().text()}>
+            {link.title}
+          </Typography>
+        </Link>
+      ))}
     </div>
   )
 }

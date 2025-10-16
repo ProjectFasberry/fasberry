@@ -27,6 +27,7 @@ export const viewBannerAction = reatomAsync(async (ctx, id: number) => {
   name: "viewBannerAction",
   onFulfill: (ctx, res) => {
     appOptionsAtom(ctx, (state) => ({ ...state, bannerIsExists: false }))
+    bannerAction.cacheAtom.reset(ctx)
     bannerAction.dataAtom.reset(ctx);
   },
   onReject: (ctx, e) => {

@@ -4,8 +4,10 @@ import { modpackCreate } from "./modpack-create.route";
 import { modpackDelete } from "./modpack-delete.route";
 import { defineAdmin } from "#/lib/middlewares/define";
 import { modpackSolo } from "./modpack-solo.route";
+import { hideOpenApiConfig, openApiPlugin } from "#/lib/plugins/openapi";
 
-const actions = new Elysia()
+const actions = new Elysia(hideOpenApiConfig)
+  .use(openApiPlugin())
   .use(defineAdmin())
   .use(modpackCreate)
   .use(modpackDelete)

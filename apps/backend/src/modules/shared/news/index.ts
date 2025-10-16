@@ -4,8 +4,10 @@ import { newsCreateRoute } from "./news-create.route";
 import { defineAdmin } from "#/lib/middlewares/define";
 import { newsSolo } from "./news-solo.route";
 import { newsDeleteRoute } from "./news-delete.route";
+import { hideOpenApiConfig, openApiPlugin } from "#/lib/plugins/openapi";
 
-const actions = new Elysia()
+const actions = new Elysia(hideOpenApiConfig)
+  .use(openApiPlugin())
   .use(defineAdmin())
   .use(newsCreateRoute)
   .use(newsDeleteRoute)

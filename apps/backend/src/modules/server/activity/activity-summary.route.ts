@@ -1,8 +1,8 @@
-import Elysia from 'elysia';
-import { HttpStatusEnum } from 'elysia-http-status-code/status';
+import Elysia, { t } from 'elysia';
 import { general } from '#/shared/database/main-db';
 import dayjs from 'dayjs';
 import { PlayerActivitySummaryPayload } from '@repo/shared/types/entities/user';
+import { withData } from '#/shared/schemas';
 
 type Heatmap = Map<string, Map<number, number>>;
 
@@ -74,8 +74,18 @@ async function getPlayerHeatmap(
   return heatmap;
 }
 
+const activitySummaryPayload = t.Record(
+  t.String(),
+  t.Record(t.String(), t.Number())
+)
+
 export const activitySummary = new Elysia()
-  .get("/summary/:nickname", async ({ status, params }) => {
+  .model({
+    "activity-summary": withData(
+      t.Nullable(activitySummaryPayload)
+    )
+  })
+  .get("/summary/:nickname", async ({ params }) => {
     const nickname = params.nickname;
     const payload = await getPlayerHeatmap(nickname);
 
@@ -90,5 +100,9 @@ export const activitySummary = new Elysia()
       data = null;
     }
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
+  }, {
+    response: {
+      200: "activity-summary"
+    }
   })

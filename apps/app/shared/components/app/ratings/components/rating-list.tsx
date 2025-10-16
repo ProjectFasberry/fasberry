@@ -1,291 +1,308 @@
-import { RatingBelkoinCard, RatingCharismCard, RatingLandsCard, RatingParkourCard, RatingPlaytimeCard, RatingReputationCard } from "./rating-cards";
-import { 
+import {
   RatingBelkoin,
   RatingCharism,
   RatingLands,
-  RatingParkour, 
-  RatingPlaytime, 
+  RatingParkour,
+  RatingPlaytime,
   RatingReputation
 } from "@repo/shared/types/entities/rating"
 import { useInView } from "react-intersection-observer";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { updateRatingAction } from "../models/update-ratings.model";
 import { Skeleton } from "@repo/ui/skeleton";
-import { tv } from "tailwind-variants";
 import { ReactNode } from "react";
 import { AtomState } from "@reatom/core";
-import { ratingByAtom, ratingDataAtom, ratingMetaAtom } from "../models/ratings.model";
+import { ratingAscAtom, ratingByAtom, ratingDataAtom, ratingIsViewAtom, updateRatingAction } from "../models/ratings.model";
+import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
+import { Button } from "@repo/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/ui/table"
+import { Avatar } from "../../avatar/components/avatar";
+import { createLink, Link } from "@/shared/components/config/link";
+import dayjs from "@/shared/lib/create-dayjs"
 
-const RatingsSkeleton = () => {
+const RatingListParkourHeaderU = () => {
   return (
-    <>
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-16 w-full" />
-    </>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">#</TableHead>
+      <TableHead>Игрок</TableHead>
+      <TableHead>Карта</TableHead>
+      <TableHead className="text-right">Счет</TableHead>
+    </TableRow>
   )
 }
 
-const ratingHeader = tv({
-  base: `grid w-full px-2 gap-2 lg:gap-0`,
-  variants: {
-    variant: {
-      playtime: "grid-cols-[0.2fr_2.8fr_1fr]",
-      charism: "grid-cols-[0.2fr_2.8fr_1fr]",
-      belkoin: "grid-cols-[0.2fr_2.8fr_1fr]",
-      parkour: "grid-cols-[0.2fr_2.8fr_1fr_1fr]",
-      lands_chunks: "grid-cols-[0.2fr_2.8fr_1fr_1fr]",
-      reputation: "grid-cols-[0.2fr_2.8fr_1fr]",
-    }
-  }
-})
-
-const ratingHeaderTypography = tv({
-  base: "text-base sm:text-lg text-neutral-400 text-nowrap"
-})
-
-const RatingListParkourHeader = () => {
+const RatingListCharismHeaderU = () => {
   return (
-    <div className={ratingHeader({ variant: "parkour" })}>
-      <p className={ratingHeaderTypography()}>#</p>
-      <p className={ratingHeaderTypography()}>Игрок</p>
-      <p className={ratingHeaderTypography()}>Карта</p>
-      <p className={ratingHeaderTypography()}>Счет</p>
-    </div>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">#</TableHead>
+      <TableHead>Игрок</TableHead>
+      <TableHead className="text-right">Харизмы</TableHead>
+    </TableRow>
   )
 }
 
-const RatingListCharismHeader = () => {
+const RatingListBelkoinHeaderU = () => {
   return (
-    <div className={ratingHeader({ variant: "charism" })}>
-      <p className={ratingHeaderTypography()}>#</p>
-      <p className={ratingHeaderTypography()}>Игрок</p>
-      <p className={ratingHeaderTypography()}>Харизмы</p>
-    </div>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">#</TableHead>
+      <TableHead>Игрок</TableHead>
+      <TableHead className="text-right">Белкоинов</TableHead>
+    </TableRow>
   )
 }
 
-const RatingListBelkoinHeader = () => {
+const TableRowsSkeleton = () => {
   return (
-    <div className={ratingHeader({ variant: "belkoin" })}>
-      <p className={ratingHeaderTypography()}>#</p>
-      <p className={ratingHeaderTypography()}>Игрок</p>
-      <p className={ratingHeaderTypography()}>Белкоинов</p>
-    </div>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">
+        <Skeleton className="h-8 w-8" />
+      </TableHead>
+      <TableHead>
+        <Skeleton className="h-10 w-24" />
+      </TableHead>
+      <TableHead>
+        <Skeleton className="h-10 w-full" />
+      </TableHead>
+    </TableRow>
   )
 }
 
-const RatingListReputationHeader = () => {
+const RatingListReputationHeaderU = () => {
   return (
-    <div className={ratingHeader({ variant: "reputation" })}>
-      <p className={ratingHeaderTypography()} >#</p>
-      <p className={ratingHeaderTypography()}>Игрок</p>
-      <p className={ratingHeaderTypography()}>Репутация</p>
-    </div>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">#</TableHead>
+      <TableHead>Игрок</TableHead>
+      <TableHead className="text-right">Репутация</TableHead>
+    </TableRow>
   )
 }
 
-const RatingListPlaytimeHeader = () => {
+const RatingListPlaytimeHeaderU = () => {
   return (
-    <div className={ratingHeader({ variant: "playtime" })}>
-      <p className={ratingHeaderTypography()}>#</p>
-      <p className={ratingHeaderTypography()}>Игрок</p>
-      <p className={ratingHeaderTypography()}>Суммарное время</p>
-    </div>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">#</TableHead>
+      <TableHead>Игрок</TableHead>
+      <TableHead className="text-right">Суммарное время</TableHead>
+    </TableRow>
   )
 }
 
-const RatingListLandsHeader = () => {
+const RatingListLandsHeaderU = () => {
   return (
-    <div className={ratingHeader({ variant: "lands_chunks" })}>
-      <p className={ratingHeaderTypography()}>#</p>
-      <p className={ratingHeaderTypography()}>Территория</p>
-      <p className={ratingHeaderTypography()}>Кол-во чанков</p>
-      <p className={ratingHeaderTypography()}>Тип</p>
-    </div>
+    <TableRow className="*:font-semibold *:text-base">
+      <TableHead className="w-[64px]">#</TableHead>
+      <TableHead>Территория</TableHead>
+      <TableHead>Чанков</TableHead>
+      <TableHead className="text-right">Тип</TableHead>
+    </TableRow>
   )
 }
 
-const SyncViewer = ({ inView }: { inView: boolean }) => {
-  useUpdate((ctx) => {
-    if (!inView) return
-
-    const hasMore = ctx.get(ratingMetaAtom)?.hasNextPage
-
-    if (hasMore) {
-      const target = ctx.get(ratingByAtom);
-      
-      updateRatingAction(ctx, target, "update-cursor")
-    }
-  }, [inView])
-
-  return null;
-}
-
-const RatingsViewer = reatomComponent(({ ctx }) => {
+const RatingsViewer = () => {
   const { inView, ref } = useInView({ triggerOnce: false, threshold: 1 });
+  useUpdate((ctx) => ratingIsViewAtom(ctx, inView), [inView]);
+  return <div ref={ref} className="h-[1px] border-transparent w-full" />
+}
 
-  return (
-    <>
-      <SyncViewer inView={inView} />
-      <div ref={ref} className="h-[1px] border-transparent w-full" />
-    </>
-  )
-}, "RatingsViewer")
-
-const RatingsParkour = reatomComponent(({ ctx }) => {
+const RatingTableBodyParkour = reatomComponent(({ ctx }) => {
   const data = ctx.spy(ratingDataAtom) as RatingParkour[]
   if (!data) return null
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <RatingListParkourHeader />
-      {data.map((item, idx) => (
-        <RatingParkourCard
-          key={idx}
-          idx={idx}
-          area={item.area}
-          gamesplayed={item.gamesplayed}
-          nickname={item.nickname}
-          player={item.player}
-          score={item.score}
-        />
-      ))}
-    </div>
+    data.map((user, idx) => (
+      <TableRow key={user.nickname}>
+        <TableCell className="font-medium">{idx + 1}</TableCell>
+        <TableCell>
+          <UserHead nickname={user.nickname!} />
+        </TableCell>
+        <TableCell>{user.area}</TableCell>
+        <TableHead className="text-right">{user.score}</TableHead>
+      </TableRow>
+    ))
   )
-}, "RatingParkour")
+})
 
-const RatingsBelkoin = reatomComponent(({ ctx }) => {
+const RatingTableBodyBelkoin = reatomComponent(({ ctx }) => {
   const data = ctx.spy(ratingDataAtom) as RatingBelkoin[]
   if (!data) return null
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <RatingListBelkoinHeader />
-      {data.map((item, idx) => (
-        <RatingBelkoinCard
-          key={idx}
-          idx={idx}
-          balance={item.balance}
-          nickname={item.nickname}
-        />
-      ))}
-    </div>
+    data.map((user, idx) => (
+      <TableRow key={user.nickname}>
+        <TableCell className="font-medium">{idx + 1}</TableCell>
+        <TableCell>
+          <UserHead nickname={user.nickname} />
+        </TableCell>
+        <TableHead className="text-right">{formatNumber(user.points)}</TableHead>
+      </TableRow>
+    ))
   )
-}, "RatingBelkoin")
+})
 
-const RatingsReputation = reatomComponent(({ ctx }) => {
+const RatingTableBodyReputation = reatomComponent(({ ctx }) => {
   const data = ctx.spy(ratingDataAtom) as RatingReputation[]
   if (!data) return null
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <RatingListReputationHeader />
-      {data.map((item, idx) => (
-        <RatingReputationCard
-          key={idx}
-          idx={idx}
-          reputation={item.reputation}
-          uuid={item.uuid}
-          nickname={item.nickname}
-        />
-      ))}
-    </div>
+    data.map((user, idx) => (
+      <TableRow key={user.nickname}>
+        <TableCell className="font-medium">{idx + 1}</TableCell>
+        <TableCell>
+          <UserHead nickname={user.nickname} />
+        </TableCell>
+        <TableHead className="text-right">{user.reputation}</TableHead>
+      </TableRow>
+    ))
   )
-}, "RatingReputation")
+})
 
-const RatingsCharism = reatomComponent(({ ctx }) => {
+function formatNumber(n: number) {
+  return Number.isInteger(n) ? n : n.toFixed(2);
+}
+
+const RatingTableBodyCharism = reatomComponent(({ ctx }) => {
   const data = ctx.spy(ratingDataAtom) as RatingCharism[]
   if (!data) return null
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <RatingListReputationHeader />
-      {data.map((item, idx) => (
-        <RatingCharismCard
-          key={idx}
-          idx={idx}
-          balance={item.balance}
-          nickname={item.nickname}
-        />
-      ))}
-    </div>
+    data.map((user, idx) => (
+      <TableRow key={user.nickname}>
+        <TableCell className="font-medium">{idx + 1}</TableCell>
+        <TableCell>
+          <UserHead nickname={user.nickname} />
+        </TableCell>
+        <TableHead className="text-right">{formatNumber(user.balance)}</TableHead>
+      </TableRow>
+    ))
   )
-}, "RatingCharism")
+})
 
-const RatingsPlaytime = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(ratingDataAtom) as RatingPlaytime[]
-  if (!data) return null
-
-  return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <RatingListPlaytimeHeader />
-      {data.map((item, idx) => (
-        <RatingPlaytimeCard
-          key={idx}
-          idx={idx}
-          total={item.total}
-          nickname={item.nickname}
-        />
-      ))}
-    </div>
-  )
-}, "RatingPlaytime")
-
-const RatingsLands = reatomComponent(({ ctx }) => {
+const RatingTableBodyLands = reatomComponent(({ ctx }) => {
   const data = ctx.spy(ratingDataAtom) as RatingLands[]
   if (!data) return null
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      <RatingListLandsHeader />
-      {data.map((item, idx) => (
-        <RatingLandsCard
-          key={idx}
-          idx={idx}
-          type={item.type}
-          blocks={item.blocks}
-          chunks_amount={item.chunks_amount}
-          land={item.land}
-          members={item.members}
-          name={item.name}
-        />
-      ))}
-    </div>
+    data.map((land, idx) => (
+      <TableRow key={idx}>
+        <TableCell className="font-medium">{idx + 1}</TableCell>
+        <TableCell>{land.name}</TableCell>
+        <TableCell>{land.chunks_amount}</TableCell>
+        <TableHead className="text-right">{land.type}</TableHead>
+      </TableRow>
+    ))
   )
-}, "RatingLands")
+})
 
-const COMPONENTS: Record<AtomState<typeof ratingByAtom>, ReactNode> = {
-  "parkour": <RatingsParkour />,
-  "lands_chunks": <RatingsLands />,
-  "playtime": <RatingsPlaytime />,
-  "belkoin": <RatingsBelkoin />,
-  "reputation": <RatingsReputation />,
-  "charism": <RatingsCharism />
-}
-
-const RatingsList = reatomComponent(({ ctx }) => {
-  const by = ctx.spy(ratingByAtom)
-  const updateIsLoading = ctx.spy(updateRatingAction.statusesAtom).isPending;
+const RatingsFilter = reatomComponent(({ ctx }) => {
+  const current = ctx.spy(ratingAscAtom);
 
   return (
-    <div className="flex flex-col gap-2 h-full w-full">
-      {COMPONENTS[by]}
-      {updateIsLoading && <RatingsSkeleton />}
+    <Button
+      className='bg-neutral-800 hover:bg-neutral-700 aspect-square text-neutral-400 h-8 w-8 p-1'
+      onClick={() => ratingAscAtom(ctx, (state) => !state)}
+    >
+      {current ? <IconArrowDown /> : <IconArrowUp />}
+    </Button>
+  )
+}, "RatingsFilter")
+
+const RatingsHeader = () => {
+  return (
+    <div className="flex items-center justify-between w-full">
+      <RatingsFilter />
     </div>
   )
-}, "RatingsList")
+}
+
+const UserHead = ({ nickname }: {nickname: string}) => {
+  return (
+    <Link href={createLink("player", nickname)} className="flex items-center gap-2">
+      <Avatar
+        nickname={nickname}
+        propWidth={26}
+        propHeight={26}
+      />
+      {nickname}
+    </Link>
+  )
+}
+
+const RatingTableBodyPlaytime = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(ratingDataAtom) as RatingPlaytime[]
+  if (!data) return null
+
+  return (
+    data.map((user, idx) => (
+      <TableRow key={user.nickname}>
+        <TableCell className="font-medium">{idx + 1}</TableCell>
+        <TableCell>
+          <UserHead nickname={user.nickname}/>
+        </TableCell>
+        <TableHead className="text-right">
+          {Math.floor(dayjs.duration(user.total ?? 0).asHours())} часа(-ов)
+        </TableHead>
+      </TableRow>
+    ))
+  )
+}, "RatingTableBodyPlaytime")
+
+const HEADERS: Record<AtomState<typeof ratingByAtom>, ReactNode> = {
+  "lands_chunks": <RatingListLandsHeaderU />,
+  "parkour": <RatingListParkourHeaderU />,
+  "playtime": <RatingListPlaytimeHeaderU />,
+  "belkoin": <RatingListBelkoinHeaderU />,
+  "reputation": <RatingListReputationHeaderU />,
+  "charism": <RatingListCharismHeaderU />
+}
+
+const COMPONENTS: Record<AtomState<typeof ratingByAtom>, ReactNode> = {
+  "playtime": <RatingTableBodyPlaytime />,
+  "lands_chunks": <RatingTableBodyLands />,
+  "reputation": <RatingTableBodyReputation />,
+  "charism": <RatingTableBodyCharism />,
+  "belkoin": <RatingTableBodyBelkoin />,
+  "parkour": <RatingTableBodyParkour />
+}
+
+const RatingTableHeader = reatomComponent(({ ctx }) => HEADERS[ctx.spy(ratingByAtom)], "RatingTableHeader")
+const RatingTableBody = reatomComponent(({ ctx }) => {
+  const updateIsLoading = ctx.spy(updateRatingAction.statusesAtom).isPending
+
+  if (updateIsLoading) {
+    return (
+      Array.from({ length: 32 }).map((_, idx) => (
+        <TableRowsSkeleton key={idx} />
+      ))
+    )
+  }
+
+  return COMPONENTS[ctx.spy(ratingByAtom)]
+}, "RatingTableBody")
 
 export const Ratings = () => {
   return (
-    <div className="flex flex-col h-fit w-full">
-      <RatingsList />
-      <RatingsViewer />
-    </div>
+    <Table>
+      <TableCaption>Рейтинг</TableCaption>
+      <TableHeader>
+        <RatingTableHeader />
+      </TableHeader>
+      <TableBody>
+        <RatingTableBody />
+      </TableBody>
+      {/* <TableFooter>
+        <TableRow>
+          <TableCell colSpan={3}>Total</TableCell>
+          <TableCell className="text-right">$2,500.00</TableCell>
+        </TableRow>
+      </TableFooter> */}
+    </Table>
   )
 }

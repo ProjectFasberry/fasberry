@@ -11,6 +11,8 @@ declare global {
     endCursor?: string,
     startCursor?: string
   }
+
+  type Maybe<T> = T | undefined;
 }
 
 export { }

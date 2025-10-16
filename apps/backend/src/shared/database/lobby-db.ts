@@ -1,7 +1,7 @@
 import type { DB as lobbyDBType } from "@repo/shared/types/db/lobby-database-types";
 import { Kysely } from "kysely";
 import { MysqlDialect } from "kysely";
-import { createPool, PoolOptions } from "mysql2";
+import { createPool, type Pool, type PoolOptions } from "mysql2";
 import { isProduction, LOBBY_MYSQL_DB, LOBBY_MYSQL_HOST, LOBBY_MYSQL_PASSWORD, LOBBY_MYSQL_PORT, LOBBY_MYSQL_USER } from "../env";
 
 export const poolOptsHooks = (name: string) => ({
@@ -21,7 +21,7 @@ const config: PoolOptions = {
   connectionLimit: 10
 }
 
-export const lobbyPool = createPool(config)
+export const lobbyPool: Pool = createPool(config)
 
 export const lobby = new Kysely<lobbyDBType>({
   dialect: new MysqlDialect({

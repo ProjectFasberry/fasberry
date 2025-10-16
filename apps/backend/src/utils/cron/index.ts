@@ -1,9 +1,9 @@
 import { logger } from '../config/logger';
 import { Cron, CronOptions } from "croner";
 import { cleanOldEvents } from '#/modules/server/events/events.model';
-import { updateServerStatus } from '#/modules/server/status.route';
 import { updateSeemsLikeList } from '#/modules/user/seems-players.model';
-import { updateExchangeRates } from '#/modules/store/payment/cryptobot/cryptobot.model';
+import { updateExchangeRates } from '#/modules/store/order/cryptobot/cryptobot.model';
+import { updateServerStatus } from '#/modules/server/status/status.model';
 
 type Job = {
   name: string;

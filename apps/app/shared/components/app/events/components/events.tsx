@@ -1,11 +1,10 @@
+import dayjs from "@/shared/lib/create-dayjs"
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { eventsAction } from "../models/events.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { AtomState, onConnect } from "@reatom/framework";
 import { NotFound } from "@/shared/ui/not-found";
-import { isEmptyArray } from "@/shared/lib/array";
-import dayjs from "@/shared/lib/create-dayjs"
 import { isClientAtom } from "@/shared/models/global.model";
 
 const EventsSkeleton = () => {
@@ -17,7 +16,7 @@ const EventsSkeleton = () => {
   )
 }
 
-onConnect(eventsAction.dataAtom, eventsAction)
+onConnect(eventsAction, eventsAction)
 
 const EventCard = ({ 
   content, id, type, title 
@@ -62,9 +61,7 @@ const EventsList = reatomComponent(({ ctx }) => {
     return <EventsSkeleton />
   }
 
-  const isEmpty = isEmptyArray(data)
-
-  if (isEmpty) return <NotFound title="Ивентов нет" />
+  if (!data) return <NotFound title="Ивентов нет" />
 
   return (
     data.map((event) => (

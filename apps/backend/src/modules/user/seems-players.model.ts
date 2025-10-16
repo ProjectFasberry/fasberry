@@ -4,6 +4,7 @@ import { general } from "#/shared/database/main-db";
 import { getRedis } from "#/shared/redis/init";
 import { safeJsonParse } from "#/utils/config/transforms";
 import { SeemsLikePlayer, SeemsLikePlayersPayload } from "@repo/shared/types/entities/other";
+import { isProduction } from "elysia/error";
 import { sql } from "kysely";
 import pLimit from "p-limit";
 import z from "zod";
@@ -61,7 +62,9 @@ export async function updateSeemsLikeList() {
     return;
   }
 
-  console.log(`Updating ${candidates.length} players`);
+  if (!isProduction) {
+    console.log(`Updating ${candidates.length} players`);
+  }
 
   let successCount = 0;
   let errorCount = 0;
@@ -84,18 +87,23 @@ export async function updateSeemsLikeList() {
             await multi.exec();
 
             successCount++;
-            console.log(`✅ ${player.nickname} обновлён (${successCount}/${candidates.length})`);
+
+            if (!isProduction) {
+              console.log(`${player.nickname} updated (${successCount}/${candidates.length})`);
+            }
           } catch (err) {
             errorCount++;
-            console.error(`❌ Ошибка при обновлении ${player.nickname}:`, err);
+            console.error(`Error: ${player.nickname}:`, err);
           }
         })
       )
     );
 
-    console.log(
-      `⏱️ Батч #${index + 1} (${batch.length} игроков) обработан за ${Date.now() - batchStart} мс`
-    );
+    if (!isProduction) {
+      console.log(
+        `Batch #${index + 1} (${batch.length} players) proccessed for ${Date.now() - batchStart}ms`
+      );
+    }
   }
 
   for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
@@ -105,7 +113,7 @@ export async function updateSeemsLikeList() {
   }
 
   console.log(
-    `🎉 Обновление завершено: ${successCount} успешно, ${errorCount} с ошибками. Время: ${(Date.now() - start) / 1000}s`
+    `Updating result: ${successCount} success, ${errorCount} errors. Time: ${(Date.now() - start) / 1000}s`
   );
 }
 

@@ -1,4 +1,5 @@
 import { general } from "#/shared/database/main-db";
+import { metaSchema } from "#/shared/schemas";
 import z from "zod";
 
 export async function bannerExists(nickname: string | null) {
@@ -26,9 +27,7 @@ export async function bannerExists(nickname: string | null) {
   return !result.viewed;
 }
 
-export const bannerSoloSchema = z.object({
-  ascending: z.stringbool().optional().default(false)
-})
+export const bannerSoloSchema = metaSchema.pick({ asc: true })
 
 export const bannerSchema = z.object({
   id: z.coerce.number()

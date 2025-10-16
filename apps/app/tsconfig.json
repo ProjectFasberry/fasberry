@@ -35,7 +35,7 @@
     "./vite.config.ts",
     "./declare.d.ts",
     "./**/*.ts",
-    "./**/*.tsx",
+    "./**/*.tsx"
   ],
   "exclude": [
     "dist",

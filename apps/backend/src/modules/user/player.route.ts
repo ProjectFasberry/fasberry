@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import dayjs from "dayjs"
 import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
@@ -8,6 +8,7 @@ import { Donate } from "@repo/shared/types/entities/donate";
 import { defineOptionalUser } from "#/lib/middlewares/define";
 import { sql } from "kysely";
 import { Player } from "@repo/shared/types/entities/user";
+import { withData } from "#/shared/schemas";
 
 async function getDonate(
   { recipient }: { recipient: string }
@@ -89,8 +90,27 @@ async function getMain(
   }
 }
 
+const PlayerPayload = t.Object({
+  nickname: t.String(),
+  lower_case_nickname: t.String(),
+  uuid: t.String(),
+  group: t.String(),
+  avatar: t.String(),
+  meta: t.Object({
+    reg_date: t.Union([t.String(), t.Date()]),
+    login_date: t.Union([t.String(), t.Date()])
+  }),
+  rate: t.Object({
+    count: t.Number(),
+    isRated: t.Boolean()
+  })
+})
+
 export const player = new Elysia()
   .use(defineOptionalUser())
+  .model({
+    "player": withData(PlayerPayload)
+  })
   .get("/player/:nickname", async ({ status, nickname: initiator, params }) => {
     const recipient = params.nickname;
 
@@ -107,7 +127,7 @@ export const player = new Elysia()
 
     const { meta, ...some } = main
 
-    const user: Player = {
+    const data: Player = {
       ...some,
       group,
       avatar,
@@ -115,5 +135,10 @@ export const player = new Elysia()
       rate,
     };
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data: user });
+    return { data }
+  }, {
+    response: {
+      200: "player",
+      404: t.Object({ data: t.Null() })
+    }
   })

@@ -1,22 +1,24 @@
 import { general } from "#/shared/database/main-db";
+import { metaSchema, withData, withMeta } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
 import { BannersPayload } from "@repo/shared/types/entities/banner";
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 
-const bannersListSchema = z.object({
-  ascending: z.stringbool().optional(),
-  cursor: z.string().optional(),
-  searchQuery: z.string().min(1).max(256).optional()
-})
+const bannersListSchema = z.intersection(
+  metaSchema.pick({ asc: true, endCursor: true }),
+  z.object({
+    searchQuery: z.string().min(1).max(256).optional()
+  })
+)
 
 async function getBanners(
-  { ascending, cursor, searchQuery }: z.infer<typeof bannersListSchema>
+  { asc, endCursor, searchQuery }: z.infer<typeof bannersListSchema>
 ) {
-  const direction = getDirection(ascending);
+  const direction = getDirection(asc);
 
   let query = general
     .selectFrom("banners")
@@ -35,7 +37,7 @@ async function getBanners(
 
   const result = await executeWithCursorPagination(query, {
     perPage: 16,
-    after: cursor,
+    after: endCursor,
     fields: [
       { key: "created_at", expression: "created_at", direction }
     ],
@@ -52,10 +54,31 @@ async function getBanners(
   return data
 }
 
+export const bannerPayload = t.Object({
+  id: t.Number(),
+  title: t.String(),
+  description: t.Union([t.String(), t.Null()]),
+  href: t.Object({
+    title: t.String(),
+    value: t.String(),
+  })
+})
+
 export const bannerList = new Elysia()
+  .model({
+    "banners-list": withData(
+      t.Object({  
+        data: t.Array(bannerPayload),
+        meta: withMeta
+      })
+    )
+  })
   .get("/list", async ({ status, query }) => {
     const data: BannersPayload = await getBanners(query);
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
-    query: bannersListSchema
+    query: bannersListSchema,
+    response: {
+      200: "banners-list"
+    }
   })

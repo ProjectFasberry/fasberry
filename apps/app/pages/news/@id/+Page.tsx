@@ -1,23 +1,12 @@
-import { pageContextAtom } from "@/shared/models/global.model";
-import { Data } from "./+data";
-import { action } from "@reatom/core";
-import { reatomComponent, useUpdate } from "@reatom/npm-react";
+import dayjs from "@/shared/lib/create-dayjs";
+import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { IconEye } from "@tabler/icons-react";
-import dayjs from "dayjs";
-import { startPageEvents } from "@/shared/lib/events";
-import { useData } from "vike-react/useData";
-
-const events = action((ctx) => {
-  const pageContext = ctx.get(pageContextAtom);
-  if (!pageContext) return;
-
-  // const data = pageContext.data as Data
-}, "events")
+import { newsItemAtom } from "@/shared/components/app/news/models/news.model";
 
 const NewsItem = reatomComponent(({ ctx }) => {
-  const data = useData<Data>().data
+  const data = ctx.spy(newsItemAtom);
   if (!data) return null;
 
   return (
@@ -43,9 +32,7 @@ const NewsItem = reatomComponent(({ ctx }) => {
   )
 }, "NewsItem")
 
-export default function NewsPage() {
-  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "news" }), [pageContextAtom]);
-
+export default function Page() {
   return (
     <MainWrapperPage>
       <NewsItem />

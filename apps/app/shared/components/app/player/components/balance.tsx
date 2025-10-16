@@ -41,7 +41,7 @@ const BalanceCard = reatomComponent<{ title: string, value: number, image: strin
         <div className="absolute inset-y-1/2 bottom-0 backdrop-blur-sm bg-black/20"></div>
         <div className="absolute inset-y-1/3 bottom-0 backdrop-blur-[10px] bg-black/40"></div>
       </div>
-      <div className="absolute inset-0 flex flex-col justify-between p-6 z-20">
+      <div className="absolute inset-0 flex flex-col justify-between p-6 z-[5]">
         <Typography className="select-none font-mono font-semibold text-neutral-50 text-2xl">
           {title}
         </Typography>

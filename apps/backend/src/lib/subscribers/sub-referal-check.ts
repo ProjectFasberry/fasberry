@@ -5,7 +5,7 @@ import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/subjects";
 import { logError, logger } from "#/utils/config/logger";
 import { callServerCommand } from "#/utils/server/call-command";
 import { validateReferal } from "#/utils/server/validate-referal";
-import { Msg } from "@nats-io/nats-core/lib/core";
+import { Msg } from "@nats-io/nats-core";
 
 async function handleReferalCheck(msg: Msg) {
   const nickname: string = new TextDecoder().decode(msg.data)

@@ -1,7 +1,6 @@
 import Elysia from "elysia"
 import z from "zod";
 import { ElysiaOpenAPIConfig, fromTypes, openapi } from "@elysiajs/openapi"
-import { isProduction } from "#/shared/env";
 
 const swaggerConfig: ElysiaOpenAPIConfig = {
   scalar: {
@@ -9,7 +8,7 @@ const swaggerConfig: ElysiaOpenAPIConfig = {
       url: '/minecraft/openapi/json'
     }
   },
-  references: fromTypes(isProduction ? 'dist/index.d.ts' : 'src/index.ts'),
+  references: fromTypes("dist/index.d.ts"),
   mapJsonSchema: {
     zod: z.toJSONSchema
   }
@@ -18,3 +17,7 @@ const swaggerConfig: ElysiaOpenAPIConfig = {
 export const openApiPlugin = () => new Elysia().use(
   openapi(swaggerConfig)
 )
+
+export const hideOpenApiConfig = {
+  detail: { hide: true }
+}

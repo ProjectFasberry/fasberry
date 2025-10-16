@@ -1,5 +1,5 @@
 import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
-import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { reatomAsync, withCache, withDataAtom, withRetry, withStatusesAtom } from "@reatom/async";
 import { StatusPayload } from "@repo/shared/types/entities/other"
 
 export const serverStatusAction = reatomAsync(async (ctx) => {
@@ -8,4 +8,9 @@ export const serverStatusAction = reatomAsync(async (ctx) => {
       .pipe(withQueryParams({ type: "servers" }), withAbort(ctx.controller.signal))
       .exec()
   )
-}, "serverStatusAction").pipe(withStatusesAtom(), withCache(), withDataAtom(null))
+}, "serverStatusAction").pipe(
+  withStatusesAtom(), 
+  withCache({ swr: false, staleTime: 60000 }),
+  withDataAtom(null),
+  withRetry()
+)

@@ -1,19 +1,22 @@
-import Elysia from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
+import Elysia, { t } from "elysia";
 import { getIsExistsSession } from "./auth.model";
 import { defineSession } from "#/lib/middlewares/define";
+import { withData } from "#/shared/schemas";
 
 export const validate = new Elysia()
   .use(defineSession())
-  .derive(({ session, status }) => {
+  .derive(({ session }) => {
     if (!session) {
-      return status(HttpStatusEnum.HTTP_200_OK, { data: false })
+      return { data: false }
     }
 
     return { session }
   })
-  .get("/validate-session", async ({ session: token, status }) => {
-    const data = await getIsExistsSession(token);
-
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+  .get("/validate-session", async ({ session }) => {
+    const data = await getIsExistsSession(session);
+    return { data }
+  }, {
+    response: {
+      200: withData(t.Boolean())
+    }
   })

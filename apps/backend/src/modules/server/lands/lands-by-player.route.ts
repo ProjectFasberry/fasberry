@@ -1,105 +1,56 @@
-import { bisquite } from "#/shared/database/bisquite-db"
-import { PlayerLands, PlayerLandsPayload } from "@repo/shared/types/entities/land"
-import Elysia from "elysia"
-import { HttpStatusEnum } from "elysia-http-status-code/status"
+import { withData } from "#/shared/schemas"
+import { PlayerLands } from "@repo/shared/types/entities/land"
+import Elysia, { t } from "elysia"
 import z from "zod"
+import { getLandsByNickname } from "./lands.model"
 
-const landsByNicknameSchema = z.object({
-  exclude: z.string().optional()
+const landsByPlayerPayload = t.Object({
+  members: t.Array(t.Object({
+    uuid: t.String(),
+    nickname: t.String(),
+    chunks: t.Number(),
+  })),
+  created_at: t.Date(),
+  title: t.Union([t.String(), t.Null()]),
+  type: t.String(),
+  name: t.String(),
+  ulid: t.String(),
 })
 
-type LandMember = {
-  [key: string]: {
-    chunks: number
-  }
-}
-
 export const landsByPlayer = new Elysia()
-  .get("/list/:nickname", async ({ status, ...ctx }) => {
-    const nickname = ctx.params.nickname
-    const exclude = ctx.query.exclude;
-
-    let data: PlayerLands = {
-      data: [],
-      meta: {
-        count: 0
-      }
-    }
+  .model({
+    "lands-by-player": withData(
+      t.Object({
+        data: t.Array(landsByPlayerPayload),
+        meta: t.Object({
+          count: t.Number()
+        })
+      })
+    )
+  })
+  .get("/list/:nickname", async ({ query, params }) => {
+    const nickname = params.nickname
+    const exclude = query.exclude;
 
     let lands = await getLandsByNickname(nickname)
-
-    if (!lands) {
-      return status(HttpStatusEnum.HTTP_200_OK, { data: lands })
-    }
 
     if (exclude) {
       lands = lands.filter(land => land.ulid !== exclude)
     }
 
-    data = {
+    const data: PlayerLands = {
       data: lands,
       meta: {
         count: lands.length
       }
     }
 
-    const payload: PlayerLandsPayload = { data }
-
-    return status(HttpStatusEnum.HTTP_200_OK, payload)
+    return { data }
   }, {
-    query: landsByNicknameSchema
+    query: z.object({
+      exclude: z.string().optional()
+    }),
+    response: {
+      200: "lands-by-player"
+    }
   })
-
-async function getLandsByNickname(nickname: string) {
-  const player = await bisquite
-    .selectFrom("lands_players")
-    .select("uuid")
-    .where("name", "=", nickname)
-    .executeTakeFirst()
-
-  if (!player) return null;
-
-  const lands = await bisquite
-    .selectFrom("lands_lands")
-    .select([
-      "ulid",
-      "name",
-      "type",
-      "members",
-      "created_at",
-      "title",
-    ])
-    .where("members", "like", `%${player.uuid}%`)
-    .execute();
-
-  if (!lands.length) return null;
-
-  const allMemberUUIDs = new Set<string>();
-
-  const parsedLands = lands.map((land) => {
-    const members: LandMember = JSON.parse(land.members);
-
-    Object.keys(members).forEach((uuid) => allMemberUUIDs.add(uuid));
-
-    return { ...land, members };
-  });
-
-  const membersList = await bisquite
-    .selectFrom("lands_players")
-    .select(["uuid", "name"])
-    .where("uuid", "in", Array.from(allMemberUUIDs))
-    .execute();
-
-  const nicknameMap = new Map(
-    membersList.map(({ uuid, name }) => [uuid, name])
-  );
-
-  return parsedLands.map((land) => ({
-    ...land,
-    members: Object.entries(land.members).map(([uuid, data]) => ({
-      uuid,
-      nickname: nicknameMap.get(uuid)!,
-      chunks: data.chunks,
-    })),
-  }));
-}

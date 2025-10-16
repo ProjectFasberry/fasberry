@@ -11,11 +11,9 @@ export async function getSkinDetails(
     type === 'skin' ? "steve_skin.png" : "steve_head.png"
   )
 
-  const res = await clientInstance(`server/skin/${nickname}`, {
-    searchParams: {
-      type: type === 'head' ? "head" : "full"
-    },
-    ...init
+  const res = await clientInstance(`server/skin/${type}/${nickname}`, {
+    ...init,
+    credentials: "omit"
   })
 
   if (!res.ok) return fallback;

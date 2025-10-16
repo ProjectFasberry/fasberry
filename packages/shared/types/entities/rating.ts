@@ -28,7 +28,7 @@ export type RatingParkour = {
 
 export type RatingBelkoin = {
   nickname: string;
-  balance: number
+  points: number
 }
 
 export type RatingCharism = {

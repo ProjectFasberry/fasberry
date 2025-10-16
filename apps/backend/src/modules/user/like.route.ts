@@ -1,10 +1,27 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { defineUser } from "#/lib/middlewares/define";
+import { wrapError } from "#/helpers/wrap-error";
+import { withData } from "#/shared/schemas";
 
 const likes = new Elysia()
-  .get("/rates/:nickname", async ({ status, params }) => {
+  .model({
+    "like": withData(
+      t.Object({
+        data: t.Array(
+          t.Object({
+            initiator: t.String(),
+            created_at: t.Date(),
+          })
+        ),
+        meta: t.Object({
+          count: t.Number()
+        })
+      })
+    )
+  })
+  .get("/list/:nickname", async ({ params }) => {
     const recipient = params.nickname;
 
     const query = await general
@@ -29,16 +46,25 @@ const likes = new Elysia()
       }
     }
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data: response })
+    return { data: response }
+  }, {
+    response: {
+      200: "like"
+    }
   })
 
 const like = new Elysia()
   .use(defineUser())
-  .post("/rate/:nickname", async ({ nickname: initiator, status, params }) => {
+  .model({
+    "post-like": withData(
+      t.UnionEnum(["unrated", "rated"])
+    )
+  })
+  .post("/:nickname", async ({ nickname: initiator, status, params }) => {
     const recipient = params.nickname;
 
     if (initiator === recipient) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "Dont like yourself")
+      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("Dont like yourself"))
     }
 
     const result = await general.transaction().execute(async (trx) => {
@@ -64,11 +90,16 @@ const like = new Elysia()
       return "rated"
     });
 
-    const data = result;
-
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data: result }
+  }, {
+    response: {
+      200: "post-like",
+      400: t.Object({ error: t.String() })
+    }
   })
 
 export const rate = new Elysia()
-  .use(like)
-  .use(likes)
+  .group("/rate", app => app
+    .use(likes)
+    .use(like)
+  )

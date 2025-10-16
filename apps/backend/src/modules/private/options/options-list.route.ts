@@ -1,9 +1,8 @@
 import { general } from "#/shared/database/main-db"
 import Elysia from "elysia"
-import { HttpStatusEnum } from "elysia-http-status-code/status"
 
 export const optionsList = new Elysia()
-  .get("/list", async ({ status }) => {
+  .get("/list", async (ctx) => {
     const data = await general
       .selectFrom("options")
       .select([
@@ -13,5 +12,5 @@ export const optionsList = new Elysia()
       ])
       .execute()
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   })

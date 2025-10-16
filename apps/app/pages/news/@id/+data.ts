@@ -6,10 +6,13 @@ import { News } from "@repo/shared/types/entities/news";
 import { useConfig } from "vike-react/useConfig";
 import { render } from "vike/abort";
 import { PageContextServer } from "vike/types";
+import { createCtx } from "@reatom/core";
+import { mergeSnapshot } from "@/shared/lib/snapshot";
+import { newsItemAtom } from "@/shared/components/app/news/models/news.model";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-async function getNews(id: string, init: RequestInit) {
+async function getNewsById(id: string, init: RequestInit) {
   return client<News>(`shared/news/${id}`, init).exec()
 }
 
@@ -32,7 +35,7 @@ export async function data(pageContext: PageContextServer) {
   let news: News | null = null;
 
   try {
-    news = await getNews(pageContext.routeParams.id, { headers })
+    news = await getNewsById(pageContext.routeParams.id, { headers })
   } catch {}
 
   if (!news) {
@@ -41,8 +44,13 @@ export async function data(pageContext: PageContextServer) {
 
   config(metadata(news))
 
+  const ctx = createCtx()
+
+  newsItemAtom(ctx, news)
+
+  pageContext.snapshot = mergeSnapshot(ctx, pageContext)
+
   return {
-    id: pageContext.routeParams.id,
-    data: news
+    id: pageContext.routeParams.id
   }
 }

@@ -1,19 +1,30 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { defineOptionalUser } from "#/lib/middlewares/define";
 import { AppOptionsPayload } from "@repo/shared/types/entities/other";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bannerExists } from "../shared/banner/banner.model";
+import { withData } from "#/shared/schemas";
 
 const appOptionsList = new Elysia()
   .use(defineOptionalUser())
-  .get("/options", async ({ status, nickname }) => {
+  .model({
+    "options": withData(
+      t.Object({
+        bannerIsExists: t.Boolean()
+      })
+    )
+  })
+  .get("/options", async ({ nickname }) => {
     const bannerIsExists = await bannerExists(nickname)
 
     const data: AppOptionsPayload = {
       bannerIsExists
     }
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
+  }, {
+    response: {
+      200: "options"
+    }
   })
 
 const appOptions = new Elysia()

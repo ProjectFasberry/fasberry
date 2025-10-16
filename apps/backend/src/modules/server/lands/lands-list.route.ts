@@ -1,10 +1,11 @@
-import Elysia from "elysia"
+import Elysia, { t } from "elysia"
 import z from "zod"
 import { bisquite } from "#/shared/database/bisquite-db"
 import { getDirection } from "#/utils/config/paginate"
 import { Lands, LandsPayload } from "@repo/shared/types/entities/land"
-import { HttpStatusEnum } from "elysia-http-status-code/status"
 import { executeWithCursorPagination } from "kysely-paginate"
+import { wrapMeta } from "#/utils/config/transforms"
+import { withData, withMeta } from "#/shared/schemas"
 
 const landsSchema = z.object({
   cursor: z.string().optional()
@@ -28,7 +29,7 @@ async function getLands(
 
   const direction = getDirection(false)
 
-  const res = await executeWithCursorPagination(query, {
+  const result = await executeWithCursorPagination(query, {
     perPage: 16,
     after: cursor,
     fields: [
@@ -39,7 +40,7 @@ async function getLands(
     }),
   })
 
-  const lands: Lands[] = res.rows.map(land => ({
+  const lands: Lands[] = result.rows.map(land => ({
     ...land,
     stats: land.stats ? JSON.parse(land.stats) : null,
     members: JSON.parse(land.members)
@@ -47,22 +48,42 @@ async function getLands(
 
   return {
     data: lands,
-    meta: {
-      startCursor: res.startCursor,
-      endCursor: res.endCursor,
-      hasNextPage: res.hasNextPage ?? false,
-      hasPrevPage: res.hasPrevPage ?? false
-    }
+    meta: wrapMeta(result)
   }
 }
 
+const landPayload = t.Object({
+  ulid: t.String(),
+  title: t.String(),
+  name: t.String(),
+  level: t.Number(),
+  created_at: t.Date(),
+  type: t.String(),
+  stats: t.Object({
+    kills: t.Number(),
+    deaths: t.Number(),
+    wins: t.Number(),
+    defeats: t.Number(),
+    captures: t.Number(),
+  }),
+  members: t.Record(t.String(), t.Number())
+})
+
 export const landsList = new Elysia()
-  .get("/list", async ({ status, query }) => {
-    const { cursor } = query;
-
-    const data: LandsPayload = await getLands({ cursor })
-
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+  .model({
+    "lands-list": withData(
+      t.Object({
+        data: t.Array(landPayload),
+        meta: withMeta
+      })
+    )
+  })
+  .get("/list", async ({ query }) => {
+    const data: LandsPayload = await getLands(query)
+    return { data }
   }, {
-    query: landsSchema
+    query: landsSchema,
+    response: {
+      200: "lands-list"
+    }
   })

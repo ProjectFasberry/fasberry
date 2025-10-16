@@ -16,8 +16,6 @@ import { Skeleton } from "@repo/ui/skeleton"
 import { sleep } from "@reatom/framework"
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react"
 
-type Maybe<T> = T | undefined;
-
 const eventImage = getStaticImage("arts/looking.jpg")
 
 const EventsNotFound = () => {
@@ -49,8 +47,8 @@ tasksAscendingAtom.onChange((ctx) => tasksAction(ctx))
 
 const tasksAction = reatomAsync(async (ctx) => {
   const params = {
-    ascending: ctx.get(tasksAscendingAtom),
-    cursor: ctx.get(tasksCursorAtom)
+    asc: ctx.get(tasksAscendingAtom),
+    endCursor: ctx.get(tasksCursorAtom)
   }
 
   await sleep(160);
@@ -119,7 +117,7 @@ const TaskItem = (
 }
 
 const TasksFilter = reatomComponent(({ ctx }) => {
-  const ascending = ctx.spy(tasksAscendingAtom);
+  const asc = ctx.spy(tasksAscendingAtom);
 
   const handle = () => {
     tasksAscendingAtom(ctx, (state) => !state)
@@ -135,7 +133,7 @@ const TasksFilter = reatomComponent(({ ctx }) => {
         onClick={handle}
         disabled={ctx.spy(tasksAction.statusesAtom).isPending}
       >
-        {ascending ? <IconArrowUp /> : <IconArrowDown />}
+        {asc ? <IconArrowUp /> : <IconArrowDown />}
       </Button>
     </div>
   )

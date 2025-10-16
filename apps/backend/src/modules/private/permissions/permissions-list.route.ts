@@ -1,7 +1,6 @@
 import { defineUserRole } from "#/lib/middlewares/define";
 import { general } from "#/shared/database/main-db";
 import Elysia from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import z from "zod";
 
 const permissionsSchema = z.object({
@@ -40,10 +39,10 @@ async function getPermissions(
 
 export const permissionsList = new Elysia()
   .use(defineUserRole())
-  .get("/list", async ({ status, role, query }) => {
+  .get("/list", async ({ role, query }) => {
     const roleId = role.id;
     const data = await getPermissions(roleId, query);
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     query: permissionsSchema
   })

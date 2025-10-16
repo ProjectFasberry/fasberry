@@ -2,7 +2,7 @@ import { playerpoints } from "#/shared/database/playerpoints-db"
 import { getNats } from "#/shared/nats/client"
 import { SERVER_EVENT_GIVE_BALANCE } from "#/shared/nats/subjects"
 import { logError } from "#/utils/config/logger"
-import { Msg } from "@nats-io/nats-core/lib/core"
+import { Msg } from "@nats-io/nats-core"
 import { sql } from "kysely"
 
 async function handleGiveBalance(msg: Msg) {

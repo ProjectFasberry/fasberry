@@ -2,20 +2,21 @@ import { normalizeIp } from "#/helpers/normalize-ip";
 import { getStaticUrl } from "#/helpers/volume";
 import { ipPlugin } from "#/lib/plugins/ip";
 import { general } from "#/shared/database/main-db";
+import { metaSchema, searchQuerySchema, withData, withMeta } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
 import { NewsPayload } from "@repo/shared/types/entities/news";
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 
-const newsSchema = z.object({
-  limit: z.coerce.number().optional().default(16),
-  ascending: z.stringbool().optional(),
-  cursor: z.string().optional(),
-  search: z.string().optional()
-})
+const newsSchema = z.intersection(
+  metaSchema.pick({ asc: true, endCursor: true, limit: true }),
+  z.object({
+    searchQuery: searchQuerySchema
+  })
+)
 
 async function createNewsViews(target: { ids: number[], ip: string | null }) {
   if (target.ids.length === 0) return;
@@ -37,10 +38,27 @@ async function createNewsViews(target: { ids: number[], ip: string | null }) {
     .execute()
 }
 
+const newsPayload = t.Object({
+  id: t.Number(),
+  title: t.String(),
+  created_at: t.String(),
+  description: t.String(),
+  imageUrl: t.Union([t.String(), t.Null()]),
+  views: t.Number(),
+})
+
 export const newsList = new Elysia()
   .use(ipPlugin())
+  .model({
+    "news-list": withData(
+      t.Object({
+        data: t.Array(newsPayload),
+        meta: withMeta
+      })
+    )
+  })
   .get("/list", async ({ ip, status, set, ...ctx }) => {
-    const { ascending, limit, cursor, search } = ctx.query;
+    const { asc, limit, endCursor, searchQuery } = ctx.query;
 
     let query = general
       .selectFrom('news')
@@ -63,15 +81,15 @@ export const newsList = new Elysia()
         'news.media_links'
       ])
 
-    if (search && search.length >= 1) {
-      query = query.where("title", "like", `%${search}%`)
+    if (searchQuery) {
+      query = query.where("title", "like", `%${searchQuery}%`)
     }
 
-    const direction = getDirection(ascending)
+    const direction = getDirection(asc)
 
     const res = await executeWithCursorPagination(query, {
       perPage: limit,
-      after: cursor,
+      after: endCursor,
       fields: [
         { key: "created_at", expression: "created_at", direction }
       ],
@@ -92,6 +110,7 @@ export const newsList = new Elysia()
     })
 
     set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+    set.headers["vary"] = "Origin"
 
     const response: NewsPayload = {
       data,
@@ -100,5 +119,8 @@ export const newsList = new Elysia()
 
     return status(HttpStatusEnum.HTTP_200_OK, { data: response })
   }, {
-    query: newsSchema
+    query: newsSchema,
+    response: {
+      200: "news-list"
+    }
   })

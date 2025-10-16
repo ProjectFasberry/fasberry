@@ -5,8 +5,10 @@ import { bannerCreate } from "./banner-create.route";
 import { bannerView } from "./banner-view.route";
 import { bannerDelete } from "./banner-delete.route";
 import { bannerList } from "./banner-list.route";
+import { hideOpenApiConfig, openApiPlugin } from "#/lib/plugins/openapi";
 
-const actions = new Elysia()
+const actions = new Elysia(hideOpenApiConfig)
+  .use(openApiPlugin())
   .use(defineAdmin())
   .use(bannerCreate)
   .use(bannerDelete)

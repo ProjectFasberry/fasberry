@@ -60,7 +60,12 @@ export const createStoreItemAction = reatomAsync(async (ctx) => {
     description: ctx.get(createStoreItemDescriptionAtom)
   }
 
-  return await ctx.schedule(() => client.post<StoreItem>("privated/store/item/create").pipe(withJsonBody(body)).exec())
+  return await ctx.schedule(() =>
+    client
+      .post<StoreItem>("privated/store/item/create")
+      .pipe(withJsonBody(body))
+      .exec()
+  )
 }, {
   name: "createStoreItemAction",
   onFulfill: (ctx, res) => {
@@ -99,7 +104,7 @@ export const removeStoreItemAction = reatomAsync(async (ctx, id: number) => {
     storeItemsAction.cacheAtom.reset(ctx);
 
     storeItemsAction.dataAtom(ctx, (state) => {
-      return state ? { data: state.data.filter(d => d.id !== res.id), meta: state.meta } : undefined 
+      return state ? { data: state.data.filter(d => d.id !== res.id), meta: state.meta } : undefined
     })
 
     alertDialogIsOpenAtom.reset(ctx)
@@ -148,12 +153,9 @@ export const storeItemsAction = reatomAsync(async (ctx) => {
 }).pipe(withDataAtom(), withStatusesAtom(), withCache({ swr: false }))
 
 export const searchParamsAtom = reatomRecord<Record<string, string>>({}, "searchParams")
-
 export const searchParamTargetAtom = atom<"create" | "edit" | "view">("view", "searchParamTarget")
 
 searchParamsAtom.onChange(async (ctx, state) => {
-  console.log("searchParamsAtom", state);
-
   const target = state["target"] as AtomState<typeof searchParamTargetAtom> | undefined;
   searchParamTargetAtom(ctx, target ?? "view");
 

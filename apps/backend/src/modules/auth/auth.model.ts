@@ -53,7 +53,8 @@ export async function getUserNickname(token: string): Promise<string | null> {
   return result.value.nickname ?? null
 }
 
-export async function getIsExistsSession(token: string) {
+export async function getIsExistsSession(token: string | undefined) {
+  if (!token) return false;
   const result = await getUserNickname(token)
   return Boolean(result)
 }
@@ -200,7 +201,7 @@ export async function createUser({
   return general.transaction().execute(async (trx) => {
     const regDateMs = new Date().getTime();
     const lowerCaseNickname = nickname.toLowerCase();
-    
+
     const [user, _] = await Promise.all([
       trx
         .insertInto("players")
@@ -214,7 +215,7 @@ export async function createUser({
       trx
         .insertInto("AUTH")
         .values({
-          NICKNAME: nickname, 
+          NICKNAME: nickname,
           LOWERCASENICKNAME: lowerCaseNickname,
           IP: normalizeIp(ip),
           HASH: password,

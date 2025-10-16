@@ -14,7 +14,7 @@ import { startPageEvents } from "@/shared/lib/events"
 import { pageContextAtom } from "@/shared/models/global.model"
 import { action, atom, AtomState } from "@reatom/core"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
-import { StoreItem } from "@repo/shared/types/entities/store"
+import { StoreItem as StoreItemType } from "@repo/shared/types/entities/store"
 import { Button } from "@repo/ui/button"
 import { Input } from "@repo/ui/input"
 import { Skeleton } from "@repo/ui/skeleton"
@@ -42,24 +42,26 @@ const titles: Record<AtomState<typeof searchParamTargetAtom>, string> = {
 const headerTitleAtom = atom((ctx) => titles[ctx.spy(searchParamTargetAtom)], "headerTitle")
 const backIsVisibleAtom = atom((ctx) => !!ctx.spy(searchParamTargetAtom), "backIsVisible")
 
-const StoreItem = reatomComponent<{ item: StoreItem }>(({ ctx, item }) => {
+const StoreItem = reatomComponent<StoreItemType>(({ ctx, imageUrl, summary, description, title, id, ...base }) => {
+  const item = { imageUrl, summary, description, title, id, ...base }
+
   return (
     <div className="flex items-center bg-neutral-900 gap-2 sm:gap-4 justify-between px-2 sm:px-4 py-2 w-full h-12 rounded-lg">
       <div className="flex items-center gap-2 overflow-hidden">
-        <img src={item.imageUrl} alt="" className="hidden sm:block object-cover min-h-10 min-w-10 h-10 w-10" />
+        <img src={imageUrl} alt="" className="hidden sm:block object-cover min-h-10 min-w-10 h-10 w-10" />
         <div className="flex flex-col min-w-0 w-full">
           <Typography className="text-nowrap truncate ">
-            {item.title}
+            {title}
           </Typography>
           <Typography className='text-neutral-400 text-sm text-nowrap truncate'>
-            {item.summary}
+            {summary}
           </Typography>
         </div>
       </div>
       <div className="flex items-center gap-2 h-full w-fit">
         <Button
           className="h-10 w-10 p-1 bg-neutral-50 text-neutral-950 font-semibold text-lg"
-          onClick={() => navigate(`/private/store?target=edit&id=${item.id}`)}
+          onClick={() => navigate(`/private/store?target=edit&id=${id}`)}
         >
           <IconPencil />
         </Button>
@@ -110,11 +112,7 @@ const StoreItems = reatomComponent(({ ctx }) => {
 
   if (!data) return null;
 
-  return (
-    data.map((item) => (
-      <StoreItem key={item.id} item={item} />
-    ))
-  )
+  return data.map((item) => <StoreItem key={item.id} {...item} />)
 }, "StoreItems")
 
 const Wrapper = reatomComponent<PropsWithChildren>(({ ctx, children }) => {

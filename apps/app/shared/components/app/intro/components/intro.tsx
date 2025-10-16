@@ -1,5 +1,5 @@
 import { getStaticImage } from "@/shared/lib/volume-helpers";
-import { onConnect } from "@reatom/framework";
+import { onConnect, sleep } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Skeleton } from "@repo/ui/skeleton";
@@ -7,6 +7,13 @@ import { Typography } from "@repo/ui/typography";
 import { serverStatusAction } from "../models/intro.model";
 
 onConnect(serverStatusAction.dataAtom, serverStatusAction)
+
+onConnect(serverStatusAction.dataAtom, async (ctx) => {
+  while (ctx.isConnected()) {
+    await serverStatusAction.retry(ctx).catch(() => { })
+    await ctx.schedule(() => sleep(60000))
+  }
+})
 
 const IntroStatus = reatomComponent(({ ctx }) => {
   const data = ctx.spy(serverStatusAction.dataAtom);

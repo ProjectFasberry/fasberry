@@ -34,8 +34,8 @@ async function deleteEvent(id: string) {
 }
 
 export const eventsDelete = new Elysia()
-  .delete("/:id", async ({ status, params }) => {
+  .delete("/:id", async ({ params }) => {
     const id = params.id;
     const data = await deleteEvent(id)
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   })

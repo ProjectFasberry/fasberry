@@ -1,4 +1,4 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import dayjs from 'dayjs';
 import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
@@ -23,6 +23,21 @@ async function defineOptions(
 
 export const me = new Elysia()
   .use(defineOptionalUser())
+  .model({
+    me: t.Object({
+      data: t.Object({
+        nickname: t.String(),
+        uuid: t.String(),
+        meta: t.Object({
+          login_date: t.Date(),
+          reg_date: t.Date(),
+        }),
+        options: t.Object({
+          permissions: t.Array(t.String())
+        })
+      })
+    })
+  })
   .get("/me", async ({ nickname, status }) => {
     if (!nickname) {
       return status(HttpStatusEnum.HTTP_404_NOT_FOUND, { data: null })
@@ -65,5 +80,10 @@ export const me = new Elysia()
       options
     }
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
+  }, {
+    response: {
+      200: "me",
+      404: t.Object({ data: t.Null() })
+    }
   })

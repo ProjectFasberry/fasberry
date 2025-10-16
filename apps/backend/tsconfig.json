@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
     "isolatedModules": true,
-    "lib": [
-      "es2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "target": "esnext",
+    "lib": ["esnext"],
     "moduleDetection": "force",
-    "target": "ES2022",
-    "module": "ES2022",
-    "moduleResolution": "node",
-    "types": [
-      "bun-types"
-    ],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["bun-types"],
+    "allowJs": true,
+    "verbatimModuleSyntax": false,
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
@@ -28,7 +24,9 @@
       "#/*": [
         "./src/*"
       ],
-      "@elysiajs/openapi/gen": ["../../node_modules/@elysiajs/openapi/gen/dist/gen"]
+      "@repo/shared/*": [
+        "../../packages/shared/*"
+      ]
     }
   },
   "include": [

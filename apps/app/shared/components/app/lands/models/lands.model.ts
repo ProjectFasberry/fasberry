@@ -1,3 +1,4 @@
+import { isEmptyArray } from "@/shared/lib/array";
 import { client, withAbort } from "@/shared/lib/client-wrapper";
 import { logError } from "@/shared/lib/log";
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
@@ -16,4 +17,7 @@ export const landsAction = reatomAsync(async (ctx) => {
   onReject: (ctx, e) => {
     logError(e, { type: "combined" })
   }
-}).pipe(withDataAtom(null), withCache({ swr: false }), withStatusesAtom())
+}).pipe(
+  withDataAtom(null, (ctx, data) => isEmptyArray(data.data) ? null : data.data), 
+  withCache({ swr: false }), withStatusesAtom()
+)
