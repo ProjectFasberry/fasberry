@@ -12,7 +12,7 @@ import { Separator } from "@repo/ui/separator";
 import { logout } from "../components/app/auth/models/auth.model";
 import { atom, spawn } from "@reatom/framework";
 import { Fragment } from "react/jsx-runtime";
-import { isAuthAtom } from "../models/global.model";
+import { isAuthAtom } from "../models/page-context.model";
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { Switch } from "@repo/ui/switch";
 import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "../components/app/player/models/player-seems-like.model";

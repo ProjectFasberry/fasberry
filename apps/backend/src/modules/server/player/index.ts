@@ -4,7 +4,6 @@ import { playerLocation } from "#/modules/server/location";
 import { playerStats } from "./player-stats.route";
 import { player } from "#/modules/user/player.route";
 import { playerSkills } from "./player-skils.route";
-import { playerSkin } from "../skin";
 import { playerActivity } from "../activity";
 import { playerAchievements } from "../achievements";
 import { seemsPlayers } from "#/modules/user/seems-players.route";
@@ -15,7 +14,6 @@ export const playerGroup = new Elysia()
     .use(player)
     .use(playerStats)
     .use(playerSkills)
-    .use(playerSkin)
     .use(playerActivity)
     .use(playerAchievements)
     .use(playerLocation)

@@ -1,4 +1,3 @@
-import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
 import { usePageContext } from 'vike-react/usePageContext';
 import { navigate } from 'vike/client/router';
 import { Link } from '@/shared/components/config/link';
@@ -7,6 +6,7 @@ import { reatomComponent } from '@reatom/npm-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@repo/ui/sheet';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/ui/accordion';
 import { getStaticObject } from '../lib/volume';
+import { MAIN_HEADER } from '../data/configs';
 
 const ExperienceCircle = () => {
   return (

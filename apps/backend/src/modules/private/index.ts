@@ -7,11 +7,13 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { storePrivate } from "./store";
 import { users } from "./users";
 import { roles } from "./roles";
+import { validateBannedStatus } from "#/lib/middlewares/validators";
 
 const validateRole = new Elysia()
   .get('/validate', async ({ status }) => status(HttpStatusEnum.HTTP_200_OK, { data: true }))
 
 export const privated = new Elysia()
+  .use(validateBannedStatus())
   .use(openApiPlugin)
   .group("/privated", hideOpenApiConfig, ctx => ctx
     .use(defineAdmin())

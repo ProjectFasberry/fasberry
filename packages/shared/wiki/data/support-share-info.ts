@@ -1,1 +1,0 @@
-export const HOT_MC_VOTE = "https://hotmc.ru/vote-259308"

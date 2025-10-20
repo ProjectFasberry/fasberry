@@ -1,7 +1,7 @@
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Typography } from "@repo/ui/typography";
 import { MINECRAFT_SITE_DOMAIN } from "@repo/shared/constants/origin-list";
-import { MAIL_FASBERRY_SUPPORT } from "@repo/shared/wiki/data/configs";
+import { MAIL_FASBERRY_SUPPORT } from "@/shared/data/configs";
 
 export default function InfoPrivacyPage() {
   return (

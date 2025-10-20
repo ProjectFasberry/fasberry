@@ -21,7 +21,7 @@ coverage
 # Vercel
 .vercel
 
-data/
+/data/
 
 # Build Outputs
 out/

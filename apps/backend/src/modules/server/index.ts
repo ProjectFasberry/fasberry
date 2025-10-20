@@ -6,8 +6,10 @@ import { events } from "#/modules/server/events";
 import { lands } from "#/modules/server/lands";
 import { playerGroup } from "./player";
 import { tasks } from "./tasks";
+import { validateBannedStatus } from "#/lib/middlewares/validators";
+import { skin } from "./skin";
 
-const globalGroup = new Elysia()
+const publicServerGroup = new Elysia()
   .group("", app => app
     .use(ratingList)
     .use(lands)
@@ -15,10 +17,17 @@ const globalGroup = new Elysia()
     .use(events)
     .use(minecraftItems)
     .use(tasks)
+    .use(skin)
   )
 
-export const server = new Elysia()
-  .group("/server", app => app
-    .use(globalGroup)
+const privatedServerGroup = new Elysia()
+  .use(validateBannedStatus())
+  .group("", app => app
     .use(playerGroup)
+  )
+
+export const serverGroup = new Elysia()
+  .group("/server", app => app
+    .use(publicServerGroup)
+    .use(privatedServerGroup)
   )

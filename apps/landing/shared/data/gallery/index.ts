@@ -1,4 +1,4 @@
-import { GALLERY_FOLDER_ITEM } from "@repo/shared/wiki/data/folders";
+import { GALLERY_FOLDER_ITEM } from "../folders";
 
 export const GALLERY_LIST = [
 	{

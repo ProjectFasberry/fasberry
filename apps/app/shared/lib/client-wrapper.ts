@@ -24,7 +24,7 @@ function isErrorRes(v: unknown): v is { error: string } {
   );
 }
 
-async function parseWrappedJson<T>(res: Response): Promise<T> {
+export async function parseWrappedJson<T>(res: Response): Promise<T> {
   const json = (await res.json()) as unknown;
 
   if (isErrorRes(json)) {

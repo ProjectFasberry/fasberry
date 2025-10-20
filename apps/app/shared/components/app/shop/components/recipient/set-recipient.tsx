@@ -5,6 +5,7 @@ import {
   setRecipientIsSaveAtom,
   setRecipientTempValueAtom
 } from "@/shared/components/app/shop/models/store-recipient.model";
+import { spawn } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
@@ -18,9 +19,6 @@ const SetRecipientField = reatomComponent(({ ctx }) => {
 
   return (
     <div className="flex flex-col w-full">
-      <Typography>
-        Текущий получатель
-      </Typography>
       <div className="flex flex-col gap-1 w-full">
         <Input
           value={value}
@@ -36,26 +34,33 @@ const SetRecipientField = reatomComponent(({ ctx }) => {
   )
 }, "SetRecipientField")
 
-const SetRecipientSave = reatomComponent(({ ctx }) => {
+const SetRecipientPreference = reatomComponent(({ ctx }) => {
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <Typography className='font-semibold'>
-          Больше не спрашивать
-        </Typography>
-        <Switch
-          checked={ctx.spy(setRecipientIsSaveAtom)}
-          onCheckedChange={v => setRecipientIsSaveAtom(ctx, v)}
-        />
-      </div>
-      <Button
-        className="text-lg font-semibold text-neutral-50 bg-green-600"
-        onClick={() => saveRecipientAction(ctx)}
-        disabled={ctx.spy(saveRecipientAction.statusesAtom).isPending}
-      >
+    <div className="flex items-center gap-3 w-full justify-end">
+      <Switch
+        checked={ctx.spy(setRecipientIsSaveAtom)}
+        onCheckedChange={v => setRecipientIsSaveAtom(ctx, v)}
+      />
+      <Typography className='text-lg font-semibold'>
+        Больше не спрашивать
+      </Typography>
+    </div>
+  )
+}, "SetRecipientPreference")
+
+const SetRecipientSave = reatomComponent(({ ctx }) => {
+  const handle = () => void spawn(ctx, async (spawnCtx) => saveRecipientAction(spawnCtx))
+
+  return (
+    <Button
+      className="bg-neutral-50"
+      onClick={handle}
+      disabled={ctx.spy(saveRecipientAction.statusesAtom).isPending}
+    >
+      <Typography className="text-lg font-semibold text-neutral-950">
         Сохранить
-      </Button>
-    </>
+      </Typography>
+    </Button>
   )
 }, "SetRecipientSave")
 
@@ -63,21 +68,22 @@ export const SetRecipientDialog = reatomComponent(({ ctx }) => {
   return (
     <Dialog open={ctx.spy(setRecipientDialogIsOpenAtom)} onOpenChange={v => setRecipientDialogIsOpenAtom(ctx, v)}>
       <DialogContent>
-        <DialogTitle className="hidden">Получатель</DialogTitle>
+        <DialogTitle className="text-center text-2xl">Получатель</DialogTitle>
         <div className="flex flex-col gap-4 w-full h-full">
           <div className="flex flex-col gap-2">
-            <Typography className="text-xl font-semibold leading-tight text-neutral-50">
-              Перед тем как добавить товар, нужно указать получателя.
-            </Typography>
-            <Typography className="text-neutral-300 text-base leading-tight">
-              Получателем может быть только реально зарегистрированный игрок.
-            </Typography>
-            <Typography className="text-neutral-300 text-base leading-tight">
+            <Typography className="text-lg font-semibold leading-tight text-neutral-50">
+              Перед тем как добавить этот товар в корзину, нужно указать его получателя.
               Вы всегда можете изменить получателя товара в корзине.
             </Typography>
+            <div className="flex border border-neutral-700 rounded-lg p-2">
+              <Typography className="text-neutral-300 text-base leading-tight">
+                Получателем может быть только реально зарегистрированный игрок.
+              </Typography>
+            </div>
           </div>
           <div className="flex flex-col gap-4 w-full">
             <SetRecipientField />
+            <SetRecipientPreference />
             <SetRecipientSave />
           </div>
         </div>

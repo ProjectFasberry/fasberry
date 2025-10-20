@@ -9,11 +9,13 @@ const FOOTER_LINKS = [
   { name: 'Благодарности', href: '/credits' },
 ];
 
+const bedrockImage = getStaticObject("static", "bedrock.webp")
+
 export const Footer = () => {
   return (
     <footer
       className={`sticky flex-col flex justify-center items-center gap-6 pt-10 pb-6 
-        bg-[url('${getStaticObject("static", "bedrock.webp")}')]`}
+        bg-[url('${bedrockImage}')]`}
       style={{ backgroundSize: '160px' }}
     >
       <div className="flex flex-col lg:flex-row justify-center items-center responsive mx-auto">

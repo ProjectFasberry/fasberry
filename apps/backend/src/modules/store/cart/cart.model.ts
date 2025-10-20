@@ -110,14 +110,14 @@ export async function removeItemFromCart(id: number, initiator: string) {
 
 const editItemValues = [z.string(), z.boolean()];
 
-export const editItemToBasket = z.object({
+export const editItemToBasketSchema = z.object({
   id: z.coerce.number(),
   key: z.enum(["recipient", "selected"]),
   value: z.union(editItemValues)
 })
 
 export async function editItemInCart(
-  { key, value, id }: z.infer<typeof editItemToBasket>,
+  { key, value, id }: z.infer<typeof editItemToBasketSchema>,
   initiator: string
 ) {
   const query = await general

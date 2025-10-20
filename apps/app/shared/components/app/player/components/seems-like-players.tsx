@@ -5,7 +5,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { createLink, Link } from "@/shared/components/config/link";
 import { Typography } from "@repo/ui/typography";
 import { atom, onConnect } from "@reatom/framework";
-import { isClientAtom } from "@/shared/models/global.model";
+import { isClientAtom } from "@/shared/models/page-context.model";
 import { playerSeemsLikeAction, playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "../models/player-seems-like.model";
 import { IconX } from "@tabler/icons-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip"

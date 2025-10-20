@@ -23,12 +23,15 @@ const ChangeRecipientError = reatomComponent(({ ctx }) => {
   )
 }, "ChangeRecipientError")
 
-const ChangeRecipientField = reatomComponent<{ recipient: string | null }>(({ ctx, recipient }) => {
+const ChangeRecipientField = reatomComponent(({ ctx }) => {
+  const oldRecipient = ctx.get(changeRecipientOldRecipientAtom) ?? ""
+  const newRecipient = ctx.spy(changeRecipientNewRecipientAtom)
+
   return (
     <Input
       placeholder="Введите никнейм"
       maxLength={32}
-      value={ctx.spy(changeRecipientNewRecipientAtom) ?? recipient ?? ""}
+      value={newRecipient ?? oldRecipient}
       onChange={e => changeRecipientNewRecipientAtom(ctx, e.target.value)}
       className="[&[aria-invalid=true]]:border-red-500 peer border-transparent border-2"
       onClick={() => {
@@ -57,7 +60,6 @@ export const ChangeRecipientDialog = reatomComponent(({
   ctx
 }) => {
   const id = ctx.get(changeRecipientIdAtom)!
-  const recipient = ctx.get(changeRecipientOldRecipientAtom)!
   const title = ctx.get(changeRecipientTitleAtom)!
 
   return (
@@ -66,7 +68,7 @@ export const ChangeRecipientDialog = reatomComponent(({
       onOpenChange={v => changeRecipientDialogIsOpenAtom(ctx, v)}
     >
       <DialogContent>
-        <DialogTitle className="hidden">Получатель товара</DialogTitle>
+        <DialogTitle className="text-center text-2xl">Получатель</DialogTitle>
         <div className="flex flex-col gap-4 w-full h-full">
           <div className="flex flex-col w-full">
             <Typography className="text-xl font-semibold leading-tight">
@@ -82,7 +84,7 @@ export const ChangeRecipientDialog = reatomComponent(({
               <Typography>
                 Текущий получатель
               </Typography>
-              <ChangeRecipientField recipient={recipient} />
+              <ChangeRecipientField />
             </div>
           </div>
           <div className="flex gap-1 flex-col sm:flex-row w-full items-center justify-between">

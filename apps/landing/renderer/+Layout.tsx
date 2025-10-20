@@ -2,14 +2,14 @@ import '@bprogress/core/css';
 import "@/shared/styles/tailwind.css";
 import "@/shared/styles/minecraft.css"
 
-import { Header } from "./header";
-import { ReatomProvider } from "./reatom-provider";
-import { Footer } from "./footer";
 import { Toaster } from "@/shared/components/config/toaster";
 import { PropsWithChildren } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { useUpdate } from "@reatom/npm-react";
-import { pageContextAtom } from "../api/global.model";
+import { ReatomProvider } from '@/shared/layouts/reatom-provider';
+import { pageContextAtom } from '@/shared/api/global.model';
+import { Header } from '@/shared/layouts/header';
+import { Footer } from '@/shared/layouts/footer';
 
 const SyncPageContext = () => {
   const pageContext = usePageContext()

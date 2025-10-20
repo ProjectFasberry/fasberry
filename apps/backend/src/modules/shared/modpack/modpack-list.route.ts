@@ -28,7 +28,7 @@ const modpackPayload = t.Object({
   shaders: t.Array(t.String()),
   imageUrl: t.String(),
   client: t.String(),
-  created_at: t.Date(),
+  created_at: t.Union([t.Date(), t.String()]),
   id: t.Number(),
   name: t.String(),
   version: t.String(),
@@ -36,15 +36,17 @@ const modpackPayload = t.Object({
 
 export const modpackList = new Elysia()
   .model({
-    "modpack-list": withData(modpackPayload)
+    "modpack-list": withData(
+      t.Array(modpackPayload)
+    )
   })
   .get('/list', async ({ status, set }) => {
-    const modpacks = await getModpacks()
+    const data = await getModpacks()
 
     set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
     set.headers["vary"] = "Origin";
     
-    return status(HttpStatusEnum.HTTP_200_OK, { data: modpacks })
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     response: {
       200: "modpack-list"

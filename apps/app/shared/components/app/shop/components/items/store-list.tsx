@@ -6,9 +6,9 @@ import { createLink } from "@/shared/components/config/link"
 import { Button } from "@repo/ui/button"
 import { tv } from "tailwind-variants"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
-import { isClientAtom } from "@/shared/models/global.model"
+import { isClientAtom } from "@/shared/models/page-context.model"
 import { getItemStatus, handleItemToCart } from "../../models/store-item.model"
-import { CURRENCIES } from "../cart/store-price"
+import { CURRENCIES } from "../cart/cart-price"
 import type { StoreItem } from "@repo/shared/types/entities/store"
 
 const buyButtonVariants = tv({

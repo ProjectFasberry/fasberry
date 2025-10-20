@@ -1,4 +1,4 @@
-import { GAMEPLAY_FOLDER_ITEM } from "@repo/shared/wiki/data/folders";
+import { GAMEPLAY_FOLDER_ITEM } from "../folders";
 
 export type GameplayItemType = {
 	name: string,

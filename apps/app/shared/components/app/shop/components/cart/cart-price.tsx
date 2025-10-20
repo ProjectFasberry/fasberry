@@ -16,7 +16,7 @@ export const CURRENCIES: Record<string, { img: string, symbol: string }> = {
   "BELKOIN": { img: belkoinImage, symbol: "B" },
 }
 
-export const StorePrice = reatomComponent(({ ctx }) => {
+export const CartPrice = reatomComponent(({ ctx }) => {
   const prices = ctx.spy(cartPriceAtom)
 
   return (
@@ -32,4 +32,4 @@ export const StorePrice = reatomComponent(({ ctx }) => {
       })}
     </div>
   )
-}, "StorePrice")
+}, "CartPrice")

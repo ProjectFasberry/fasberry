@@ -89,11 +89,7 @@ export const NewsListSkeleton = () => {
 }
 
 export const NewsNotFound = () => {
-  return (
-    <Typography color="gray" className="text-xl">
-      Не нашлось новостей :/
-    </Typography>
-  )
+  return <Typography color="gray" className="text-xl">Новостей еще нет</Typography>
 }
 
 export const NewsPageList = reatomComponent(({ ctx }) => {

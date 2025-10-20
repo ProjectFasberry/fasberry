@@ -1,4 +1,3 @@
-import { WIKI_HEADERS } from "@repo/shared/wiki/data/configs"
 import { navigate } from "vike/client/router";
 import { Link } from "@/shared/components/config/link";
 import { Typography } from "@repo/ui/typography";
@@ -6,6 +5,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { wikiParamAtom } from "../content/wiki-content";
 import { TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@repo/ui/accordion";
+import { WIKI_HEADERS } from "@/shared/data/configs";
 
 export const WikiNavigationBar = reatomComponent(({ ctx }) => {
   return (

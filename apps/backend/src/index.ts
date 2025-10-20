@@ -4,7 +4,6 @@ import "../imports"
 
 import { Elysia, ElysiaConfig } from "elysia";
 import { serverTiming as serverTimingPlugin } from '@elysiajs/server-timing'
-import { cors } from '@elysiajs/cors'
 import { me } from "#/modules/user/me.route";
 import { rateLimitPlugin } from "./lib/plugins/rate-limit";
 import { initMinio, initMinioBuckets, printBuckets } from "./shared/minio/init";
@@ -20,7 +19,7 @@ import { updateSession } from "./utils/auth/session";
 import { INTERNAl_FILES, loadInternalFiles } from "./utils/minio/load-internal-files";
 import { store } from "./modules/store";
 import { auth } from "./modules/auth";
-import { server } from "./modules/server";
+import { serverGroup } from "./modules/server";
 import { shared } from "./modules/shared";
 import { root } from "./modules/root";
 import { startNats } from "./shared/nats/init";
@@ -31,6 +30,7 @@ import { defineSession } from "./lib/middlewares/define";
 import { logger } from "./utils/config/logger";
 import { checkDatabasesHealth } from "./shared/database/init";
 import { corsPlugin } from "./lib/plugins/cors";
+import { prometheusPlugin } from "./lib/plugins/prometheus";
 
 const appConfig: ElysiaConfig<string> = {
   prefix: "/minecraft",
@@ -42,6 +42,7 @@ const appConfig: ElysiaConfig<string> = {
 }
 
 const app = new Elysia(appConfig)
+	.use(prometheusPlugin())
   .use(openApiPlugin())
   .use(rateLimitPlugin())
   .use(serverTimingPlugin())
@@ -54,16 +55,16 @@ const app = new Elysia(appConfig)
     if (!session) return;
     updateSession(session, cookie)
   })
+  .use(shared)
   .use(auth)
   .use(me)
-  .use(shared)
-  .use(server)
+  .use(serverGroup)
   .use(store)
   .use(privated)
   .use(rate)
   .onError(({ code, error }) => {
     logger.error(error, code);
-    
+
     const message =
       (error instanceof Error && error.message) ||
       (typeof (error as any)?.response !== "undefined"

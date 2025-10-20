@@ -4,7 +4,7 @@ import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { Player } from "@repo/shared/types/entities/user"
 import { withSsr } from "@/shared/lib/ssr"
-import { pageContextAtom } from "@/shared/models/global.model"
+import { pageContextAtom } from "@/shared/models/page-context.model"
 import { client } from "@/shared/lib/client-wrapper"
 
 export const playerAtom = atom<Player | null>(null, "player").pipe(withSsr("player"))

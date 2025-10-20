@@ -1,7 +1,7 @@
 import { PageContext, PageContextServer } from "vike/types";
 import { Locale, localeDefault } from ".";
 import { translations } from "./translations";
-import { localeAtom } from "../models/global.model";
+import { localeAtom } from "../models/page-context.model";
 import { CtxSpy } from "@reatom/core";
 
 export function getUrlWithLocale(pageContext: PageContext, pathname: string) {

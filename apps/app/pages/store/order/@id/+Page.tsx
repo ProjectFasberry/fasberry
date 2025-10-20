@@ -11,7 +11,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { Payment } from "@/shared/components/app/shop/models/store.model";
 import { onDisconnect, sleep } from "@reatom/framework";
-import { pageContextAtom } from "@/shared/models/global.model";
+import { pageContextAtom } from "@/shared/models/page-context.model";
 import { startPageEvents } from "@/shared/lib/events";
 import { AutoWidthInput } from "@/shared/ui/autowidth-input";
 

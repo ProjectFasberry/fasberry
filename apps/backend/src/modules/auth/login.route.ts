@@ -22,6 +22,13 @@ function generateSessionToken(): string {
 export const login = new Elysia()
   .use(ipPlugin())
   .use(validateAuthStatus())
+  .model({
+    "login": withData(
+      t.Object({
+        nickname: t.String()
+      })
+    )
+  })
   .post("/login", async ({ cookie, status, body, ...ctx }) => {
     const { nickname, password, token: cfToken } = body;
 
@@ -61,11 +68,7 @@ export const login = new Elysia()
   }, {
     body: loginSchema,
     response: {
-      200: withData(
-        t.Object({
-          nickname: t.String()
-        })
-      ),
+      200: "login",
       400: withError,
       404: withError
     }

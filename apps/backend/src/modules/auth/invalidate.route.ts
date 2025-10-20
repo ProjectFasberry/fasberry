@@ -3,11 +3,16 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { deleteSession } from "./auth.model";
 import { CROSS_SESSION_KEY, SESSION_KEY, unsetCookie } from "#/utils/auth/cookie";
 import { defineUser } from "#/lib/middlewares/define";
-import { withData } from "#/shared/schemas";
+import { withData, withError } from "#/shared/schemas";
 import { wrapError } from "#/helpers/wrap-error";
 
 export const invalidate = new Elysia()
   .use(defineUser())
+  .model({
+    "invalidate": withData(
+      t.Boolean()
+    )
+  })
   .derive(async ({ session, status }) => {
     if (!session) {
       throw status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
@@ -28,9 +33,7 @@ export const invalidate = new Elysia()
     return { data: true }
   }, {
     response: {
-      200: withData(
-        t.Boolean()
-      ),
-      500: t.Object({ error: t.String() })
+      200: "invalidate",
+      500: withError
     }
   })

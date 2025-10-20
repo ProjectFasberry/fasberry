@@ -38,6 +38,7 @@
     "elysia": "1.4.7",
     "elysia-http-status-code": "1.0.9",
     "elysia-ip": "1.0.10",
+    "elysia-prometheus": "1.0.0",
     "elysia-rate-limit": "4.4.0",
     "gramio": "0.4.9",
     "heleket-api-sdk": "3.0.0",

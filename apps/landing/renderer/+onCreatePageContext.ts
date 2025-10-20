@@ -1,9 +1,7 @@
-import type { PageContextServer } from 'vike/types';
+import type { PageContext } from 'vike/types';
 import { createCtx } from '@reatom/core';
 import { snapshotAtom } from '@/shared/api/ssr';
-import { logger } from '@repo/shared/lib/logger';
 import { loggedUserAtom } from '@/shared/api/global.model';
-import { isDevelopment } from '@/shared/env';
 
 const LOGGED_USER_KEY = "logged_nickname"
 
@@ -26,7 +24,7 @@ function getCookie(
 	return undefined;
 }
 
-export const onBeforeRender = async (pageContext: PageContextServer) => {
+export const onCreatePageContext = async (pageContext: PageContext) => {
   const ctx = createCtx()
   const headers = pageContext.headers;
 
@@ -47,10 +45,6 @@ export const onBeforeRender = async (pageContext: PageContextServer) => {
   loggedUserAtom(ctx, loggedUser)
 
   const snapshot = ctx.get(snapshotAtom)
-
-  if (isDevelopment) {
-    logger.info(`\n${JSON.stringify(snapshot, null, 2)}\n`)
-  }
 
   return {
     pageContext: {

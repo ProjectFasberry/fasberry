@@ -1,5 +1,5 @@
 import { MainWrapperPage } from "@/shared/components/config/wrapper";
-import { pageContextAtom } from "@/shared/models/global.model"
+import { pageContextAtom } from "@/shared/models/page-context.model"
 import { PlayerLands } from "@/shared/components/app/player/components/lands"
 import { Logout } from "@/shared/components/app/player/components/logout"
 import { PlayerSkin } from "@/shared/components/app/player/components/skin"

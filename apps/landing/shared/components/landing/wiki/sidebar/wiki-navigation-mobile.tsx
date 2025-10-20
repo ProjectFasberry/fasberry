@@ -3,12 +3,12 @@ import { TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@repo/ui/accordion";
 import { IconCategory } from "@tabler/icons-react";
 import { Typography } from "@repo/ui/typography";
-import { WIKI_HEADERS } from "@repo/shared/wiki/data/configs";
 import { Link } from "@/shared/components/config/link";
 import { navigate } from "vike/client/router";
 import { wikiParamAtom } from "../content/wiki-content";
 import { reatomComponent } from "@reatom/npm-react";
 import { useState } from "react";
+import { WIKI_HEADERS } from "@/shared/data/configs";
 
 export const WikiNavigationMobile = reatomComponent(({ ctx }) => {
   const [open, setOpen] = useState(false)

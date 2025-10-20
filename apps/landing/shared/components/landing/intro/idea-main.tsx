@@ -4,6 +4,7 @@ import { action, atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { tv } from "tailwind-variants";
+import { Fragment } from "react/jsx-runtime";
 
 const IDEAS = [
 	{
@@ -190,16 +191,15 @@ const IdeaMainNavigationTarget = reatomComponent(({ ctx }) => {
 	return (
 		<div className="hidden md:flex items-center justify-center w-fit">
 			{IDEAS.map((preview, idx) => (
-				<>
+				<Fragment key={preview.title}>
 					<div
-						key={preview.title}
 						onClick={() => selectedKeyAtom(ctx, idx)}
 						className={navigationBadge({ variant: selected === idx ? "selected" : "unselected" })}
 					>
 						<Typography className="truncate">{preview.title}</Typography>
 					</div>
 					{(idx + 1) < IDEAS.length && <hr className="w-4 h-[1px] border-2 border-neutral-600" />}
-				</>
+				</Fragment>
 			))}
 		</div>
 	)

@@ -16,6 +16,7 @@ import { Input } from "@repo/ui/input"
 import { tv } from "tailwind-variants";
 import { Typography } from "@repo/ui/typography";
 import { toast } from "sonner";
+import { LANDING_ENDPOINT } from "@/shared/env";
 
 const authInput = tv({
   base: `p-2 text-lg bg-transparent border rounded-md data-[state=error]:border-red-500 data-[state=default]:border-neutral-600`
@@ -139,7 +140,7 @@ const PrivacyTerms = reatomComponent(({ ctx }) => {
           <a href="/legal/terms" target="_blank" className="inline text-green-500">&nbsp;пользовательского соглашения</a>,
           <a href="/legal/privacy" target="_blank" className=" inline text-green-500">&nbsp;политикой конфиденциальности&nbsp;</a>
           и
-          <a href="https://mc.fasberry.su/rules" target="_blank" className="inline text-green-500">&nbsp;правилами проекта</a>.
+          <a href={`${LANDING_ENDPOINT}/rules`} target="_blank" className="inline text-green-500">&nbsp;правилами проекта</a>.
         </Typography>
       </label>
     </div>

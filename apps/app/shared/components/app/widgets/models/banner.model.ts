@@ -1,6 +1,6 @@
 import { client } from "@/shared/lib/client-wrapper";
 import { logError } from "@/shared/lib/log";
-import { appOptionsAtom } from "@/shared/models/global.model";
+import { appOptionsAtom } from "@/shared/models/app-options.model";
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { atom } from "@reatom/core";
 import { BannerPayload } from "@repo/shared/types/entities/banner";

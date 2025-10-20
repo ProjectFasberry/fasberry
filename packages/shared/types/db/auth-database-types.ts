@@ -56,6 +56,14 @@ export interface AUTH {
   UUID: string | null;
 }
 
+export interface BannedUsers {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  initiator: string;
+  nickname: string;
+  reason: string | null;
+}
+
 export interface Banners {
   created_at: Generated<Timestamp>;
   description: string | null;
@@ -78,6 +86,12 @@ export interface Currencies {
   isPublic: Generated<boolean>;
   title: string;
   value: string;
+}
+
+export interface DrizzleDrizzleMigrations {
+  created_at: Int8 | null;
+  hash: string;
+  id: Generated<number>;
 }
 
 export interface Events {
@@ -185,6 +199,7 @@ export interface Players {
   id: Generated<number>;
   lower_case_nickname: string;
   nickname: string;
+  nickname_tsv: string | null;
   premium_uuid: string | null;
   role_id: Generated<number>;
   uuid: string;
@@ -305,9 +320,11 @@ export interface DB {
   activity_heatmap: ActivityHeatmap;
   activity_users: ActivityUsers;
   AUTH: AUTH;
+  banned_users: BannedUsers;
   banners: Banners;
   banners_views: BannersViews;
   currencies: Currencies;
+  "drizzle.__drizzle_migrations": DrizzleDrizzleMigrations;
   events: Events;
   events_original: EventsOriginal;
   facts: Facts;

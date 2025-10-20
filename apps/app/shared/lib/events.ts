@@ -1,5 +1,5 @@
 import { Action, Ctx } from "@reatom/core";
-import { pageContextAtom } from "../models/global.model";
+import { pageContextAtom } from "../models/page-context.model";
 import { isDevelopment } from "../env";
 
 export function startPageEvents(

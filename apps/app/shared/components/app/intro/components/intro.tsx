@@ -5,6 +5,7 @@ import { Button } from "@repo/ui/button";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
 import { serverStatusAction } from "../models/intro.model";
+import { LANDING_ENDPOINT } from "@/shared/env";
 
 onConnect(serverStatusAction.dataAtom, serverStatusAction)
 
@@ -32,7 +33,7 @@ const IntroStatus = reatomComponent(({ ctx }) => {
 const IntroActions = () => {
   return (
     <div className="flex bottom-0 gap-4 absolute w-full items-center p-3 md:p-4 lg:p-6">
-      <a href="https://mc.fasberry.su/start" target="_blank">
+      <a href={`${LANDING_ENDPOINT}/start`} target="_blank">
         <Button className="bg-neutral-50">
           <Typography className="text-nowrap text-base lg:text-lg text-neutral-950 font-semibold">
             Начать играть

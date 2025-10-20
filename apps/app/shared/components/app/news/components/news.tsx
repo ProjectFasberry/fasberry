@@ -5,7 +5,7 @@ import { newsAction, newsDataAtom } from "../models/news.model"
 import { createLink, Link } from "@/shared/components/config/link"
 import { AtomState, onConnect } from "@reatom/framework"
 import { NotFound } from "@/shared/ui/not-found"
-import { isClientAtom } from "@/shared/models/global.model"
+import { isClientAtom } from "@/shared/models/page-context.model"
 import { tv } from "tailwind-variants"
 
 const NewsSkeleton = () => {

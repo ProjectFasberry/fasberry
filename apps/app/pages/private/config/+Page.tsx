@@ -11,7 +11,7 @@ import { Typography } from "@repo/ui/typography";
 import { Switch } from "@repo/ui/switch";
 import { toast } from "sonner";
 import { Skeleton } from "@repo/ui/skeleton";
-import { pageContextAtom } from "@/shared/models/global.model";
+import { pageContextAtom } from "@/shared/models/page-context.model";
 import { DEFAULT_SOFT_TIMEOUT } from "@/shared/components/app/shop/models/store.model";
 import { sleep } from "@reatom/framework";
 

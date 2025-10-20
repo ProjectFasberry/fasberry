@@ -3,7 +3,7 @@ import "@/shared/styles/tailwind.css";
 
 import { ReatomProvider } from '@/shared/layout/reatom-provider';
 import { usePageContext } from 'vike-react/usePageContext';
-import { initClientGlobalModels } from '@/shared/models/global.model';
+import { initClientGlobalModels } from '@/shared/models/page-context.model';
 import { useUpdate } from '@reatom/npm-react';
 import { PropsWithChildren } from 'react';
 import { Footer } from '@/shared/layout/footer';

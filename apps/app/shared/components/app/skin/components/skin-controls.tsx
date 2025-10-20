@@ -5,7 +5,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { tv, VariantProps } from "tailwind-variants";
 import { SkinHowToChange } from "./skin-change";
 import { isIdentityAtom } from "../../player/models/player.model";
-import { isAuthAtom } from "@/shared/models/global.model";
+import { isAuthAtom } from "@/shared/models/page-context.model";
 import { IconRotate } from "@tabler/icons-react";
 
 const skinControlVariants = tv({

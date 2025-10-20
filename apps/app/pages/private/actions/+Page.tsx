@@ -10,7 +10,7 @@ import {
 } from "@/shared/components/app/private/components/actions"
 import { bannersAction } from "@/shared/components/app/private/models/actions.model"
 import { startPageEvents } from "@/shared/lib/events"
-import { pageContextAtom } from "@/shared/models/global.model"
+import { pageContextAtom } from "@/shared/models/page-context.model"
 import { action } from "@reatom/core"
 import { useUpdate } from "@reatom/npm-react"
 import { Typography } from "@repo/ui/typography"

@@ -2,9 +2,7 @@ import { navigate } from "vike/client/router";
 import { MDXProvider } from '@mdx-js/react'
 import { atom } from "@reatom/core";
 import { TabsContent, TabsContents } from "@repo/ui/tabs";
-import { clientOnly } from "vike-react/clientOnly";
 import { WikiTableComponent } from "../table/wiki-table";
-import { ARMORS } from "@repo/shared/wiki/data/wiki/wiki-list";
 import { armorColumnsArmor, armorColumnsDurability, armorColumnsEffects, armorColumnsPopulators, armorColumnsToughness } from "../table-models";
 import { Typography } from "@repo/ui/typography";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/tooltip";
@@ -27,6 +25,7 @@ import Pets from "./pets.mdx"
 import Lands from "./lands.mdx"
 import Profile from "./profile.mdx"
 import Skin from "./skin.mdx"
+import { ARMORS } from "@/shared/data/wiki";
 
 export const wikiParamAtom = atom("general", "param")
 

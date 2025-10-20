@@ -1,9 +1,197 @@
-import { reatomResource, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
-import { ModpackItem, ModpackItemDialog } from '../modpacks/modpack-item';
+import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from '@reatom/async';
 import { Typography } from '@repo/ui/typography';
 import { Skeleton } from '@repo/ui/skeleton';
-import { reatomComponent } from '@reatom/npm-react';
+import { reatomComponent, useUpdate } from '@reatom/npm-react';
 import { BASE } from '@/shared/api/client';
+import { toast } from 'sonner';
+import { sleep } from '@reatom/framework';
+import { dayjs } from '@/shared/lib/create-dayjs';
+import { Dialog, DialogContent } from '@repo/ui/dialog';
+import { action, atom } from '@reatom/core';
+import { withReset } from '@reatom/framework';
+import { Button } from '@repo/ui/button';
+
+const selectedModpackItemAtom = atom<Modpack | null>(null, "selectedModpackItem").pipe(withReset())
+const selectedModpackDialogIsOpenAtom = atom(false, "selectedModpackDialogIsOpen")
+
+const openModpackMore = action((ctx, id: string) => {
+  const modpacks = ctx.get(modpacksAction.dataAtom);
+  if (!modpacks) throw new Error("Modpacks is not defined")
+
+  const modpack = modpacks.find(target => target.id === id)
+  if (!modpack) throw new Error("Modpack is not defined");
+
+  selectedModpackItemAtom(ctx, modpack);
+  selectedModpackDialogIsOpenAtom(ctx, true);
+})
+
+selectedModpackDialogIsOpenAtom.onChange((ctx, state) => {
+  if (!state) {
+    selectedModpackItemAtom.reset(ctx)
+  }
+})
+
+const SelectedModpack = reatomComponent(({ ctx }) => {
+  const modpack = ctx.spy(selectedModpackItemAtom)
+  if (!modpack) return null;
+
+  const { mods, shaders } = modpack
+
+  const created_at = dayjs(modpack.created_at).format('YYYY-MM-DD HH:mm:ss')
+
+  return (
+    <div className="flex flex-col gap-y-4">
+      <div className="flex flex-col gap-2">
+        <Typography className="text-xl">Моды</Typography>
+        {mods ? (
+          <div className="flex items-center gap-2 flex-wrap">
+            {mods.map((mod, idx) =>
+              <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
+                <Typography className="text-lg text-white">{mod}</Typography>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Typography color="gray" className="text-lg">пусто</Typography>
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        <Typography className='text-xl'>
+          Шейдеры
+        </Typography>
+        {shaders ? (
+          <div className="flex items-center gap-2 flex-wrap">
+            {shaders.map((shader, idx) =>
+              <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
+                <Typography color="white" className="text-lg">
+                  {shader}
+                </Typography>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Typography color="gray" className="text-lg">пусто</Typography>
+        )}
+      </div>
+      <div className="self-end">
+        <Typography color="gray" className='text-md'>
+          Создан {created_at}
+        </Typography>
+      </div>
+    </div>
+  )
+}, "SelectedModpack")
+
+const ModpackItemDialog = reatomComponent(({ ctx }) => {
+  return (
+    <Dialog
+      open={ctx.spy(selectedModpackDialogIsOpenAtom)}
+      onOpenChange={v => selectedModpackDialogIsOpenAtom(ctx, v)}
+    >
+      <DialogContent>
+        <SelectedModpack />
+      </DialogContent>
+    </Dialog>
+  )
+}, "ModpackItemDialog")
+
+const ModpackItem = reatomComponent<Modpack>(({
+  ctx, version, client, name, mods, shaders, downloadLink, id, imageUrl
+}) => {
+  return (
+    <div className="flex flex-col rounded-xl gap-4 justify-between h-full bg-neutral-950 p-4 relative">
+      <div className="flex flex-col gap-2 justify-between grow">
+        <Typography className="text-xl lg:text-2xl text-project-color">
+          {name}
+        </Typography>
+        <div className="flex items-center gap-2">
+          <Typography color="white" className='text-lg'>
+            Клиент: {client}
+          </Typography>
+          <Typography color="gray" className="text-lg">
+            ({version})
+          </Typography>
+        </div>
+        <div className="flex flex-col md:flex-row items-center justify-center w-full gap-2">
+          <a href={downloadLink} target="_blank" rel="noreferrer" className='w-full md:w-1/2'>
+            <Button variant="minecraft" className="py-0.5 w-full">
+              <Typography color="white" className="text-xl">
+                Скачать
+              </Typography>
+            </Button>
+          </a>
+          <Button
+            variant="minecraft"
+            onClick={() => openModpackMore(ctx, id)}
+            className="w-full py-0.5 md:w-1/2"
+          >
+            <Typography color="white" className="text-xl">
+              Подробнее
+            </Typography>
+          </Button>
+        </div>
+      </div>
+      <div
+        className="h-[200px] group bg-cover relative overflow-hidden rounded-xl cursor-pointer"
+        style={{ backgroundImage: `url("${imageUrl}")` }}
+      >
+        <div
+          className="flex flex-col gap-4 px-4 py-12 translate-y-64 focus:translate-y-0 group-hover:translate-y-0
+            absolute bottom-0 right-0 left-0 bg-black/70 backdrop-blur-2xl"
+        >
+          <div className="flex flex-col gap-y-1">
+            <Typography className='text-lg'>Моды</Typography>
+            {mods ? (
+              <div className="flex items-center gap-1 flex-wrap">
+                {mods.slice(0, 3).map((name, idx) =>
+                  <div key={idx} className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                    <Typography color="white" className="text-md">
+                      {name}
+                    </Typography>
+                  </div>
+                )}
+                {(mods.length >= 3) && (
+                  <div className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                    <Typography color="white" className="text-md">
+                      +{mods.length - 3}
+                    </Typography>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Typography color="gray" className="text-sm">пусто</Typography>
+            )}
+          </div>
+          <div className="flex flex-col gap-y-1">
+            <Typography className='text-lg'>
+              Шейдеры
+            </Typography>
+            {shaders.length >= 1 ? (
+              <div className="flex items-center gap-1 flex-wrap">
+                {shaders.slice(0, 3).map((name, idx) =>
+                  <div key={idx} className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                    <Typography color="white" className="text-md">
+                      {name}
+                    </Typography>
+                  </div>,
+                )}
+                {shaders.length >= 3 && (
+                  <div className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                    <Typography color="white" className="text-md">
+                      +{shaders.length - 3}
+                    </Typography>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Typography color="gray" className="text-sm">пусто</Typography>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}, "ModpackItem")
 
 export type Modpack = {
   name: string,
@@ -17,48 +205,61 @@ export type Modpack = {
   imageUrl: string
 }
 
-const modpacksResource = reatomResource(async (ctx) => {
+type ModpacksPayload = { data: Array<Modpack> } | { error: string }
+
+const modpacksAction = reatomAsync(async (ctx) => {
+  await sleep(1000);
+
   return await ctx.schedule(async () => {
-    const res = await BASE("shared/modpacks", { 
-      throwHttpErrors: false, signal: ctx.controller.signal 
+    const res = await BASE("shared/modpack/list", {
+      throwHttpErrors: false, signal: ctx.controller.signal
     })
 
-    const data = await res.json<{ data: Array<Modpack> } | { error: string }>()
-    
+    const data = await res.json<ModpacksPayload>()
+
     if ("error" in data) return null;
 
     return data.data
   })
-}).pipe(withDataAtom(), withStatusesAtom(), withCache())
+}, "modpacksAction").pipe(
+  withDataAtom([], (_, data) => data && data.length >= 1 ? data : null),
+  withStatusesAtom(),
+  withCache({ swr: false })
+)
 
-const ModpackListNull = () => {
-  return (
-    <Typography className="text-neutral-400 text-2xl">
-      Не удалось загрузить список модпаков. Попробуйте позже
-    </Typography>
-  );
+modpacksAction.onReject.onCall((_, e) => {
+  if (e instanceof Error) toast.error(e.message.slice(0, 26))
+})
+
+const ModpackListEmpty = () => {
+  return <Typography className="text-neutral-400 text-2xl">Модпаков еще нет</Typography>
 };
 
 const ModpackListSkeleton = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 grid-rows-2">
-      <Skeleton className="w-full h-80" />
-      <Skeleton className="w-full h-80" />
-      <Skeleton className="w-full h-80" />
-      <Skeleton className="w-full h-80" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full xl:grid-cols-4 gap-4 grid-rows-2">
+      {Array.from({ length: 6 }).map((_, idx) => (
+        <Skeleton key={idx} className="w-full h-80" />
+      ))}
     </div>
   );
 };
 
 export const ModpackList = reatomComponent(({ ctx }) => {
-  const modpacks = ctx.spy(modpacksResource.dataAtom);
+  useUpdate(modpacksAction, []);
 
-  if (ctx.spy(modpacksResource.statusesAtom).isPending) return <ModpackListSkeleton />;
-  if (ctx.spy(modpacksResource.statusesAtom).isRejected) return <ModpackListNull />;
-  if (!modpacks) return <ModpackListNull />;
+  const modpacks = ctx.spy(modpacksAction.dataAtom);
+
+  if (ctx.spy(modpacksAction.statusesAtom).isPending) {
+    return <ModpackListSkeleton />;
+  }
+
+  if (ctx.spy(modpacksAction.statusesAtom).isRejected || !modpacks) {
+    return <ModpackListEmpty />;
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 grid-rows-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full xl:grid-cols-4 gap-4 grid-rows-2">
       <ModpackItemDialog />
       {modpacks.map(modpack => <ModpackItem key={modpack.id} {...modpack} />)}
     </div>

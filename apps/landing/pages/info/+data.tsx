@@ -1,5 +1,6 @@
 import { useConfig } from 'vike-react/useConfig';
 import { PageContextServer } from 'vike/types';
+import { LANDING_ENDPOINT } from '@/shared/env';
 
 export const data = async (ctx: PageContextServer) => {
   const config = useConfig()
@@ -7,8 +8,8 @@ export const data = async (ctx: PageContextServer) => {
   config({
     Head: (
       <>
-        <link rel="canonical" href={`https://mc.fasberry.su${ctx.urlPathname}`} />
-        <meta property="og:url" content={`https://mc.fasberry.su${ctx.urlPathname}`} />
+        <link rel="canonical" href={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
+        <meta property="og:url" content={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
       </>
     )
   })

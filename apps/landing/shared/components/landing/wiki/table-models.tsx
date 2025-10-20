@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { ArmorItem } from '@repo/shared/wiki/data/wiki/wiki-list';
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@repo/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/tooltip";
+import { ArmorItem } from "@/shared/data/wiki";
 
 const columnHelper = createColumnHelper<ArmorItem>();
 

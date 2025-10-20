@@ -1,9 +1,9 @@
 import Elysia from 'elysia';
 import { skinDownload } from './skin-download.route';
-import { skin } from './skin-data.route';
+import { skin as skinData } from './skin-data.route';
 
-export const playerSkin = new Elysia()
+export const skin = new Elysia()
   .group("/skin", app => app
-    .use(skin)
+    .use(skinData)
     .use(skinDownload)
   )

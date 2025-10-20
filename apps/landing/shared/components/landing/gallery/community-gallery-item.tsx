@@ -2,7 +2,7 @@ import { Carousel, CarouselContent, CarouselIndicator, CarouselItem, CarouselNav
 import { MorphingDialog, MorphingDialogClose, MorphingDialogContainer, MorphingDialogContent, MorphingDialogTrigger } from "@repo/ui/morph-dialog";
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
-import { COMMUNITY_FOLDER_ITEM } from "@repo/shared/wiki/data/folders";
+import { COMMUNITY_FOLDER_ITEM } from "@/shared/data/folders";
 
 const commuinityGallery = [
   COMMUNITY_FOLDER_ITEM("moon"),
@@ -71,13 +71,10 @@ const GalleryItemDialog = reatomComponent<{ image: string }>(({ ctx, image }) =>
   )
 }, "GalleryItemDialog")
 
-
 export const CommunityGallery = reatomComponent(({ ctx }) => {
-  return (
-    commuinityGallery.map((image, idx) => (
-      <div key={idx} onClick={() => selectedKeyAtom(ctx, idx)}>
-        <GalleryItemDialog image={image} />
-      </div>
-    ))
-  )
-}, "CommuinityGalleryItem")
+  return commuinityGallery.map((image, idx) => (
+    <div key={idx} onClick={() => selectedKeyAtom(ctx, idx)}>
+      <GalleryItemDialog image={image} />
+    </div>
+  ))
+}, "CommunityGallery")

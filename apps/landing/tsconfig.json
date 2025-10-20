@@ -27,7 +27,7 @@
       "@/*": [
         "./*"
       ],
-      "@repo/ui/*": ["../../packages/ui/src/*"]
+      "@repo/ui/*": ["../../packages/ui/src/components/*"]
     }
   },
   "exclude": [

@@ -5,17 +5,18 @@ import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Overlay } from "@repo/ui/overlay";
 import { Typography } from "@repo/ui/typography";
 import { WrapperTitle } from "@repo/ui/wrapper-title";
+import { LANDING_ENDPOINT } from '@/shared/env';
 
-export default function SupportPage() {
-  const url = getStaticObject("background", "support_background.png");
+const bgImage = getStaticObject("backgrounds", "support_background.png");
 
+export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
       <div
         className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start
           bg-bottom bg-no-repeat bg-cover
         `}
-        style={{ backgroundImage: `url(${url})` }}
+        style={{ backgroundImage: `url(${bgImage})` }}
       >
         <Overlay variant="default" />
         <WrapperTitle>
@@ -103,7 +104,7 @@ export default function SupportPage() {
                   "
                 >
                   <a
-                    href="https://telegram.me/share/url?url=https%3A%2F%2Fmc.fasberry.su&text="
+                    href={`https://telegram.me/share/url?url=https%3A%2F%2F${LANDING_ENDPOINT}&text=`}
                     rel="noreferrer"
                     target="_blank"
                     className="button"
@@ -113,7 +114,7 @@ export default function SupportPage() {
                     </Typography>
                   </a>
                   <a
-                    href="https://vk.com/share.php?url=https%3A%2F%2Fmc.fasberry.su&title="
+                    href={`https://vk.com/share.php?url=https%3A%2F%2F${LANDING_ENDPOINT}&title=`}
                     rel="noreferrer"
                     target="_blank"
                     className="button"

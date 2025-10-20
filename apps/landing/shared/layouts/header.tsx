@@ -1,13 +1,12 @@
 import { Link } from "@/shared/components/config/link";
-import { MAIN_HEADER } from '@repo/shared/wiki/data/configs';
 import { usePageContext } from "vike-react/usePageContext";
-import { lazy, Suspense } from "react";
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@repo/ui/dropdown-menu";
-import { reatomComponent } from "@reatom/npm-react";
 import { getStaticObject } from "../lib/volume";
+import { MAIN_HEADER } from "../data/configs";
+import { clientOnly } from "vike-react/clientOnly";
 
-const HeaderSheet = lazy(() => import("./header-mobile").then(m => ({ default: m.HeaderSheet })))
+const HeaderSheet = clientOnly(() => import("./header-mobile").then(m => m.HeaderSheet))
 
 const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   const pathname = usePageContext().urlParsed.pathname;
@@ -92,25 +91,24 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   )
 }
 
-export const Header = reatomComponent(({ ctx }) => {
-  const url = getStaticObject("static", "cracked_polished_blacked.webp")
+const bgImage = getStaticObject("static", "cracked_polished_blacked.webp")
+const logoImage = getStaticObject("static", "fasberry_logo.webp")
 
+export const Header = () => {
   return (
     <div
       className={`header flex items-center justify-between absolute top-0 transition w-full bg-repeat-x z-50`}
-      style={{ backgroundSize: '160px', backgroundImage: `url(${url})` }}
+      style={{ backgroundSize: '160px', backgroundImage: `url(${bgImage})` }}
     >
       <Link href="/" className="bg-transparent cursor-pointer relative md:-right-[40px] top-3 xl:-right-[60px]">
-        <img src={getStaticObject("static", "fasberry_logo.webp")} width={224} height={64} title="Fasberry" alt="Fasberry" />
+        <img src={logoImage} width={224} height={64} title="Fasberry" alt="Fasberry" />
       </Link>
       <div className="hidden xl:flex gap-5 items-center justify-start pr-[132px]">
         {MAIN_HEADER.map(item => (
           <HeaderItemMenu key={item.name} childs={item.childs} name={item.name} href={item.href} />
         ))}
       </div>
-      <Suspense>
-        <HeaderSheet />
-      </Suspense>
+      <HeaderSheet />
     </div>
   );
-}, "Header")
+}

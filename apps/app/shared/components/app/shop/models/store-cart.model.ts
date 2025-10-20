@@ -1,6 +1,6 @@
 import { atom, createCtx } from "@reatom/core";
-import { reatomAsync, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
-import { Payment } from "./store.model";
+import { reatomAsync, sleep, withCache, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
+import { DEFAULT_SOFT_TIMEOUT, Payment } from "./store.model";
 import { withSsr } from "@/shared/lib/ssr";
 import { PageContextServer } from "vike/types";
 import { logError } from "@/shared/lib/log";
@@ -8,6 +8,7 @@ import { mergeSnapshot } from "@/shared/lib/snapshot";
 import { CartFinalPrice } from "@repo/shared/types/entities/store";
 import type { CartItem, CartPayload } from "@repo/shared/types/entities/store"
 import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
+import { isEmptyArray } from "@/shared/lib/array";
 
 export async function getCartData(init?: RequestInit) {
   return client<CartPayload>("store/cart/list", init)
@@ -52,13 +53,19 @@ export async function getOrders(params: OrdersParams, init: RequestInit) {
 }
 
 export const storeOrdersListAction = reatomAsync(async (ctx) => {
+  await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT));
+
   return await ctx.schedule(() => getOrders({ type: "all" }, { signal: ctx.controller.signal }))
 }, {
   name: "storeOrdersListAction",
   onReject: (_, e) => {
     logError(e)
   }
-}).pipe(withDataAtom([]), withStatusesAtom())
+}).pipe(
+  withDataAtom(null, (_, data) => isEmptyArray(data) ? null : data), 
+  withStatusesAtom(), 
+  withCache({ swr: false })
+)
 
 export const storeCartFilterAtom = atom<"pending" | "succeeded" | "all">("all", "storeCartFilter")
 
@@ -68,17 +75,18 @@ export const storeCartFilteresOrdersAtom = atom((ctx) => {
   let data: Payment[] = [];
 
   if (filter === 'succeeded') {
-    data = ctx.spy(storeOrdersListAction.dataAtom)
-      .filter(target => target.status === 'succeeded')
+    const orders = ctx.spy(storeOrdersListAction.dataAtom)
+    data = orders ? orders.filter(target => target.status === 'succeeded') : []
   }
 
   if (filter === 'pending') {
-    data = ctx.spy(storeOrdersListAction.dataAtom)
-      .filter(target => target.status === 'pending')
+    const orders = ctx.spy(storeOrdersListAction.dataAtom)
+
+    data = orders ? orders.filter(target => target.status === 'pending') : []
   }
 
   if (filter === 'all') {
-    data = ctx.spy(storeOrdersListAction.dataAtom)
+    data = ctx.spy(storeOrdersListAction.dataAtom) ?? []
   }
 
   return data

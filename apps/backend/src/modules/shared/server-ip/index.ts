@@ -24,7 +24,7 @@ export const serverip = new Elysia()
   }, {
     response: {
       200: withData(
-        t.Nullable(t.String())
+        t.Nullable(t.Object({ ip: t.String() }))
       )
     }
   })

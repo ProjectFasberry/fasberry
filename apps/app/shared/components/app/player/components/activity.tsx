@@ -2,7 +2,7 @@ import { reatomComponent } from "@reatom/npm-react";
 import { playerActivityAction, playerLocationAction } from "../models/activity.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
-import { isClientAtom } from "@/shared/models/global.model";
+import { isClientAtom } from "@/shared/models/page-context.model";
 
 const PlayerLocation = reatomComponent(({ ctx }) => {
   const data = ctx.spy(playerLocationAction.dataAtom);

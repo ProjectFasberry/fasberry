@@ -5,7 +5,7 @@ import { eventsAction } from "../models/events.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { AtomState, onConnect } from "@reatom/framework";
 import { NotFound } from "@/shared/ui/not-found";
-import { isClientAtom } from "@/shared/models/global.model";
+import { isClientAtom } from "@/shared/models/page-context.model";
 
 const EventsSkeleton = () => {
   return (

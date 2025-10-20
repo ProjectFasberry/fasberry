@@ -4,7 +4,7 @@ import { Typography } from "@repo/ui/typography";
 import { Data } from "./+data";
 import { ItemPrice, ItemSelectToCart } from "@/shared/components/app/shop/components/items/store-list";
 import { action } from "@reatom/core";
-import { pageContextAtom } from "@/shared/models/global.model";
+import { pageContextAtom } from "@/shared/models/page-context.model";
 import { startPageEvents } from "@/shared/lib/events";
 import { useData } from "vike-react/useData"
 import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";

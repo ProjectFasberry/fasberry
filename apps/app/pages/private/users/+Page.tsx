@@ -28,7 +28,7 @@ import {
 import { createLink, Link } from "@/shared/components/config/link"
 import { startPageEvents } from "@/shared/lib/events"
 import { currentUserAtom } from "@/shared/models/current-user.model"
-import { pageContextAtom } from "@/shared/models/global.model"
+import { pageContextAtom } from "@/shared/models/page-context.model"
 import { action, atom } from "@reatom/core"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { PrivatedUser } from "@repo/shared/types/entities/other"

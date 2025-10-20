@@ -4,6 +4,7 @@ import { Typography } from "@repo/ui/typography"
 import { storeOrdersListAction } from "../../models/store-cart.model"
 import { Link } from "@/shared/components/config/link"
 import { Button } from "@repo/ui/button"
+import { sectionVariant } from "./cart-content"
 
 const CartOrdersSkeleton = () => {
   return (
@@ -20,8 +21,26 @@ const STATUSES: Record<string, string> = {
   "succeeded": "Завершён"
 }
 
+const CartOrdersEmpty = () => {
+  return (
+    <div className={sectionVariant({ className: "flex gap-2 *:w-fit flex-col w-full" })}>
+      <Typography className='text-2xl font-semibold'>
+        Пусто
+      </Typography>
+      <Typography color="gray">
+        Заказ появится сразу после оформления
+      </Typography>
+      <Link href="/store">
+        <Button className="bg-neutral-800 font-semibold">
+          В магазин
+        </Button>
+      </Link>
+    </div>
+  )
+}
+
 export const CartOrders = reatomComponent(({ ctx }) => {
-  useUpdate((ctx) => storeOrdersListAction(ctx), [])
+  useUpdate(storeOrdersListAction, [])
 
   if (ctx.spy(storeOrdersListAction.statusesAtom).isPending) {
     return <CartOrdersSkeleton />
@@ -29,9 +48,7 @@ export const CartOrders = reatomComponent(({ ctx }) => {
 
   const data = ctx.spy(storeOrdersListAction.dataAtom)
 
-  if (!data.length) {
-    return <Typography color="gray">Пусто</Typography>
-  }
+  if (!data) return <CartOrdersEmpty/>
 
   return (
     <div className='flex flex-col gap-2 w-full h-full'>

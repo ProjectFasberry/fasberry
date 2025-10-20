@@ -10,7 +10,7 @@ import { Button } from "@repo/ui/button"
 import { navigate } from "vike/client/router"
 import { changesIsExist, landMode, saveChanges } from "../models/edit-land.model"
 import { LandBanner } from "./land-banner"
-import { isClientAtom } from "@/shared/models/global.model"
+import { isClientAtom } from "@/shared/models/page-context.model"
 import { PageLoader } from "@/shared/ui/page-loader"
 
 const LandGallery = reatomComponent(({ ctx }) => {

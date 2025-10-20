@@ -65,11 +65,11 @@ export async function getExchangeRatesStore(
 export const exchangeRates = new Elysia()
   .model({
     "exchange-rates": withData(
-      t.Array(
-        t.Object({
-          value: t.String(),
-          type: t.String()
-        })
+      t.Record(
+        t.String(), 
+        t.Record(
+          t.String(), t.Number()
+        )
       )
     )
   })

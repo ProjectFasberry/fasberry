@@ -3,8 +3,8 @@ import { action, atom, batch, Ctx } from "@reatom/core";
 import { cartDataAtom, getCartData, cartPriceAtom } from "./store-cart.model";
 import { sleep, withInit, withReset } from "@reatom/framework";
 import { logError } from "@/shared/lib/log";
-import { isAuthAtom } from "@/shared/models/global.model";
-import { getRecipient, setRecipientDialogIsOpenAtom, setRecipientValueAtom, storeRecipientAtom } from "./store-recipient.model";
+import { isAuthAtom } from "@/shared/models/page-context.model";
+import { getRecipient, setRecipientDialogIsOpenAtom, setRecipientItemIdAtom, setRecipientValueAtom, storeGlobalRecipientAtom } from "./store-recipient.model";
 import { currentUserAtom } from "@/shared/models/current-user.model";
 import type { StoreItem } from "@repo/shared/types/entities/store"
 import { client, withJsonBody, withLogging } from "@/shared/lib/client-wrapper";
@@ -190,10 +190,11 @@ export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
     const currentRecipient = ctx.get(setRecipientValueAtom);
 
     if (!currentRecipient) {
-      const globalRecipient = ctx.get(storeRecipientAtom);
-
+      const globalRecipient = ctx.get(storeGlobalRecipientAtom);
+      
       if (!globalRecipient) {
         setRecipientDialogIsOpenAtom(ctx, true);
+        setRecipientItemIdAtom(ctx, id);
         return;
       }
     }

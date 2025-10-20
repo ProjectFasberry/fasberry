@@ -11,7 +11,7 @@ import {
 } from "@/shared/components/app/private/models/store.model"
 import { AlertDialog } from "@/shared/components/config/alert-dialog"
 import { startPageEvents } from "@/shared/lib/events"
-import { pageContextAtom } from "@/shared/models/global.model"
+import { pageContextAtom } from "@/shared/models/page-context.model"
 import { action, atom, AtomState } from "@reatom/core"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { StoreItem as StoreItemType } from "@repo/shared/types/entities/store"

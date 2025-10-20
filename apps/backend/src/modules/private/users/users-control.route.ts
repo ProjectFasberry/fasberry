@@ -1,9 +1,11 @@
 import Elysia from "elysia";
 import { changeRoleUsers, controlPunishUsers, usersControlRolesSchema, usersControlSchema } from "./users-control.model";
+import { defineUser } from "#/lib/middlewares/define";
 
 const usersControlPunish = new Elysia()
-  .post("/punish", async ({ body }) => {
-    const data = await controlPunishUsers(body)
+  .use(defineUser())
+  .post("/punish", async ({ body, nickname }) => {
+    const data = await controlPunishUsers(body, nickname)
     return { data }
   }, {
     body: usersControlSchema

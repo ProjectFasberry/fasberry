@@ -46,6 +46,8 @@ export default function HeadDefault() {
       <meta property="twitter:image:type" content="image/jpeg" />
       <meta property="twitter:image:width" content="1200" />
       <meta property="twitter:image:height" content="630" />
+      <meta name="robots" content="index, follow" />
+      <meta name="googlebot" content="index, follow, noimageindex, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
       <link rel="preconnect" href="https://mc.fasberry.su" crossOrigin="" />
       <link rel="preconnect" href="https://volume.fasberry.su" crossOrigin="" />
       <link rel="preconnect" href="https://kong.fasberry.su" crossOrigin="" />

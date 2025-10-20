@@ -4,7 +4,7 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { defineGlobalPrice } from "#/utils/store/store-transforms";
 import { defineInitiator } from "#/lib/middlewares/define";
 import { CartPayload } from "@repo/shared/types/entities/store";
-import { addItemToBasket, editItemInCart, editItemToBasket, getBasketData, removeItemFromCart, validateInitiatorExists } from "./cart.model";
+import { addItemToBasket, editItemInCart, editItemToBasketSchema, getBasketData, removeItemFromCart, validateInitiatorExists } from "./cart.model";
 import { wrapError } from "#/helpers/wrap-error";
 import { withData } from "#/shared/schemas";
 
@@ -51,7 +51,7 @@ const basketEditItem = new Elysia()
     const data = await editItemInCart(body, initiator)
     return { data }
   }, {
-    body: editItemToBasket
+    body: editItemToBasketSchema
   })
 
 const cartListPayload = t.Object({

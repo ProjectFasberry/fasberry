@@ -230,7 +230,9 @@ const UserHead = ({ nickname }: {nickname: string}) => {
         propWidth={26}
         propHeight={26}
       />
-      {nickname}
+      <span className="font-semibold text-base">
+        {nickname}
+      </span>
     </Link>
   )
 }

@@ -11,7 +11,7 @@ import {
   changeRecipientOpenDialogAction
 } from "../../models/store-recipient.model"
 import { CartPayload } from "@repo/shared/types/entities/store"
-import { CURRENCIES } from "./store-price"
+import { CURRENCIES } from "./cart-price"
 import { cartDataItemIsSelectAtom } from "../../models/store-cart.model"
 
 const CartItemRemoveFromCart = reatomComponent<{ id: number }>(({ ctx, id }) => {

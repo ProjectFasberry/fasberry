@@ -7,11 +7,25 @@ const clientConfig: Options = {
   timeout: 4000
 }
 
+export const SKIP_HOOK_HEADER = "X-Skip-Error-Handling"
+
 export const clientInstance = ky.create({
   ...clientConfig,
   hooks: {
     afterResponse: [
       async (_request, _options, response) => {
+        let skipHook = false;
+
+        const reqHeaders = _request.headers
+
+        if (reqHeaders) {
+          if (reqHeaders.get(SKIP_HOOK_HEADER) === 'true') {
+            skipHook = true
+          }
+        }
+        
+        if (skipHook) return;
+
         if (!response.ok) {
           const json = await response.json();
 

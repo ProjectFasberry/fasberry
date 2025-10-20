@@ -59,4 +59,4 @@ export const WIKI_HEADERS = [
 
 export const MAIL_FASBERRY_SUPPORT = "fasberrysu@gmail.com"
 export const VK_GROUP_LINK = "https://vk.com/fasberry";
-export const TELEGRAM_CHANNEL_LINK = "https://t.me/mc_fasberry";
+export const TELEGRAM_CHANNEL_LINK = "https://t.me/fasberry";

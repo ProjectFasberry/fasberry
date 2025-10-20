@@ -4,11 +4,12 @@ import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { SpawnCarousel } from "@/shared/components/landing/gallery/spawn-carousel";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
-import { CONTACTS_LIST } from "@repo/shared/wiki/data/contacts/contacts-list";
 import { tv } from "tailwind-variants";
+import { CONTACTS_LIST } from "@/shared/data/contacts";
+import { getStaticObject } from "@/shared/lib/volume";
 
-const INTRO_URL = "https://volume.fasberry.su/static/arts/server-status-widget.webp"
-const SHARE_URL = "https://volume.fasberry.su/static/arts/bzzvanet-.jpg"
+const introImage = getStaticObject("arts", "server-status-widget.webp")
+const shareImage = getStaticObject("arts", "bzzvanet-.jpg")
 
 const sectionVariant = tv({
   base: `full-screen-section relative h-[80vh] lg:h-screen flex-col items-center justify-center`,
@@ -23,14 +24,14 @@ const sectionVariant = tv({
   }
 })
 
-export default function IndexPage() {
+export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
       <div id="title" className={sectionVariant()}>
         <div className="absolute top-0 right-0 left-0 overflow-hidden h-full">
           <div
             className="w-full h-full absolute top-0 right-0 brightness-[55%] left-0 bg-no-repeat bg-center bg-cover"
-            style={{ backgroundImage: `url('${INTRO_URL}')` }}
+            style={{ backgroundImage: `url('${introImage}')` }}
           />
         </div>
         <div className="flex items-center justify-start responsive z-1 mx-auto h-full">
@@ -78,7 +79,7 @@ export default function IndexPage() {
         <div className="absolute top-0 right-0 left-0 overflow-hidden h-full">
           <div
             className="w-full h-full absolute top-0 right-0 brightness-[55%] left-0 bg-no-repeat bg-center bg-cover"
-            style={{ backgroundImage: `url('${SHARE_URL}')` }}
+            style={{ backgroundImage: `url('${shareImage}')` }}
           />
         </div>
         <div className="flex flex-col items-center z-1 mx-auto responsive gap-12 justify-center select-none relative">
@@ -87,7 +88,7 @@ export default function IndexPage() {
           </Typography>
           <div className="flex flex-col gap-4 justify-center items-center sm:w-1/4 *:w-full w-full h-full">
             {CONTACTS_LIST.map(item => (
-              <a href={item.href} target="_blank" rel="noreferrer">
+              <a key={item.name} href={item.href} target="_blank" rel="noreferrer">
                 <Button key={item.name} variant="minecraft" className="w-full py-0.5">
                   <Typography className="text-white text-lg">
                     Перейти в {item.name}
