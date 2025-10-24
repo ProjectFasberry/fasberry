@@ -158,12 +158,12 @@ export interface Modpacks {
 }
 
 export interface News {
+  content: Json;
   created_at: Generated<Timestamp>;
+  creator: string;
   description: string;
   id: Generated<number>;
   imageUrl: string;
-  media_links: string | null;
-  tags: string | null;
   title: string;
 }
 
@@ -269,6 +269,7 @@ export interface StoreEconomy {
 
 export interface StoreItems {
   command: string | null;
+  content: Json | null;
   currency: StoreCurrency;
   description: Json | null;
   id: Generated<number>;

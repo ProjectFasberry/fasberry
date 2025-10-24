@@ -1,5 +1,4 @@
 import { Link } from "@/shared/components/config/link";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { ReactNode } from "react";
@@ -45,13 +44,11 @@ export default function Page() {
   const { is404 } = usePageContext();
 
   return (
-    <MainWrapperPage>
-      <div className="flex flex-col h-[80vh] justify-center items-center gap-2">
-        <Typography color="gray" className="text-neutral-400 text-base md:text-xl font-normal">
-          Отключено
-        </Typography>
-        {VARIANTS[is404 ? "404" : "500"]}
-      </div>
-    </MainWrapperPage>
+    <div className="flex flex-col h-[80vh] justify-center items-center gap-2">
+      <Typography color="gray" className="text-neutral-400 text-base md:text-xl font-normal">
+        Отключено
+      </Typography>
+      {VARIANTS[is404 ? "404" : "500"]}
+    </div>
   );
 }

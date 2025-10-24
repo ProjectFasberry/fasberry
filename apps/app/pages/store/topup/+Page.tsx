@@ -1,6 +1,5 @@
 import { TopUp } from "@/shared/components/app/shop/components/wallet/top-up";
 import { topUpAction, topUpExchangeRatesAction, topUpMethodsAction, topUpSearchAtom } from "@/shared/components/app/shop/models/store-top-up.model";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { startPageEvents } from "@/shared/lib/events";
 import { pageContextAtom } from "@/shared/models/page-context.model";
 import { action } from "@reatom/core";
@@ -53,9 +52,7 @@ export default function Page() {
   return (
     <>
       <StoreLoader />
-      <MainWrapperPage>
-        <TopUp />
-      </MainWrapperPage>
+      <TopUp />
     </>
   )
 }

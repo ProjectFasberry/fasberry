@@ -5,14 +5,16 @@ declare global {
 
   type WrappedResponse<T> = { data: T } | { error: string }
 
-  interface PaginatedMeta {
+  type PaginatedMeta = {
     hasNextPage: false,
     hasPrevPage: false,
     endCursor?: string,
     startCursor?: string
   }
 
-  type Maybe<T> = T | undefined;
+  type Maybe<T> = T | undefined
+  type Nullable<T> = T | null
+  type ReadonlyPartial<T> = Readonly<Partial<T>>
 }
 
 export { }

@@ -1,4 +1,3 @@
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Data } from "./+data";
@@ -65,9 +64,9 @@ export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "i" }), [pageContextAtom]);
 
   return (
-    <MainWrapperPage>
+    <>
       <SelectedDonate />
       <SetRecipientDialog />
-    </MainWrapperPage>
+    </>
   )
 }

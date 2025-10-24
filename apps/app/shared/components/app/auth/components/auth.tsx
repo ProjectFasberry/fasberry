@@ -77,7 +77,7 @@ export const SubmitAuth = reatomComponent(({ ctx }) => {
       variant="minecraft"
       className="bg-neutral-600 w-full rounded-lg"
       onClick={() => authorize(ctx)}
-      disabled={ctx.spy(authorize.isLoading) || !ctx.spy(isValidAtom)}
+      disabled={ctx.spy(authorize.statusesAtom).isPending || !ctx.spy(isValidAtom)}
     >
       <Typography className="font-semibold  text-lg">
         {ctx.spy(typeAtom) === 'register' ? "Зарегистрироваться" : "Войти"}
@@ -159,12 +159,12 @@ export const RegisterForm = reatomComponent(({ ctx }) => {
 }, "RegisterForm")
 
 export const AuthError = reatomComponent(({ ctx }) => {
-  const message = ctx.spy(globalErrorAtom)
-  if (!message) return null;
+  const error = ctx.spy(globalErrorAtom)
+  if (!error) return null;
 
   return (
     <Typography className='font-semibold text-base text-red-500'>
-      {message}
+      {error}
     </Typography>
   )
 }, "AuthError")

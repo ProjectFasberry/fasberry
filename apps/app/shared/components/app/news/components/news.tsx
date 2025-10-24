@@ -7,11 +7,12 @@ import { AtomState, onConnect } from "@reatom/framework"
 import { NotFound } from "@/shared/ui/not-found"
 import { isClientAtom } from "@/shared/models/page-context.model"
 import { tv } from "tailwind-variants"
+import { scrollableVariant } from "@/shared/consts/style-variants"
 
 const NewsSkeleton = () => {
   return Array.from({ length: 3 }).map((_, idx) => (
     <div key={idx} className={newsItemVariant().base()}>
-      <Skeleton className="w-full h-full max-h-[100px] sm:max-h-[200px]" />
+      <Skeleton className="w-full h-[200px]" />
       <div className={newsItemVariant().content()}>
         <Skeleton className="h-8 w-24" />
         <Skeleton className="h-6 w-16" />
@@ -21,10 +22,10 @@ const NewsSkeleton = () => {
 }
 
 const newsItemVariant = tv({
-  base: `flex flex-col h-full w-full h-44 sm:h-72 hover:bg-neutral-800 duration-150 border border-neutral-800 rounded-lg overflow-hidden`,
+  base: `flex flex-col flex-shrink-0 w-full sm:w-96 h-56 sm:h-72 border border-neutral-800 rounded-xl overflow-hidden`,
   slots: {
-    img: `object-cover max-h-[100px] sm:max-h-[200px]`,
-    content: `flex flex-col gap-1 justify-between p-2 md:p-4 w-full`
+    img: `object-cover h-[148px] sm:h-[200px]`,
+    content: `flex flex-col gap-1 justify-between p-2 sm:p-4 w-full`
   }
 })
 
@@ -80,9 +81,9 @@ export const News = () => {
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       <Typography className="text-3xl font-bold">
-        Новости проекта
+        Новости
       </Typography>
-      <div className="grid grid-cols-2 lg:grid-cols-3 flex-col w-full h-full gap-4">
+      <div className={scrollableVariant({ className: "flex overflow-x-auto gap-4 pb-2" })}>
         <NewsList />
       </div>
     </div>

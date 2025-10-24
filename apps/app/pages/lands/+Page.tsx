@@ -1,4 +1,3 @@
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography"
 import { LandsList } from "@/shared/components/app/lands/components/lands-list";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
@@ -24,16 +23,14 @@ const LandsPreviewImage = () => {
 
 export default function Page() {
   return (
-    <MainWrapperPage>
-      <div className="flex flex-col gap-4 w-full h-full">
-        <LandsPreviewImage />
-        <div className="flex flex-col gap-4 h-full w-full">
-          <Typography color="white" className="font-semibold text-2xl">
-            Территории сервера
-          </Typography>
-          <LandsList/>
-        </div>
+    <div className="flex flex-col gap-4 w-full h-full">
+      <LandsPreviewImage />
+      <div className="flex flex-col gap-4 h-full w-full">
+        <Typography color="white" className="font-semibold text-2xl">
+          Территории сервера
+        </Typography>
+        <LandsList />
       </div>
-    </MainWrapperPage>
+    </div>
   )
 }

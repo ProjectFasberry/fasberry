@@ -19,5 +19,6 @@ export const landsAction = reatomAsync(async (ctx) => {
   }
 }).pipe(
   withDataAtom(null, (ctx, data) => isEmptyArray(data.data) ? null : data.data), 
-  withCache({ swr: false }), withStatusesAtom()
+  withCache({ swr: false }), 
+  withStatusesAtom()
 )

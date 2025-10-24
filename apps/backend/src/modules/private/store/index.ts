@@ -1,14 +1,15 @@
 import Elysia from "elysia";
 import { storeItemCreate } from "./store-item-create.route";
-import { storeItemDelete, storeItemEdit } from "./store-item-delete.route";
+import { storeItemDelete } from "./store-item-delete.route";
 import { storeMethodsEdit, storeMethodsList } from "./store-methods.route";
+import { storeItemEditGroup } from "./store-item-update.route";
 
 export const storePrivate = new Elysia()
   .group("/store", app => app
     .group("/item", app => app
       .use(storeItemCreate)
       .use(storeItemDelete)
-      .use(storeItemEdit)
+      .use(storeItemEditGroup)
     )
     .group("/methods", app => app
       .use(storeMethodsList)

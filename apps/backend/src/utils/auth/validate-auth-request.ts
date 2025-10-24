@@ -1,7 +1,7 @@
 import { general } from "#/shared/database/main-db";
 import ky from "ky"
 import { logError } from "../config/logger";
-import { isProduction } from "#/shared/env";
+import { CLOUDFLARE_TURNSTILE_SECRET, isProduction } from "#/shared/env";
 
 type Payload = {
   success: boolean,
@@ -17,7 +17,7 @@ const MAX_USERS_PER_IP = 3;
 export async function verifyAuth(token: string) {
   try {
     const verifyRes = await ky.post("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      json: { secret: Bun.env.CLOUDFLARE_TURNSTILE_SECRET_KEY, response: token },
+      json: { secret: CLOUDFLARE_TURNSTILE_SECRET, response: token },
     });
 
     if (!verifyRes.ok) {

@@ -4,7 +4,6 @@ import { reatomComponent } from "@reatom/npm-react";
 import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { Typography } from "@repo/ui/typography";
 import { AtomState } from "@reatom/core";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 
 const Auth = reatomComponent(({ ctx }) => {
   const type = ctx.spy(typeAtom)
@@ -45,15 +44,13 @@ const Auth = reatomComponent(({ ctx }) => {
 
 export default function Page() {
   return (
-    <MainWrapperPage>
-      <form
-        className="flex items-center justify-center h-[80dvh] w-full"
-        onSubmit={(e) => e.preventDefault()}
-      >
-        <div className="flex items-start justify-center h-[60dvh] w-full">
-          <Auth />
-        </div>
-      </form>
-    </MainWrapperPage>
+    <form
+      className="flex items-center justify-center h-[80dvh] w-full"
+      onSubmit={(e) => e.preventDefault()}
+    >
+      <div className="flex items-start justify-center h-[60dvh] w-full">
+        <Auth />
+      </div>
+    </form>
   )
 }

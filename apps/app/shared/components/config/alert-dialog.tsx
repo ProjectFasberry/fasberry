@@ -1,5 +1,5 @@
-import { Action, action, atom, Ctx } from "@reatom/core";
-import { AsyncAction, AsyncStatusesAtom, ControlledPromise, sleep, withReset } from "@reatom/framework";
+import { Action, action, atom } from "@reatom/core";
+import { sleep, withReset } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@repo/ui/dialog";
@@ -21,7 +21,7 @@ alertDialogIsOpenAtom.onChange(async (ctx, state) => {
   }
 })
 
-export const closeAlertDialogAction = action((ctx) => {
+export const closeAlertDialogAction = action(async (ctx) => {
   const opts = ctx.get(alertDialogOptsAtom);
   if (!opts) return;
 
@@ -31,6 +31,7 @@ export const closeAlertDialogAction = action((ctx) => {
     rollback(ctx)
   }
   
+  await sleep(200);
   alertDialogOptsAtom.reset(ctx)
 })
 

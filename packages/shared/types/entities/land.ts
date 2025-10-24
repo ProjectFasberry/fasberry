@@ -65,6 +65,4 @@ export type PlayerLands = {
   meta: { count: number }
 }
 
-export type PlayerLandsPayload = {
-  data: PlayerLands
-}
+export type PlayerLandsPayload = PlayerLands

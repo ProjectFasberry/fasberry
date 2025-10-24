@@ -1,25 +1,18 @@
+import { createNewsSchema } from '@repo/shared/schemas/news';
 import Elysia from "elysia"
 import z from "zod"
 import { general } from "#/shared/database/main-db"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 import { getStaticUrl } from "#/helpers/volume"
+import { defineUser } from "#/lib/middlewares/define"
 
-const DEFAULT_IMAGE = `/news/art-bzzvanet.webp`
-
-const createNewsSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  imageUrl: z.string().trim().nullable().optional().transform((v) => v?.trim() || DEFAULT_IMAGE),
-})
-
-async function createNews({ title, description, imageUrl }: z.infer<typeof createNewsSchema>) {
+async function createNews(
+  { title, description, content, imageUrl }: z.infer<typeof createNewsSchema>, 
+  creator: string
+) {
   const query = await general
     .insertInto("news")
-    .values({
-      title,
-      description,
-      imageUrl
-    })
+    .values({ title, description, imageUrl, content, creator })
     .returningAll()
     .executeTakeFirstOrThrow()
 
@@ -30,8 +23,9 @@ async function createNews({ title, description, imageUrl }: z.infer<typeof creat
 }
 
 export const newsCreateRoute = new Elysia()
-  .post("/create", async ({ status, body }) => {
-    const data = await createNews(body)
+  .use(defineUser())
+  .post("/create", async ({ status, body, nickname }) => {
+    const data = await createNews(body, nickname)
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
     body: createNewsSchema

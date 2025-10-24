@@ -1,7 +1,6 @@
 import { StoreFilters } from "@/shared/components/app/shop/components/filters/store-filters";
 import { StoreList } from "@/shared/components/app/shop/components/items/store-list";
 import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
 
 const DefaultStore = () => {
@@ -31,10 +30,8 @@ const DefaultStore = () => {
 
 export default function Page() {
   return (
-    <MainWrapperPage padding="small">
-      <div className="flex flex-col gap-4 w-full h-full">
-        <DefaultStore />
-      </div>
-    </MainWrapperPage>
+    <div className="flex flex-col gap-4 w-full h-full">
+      <DefaultStore />
+    </div>
   )
 }

@@ -4,7 +4,11 @@
 @source "../../../../apps/frontend/**/*.{ts,tsx}";
 @source "../../../../packages/ui/**/*.{ts,tsx}";
 
-@plugin 'tailwind-scrollbar';
+@import "./editor.css";
+
+@plugin 'tailwind-scrollbar' {
+  nocompatible: true;
+}
 
 :root {
   --bprogress-color: #00AA00;
@@ -19,6 +23,7 @@
     scroll-behavior: smooth;
     height: 100%;
     word-break: keep-all;
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -41,10 +46,6 @@
 }
 
 @layer components {
-  .full-screen-section {
-    @apply relative;
-  }
-
   .responsive {
     @apply w-full max-w-[clamp(420px,80vw,1200px)] sm:px-0 px-2;
   }

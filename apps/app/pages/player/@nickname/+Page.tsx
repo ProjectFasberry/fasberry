@@ -1,17 +1,13 @@
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { pageContextAtom } from "@/shared/models/page-context.model"
 import { PlayerLands } from "@/shared/components/app/player/components/lands"
 import { Logout } from "@/shared/components/app/player/components/logout"
 import { PlayerSkin } from "@/shared/components/app/player/components/skin"
-import { Finance } from "@/shared/components/app/player/components/balance";
+import { Balance } from "@/shared/components/app/player/components/balance";
 import { PlayerInfo } from "@/shared/components/app/player/components/info";
 import { PlayerAttributes } from "@/shared/components/app/player/components/attributes";
 import { ChangePassword, PurchasesHistory } from "@/shared/components/app/player/components/details";
-import { reatomComponent, useUpdate } from "@reatom/npm-react";
+import { reatomComponent } from "@reatom/npm-react";
 import { PlayerActivity } from "@/shared/components/app/player/components/activity";
-import { playerActivityAction } from "@/shared/components/app/player/models/activity.model";
-import { action } from "@reatom/core";
-import { startPageEvents } from "@/shared/lib/events";
 import { isIdentityAtom, playerAtom, userParamAtom } from "@/shared/components/app/player/models/player.model";
 import { Data } from "./+data";
 import { Separator } from "@repo/ui/separator";
@@ -37,9 +33,6 @@ userParamAtom.onChange((ctx, state) => {
   }
 })
 
-const events = action((ctx) => {
-  playerActivityAction(ctx)
-}, "events")
 
 const PlayerPrivated = reatomComponent(({ ctx }) => {
   const isIdentity = ctx.spy(isIdentityAtom)
@@ -51,7 +44,7 @@ const PlayerPrivated = reatomComponent(({ ctx }) => {
         Видно только вам
       </Typography>
       <div className="flex flex-col gap-4 w-full h-full">
-        <Finance />
+        <Balance />
         <div className="flex flex-col gap-6 w-full h-fit">
           <PurchasesHistory />
         </div>
@@ -81,17 +74,13 @@ const PlayerPublic = () => {
 }
 
 export default function Page() {
-  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "player" }), [pageContextAtom]);
-
   return (
-    <MainWrapperPage>
-      <div className="flex flex-col lg:flex-row relative w-full h-full items-start gap-8">
-        <PlayerSkin />
-        <div className="flex flex-col w-full gap-12 lg:w-2/3 h-full">
-          <PlayerPublic />
-          <PlayerPrivated />
-        </div>
+    <div className="flex flex-col lg:flex-row relative w-full h-full items-start gap-8">
+      <PlayerSkin />
+      <div className="flex flex-col w-full gap-12 lg:w-2/3 h-full">
+        <PlayerPublic />
+        <PlayerPrivated />
       </div>
-    </MainWrapperPage>
+    </div>
   )
 }

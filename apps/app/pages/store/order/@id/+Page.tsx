@@ -1,6 +1,5 @@
 import { Data } from "./+data";
 import { Typography } from "@repo/ui/typography";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { connectToOrderEventsAction, esAtom, orderDataAtom, orderRequestEventAtom } from "@/shared/components/app/shop/models/store-order.model";
 import { PageLoader } from "@/shared/ui/page-loader";
@@ -208,9 +207,7 @@ export default function Page() {
   return (
     <>
       <OrderLoader />
-      <MainWrapperPage>
-        <Order />
-      </MainWrapperPage>
+      <Order />
     </>
   )
 }

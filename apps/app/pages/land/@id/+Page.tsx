@@ -1,7 +1,6 @@
 import { pageContextAtom } from "@/shared/models/page-context.model"
 import { Land } from "@/shared/components/app/land/components/land"
 import { landAtom } from "@/shared/components/app/land/models/land.model"
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Data } from "./+data"
 import { action } from "@reatom/core";
 import { useUpdate } from "@reatom/npm-react";
@@ -19,9 +18,5 @@ const events = action((ctx) => {
 export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "land" }), [pageContextAtom]);
 
-  return (
-    <MainWrapperPage>
-      <Land />
-    </MainWrapperPage>
-  )
+  return <Land />
 }

@@ -40,9 +40,7 @@ const PlayerLandsList = reatomComponent(({ ctx }) => {
     return <Typography color="gray" className="text-lg">нет</Typography>
   }
 
-  return (
-    data.map(land => <PlayerLand key={land.ulid} {...land} />)
-  )
+  return data.map(land => <PlayerLand key={land.ulid} {...land} />)
 }, "PlayerLandsList")
 
 const playerLandsCountAtom = atom((ctx) => ctx.spy(playerLandsAtom)?.meta.count ?? 0, "playerLandsCount")

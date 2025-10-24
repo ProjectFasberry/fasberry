@@ -1,7 +1,7 @@
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
 import { action, atom, batch, Ctx } from "@reatom/core"
-import { withAssign, withReset } from "@reatom/framework"
+import { withReset } from "@reatom/framework"
 import { toast } from "sonner"
 import { logError } from "@/shared/lib/log"
 import { client, withJsonBody } from "@/shared/lib/client-wrapper"
@@ -125,8 +125,6 @@ export const authorize = reatomAsync(async (ctx) => {
 
     if (res instanceof ZodError) {
       const issue = res.issues.map(d => d)[0];
-      console.log(issue);
-
       const property = issue.path[0].toString() as ErrorType;
 
       batch(ctx, () => {
@@ -156,12 +154,7 @@ export const authorize = reatomAsync(async (ctx) => {
     }
   }
 }).pipe(
-  withStatusesAtom(),
-  withAssign((
-    (target) => ({
-      isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
-    }))
-  )
+  withStatusesAtom()
 )
 
 export const logout = reatomAsync(async (ctx) => {
@@ -183,10 +176,5 @@ export const logout = reatomAsync(async (ctx) => {
     }
   }
 }).pipe(
-  withStatusesAtom(),
-  withAssign((
-    (target) => ({
-      isLoading: atom((ctx) => ctx.spy(target.statusesAtom).isPending)
-    }))
-  )
+  withStatusesAtom()
 )

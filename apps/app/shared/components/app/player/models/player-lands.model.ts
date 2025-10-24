@@ -6,6 +6,7 @@ import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { userParamAtom } from "./player.model"
 import { client, withLogging } from "@/shared/lib/client-wrapper"
+import { isEmptyArray } from "@/shared/lib/array"
 
 export async function getLands(nickname: string, init?: RequestInit) {
   return client<PlayerLandsPayload>(`server/lands/list/${nickname}`, init)
@@ -30,7 +31,7 @@ export const playerLandsAction = reatomAsync(async (ctx, nickname: string) => {
 }, {
   name: "playerLandsAction",
   onFulfill: (ctx, res) => {
-    playerLandsAtom(ctx, res)
+    playerLandsAtom(ctx, isEmptyArray(res.data) ? null : res)
   },
   onReject: (ctx, e) => {
     logError(e)

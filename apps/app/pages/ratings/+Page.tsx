@@ -1,7 +1,6 @@
 import { Ratings } from "@/shared/components/app/ratings/components/rating-list";
 import { RatingNavigation } from "@/shared/components/app/ratings/components/rating-navigation";
 import { ratingsAction } from "@/shared/components/app/ratings/models/ratings.model";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { useUpdate } from "@reatom/npm-react";
@@ -33,17 +32,15 @@ export default function RatingsPage() {
   useUpdate(startEventsAction, []);
 
   return (
-    <MainWrapperPage>
-      <div className="flex flex-col gap-4 w-full h-full">
-        <RatingsPreviewImage />
-        <div className="flex flex-col gap-4 h-full w-full">
-          <Typography color="white" className="font-semibold text-2xl">
-            Рейтинг сервера
-          </Typography>
-          <RatingNavigation />
-          <Ratings />
-        </div>
+    <div className="flex flex-col gap-4 w-full h-full">
+      <RatingsPreviewImage />
+      <div className="flex flex-col gap-4 h-full w-full">
+        <Typography color="white" className="font-semibold text-2xl">
+          Рейтинг сервера
+        </Typography>
+        <RatingNavigation />
+        <Ratings />
       </div>
-    </MainWrapperPage>
+    </div>
   )
 }

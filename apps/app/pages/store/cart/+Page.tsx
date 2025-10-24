@@ -1,4 +1,3 @@
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { ReactNode } from "react";
@@ -20,17 +19,15 @@ export default function Page() {
   return (
     <>
       <CartLoader />
-      <MainWrapperPage>
-        <div className="flex flex-col gap-4 w-full h-full">
-          <div className="flex items-center gap-2">
-            <Typography className="text-3xl font-semibold">
-              Хранилище
-            </Typography>
-          </div>
-          <CartNavigation />
-          <Cart />
+      <div className="flex flex-col gap-4 w-full h-full">
+        <div className="flex items-center gap-2">
+          <Typography className="text-3xl font-semibold">
+            Хранилище
+          </Typography>
         </div>
-      </MainWrapperPage>
+        <CartNavigation />
+        <Cart />
+      </div>
     </>
   )
 }

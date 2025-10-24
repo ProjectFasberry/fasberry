@@ -11,6 +11,7 @@ import { getPlayer, playerAtom } from "@/shared/components/app/player/models/pla
 import { mergeSnapshot } from "@/shared/lib/snapshot";
 import dayjs from "@/shared/lib/create-dayjs"
 import { PlayerLandsPayload } from "@repo/shared/types/entities/land";
+import { isEmptyArray } from "@/shared/lib/array";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -59,7 +60,7 @@ async function processPlayer(
     console.error(e)
   }
 
-  playerLandsAtom(ctx, lands);
+  playerLandsAtom(ctx, isEmptyArray(lands?.data) ? null : lands);
 }
 
 export async function data(pageContext: PageContextServer) {

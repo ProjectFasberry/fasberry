@@ -1,4 +1,4 @@
-import Elysia, { t } from "elysia";
+import Elysia, { status, t } from "elysia";
 import { HttpStatusEnum } from 'elysia-http-status-code/status';
 import { defineOptionalUser, defineUser } from "#/lib/middlewares/define";
 import { AppOptionsPayload } from "@repo/shared/types/entities/other";
@@ -88,9 +88,20 @@ const validateNickname = new Elysia()
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   })
 
+const appDictionaries = new Elysia()
+  .get("/dictionaries", async ({ status }) => {
+    const data = {
+      "CHARISM": "Харизма",
+      "BELKOIN": "Белкоин"
+    }
+
+    return status(HttpStatusEnum.HTTP_200_OK, { data })
+  })
+
 const appOptions = new Elysia()
   .group("/app", app => app
     .use(appOptionsList)
+    .use(appDictionaries)
   )
 
 const healthCheck = new Elysia()

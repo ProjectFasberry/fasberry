@@ -1,21 +1,21 @@
 import { IconArrowRight, IconBasket, IconCategory, IconChevronUp, IconStars, IconUsersGroup } from "@tabler/icons-react";
 import { createLink, Link } from '@/shared/components/config/link';
 import { reatomComponent } from "@reatom/npm-react";
-import { currentUserAtom, currentUserPermsAtom } from "../models/current-user.model";
-import { Avatar } from "../components/app/avatar/components/avatar";
+import { currentUserAtom, currentUserPermsAtom } from "@/shared/models/current-user.model";
+import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { Button } from "@repo/ui/button";
 import { navigate } from "vike/client/router";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { Separator } from "@repo/ui/separator";
-import { logout } from "../components/app/auth/models/auth.model";
+import { logout } from "@/shared/components/app/auth/models/auth.model";
 import { atom, spawn } from "@reatom/framework";
 import { Fragment } from "react/jsx-runtime";
-import { isAuthAtom } from "../models/page-context.model";
+import { isAuthAtom } from "@/shared/models/page-context.model";
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { Switch } from "@repo/ui/switch";
-import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "../components/app/player/models/player-seems-like.model";
+import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "@/shared/components/app/player/models/player-seems-like.model";
 
 export const AuthorizeButton = () => {
   return (
@@ -84,7 +84,7 @@ const HeaderMenuActions = reatomComponent(({ ctx }) => {
       <PopoverClose asChild>
         <Button
           className="flex items-center justify-start gap-2 hover:bg-neutral-800 w-full rounded-lg px-2 py-1"
-          disabled={ctx.spy(logout.isLoading)}
+          disabled={ctx.spy(logout.statusesAtom).isPending}
           onClick={handle}
         >
           <Typography className="font-semibold text-red-500">

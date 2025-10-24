@@ -6,6 +6,7 @@ import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
 import { serverStatusAction } from "../models/intro.model";
 import { LANDING_ENDPOINT } from "@/shared/env";
+import { expImage } from "@/shared/consts/images";
 
 onConnect(serverStatusAction.dataAtom, serverStatusAction)
 
@@ -24,64 +25,58 @@ const IntroStatus = reatomComponent(({ ctx }) => {
   }
 
   return (
-    <Typography>
+    <Typography className="text-lg">
       {data?.proxy.online ?? 0}
     </Typography>
   )
 }, "IntroStatus")
 
-const IntroActions = () => {
-  return (
-    <div className="flex bottom-0 gap-4 absolute w-full items-center p-3 md:p-4 lg:p-6">
-      <a href={`${LANDING_ENDPOINT}/start`} target="_blank">
-        <Button className="bg-neutral-50">
-          <Typography className="text-nowrap text-base lg:text-lg text-neutral-950 font-semibold">
-            Начать играть
-          </Typography>
-        </Button>
-      </a>
-      <div className="hidden sm:flex items-center px-4 py-2 rounded-md bg-neutral-800 cursor-default">
-        <div className="flex items-center gap-1 *:inline *:truncate *:items-center *:gap-2 *:text-base *:lg:text-lg *:font-semibold">
-          <Typography>
-            Онлайн:
-          </Typography>
-          <IntroStatus />
-          <Typography>
-            игроков
-          </Typography>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 const introImage = getStaticImage("arts/general-preview.jpg");
 
-export const Intro = () => {  
+export const Intro = () => {
   return (
     <div
       id="intro"
-      className="flex items-center relative rounded-lg overflow-hidden w-full md:h-[400px] max-h-[400px]"
+      className="flex flex-col items-center relative rounded-xl overflow-hidden w-full md:h-96 min-h-72 max-h-80"
     >
       <img
         src={introImage}
         fetchPriority="high"
+        draggable={false}
         alt="Start"
+        className="absolute select-none w-full h-full object-cover z-[1]"
       />
-      <div className="flex select-none items-center gap-2 lg:gap-4 absolute top-0 p-3 md:p-4 lg:p-6">
-        <img
-          src="/favicon.ico"
-          draggable={false}
-          width={64}
-          height={64}
-          alt=""
-          className="w-auto h-auto max-h-[64px] max-w-[64px]"
-        />
-        <Typography className="text-xl md:text-2xl lg:text-4xl font-semibold">
-          Fasberry
-        </Typography>
+      <div className="flex flex-col z-[2] justify-between p-3 md:p-4 grow lg:p-6 h-full w-full relative">
+        <div className="flex flex-col items-start gap-4 w-full">
+          <Typography className="text-xl font-semibold">
+            Добро пожаловать!
+          </Typography>
+          <Typography className="text-2xl font-bold leading-tight">
+            Fasberry Project
+          </Typography>
+          <Typography className="text-base leading-tight truncate md:max-w-2/3 xl:max-w-2/5 text-wrap">
+            Присоединяйтесь к сообществу Fasberry, развивайтесь и проводите время в теплой и уютной компании!
+          </Typography>
+        </div>
+        <div className="flex flex-col gap-2 sm:gap-4 w-full items-start justify-end h-full">
+          <div className="flex items-center gap-1">
+            <img src={expImage} width={20} height={20} alt="" />
+            <IntroStatus />
+            <Typography className="text-lg">
+              играют сейчас
+            </Typography>
+          </div>
+          <div className="flex gap-4 w-full items-center">
+            <a href={`${LANDING_ENDPOINT}/start`} target="_blank">
+              <Button className="bg-neutral-50 rounded-xl">
+                <Typography className="truncate text-nowrap text-lg text-neutral-950 font-semibold">
+                  Начать играть
+                </Typography>
+              </Button>
+            </a>
+          </div>
+        </div>
       </div>
-      <IntroActions />
     </div>
   )
 }

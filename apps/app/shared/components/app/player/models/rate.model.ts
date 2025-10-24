@@ -3,12 +3,20 @@ import { isIdentityAtom, playerAtom } from "./player.model";
 import { currentUserAtom } from "@/shared/models/current-user.model";
 import { logError } from "@/shared/lib/log";
 import { client, withAbort } from "@/shared/lib/client-wrapper";
+import { isAuthAtom } from "@/shared/models/page-context.model";
+import { navigate } from "vike/client/router";
 
 export const rateUser = reatomAsync(async (ctx, nickname: string) => {
   if (ctx.get(isIdentityAtom)) return;
 
+  if (!ctx.get(isAuthAtom)) {
+    return ctx.schedule(() => navigate("/auth"))
+  }
+
   return await ctx.schedule(() =>
-    client.post<"rated" | "unrated">(`rate/${nickname}`).exec()
+    client
+      .post<"rated" | "unrated">(`rate/${nickname}`)
+      .exec()
   )
 }, {
   name: "rateUser",
@@ -57,4 +65,8 @@ export const rateListAction = reatomAsync(async (ctx) => {
       .pipe(withAbort(ctx.controller.signal))
       .exec()
   )
-}, "rateListAction").pipe(withStatusesAtom(), withDataAtom(null), withCache())
+}, "rateListAction").pipe(
+  withStatusesAtom(), 
+  withDataAtom(null), 
+  withCache({ swr: false })
+)

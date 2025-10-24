@@ -2,14 +2,25 @@ import Elysia from "elysia";
 import { general } from "#/shared/database/main-db";
 import z from "zod";
 import { PrivatedMethodsPayload } from "@repo/shared/types/entities/other";
+import { getStaticUrl } from "#/helpers/volume";
+
+async function getMethods() {
+  let query = await general
+    .selectFrom("payment_methods")
+    .selectAll()
+    .execute()
+
+  query = query.map((method) => ({
+    ...method,
+    imageUrl: getStaticUrl(method.imageUrl)
+  }))
+
+  return query;
+}
 
 export const storeMethodsList = new Elysia()
   .get("/list", async (ctx) => {
-    const data: PrivatedMethodsPayload = await general
-      .selectFrom("payment_methods")
-      .selectAll()
-      .execute()
-
+    const data: PrivatedMethodsPayload = await getMethods()
     return { data }
   })
 

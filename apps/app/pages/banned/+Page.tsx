@@ -2,8 +2,7 @@ import { logout } from "@/shared/components/app/auth/models/auth.model"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"
-import { action, atom } from "@reatom/core"
-import { MainWrapperPage } from "@/shared/components/config/wrapper"
+import { action } from "@reatom/core"
 import dayjs from "@/shared/lib/create-dayjs"
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { client } from "@/shared/lib/client-wrapper"
@@ -88,10 +87,8 @@ export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events), [pageContextAtom]);
 
   return (
-    <MainWrapperPage>
-      <div className="flex items-center h-[80vh] justify-center w-full">
-        <Banned />
-      </div>
-    </MainWrapperPage>
+    <div className="flex items-center h-[80vh] justify-center w-full">
+      <Banned />
+    </div>
   )
 }

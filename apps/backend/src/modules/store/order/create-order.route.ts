@@ -6,10 +6,10 @@ import { wrapError } from "#/helpers/wrap-error";
 import { getCartSelectedItems } from "../cart/cart.model";
 import { processStoreGamePurchase } from "./order.model";
 import { defineGlobalPrice } from "#/utils/store/store-transforms";
-import { getBalance } from "#/modules/user/balance.route";
 import { nanoid } from "nanoid";
 import { GameCurrency } from "@repo/shared/schemas/payment";
 import { withError } from "#/shared/schemas";
+import { getBalance } from "#/modules/user/balance.model";
 
 const ERRORS_MAP: Record<string, string> = {
   "TIMEOUT": "Похоже игровой сервер не доступен"

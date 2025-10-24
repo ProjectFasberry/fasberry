@@ -1,3 +1,4 @@
+import { EditorTest } from "@/shared/components/config/editor"
 import { Link } from "@/shared/components/config/link"
 import { locales } from "@/shared/locales"
 import { getClientLocale, translate } from "@/shared/locales/helpers"
@@ -22,7 +23,7 @@ const ChangeLanguage = reatomComponent(({ ctx }) => {
             locale={locale}
             href={pathname}
             data-state={currentLocale === locale}
-            className="data-[state=true]:bg-neutral-700/60 data-[state=false]:bg-neutral-900 px-2 py-1"
+            className="data-[state=true]:bg-neutral-600 data-[state=false]:bg-neutral-800 rounded-lg px-2 py-1"
           >
             {locale.toUpperCase()}
           </Link>
@@ -36,6 +37,7 @@ export default function Page() {
   return (
     <>
       <ChangeLanguage />
+      <EditorTest />
     </>
   )
 }

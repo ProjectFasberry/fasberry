@@ -6,43 +6,43 @@ import { Skeleton } from "@repo/ui/skeleton";
 import { AtomState, onConnect } from "@reatom/framework";
 import { NotFound } from "@/shared/ui/not-found";
 import { isClientAtom } from "@/shared/models/page-context.model";
+import { scrollableVariant } from "@/shared/consts/style-variants";
 
 const EventsSkeleton = () => {
   return (
     <>
-      <Skeleton className="sm:w-64 h-48 flex-shrink-0" />
-      <Skeleton className="sm:w-64 h-48 flex-shrink-0" />
+      <Skeleton className="sm:w-64 h-48" />
+      <Skeleton className="sm:w-64 h-48" />
     </>
   )
 }
 
 onConnect(eventsAction, eventsAction)
 
-const EventCard = ({ 
-  content, id, type, title 
-}: NonNullable<AtomState<typeof eventsAction.dataAtom>>[number]) => {
+type EventCardProps = NonNullable<AtomState<typeof eventsAction.dataAtom>>[number]
+
+const EventCard = ({ content, id, title }: EventCardProps) => {
+  const created_at = dayjs(content.created_at).fromNow();
+  
   return (
     <div
       id={id}
-      className="flex flex-col justify-between bg-neutral-800 rounded-lg p-4 w-full sm:w-64 h-48 duration-200 flex-shrink-0"
+      className="flex flex-col justify-between border border-neutral-800 rounded-xl p-2 sm:p-4 h-48 sm:w-64 w-full"
     >
-      <div className="bg-neutral-50 rounded-md px-3 py-1 w-full truncate">
-        <Typography color="black" className="text-base font-semibold truncate">
+      <div className="flex items-center justify-start bg-neutral-50 rounded-lg p-2 w-full truncate">
+        <Typography className="text-neutral-950 text-base font-bold truncate">
           {title}
         </Typography>
       </div>
       <div className="flex flex-col justify-between h-full mt-2">
         {content.description && (
-          <Typography color="gray" className="text-sm line-clamp-3">
+          <Typography className="text-base line-clamp-3">
             {content.description}
           </Typography>
         )}
-        <div className="mt-auto flex flex-col gap-0.5">
-          <Typography className="text-sm font-medium truncate">
-            by {content.initiator}
-          </Typography>
-          <Typography color="gray" className="text-xs">
-            {dayjs(content.created_at).fromNow()}
+        <div className="flex flex-col justify-center items-end w-full">
+          <Typography color="gray" className="text-sm">
+            {created_at}
           </Typography>
         </div>
       </div>
@@ -63,17 +63,7 @@ const EventsList = reatomComponent(({ ctx }) => {
 
   if (!data) return <NotFound title="Ивентов нет" />
 
-  return (
-    data.map((event) => (
-      <EventCard
-        key={event.id}
-        type={event.type}
-        title={event.title}
-        content={event.content}
-        id={event.id}
-      />
-    ))
-  )
+  return data.map(event => <EventCard key={event.id} {...event}/>)
 }, "EventsList")
 
 export const Events = () => {
@@ -82,7 +72,7 @@ export const Events = () => {
       <Typography className="text-3xl font-bold">
         Последние события
       </Typography>
-      <div className="flex overflow-x-auto gap-4 pb-2">
+      <div className={scrollableVariant({ className: "flex overflow-x-auto gap-4 pb-2" })}>
         <EventsList />
       </div>
     </div>

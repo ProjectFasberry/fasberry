@@ -1,4 +1,4 @@
-import { reatomComponent } from "@reatom/npm-react";
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { playerActivityAction, playerLocationAction } from "../models/activity.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
@@ -26,6 +26,8 @@ const PlayerLocation = reatomComponent(({ ctx }) => {
 }, "PlayerLocation")
 
 export const PlayerActivity = reatomComponent(({ ctx }) => {
+  useUpdate(playerActivityAction, []);
+
   if (!ctx.spy(isClientAtom)) {
     return (
       <div className="flex w-full bg-neutral-900 rounded-lg p-4">

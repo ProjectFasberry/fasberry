@@ -8,6 +8,7 @@ import { storePrivate } from "./store";
 import { users } from "./users";
 import { roles } from "./roles";
 import { validateBannedStatus } from "#/lib/middlewares/validators";
+import { analytics } from "./analytics";
 
 const validateRole = new Elysia()
   .get('/validate', async ({ status }) => status(HttpStatusEnum.HTTP_200_OK, { data: true }))
@@ -23,4 +24,5 @@ export const privated = new Elysia()
     .use(storePrivate)
     .use(users)
     .use(roles)
+    .use(analytics)
   )

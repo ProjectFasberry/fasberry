@@ -33,7 +33,8 @@ export async function getStoreItems(
       "currency",
       "summary",
       "command",
-      "value"
+      "value",
+      "content"
     ])
     .orderBy("id", "asc")
 

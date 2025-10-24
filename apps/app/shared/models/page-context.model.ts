@@ -2,7 +2,7 @@ import { atom, Ctx } from "@reatom/core"
 import { PageContext } from "vike/types"
 import { snapshotAtom } from "../lib/ssr"
 import { localeDefault } from "../locales";
-import { appOptionsAtom } from "./app-options.model";
+import { appOptionsAtom } from "./app.model";
 
 export const pageContextAtom = atom<PageContext | null>(null, "pageContext");
 

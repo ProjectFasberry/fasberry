@@ -8,7 +8,7 @@ export const guard = async (pageContext: PageContextServer) => {
   logRouting(pageContext.urlPathname, "guard");
 
   const user = pageContext.snapshot[CURRENT_USER_KEY] ?? null;
-  if (!user) throw redirect("/store")
+  if (!user) throw redirect("/")
 
   const headers = pageContext.headers ?? undefined
 

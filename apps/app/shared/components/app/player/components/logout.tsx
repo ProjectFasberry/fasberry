@@ -17,7 +17,7 @@ export const Logout = reatomComponent(({ ctx }) => {
         Сессия
       </Typography>
       <Button
-        disabled={ctx.spy(logout.isLoading)}
+        disabled={ctx.spy(logout.statusesAtom).isPending}
         onClick={handle}
         className="bg-neutral-50 w-fit"
       >

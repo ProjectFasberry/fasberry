@@ -13,6 +13,7 @@ import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { ChangeRecipientDialog } from "../recipient/change-recipient";
 import { navigate } from "vike/client/router";
 import { IconPlus } from "@tabler/icons-react";
+import { expImage } from "@/shared/consts/images";
 
 export const sectionVariant = tv({
   base: `bg-neutral-900 gap-4 p-2 sm:p-3 lg:p-4 rounded-lg w-full`
@@ -66,8 +67,6 @@ const CartContentEmpty = () => {
     </div>
   )
 }
-
-const expImage = getStaticImage("icons/exp-active.webp")
 
 const cartDataIsEmptyAtom = atom((ctx) => ctx.spy(cartDataAtom).length === 0)
 

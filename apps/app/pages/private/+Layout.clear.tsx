@@ -1,30 +1,32 @@
 import { Link } from "@/shared/components/config/link";
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
+import { scrollableVariant } from "@/shared/consts/style-variants";
 import { Typography } from "@repo/ui/typography";
-import { ReactNode } from "react"
+import { PropsWithChildren } from "react"
 import { tv } from "tailwind-variants";
 
 const linkVariant = tv({
-  base: `rounded-lg w-fit border border-neutral-800 hover:bg-neutral-800 px-4 py-2 data-[state=active]:bg-neutral-800 data-[state=inactive]:bg-transparent`,
+  base: `group h-10 border-2 border-neutral-800 rounded-xl px-4 py-1 
+    data-[state=inactive]:bg-transparent data-[state=active]:bg-neutral-800`,
   slots: {
     text: "text-lg font-semibold text-nowrap text-neutral-50"
   }
 })
 
 const links = [
-  { title: "Конфиг", value: "/private/config" },
+  { title: "Конфигурация", value: "/private/config" },
   { title: "Действия", value: "/private/actions" },
   { title: "Аналитика", value: "/private/analytics" },
   { title: "Магазин", value: "/private/store" },
-  { title: "Юзеры", value: "/private/users" },
+  { title: "Игрок", value: "/private/users" },
   { title: "Test", value: "/private/test" },
 ]
 
 const Navigation = () => {
   return (
     <div
-      className="flex items-center justify-start w-full
-        scrollbar scrollbar-thumb-neutral-300 scrollbar-track-background-dark  overflow-x-auto gap-2 rounded-lg"
+      className={scrollableVariant({
+        className: "flex items-center overflow-x-auto pb-2 justify-start w-full gap-2 rounded-lg"
+      })}
     >
       {links.map((link) => (
         <Link key={link.title} href={link.value} className={linkVariant().base()}>
@@ -37,13 +39,11 @@ const Navigation = () => {
   )
 }
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: PropsWithChildren) {
   return (
-    <MainWrapperPage>
-      <div className="flex flex-col gap-2 h-full w-full">
-        <Navigation />
-        {children}
-      </div>
-    </MainWrapperPage>
+    <div className="flex flex-col gap-2 px-2 sm:px-6 h-full w-full">
+      <Navigation />
+      {children}
+    </div>
   )
 }

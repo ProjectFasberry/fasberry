@@ -18,6 +18,7 @@ async function getItem(id: number): Promise<StoreItem | null> {
       "value",
       "currency",
       "command",
+      "content"
     ])
     .where("id", "=", id)
     .executeTakeFirst()

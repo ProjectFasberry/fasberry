@@ -1,3 +1,4 @@
+import { getStaticUrl } from "#/helpers/volume";
 import { general } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
@@ -13,7 +14,8 @@ async function getNews(id: number) {
       'news.title',
       'news.description',
       'news.imageUrl',
-      'news.media_links',
+      'news.creator',
+      'news.content',
       eb.fn.count('news_views.id').as('views')
     ])
     .where("news.id", "=", id)
@@ -23,12 +25,18 @@ async function getNews(id: number) {
       'news.title',
       'news.description',
       'news.imageUrl',
-      'news.media_links'
+      'news.creator',
+      'news.content'
     ])
     .limit(1)
     .executeTakeFirst()
 
-  return query ?? null;
+  if (!query) return null;
+
+  return {
+    ...query,
+    imageUrl: getStaticUrl(query.imageUrl)
+  }
 }
 
 export const newsSolo = new Elysia()

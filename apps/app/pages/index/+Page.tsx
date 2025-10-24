@@ -1,4 +1,3 @@
-import { MainWrapperPage } from "@/shared/components/config/wrapper";
 import { Typography } from "@repo/ui/typography";
 import { IconArrowRight } from "@tabler/icons-react";
 import { News } from "@/shared/components/app/news/components/news";
@@ -30,15 +29,13 @@ const Contacts = () => {
   )
 }
 
-export default function IndexPage() {
+export default function Page() {
   return (
-    <MainWrapperPage>
-      <div className='flex flex-col gap-8 w-full h-full'>
-        <Intro />
-        <News />
-        <Events />
-        <Contacts />
-      </div>
-    </MainWrapperPage>
+    <div className='flex flex-col gap-8 w-full h-full'>
+      <Intro />
+      <News />
+      <Events />
+      <Contacts />
+    </div>
   )
 }

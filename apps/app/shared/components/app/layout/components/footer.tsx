@@ -1,7 +1,7 @@
 import { IconBrandDiscordFilled, IconBrandTelegram } from "@tabler/icons-react"
-import { Link } from "../components/config/link"
+import { Link } from "../../../config/link"
 import { Typography } from "@repo/ui/typography"
-import { CONTACTS } from "../consts/contacts"
+import { CONTACTS } from "../../../../consts/contacts"
 
 const telegramHref = CONTACTS.find(t => t.value === 'tg')?.href as string
 const discordHref = CONTACTS.find(t => t.value === 'ds')?.href as string

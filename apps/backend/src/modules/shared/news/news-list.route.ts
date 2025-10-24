@@ -41,10 +41,12 @@ async function createNewsViews(target: { ids: number[], ip: string | null }) {
 const newsPayload = t.Object({
   id: t.Number(),
   title: t.String(),
-  created_at: t.String(),
+  created_at: t.Date(),
   description: t.String(),
   imageUrl: t.Union([t.String(), t.Null()]),
   views: t.Number(),
+  content: t.Object(t.Unknown()),
+  creator: t.String()
 })
 
 export const newsList = new Elysia()
@@ -69,7 +71,8 @@ export const newsList = new Elysia()
         'news.title',
         'news.description',
         'news.imageUrl',
-        'news.media_links',
+        'news.content',
+        'news.creator',
         eb.fn.countAll().as('views')
       ])
       .groupBy([
@@ -78,7 +81,8 @@ export const newsList = new Elysia()
         'news.title',
         'news.description',
         'news.imageUrl',
-        'news.media_links'
+        'news.content',
+        'news.creator'
       ])
 
     if (searchQuery) {
@@ -100,9 +104,8 @@ export const newsList = new Elysia()
 
     const data = res.rows.map((news) => ({
       ...news,
-      created_at: news.created_at.toString(),
       views: Number(news.views),
-      imageUrl: news.imageUrl ? getStaticUrl(news.imageUrl) : null
+      imageUrl: getStaticUrl(news.imageUrl)
     }))
 
     createNewsViews({

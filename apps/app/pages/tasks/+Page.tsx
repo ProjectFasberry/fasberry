@@ -2,7 +2,6 @@ import { Typography } from "@repo/ui/typography"
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/dialog"
 import { Button } from "@repo/ui/button"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
-import { MainWrapperPage } from "@/shared/components/config/wrapper"
 import { belkoinImage, charismImage } from "@/shared/components/app/shop/components/cart/cart-price"
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper"
@@ -174,20 +173,18 @@ export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events), [pageContextAtom]);
 
   return (
-    <MainWrapperPage>
-      <div className="flex lg:flex-row flex-col w-full gap-2">
-        <div className="flex flex-col gap-y-4 w-full !p-4">
-          <Typography color="white" className="text-2xl font-semibold">
-            Задания
-          </Typography>
-          <div className="flex flex-col gap-2 w-full h-full">
-            <TasksFilter />
-            <div className="grid lg:grid-cols-3 2xl:grid-cols-4 auto-rows-auto gap-4 w-full">
-              <Tasks />
-            </div>
+    <div className="flex lg:flex-row flex-col w-full gap-2">
+      <div className="flex flex-col gap-y-4 w-full !p-4">
+        <Typography color="white" className="text-2xl font-semibold">
+          Задания
+        </Typography>
+        <div className="flex flex-col gap-2 w-full h-full">
+          <TasksFilter />
+          <div className="grid lg:grid-cols-3 2xl:grid-cols-4 auto-rows-auto gap-4 w-full">
+            <Tasks />
           </div>
         </div>
       </div>
-    </MainWrapperPage>
+    </div>
   )
 }

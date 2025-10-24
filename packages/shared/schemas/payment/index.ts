@@ -74,7 +74,8 @@ export const storeItemSchema = z.object({
   value: z.string(),
   currency: z.string(),
   price: z.number(),
-  summary: z.string()
+  summary: z.string(),
+  content: z.object({}).loose().transform((v) => v as JsonValue)
 })
 
 export const GAME_CURRENCIES = ["CHARISM", "BELKOIN"] as const;
