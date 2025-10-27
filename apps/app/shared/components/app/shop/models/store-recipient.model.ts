@@ -59,7 +59,7 @@ function validateRecipient(recipient: string | null) {
 }
 
 async function getExistNickname(nickname: string) {
-  return client<string | null>(`validate-nickname/${nickname}`).exec()
+  return client<string | null>(`validate/nickname/${nickname}`).exec()
 }
 
 const ERRORS: Record<string, string> = {

@@ -12,7 +12,9 @@ export const validateLogger = logger.withTag("Validation")
 export const defineOptionalUser = () => new Elysia()
   .use(defineSession())
   .derive(async ({ session }) => {
-    validateLogger.log("defineOptionalUser");
+    if (!isProduction) {
+      validateLogger.log("defineOptionalUser");
+    }
 
     let nickname: string | null = null;
 
@@ -27,7 +29,9 @@ export const defineOptionalUser = () => new Elysia()
 export const defineUser = () => new Elysia()
   .use(defineSession())
   .derive(async ({ session, status }) => {
-    validateLogger.log("defineUser");
+    if (!isProduction) {
+      validateLogger.log("defineUser");
+    }
 
     if (!session) {
       throw status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
@@ -53,7 +57,9 @@ export const defineSession = () => new Elysia()
 
 export const defineClientId = () => new Elysia()
   .derive(async ({ cookie }) => {
-    validateLogger.log("defineClientId");
+    if (!isProduction) {
+      validateLogger.log("defineClientId");
+    }
 
     const existsClientId = cookie[CLIENT_ID_HEADER_KEY].value
 
@@ -86,7 +92,9 @@ export const defineInitiator = () => new Elysia()
   .use(defineSession())
   .use(defineOptionalUser())
   .derive(({ cookie, status, nickname }) => {
-    validateLogger.log("defineInitiator");
+    if (!isProduction) {
+      validateLogger.log("defineInitiator");
+    }
 
     const clientId = cookie[CLIENT_ID_HEADER_KEY].value as string | undefined;
 
@@ -101,36 +109,13 @@ export const defineInitiator = () => new Elysia()
   })
   .as("scoped")
 
-export const defineAdmin = () => new Elysia()
-  .use(defineUser())
-  .onBeforeHandle(async ({ nickname, status }) => {
-    validateLogger.log("defineAdmin");
-
-    const result = await general
-      .selectFrom("players")
-      .innerJoin("roles", "roles.id", "players.role_id")
-      .select(eb =>
-        eb.exists(
-          eb.selectFrom('players')
-            .innerJoin('roles', 'roles.id', 'players.role_id')
-            .where('players.nickname', '=', nickname)
-            .where('roles.name', '=', 'admin')
-        ).as('exists')
-      )
-      .where("players.nickname", "=", nickname)
-      .executeTakeFirstOrThrow()
-
-    if (!result.exists) {
-      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
-    }
-  })
-  .as("scoped")
-
 export const defineUserRole = () => new Elysia()
   .use(defineUser())
   .derive(async ({ nickname }) => {
-    validateLogger.log("defineUserRole");
-
+    if (!isProduction) {
+      validateLogger.log("defineUserRole");
+    }
+    
     const role = await general
       .selectFrom("players")
       .innerJoin("roles", "roles.id", "players.role_id")

@@ -42,6 +42,13 @@ export interface ActivityUsers {
   type: PlayerActivityEvent;
 }
 
+export interface AdminActivityLog {
+  created_at: Generated<Timestamp>;
+  event: string;
+  id: Generated<number>;
+  initiator: string;
+}
+
 export interface AUTH {
   HASH: string;
   IP: string | null;
@@ -205,6 +212,11 @@ export interface Players {
   uuid: string;
 }
 
+export interface PlayersPermissions {
+  nickname: string;
+  permission_id: number;
+}
+
 export interface Referrals {
   completed: Generated<boolean>;
   created_at: Generated<Timestamp>;
@@ -269,7 +281,7 @@ export interface StoreEconomy {
 
 export interface StoreItems {
   command: string | null;
-  content: Json | null;
+  content: Json;
   currency: StoreCurrency;
   description: Json | null;
   id: Generated<number>;
@@ -320,6 +332,7 @@ export interface VotedUsers {
 export interface DB {
   activity_heatmap: ActivityHeatmap;
   activity_users: ActivityUsers;
+  admin_activity_log: AdminActivityLog;
   AUTH: AUTH;
   banned_users: BannedUsers;
   banners: Banners;
@@ -341,6 +354,7 @@ export interface DB {
   payment_methods: PaymentMethods;
   permissions: Permissions;
   players: Players;
+  players_permissions: PlayersPermissions;
   referrals: Referrals;
   role_permissions: RolePermissions;
   roles: Roles;

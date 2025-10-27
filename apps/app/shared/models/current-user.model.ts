@@ -8,13 +8,23 @@ import { parseWrappedJson } from '../lib/client-wrapper';
 
 export const CURRENT_USER_KEY = 'currentUser'
 
+export const CONFIG_PANEL_READ_PERMISSION = "config.panel.read"
+
 export const currentUserAtom = atom<MePayload | null>(null, "currentUser").pipe(
   withReset(), withSsr(CURRENT_USER_KEY)
 );
 
-export const currentUserOptionsAtom = atom((ctx) => ctx.spy(currentUserAtom)?.options ?? null, "currentUserOptions")
+export const currentUserPermsAtom = atom((ctx) => ctx.spy(currentUserAtom)?.meta.permissions ?? [], "currentUserPerms");
 
-export const currentUserPermsAtom = atom((ctx) => ctx.spy(currentUserOptionsAtom)?.permissions ?? [], "currentUserPermsAtom")
+export const currentUserRoleAtom = atom((ctx) => {
+  const role = ctx.spy(currentUserAtom)?.meta.role
+  if (!role) return null;
+
+  return {
+    id: role.id,
+    name: role.name
+  }
+}, "currentUserRole")
 
 export async function getMe(init: RequestInit) {
   const headers = {

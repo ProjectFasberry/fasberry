@@ -36,8 +36,12 @@ const ChangeLanguage = reatomComponent(({ ctx }) => {
 export default function Page() {
   return (
     <>
-      <ChangeLanguage />
-      <EditorTest />
+      <div className="bg-neutral-900 rounded-xl p-4">
+        <ChangeLanguage />
+      </div>
+      <div className="bg-neutral-900 rounded-xl p-4">
+        <EditorTest />
+      </div>
     </>
   )
 }

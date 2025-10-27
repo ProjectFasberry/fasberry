@@ -1,5 +1,13 @@
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
-import { createBannerDescriptionAtom, createBannerHrefTitleAtom, createBannerHrefValueAtom, bannersAction, createBannerTitleAtom, createBannerAction, deleteBannerAction } from "../models/actions.model"
+import {
+  createBannerDescriptionAtom,
+  createBannerHrefTitleAtom,
+  createBannerHrefValueAtom,
+  bannersAction,
+  createBannerTitleAtom,
+  createBannerAction,
+  deleteBannerAction
+} from "../models/actions.model"
 import { Skeleton } from "@repo/ui/skeleton"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"

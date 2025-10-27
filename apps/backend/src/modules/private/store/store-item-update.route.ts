@@ -2,6 +2,9 @@ import Elysia from "elysia";
 import z from "zod";
 import { general } from "#/shared/database/main-db";
 import { JsonValue } from "@repo/shared/types/db/auth-database-types";
+import { validatePermission } from "#/lib/middlewares/validators";
+import { PERMISSIONS } from "#/shared/constants/permissions";
+import { createAdminActivityLog } from "../private.model";
 
 async function editStoreItem(id: number, opts: z.infer<typeof storeItemEditSchema>) {
   const query = await general
@@ -26,14 +29,19 @@ const storeItemEditSchema = z.object({
 })
 
 const storeItemEditFields = new Elysia()
+  .use(validatePermission(PERMISSIONS.STORE.ITEM.UPDATE))
   .get("/fields", async (ctx) => {
     return { data: EDITABLE_FIELDS }
   })
 
 const storeItemEdit = new Elysia()
-  .post("/:id", async ({ params, body }) => {
+  .use(validatePermission(PERMISSIONS.STORE.ITEM.UPDATE))
+  .post("/:id", async ({ nickname, params, body }) => {
     const id = params.id;
     const data = await editStoreItem(id, body);
+
+    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.STORE.ITEM.UPDATE })
+
     return { data }
   }, {
     params: z.object({

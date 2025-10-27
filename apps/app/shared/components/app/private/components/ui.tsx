@@ -1,15 +1,21 @@
 import { Link } from "@/shared/components/config/link"
+import { cn } from "@repo/shared/lib/cn"
 import { Button } from "@repo/ui/button"
-import { IconArrowRight, IconPencil, IconX } from "@tabler/icons-react"
+import { Icon, IconArrowRight, IconPencil, IconPlus, IconProps, IconX } from "@tabler/icons-react"
 import { ButtonHTMLAttributes } from "react"
+import { tv, VariantProps } from "tailwind-variants"
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>
+
+const baseVariant = tv({
+  base: `h-6 w-6 aspect-square p-0 bg-neutral-800`
+})
 
 export const DeleteButton = (props: ButtonProps) => {
   return (
     <Button
-      className="h-6 w-6 aspect-square p-0 bg-neutral-800"
       {...props}
+      className={cn(baseVariant(), props.className)}
     >
       <IconX size={18} />
     </Button>
@@ -19,8 +25,8 @@ export const DeleteButton = (props: ButtonProps) => {
 export const EditButton = (props: ButtonProps) => {
   return (
     <Button
-      className="h-6 w-6 aspect-square p-0 bg-neutral-800"
       {...props}
+      className={cn(baseVariant(), props.className)}
     >
       <IconPencil size={18} />
     </Button>
@@ -37,3 +43,52 @@ export const ToLink = ({ link }: { link: string }) => {
     </Link>
   )
 }
+
+export const AddButton = (props: ButtonProps) => {
+  return (
+    <Button
+      {...props}
+      className={baseVariant({ className: props.className })}
+    >
+      <IconPlus size={18} />
+    </Button >
+  )
+}
+
+const actionButtonVariant = tv({
+  base: `p-0 h-6 w-6`,
+  variants: {
+    variant: {
+      default: "bg-neutral-800 text-neutral-50",
+      selected: "bg-neutral-50 text-neutral-950"
+    }
+  }
+})
+
+type ActionButtonProps = ButtonProps & VariantProps<typeof actionButtonVariant> & {
+  icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>
+}
+
+export const ActionButton = ({ variant, icon: Icon, ...props }: ActionButtonProps) => {
+  return (
+    <Button
+      {...props}
+      className={actionButtonVariant({ variant })}
+    >
+      <Icon size={18} />
+    </Button>
+  )
+}
+
+export const itemVariant = tv({
+  base: `flex items-center justify-start h-8 border text-neutral-50 rounded-lg px-4 cursor-pointer`,
+  variants: {
+    variant: {
+      default: "border-neutral-800",
+      selected: "border-green-800"
+    }
+  },
+  defaultVariants: {
+    variant: "default"
+  }
+})

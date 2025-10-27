@@ -1,17 +1,15 @@
 import { PageContextServer } from "vike/types";
 import { redirect } from "vike/abort";
-import { validatePrivate } from "@/shared/lib/validators";
 import { logRouting } from "@/shared/lib/log";
-import { CURRENT_USER_KEY } from "@/shared/models/current-user.model";
+import { CONFIG_PANEL_READ_PERMISSION, CURRENT_USER_KEY } from "@/shared/models/current-user.model";
+import { MePayload } from "@repo/shared/types/entities/user";
 
 export const guard = async (pageContext: PageContextServer) => {
   logRouting(pageContext.urlPathname, "guard");
 
-  const user = pageContext.snapshot[CURRENT_USER_KEY] ?? null;
+  const user = pageContext.snapshot[CURRENT_USER_KEY]?.data as MePayload ?? null;
   if (!user) throw redirect("/")
 
-  const headers = pageContext.headers ?? undefined
-
-  const isValid = await validatePrivate({ headers })
+  const isValid = user.meta.permissions.includes(CONFIG_PANEL_READ_PERMISSION);
   if (!isValid) throw redirect("/")
 }

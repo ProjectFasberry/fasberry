@@ -6,12 +6,12 @@ export type MePayload = {
   meta: {
     login_date: Date,
     reg_date: Date,
+    role: {
+      id: number,
+      name: string
+    },
+    permissions: string[]
   },
-  options: MeOptions
-}
-
-export type MeOptions = {
-  permissions: string[]
 }
 
 export type Player = {

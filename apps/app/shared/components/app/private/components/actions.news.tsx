@@ -18,7 +18,6 @@ import { Skeleton } from "@repo/ui/skeleton";
 import { Avatar } from "../../avatar/components/avatar";
 import { createLink, Link } from "@/shared/components/config/link";
 import { Typography } from "@repo/ui/typography";
-import { IconArrowRight, IconPencil, IconX } from "@tabler/icons-react";
 import { Button } from "@repo/ui/button";
 import { News } from "@repo/shared/types/entities/news";
 import { Input } from "@repo/ui/input";
@@ -139,7 +138,6 @@ const CreateNewsForm = () => {
     </div>
   )
 }
-
 
 const EditNewsForm = reatomComponent(({ ctx }) => {
   const id = ctx.get(actionsTargetAtom);

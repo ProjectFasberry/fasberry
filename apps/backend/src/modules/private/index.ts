@@ -2,27 +2,30 @@ import Elysia from "elysia";
 import { options } from "./options";
 import { hideOpenApiConfig, openApiPlugin } from "#/lib/plugins/openapi";
 import { permissions } from "./permissions";
-import { defineAdmin } from "#/lib/middlewares/define";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { storePrivate } from "./store";
 import { users } from "./users";
 import { roles } from "./roles";
 import { validateBannedStatus } from "#/lib/middlewares/validators";
 import { analytics } from "./analytics";
-
-const validateRole = new Elysia()
-  .get('/validate', async ({ status }) => status(HttpStatusEnum.HTTP_200_OK, { data: true }))
+import { privatedNews } from "./news";
+import { privatedBanners } from "./banners";
+import { privatedModpacks } from "./modpacks";
+import { privatedEvents } from "./events";
+import { history } from "./history";
 
 export const privated = new Elysia()
   .use(validateBannedStatus())
   .use(openApiPlugin)
   .group("/privated", hideOpenApiConfig, ctx => ctx
-    .use(defineAdmin())
-    .use(validateRole)
     .use(options)
     .use(permissions)
     .use(storePrivate)
     .use(users)
     .use(roles)
+    .use(privatedNews)
+    .use(privatedBanners)
+    .use(privatedModpacks)
+    .use(privatedEvents)
     .use(analytics)
+    .use(history)
   )

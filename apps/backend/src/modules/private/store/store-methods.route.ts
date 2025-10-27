@@ -3,6 +3,9 @@ import { general } from "#/shared/database/main-db";
 import z from "zod";
 import { PrivatedMethodsPayload } from "@repo/shared/types/entities/other";
 import { getStaticUrl } from "#/helpers/volume";
+import { validatePermission } from "#/lib/middlewares/validators";
+import { PERMISSIONS } from "#/shared/constants/permissions";
+import { createAdminActivityLog } from "../private.model";
 
 async function getMethods() {
   let query = await general
@@ -19,13 +22,15 @@ async function getMethods() {
 }
 
 export const storeMethodsList = new Elysia()
+  .use(validatePermission(PERMISSIONS.STORE.METHODS.READ))
   .get("/list", async (ctx) => {
     const data: PrivatedMethodsPayload = await getMethods()
     return { data }
   })
 
 export const storeMethodsEdit = new Elysia()
-  .post("/edit/:method", async ({ params, body }) => {
+  .use(validatePermission(PERMISSIONS.STORE.METHODS.UPDATE))
+  .post("/edit/:method", async ({ nickname, params, body }) => {
     const method = params.method;
     const { key, value } = body;
 
@@ -35,6 +40,8 @@ export const storeMethodsEdit = new Elysia()
       .where("value", "=", method)
       .returning([key])
       .executeTakeFirstOrThrow()
+
+    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.STORE.METHODS.UPDATE })
 
     return { data }
   }, {

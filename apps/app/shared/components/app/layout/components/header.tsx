@@ -1,7 +1,7 @@
 import { IconArrowRight, IconBasket, IconCategory, IconChevronUp, IconStars, IconUsersGroup } from "@tabler/icons-react";
 import { createLink, Link } from '@/shared/components/config/link';
 import { reatomComponent } from "@reatom/npm-react";
-import { currentUserAtom, currentUserPermsAtom } from "@/shared/models/current-user.model";
+import { CONFIG_PANEL_READ_PERMISSION, currentUserAtom, currentUserPermsAtom } from "@/shared/models/current-user.model";
 import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { Button } from "@repo/ui/button";
 import { navigate } from "vike/client/router";
@@ -43,7 +43,7 @@ const MENU_LINKS = [
   {
     title: "Системная панель",
     href: "/private",
-    permission: "system_panel_access",
+    permission: CONFIG_PANEL_READ_PERMISSION,
     type: "privated"
   },
 ];
@@ -228,21 +228,27 @@ const HeaderCartTrigger = () => {
   )
 }
 
+export const Logotype = () => {
+  return (
+    <Link aria-label="Перейти на главную" href="/" className="flex h-full w-fit items-center gap-3">
+      <img src="/favicon.ico" width={48} height={48} alt="" className="min-w-12 w-12 max-h-12 min-h-12" />
+      <Typography className="hidden md:inline font-bold text-2xl">
+        Fasberry
+      </Typography>
+    </Link>
+  )
+}
+
 export const Header = () => {
   const pathname = usePageContext().urlPathname;
 
   return (
     <>
       <MobileBottomBar />
-      <div className="flex items-center justify-start w-full border-b border-neutral-800 relative z-[20] h-20 top-0">
+      <div className="flex items-center justify-start w-full border-b border-neutral-800 relative z-20 h-20 top-0">
         <div className="flex items-center justify-between px-2 gap-2 sm:px-6 w-full">
           <div className="w-1/5 bg-transparent h-14 relative">
-            <Link aria-label="Перейти на главную" href="/" className="flex h-full w-fit items-center gap-3">
-              <img src="/favicon.ico" width={48} height={48} alt="" className="min-w-12 w-12 max-h-12 min-h-12" />
-              <Typography className="hidden md:inline font-bold text-2xl">
-                Fasberry
-              </Typography>
-            </Link>
+            <Logotype/>
           </div>
           <div
             className="hidden md:flex w-3/5 justify-center items-center h-20 text-neutral-400

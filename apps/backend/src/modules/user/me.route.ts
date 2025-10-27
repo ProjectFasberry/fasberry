@@ -4,7 +4,7 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { defineOptionalUser } from "#/lib/middlewares/define";
 import { MePayload } from "@repo/shared/types/entities/user"
 import { validateBannedStatus } from "#/lib/middlewares/validators";
-import { defineOptions, getMe } from "./me.model";
+import { getPermissions, getMe } from "./me.model";
 
 export const me = new Elysia()
   .use(validateBannedStatus())
@@ -17,10 +17,12 @@ export const me = new Elysia()
         meta: t.Object({
           login_date: t.Date(),
           reg_date: t.Date(),
-        }),
-        options: t.Object({
+          role: t.Object({
+            id: t.Number(),
+            name: t.String()
+          }),
           permissions: t.Array(t.String())
-        })
+        }),
       })
     })
   })
@@ -35,20 +37,26 @@ export const me = new Elysia()
       return status(HttpStatusEnum.HTTP_404_NOT_FOUND, { data: null })
     }
 
-    const { reg_date, login_date, role_id, ...base } = query;
+    const { reg_date, login_date, role_id, role_name, ...base } = query;
 
-    const options = await defineOptions(role_id);
+    const permissions = await getPermissions(nickname, role_id);
 
     const loginDate = dayjs(Number(query.login_date)).toDate();
     const regDate = dayjs(Number(query.reg_date)).toDate()
 
+    const meta: MePayload["meta"] = {
+      login_date: loginDate,
+      reg_date: regDate,
+      role: {
+        id: role_id,
+        name: role_name
+      },
+      permissions
+    }
+
     const data: MePayload = {
       ...base,
-      meta: {
-        login_date: loginDate,
-        reg_date: regDate,
-      },
-      options
+      meta
     }
 
     return { data }

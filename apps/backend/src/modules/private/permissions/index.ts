@@ -1,9 +1,9 @@
 import Elysia from "elysia";
-import { defineAdmin } from "#/lib/middlewares/define";
-import { permissionsList } from "./permissions-list.route";
+import { permissionsListByRole } from "./permissions-by-role.route";
+import { permissionsListAll } from "./permissions-all.route";
 
 export const permissions = new Elysia()
-  .use(defineAdmin())
   .group("/permissions", app => app
-    .use(permissionsList)
+    .use(permissionsListAll)
+    .use(permissionsListByRole)
   )

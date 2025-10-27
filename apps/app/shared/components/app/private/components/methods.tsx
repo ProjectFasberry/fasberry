@@ -1,58 +1,10 @@
-import { client, withAbort, withJsonBody } from "@/shared/lib/client-wrapper";
-import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { sleep } from "@reatom/framework";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { PrivatedMethodsPayload } from "@repo/shared/types/entities/other";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Switch } from "@repo/ui/switch";
 import { Typography } from "@repo/ui/typography";
 import { tv } from "tailwind-variants";
-import { DEFAULT_SOFT_TIMEOUT } from "../../shop/models/store.model";
-import { toast } from "sonner";
-import { logError } from "@/shared/lib/log";
-
-const methodsAction = reatomAsync(async (ctx) => {
-  await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT));
-
-  return await ctx.schedule(() =>
-    client<PrivatedMethodsPayload>("privated/store/methods/list")
-      .pipe(withAbort(ctx.controller.signal))
-      .exec()
-  )
-}).pipe(withDataAtom(), withStatusesAtom(), withCache({ swr: false }))
-
-const editMethodAction = reatomAsync(async (ctx, method: string, key: string, value: boolean | string) => {
-  const body = { key, value }
-
-  const result = await ctx.schedule(() =>
-    client
-      .post<{ [key: string]: string | boolean }>(`privated/store/methods/edit/${method}`)
-      .pipe(withJsonBody(body))
-      .exec()
-  )
-
-  return { method, result }
-}, {
-  name: "editMethodAction",
-  onFulfill: (ctx, { result, method }) => {
-    toast.success("Изменения применены");
-
-    methodsAction.cacheAtom.reset(ctx);
-
-    methodsAction.dataAtom(ctx, (state) => {
-      if (!state) return undefined;
-
-      return state.map((item) =>
-        item.value === method
-          ? { ...item, ...result }
-          : item
-      );
-    })
-  },
-  onReject: (_, e) => {
-    logError(e, { type: "combined" })
-  }
-}).pipe(withStatusesAtom())
+import { editMethodAction, methodsAction } from "../models/methods.model";
 
 const methodVariant = tv({
   base: `flex items-center justify-between gap-1 border border-neutral-800 rounded-lg p-2 h-14 sm:h-18 w-full`,
@@ -84,7 +36,9 @@ const MethodSkeleton = () => {
   )
 }
 
-const Method = reatomComponent<PrivatedMethodsPayload[number]>(({ ctx, id, value, imageUrl, title, isAvailable }) => {
+const Method = reatomComponent<PrivatedMethodsPayload[number]>(({
+  ctx, id, value, imageUrl, title, isAvailable
+}) => {
   return (
     <div
       id={id.toString()}

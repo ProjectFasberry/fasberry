@@ -3,37 +3,25 @@ import { defineOptionalUser, defineSession, defineUserRole, validateLogger } fro
 import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getUserNickname } from "#/modules/auth/auth.model";
+import { getPermissions } from "#/modules/user/me.model";
+import { isProduction } from "#/shared/env";
 
-export const validatePermission = () => new Elysia()
+export const validatePermission = (permission: string) => new Elysia()
   .use(defineUserRole())
-  .derive(async ({ query: { event }, role, status }) => {
-    validateLogger.log("validatePermission");
-
-    const permission = event;
-
-    const query = await general
-      .selectFrom("permissions")
-      .innerJoin("role_permissions", "role_permissions.permission_id", "permission_id")
-      .select(eb => [
-        "role_permissions.role_id",
-        "role_permissions.permission_id as permission_id",
-        "permissions.name as permission_name",
-      ])
-      .where("role_permissions.role_id", "=", role.id)
-      .where("permissions.name", "=", permission)
-      .executeTakeFirst();
-
-    if (!query || !query.role_id) {
-      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "restricted by role")
+  .derive(async ({ role, nickname, status }) => {
+    if (!isProduction) {
+      validateLogger.log("validatePermission");
     }
 
-    return {
-      role,
-      permission: {
-        id: query.permission_id,
-        name: query.permission_name
-      }
+    const perms = await getPermissions(nickname, role.id)
+
+    const targetIsExist = perms.includes(permission)
+
+    if (!targetIsExist) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "restricted_by_role")
     }
+
+    return { role, permission }
   })
   .as("scoped")
 
@@ -41,7 +29,9 @@ export const validateAuthStatus = () => new Elysia()
   .use(defineSession())
   .onBeforeHandle(async ({ session, status }) => {
     if (session) {
-      validateLogger.log("validateAuthStatus");
+      if (!isProduction) {
+        validateLogger.log("validateAuthStatus");
+      }
 
       const nickname = await getUserNickname(session);
       console.log(session, nickname);
@@ -57,7 +47,9 @@ export const validateBannedStatus = () => new Elysia()
   .use(defineOptionalUser())
   .onBeforeHandle(async ({ nickname, status }) => {
     if (nickname) {
-      validateLogger.log("validateBannedStatus");
+      if (!isProduction) {
+        validateLogger.log("validateBannedStatus");
+      }
 
       const isExist = await general
         .selectFrom("banned_users")

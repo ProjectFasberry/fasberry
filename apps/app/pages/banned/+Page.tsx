@@ -31,7 +31,7 @@ const BannedActionButton = reatomComponent(({ ctx }) => {
 
 const bannedAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() =>
-    client<{ initiator: string, expires: Date, created_at: Date, reason: string | null, nickname: string }>("ban-status")
+    client<{ initiator: string, expires: Date, created_at: Date, reason: string | null, nickname: string }>("validate/ban")
       .exec()
   )
 }).pipe(withDataAtom(), withStatusesAtom(), withCache({ swr: false }))

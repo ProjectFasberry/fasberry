@@ -7,6 +7,8 @@ import { executeWithCursorPagination } from "kysely-paginate";
 import { wrapMeta } from "#/utils/config/transforms";
 import z from "zod";
 import { metaSchema, searchQuerySchema } from "#/shared/schemas";
+import { validatePermission } from "#/lib/middlewares/validators";
+import { PERMISSIONS } from "#/shared/constants/permissions";
 
 const USER_SORT = ["abc", "created_at", "role"]
 
@@ -27,7 +29,7 @@ const EXPRESSIONS: Record<UserListSchema["sort"], RequestedFields> = {
   "role": "role_id"
 }
 
-async function getUsersList({ asc, startCursor, searchQuery, endCursor, limit, sort }: UserListSchema) {
+async function getPlayersList({ asc, startCursor, searchQuery, endCursor, limit, sort }: UserListSchema) {
   const direction = getDirection(asc);
 
   let query = general
@@ -91,9 +93,10 @@ async function getUsersList({ asc, startCursor, searchQuery, endCursor, limit, s
   }
 }
 
-export const usersList = new Elysia()
+export const playersList = new Elysia()
+  .use(validatePermission(PERMISSIONS.PLAYERS.READ))
   .get("/list", async ({ query }) => {
-    const data: PrivatedUsersPayload = await getUsersList(query);
+    const data: PrivatedUsersPayload = await getPlayersList(query);
     return { data }
   }, {
     query: userListSchema

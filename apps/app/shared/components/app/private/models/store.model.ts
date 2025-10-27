@@ -6,6 +6,7 @@ import { StoreItemsPayload } from "@repo/shared/types/entities/store";
 import { client, withJsonBody } from "@/shared/lib/client-wrapper";
 import { toast } from "sonner";
 import { alertDialogIsOpenAtom, openAlertDialogAction } from "@/shared/components/config/alert-dialog";
+import { notifyAboutRestrictRole } from "./actions.model";
 
 export const createStoreItemTitleAtom = atom("", "createStoreItemTitle");
 export const createStoreItemDescriptionAtom = atom<string | null>(null, "createStoreItemDescription");
@@ -72,6 +73,7 @@ export const createStoreItemAction = reatomAsync(async (ctx) => {
 
   },
   onReject: (_, e) => {
+    notifyAboutRestrictRole(e)
     logError(e, { type: "combined" })
   }
 }).pipe(withStatusesAtom())

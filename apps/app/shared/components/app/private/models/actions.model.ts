@@ -39,7 +39,7 @@ export const createEventAction = reatomAsync(async (ctx) => {
 
   return await ctx.schedule(() =>
     client
-      .post<EventPayload>("server/events/create", { throwHttpErrors: false })
+      .post<EventPayload>("privated/events/create", { throwHttpErrors: false })
       .pipe(withJsonBody(json), withLogging())
       .exec()
   )
@@ -97,6 +97,14 @@ export const newsListAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() => getNews({}, { asc: false }))
 }).pipe(withDataAtom(null), withStatusesAtom(), withCache({ swr: false }))
 
+export function notifyAboutRestrictRole(e: Error | unknown) {
+  if (e instanceof Error) {
+    if (e.message === 'restricted_by_role') {
+      toast.error("Действие недоступно из-за политики ролей")
+    }
+  }
+}
+
 export const createNewsAction = reatomAsync(async (ctx) => {
   const json = {
     title: ctx.get(createNewsTitleAtom),
@@ -107,7 +115,7 @@ export const createNewsAction = reatomAsync(async (ctx) => {
 
   return await ctx.schedule(() =>
     client
-      .post<News>("shared/news/create")
+      .post<News>("privated/news/create")
       .pipe(withJsonBody(json), withLogging())
       .exec()
   )
@@ -127,6 +135,7 @@ export const createNewsAction = reatomAsync(async (ctx) => {
     resetNewsFields(ctx)
   },
   onReject: (ctx, e) => {
+    notifyAboutRestrictRole(e)
     logError(e)
   }
 }).pipe(withStatusesAtom())
@@ -134,7 +143,7 @@ export const createNewsAction = reatomAsync(async (ctx) => {
 export const deleteNewsAction = reatomAsync(async (ctx, id: number) => {
   return await ctx.schedule(() =>
     client
-      .delete<{ id: number }>(`shared/news/${id}`)
+      .delete<{ id: number }>(`privated/news/${id}`)
       .exec()
   )
 }, {
@@ -151,6 +160,7 @@ export const deleteNewsAction = reatomAsync(async (ctx, id: number) => {
     })
   },
   onReject: (ctx, e) => {
+    notifyAboutRestrictRole(e)
     logError(e)
   }
 }).pipe(withStatusesAtom())
@@ -158,7 +168,7 @@ export const deleteNewsAction = reatomAsync(async (ctx, id: number) => {
 export const deleteBannerAction = reatomAsync(async (ctx, id: number) => {
   return await ctx.schedule(() =>
     client
-      .delete<{ id: number }>(`shared/banner/${id}`)
+      .delete<{ id: number }>(`privated/banners/${id}`)
       .exec()
   )
 }, {
@@ -173,6 +183,7 @@ export const deleteBannerAction = reatomAsync(async (ctx, id: number) => {
     })
   },
   onReject: (ctx, e) => {
+    notifyAboutRestrictRole(e)
     logError(e)
   }
 }).pipe(withStatusesAtom())
@@ -209,7 +220,7 @@ export const createBannerAction = reatomAsync(async (ctx) => {
 
   return await ctx.schedule(() =>
     client
-      .post<BannerPayload>("shared/banner/create")
+      .post<BannerPayload>("privated/banners/create")
       .pipe(withJsonBody(json))
       .exec()
   )
@@ -229,6 +240,7 @@ export const createBannerAction = reatomAsync(async (ctx) => {
     resetBannerFields(ctx)
   },
   onReject: (ctx, e) => {
+    notifyAboutRestrictRole(e)
     logError(e)
   }
 }).pipe(withStatusesAtom())

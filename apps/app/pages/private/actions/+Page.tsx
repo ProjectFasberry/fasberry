@@ -8,9 +8,10 @@ import { Typography } from "@repo/ui/typography"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { pageContextAtom } from "@/shared/models/page-context.model"
 import { actionsCanGoBackAtom, actionsGoBackAction, actionsParentAtom, actionsSearchParamsAtom } from "@/shared/components/app/private/models/actions.model"
-import { AtomState } from "@reatom/core"
+import { action, AtomState } from "@reatom/core"
 import { Button } from "@repo/ui/button"
 import { IconArrowLeft } from "@tabler/icons-react"
+import { startPageEvents } from "@/shared/lib/events"
 
 const ActionsBack = reatomComponent<{ 
   parent: NonNullable<AtomState<typeof actionsParentAtom>> 
@@ -38,24 +39,26 @@ const ActionsHeader = (
   )
 }
 
-export default function Page() {
-  useUpdate((ctx) => {
-    const pageContext = ctx.get(pageContextAtom);
-    if (!pageContext) return;
+const events = action((ctx) => {
+  const pageContext = ctx.get(pageContextAtom);
+  if (!pageContext) return;
 
-    actionsSearchParamsAtom(ctx, pageContext.urlParsed.search)
-  }, [pageContextAtom])
+  actionsSearchParamsAtom(ctx, pageContext.urlParsed.search)
+})
+
+export default function Page() {
+  useUpdate((ctx) => startPageEvents(ctx, events), [pageContextAtom])
 
   return (
-    <>
-      <div className="flex flex-col gap-4 w-full h-full p-4 rounded-xl bg-neutral-800/40">
+    <div className="flex flex-col gap-4 w-full h-full">
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
         <ActionsHeader parent="event" title="Ивенты" />
         <div className="flex flex-col gap-2 w-full h-full">
           <CreateEventForm />
           <CreateEventSubmit />
         </div>
       </div>
-      <div className="flex flex-col gap-4 w-full h-full p-4 rounded-xl bg-neutral-800/40">
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
         <ActionsHeader parent="banner" title="Баннеры" />
         <BannersList />
         <div className="flex flex-col gap-2">
@@ -63,10 +66,10 @@ export default function Page() {
           <CreateBanner />
         </div>
       </div>
-      <div className="flex flex-col gap-4 w-full h-full p-4 rounded-xl bg-neutral-800/40">
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
         <ActionsHeader parent="news" title="Новости" />
         <NewsWrapper />
       </div>
-    </>
+    </div>
   )
 }

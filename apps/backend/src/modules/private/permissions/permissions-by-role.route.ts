@@ -1,4 +1,5 @@
-import { defineUserRole } from "#/lib/middlewares/define";
+import { validatePermission } from "#/lib/middlewares/validators";
+import { PERMISSIONS } from "#/shared/constants/permissions";
 import { general } from "#/shared/database/main-db";
 import Elysia from "elysia";
 import z from "zod";
@@ -7,7 +8,7 @@ const permissionsSchema = z.object({
   type: z.enum(["accessed", "restricted", "all"]).optional().default("all")
 })
 
-async function getPermissions(
+async function getPermissionsByRole(
   roleId: number,
   { type }: z.infer<typeof permissionsSchema>
 ) {
@@ -37,12 +38,15 @@ async function getPermissions(
   return base.execute();
 }
 
-export const permissionsList = new Elysia()
-  .use(defineUserRole())
-  .get("/list", async ({ role, query }) => {
-    const roleId = role.id;
-    const data = await getPermissions(roleId, query);
+export const permissionsListByRole = new Elysia()
+  .use(validatePermission(PERMISSIONS.PERMISSIONS.READ))
+  .get("/list/:roleId", async ({ params, query }) => {
+    const roleId = params.roleId;
+    const data = await getPermissionsByRole(roleId, query);
     return { data }
   }, {
-    query: permissionsSchema
+    query: permissionsSchema,
+    params: z.object({
+      roleId: z.coerce.number()
+    })
   })

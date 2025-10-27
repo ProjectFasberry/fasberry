@@ -2,6 +2,7 @@ import { client, withJsonBody } from "@/shared/lib/client-wrapper";
 import { logError } from "@/shared/lib/log";
 import { reatomAsync, withCache, withStatusesAtom } from "@reatom/async";
 import { reatomMap } from "@reatom/framework";
+import { notifyAboutRestrictRole } from "./actions.model";
 
 type Option = {
   title: string,
@@ -26,7 +27,8 @@ export const updateOptionAction = reatomAsync(async (ctx, name: Option["name"], 
     optionsAtom.set(ctx, updatedOption.name, updatedOption)
   },
   onReject: (ctx, e) => {
-    logError(e, { type: "combined" })
+    notifyAboutRestrictRole(e)
+    logError(e)
   }
 })
 
@@ -41,6 +43,7 @@ export const optionsAction = reatomAsync(async (ctx) => {
     optionsAtom(ctx, options)
   },
   onReject: (ctx, e) => {
+    notifyAboutRestrictRole(e)
     logError(e)
   }
 }).pipe(withStatusesAtom(), withCache({ swr: false }))

@@ -2,7 +2,10 @@ import { getRedis } from "#/shared/redis/init";
 import { EventPayload } from "@repo/shared/types/entities/other";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { EVENTS_ALL_KEY, EVENTS_TARGET_KEY, EVENTS_TYPE_KEY } from "./events.model";
+import { EVENTS_ALL_KEY, EVENTS_TARGET_KEY, EVENTS_TYPE_KEY } from "../../server/events/events.model";
+import { validatePermission } from "#/lib/middlewares/validators";
+import { PERMISSIONS } from "#/shared/constants/permissions";
+import { createAdminActivityLog } from "../private.model";
 
 async function deleteEvent(id: string) {
   const redis = getRedis();
@@ -34,8 +37,12 @@ async function deleteEvent(id: string) {
 }
 
 export const eventsDelete = new Elysia()
-  .delete("/:id", async ({ params }) => {
+  .use(validatePermission(PERMISSIONS.EVENTS.DELETE))
+  .delete("/:id", async ({ nickname, params }) => {
     const id = params.id;
     const data = await deleteEvent(id)
+
+    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.EVENTS.DELETE })
+
     return { data }
   })
