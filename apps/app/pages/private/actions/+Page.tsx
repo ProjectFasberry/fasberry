@@ -1,40 +1,45 @@
-import {
-  CreateEventSubmit,
-  CreateEventForm,
-} from "@/shared/components/app/private/components/actions.events"
-import { BannersList, CreateBanner, CreateBannerForm } from "@/shared/components/app/private/components/actions.banner"
-import { NewsWrapper } from "@/shared/components/app/private/components/actions.news"
+import { CreateEvent, EditEvent, EventsWrapper } from "@/shared/components/app/private/components/actions.events"
+import { BannersWrapper, CreateBanner, EditBanner } from "@/shared/components/app/private/components/actions.banner"
+import { CreateNews, EditNews, NewsWrapper } from "@/shared/components/app/private/components/actions.news"
 import { Typography } from "@repo/ui/typography"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { pageContextAtom } from "@/shared/models/page-context.model"
-import { actionsCanGoBackAtom, actionsGoBackAction, actionsParentAtom, actionsSearchParamsAtom } from "@/shared/components/app/private/models/actions.model"
-import { action, AtomState } from "@reatom/core"
-import { Button } from "@repo/ui/button"
-import { IconArrowLeft } from "@tabler/icons-react"
+import { ActionParent, actionsSearchParamsAtom, actionsTypeAtom, ActionType } from "@/shared/components/app/private/models/actions.model"
+import { action } from "@reatom/core"
 import { startPageEvents } from "@/shared/lib/events"
+import { ReactNode } from "react"
 
-const ActionsBack = reatomComponent<{ 
-  parent: NonNullable<AtomState<typeof actionsParentAtom>> 
-}>(({ ctx, parent }) => {
-  const canGoBack = ctx.spy(actionsCanGoBackAtom(parent));
-  if (!canGoBack) return null;
+const list: Record<string, Partial<Record<ActionType, ReactNode>>> = {
+  "news": {
+    "create": <CreateNews />,
+    "edit": <EditNews />,
+  },
+  "event": {
+    "create": <CreateEvent />,
+    "edit": <EditEvent />
+  },
+  "banner": {
+    "create": <CreateBanner />,
+    "edit": <EditBanner />,
+  }
+}
 
-  return (
-    <Button onClick={() => actionsGoBackAction(ctx)} className="bg-neutral-800 h-8 w-8 aspect-square p-0">
-      <IconArrowLeft size={18} />
-    </Button>
-  )
-}, "ActionsBack")
+const ActionsHeaderSlot = reatomComponent<{ parent: ActionParent }>(({ ctx, parent }) => {
+  const type = ctx.spy(actionsTypeAtom);
+  return list[parent][type] ?? list[parent]["create"]
+}, "ActionsHeaderSlot")
 
 const ActionsHeader = (
-  { title, parent }: { title: string, parent: NonNullable<AtomState<typeof actionsParentAtom>> }
+  { title, parent }: { title: string, parent: ActionParent }
 ) => {
   return (
-    <div className="flex items-center gap-2 h-8">
-      <ActionsBack parent={parent} />
-      <Typography className="text-xl font-semibold">
-        {title}
-      </Typography>
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2 h-8">
+        <Typography className="text-xl font-semibold">
+          {title}
+        </Typography>
+      </div>
+      <ActionsHeaderSlot parent={parent} />
     </div>
   )
 }
@@ -53,18 +58,11 @@ export default function Page() {
     <div className="flex flex-col gap-4 w-full h-full">
       <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
         <ActionsHeader parent="event" title="Ивенты" />
-        <div className="flex flex-col gap-2 w-full h-full">
-          <CreateEventForm />
-          <CreateEventSubmit />
-        </div>
+        <EventsWrapper />
       </div>
       <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
         <ActionsHeader parent="banner" title="Баннеры" />
-        <BannersList />
-        <div className="flex flex-col gap-2">
-          <CreateBannerForm />
-          <CreateBanner />
-        </div>
+        <BannersWrapper />
       </div>
       <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
         <ActionsHeader parent="news" title="Новости" />

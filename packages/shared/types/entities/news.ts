@@ -5,7 +5,7 @@ export type News = {
   title: string;
   created_at: string | Date;
   description: string;
-  imageUrl: string | null;
+  imageUrl: string;
   views: number;
   creator: string,
   content: Json

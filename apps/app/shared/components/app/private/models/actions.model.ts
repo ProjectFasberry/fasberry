@@ -26,7 +26,7 @@ function resetEventFields(ctx: Ctx) {
 }
 
 export const eventsListAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(() => getEvents({}, {}))
+  return await ctx.schedule(() => getEvents({ signal: ctx.controller.signal }, { limit: 12 }))
 }).pipe(withDataAtom(null), withCache({ swr: false }), withStatusesAtom())
 
 export const createEventAction = reatomAsync(async (ctx) => {
@@ -246,10 +246,22 @@ export const createBannerAction = reatomAsync(async (ctx) => {
 }).pipe(withStatusesAtom())
 
 // 
+
+export type ActionParent = "news" | "banner" | "event"
+export type ActionType = "create" | "edit" | "view"
 export const actionsSearchParamsAtom = reatomRecord<Record<string, string>>({}, "actionsSearchParams").pipe(withReset())
-export const actionsParentAtom = atom<"news" | "banner" | "event" | null>(null, "actionsParent").pipe(withReset())
-export const actionsTypeAtom = atom<"create" | "edit" | "view">("view", "actionsType").pipe(withReset())
+export const actionsParentAtom = atom<ActionParent | null>(null, "actionsParent").pipe(withReset())
+export const actionsTypeAtom = atom<ActionType>("view", "actionsType").pipe(withReset())
 export const actionsTargetAtom = atom<string | null>(null, "actionsTarget").pipe(withReset())
+
+export const getIsSelectedActionAtom = (targetParent: ActionParent, targetType: ActionType) => atom(
+  (ctx) => {
+    const parent = ctx.spy(actionsParentAtom) === targetParent;
+    const type = ctx.spy(actionsTypeAtom) === targetType
+    return parent && type
+  },
+  "getIsSelectedAction"
+)
 
 actionsSearchParamsAtom.onChange((ctx, state) => {
   const { parent, type, target } = state
@@ -277,7 +289,7 @@ type CreateLinkParams = {
   target?: string,
 }
 
-export const createActionsLink = (ctx: Ctx, params: CreateLinkParams) => {
+export const createActionsLinkValue = (ctx: Ctx, params: CreateLinkParams) => {
   const url = new URL(window.location.href);
   const next = { ...ctx.get(actionsSearchParamsAtom) }
 
@@ -299,7 +311,13 @@ export const createActionsLink = (ctx: Ctx, params: CreateLinkParams) => {
   if (params.type !== 'create' && params.target?.trim()) {
     next.target = params.target
     url.searchParams.set('target', params.target)
-  }
+  }  
+
+  return { next, url }
+}
+
+export const createActionsLink = (ctx: Ctx, params: CreateLinkParams) => {
+  const { next, url } = createActionsLinkValue(ctx, params)
 
   actionsSearchParamsAtom(ctx, next)
   window.history.pushState({}, '', url)

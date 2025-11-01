@@ -13,6 +13,6 @@ export const registerSchema = z.intersection(
   authSchema,
   z.object({
     findout: z.string().min(1),
-    referrer: z.string().optional()
+    findoutType: z.enum(["custom", "referrer"])
   })
 )

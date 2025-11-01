@@ -1,7 +1,12 @@
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import {
+  getIsSelectedActionAtom,
+  ActionParent,
+  actionsGoBackAction,
+  actionsParentAtom,
   actionsTargetAtom,
   actionsTypeAtom,
+  ActionType,
   createActionsLink,
   createNewsAction,
   createNewsContentAtom,
@@ -25,9 +30,10 @@ import { editorExtensions, EditorMenuBar } from "@/shared/components/config/edit
 import { EditorContent, generateJSON, useEditor } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extensions";
 import { toast } from "sonner";
-import { AtomState } from "@reatom/core";
+import { atom, AtomState } from "@reatom/core";
 import { ReactNode } from "react";
 import { DeleteButton, EditButton, ToLink } from "./ui";
+import { IconPlus, IconX } from "@tabler/icons-react";
 
 const CreateNewsSubmit = reatomComponent(({ ctx }) => {
   const isDisabled = !ctx.spy(createNewsIsValidAtom) || ctx.spy(createNewsAction.statusesAtom).isPending;
@@ -36,10 +42,10 @@ const CreateNewsSubmit = reatomComponent(({ ctx }) => {
     <Button
       disabled={isDisabled}
       onClick={() => createNewsAction(ctx)}
-      className="w-fit px-4 bg-neutral-50"
+      className="px-4 bg-neutral-50"
     >
       <Typography className="text-lg font-semibold text-neutral-950">
-        Создать новость
+        Создать
       </Typography>
     </Button>
   )
@@ -126,7 +132,7 @@ const CreateNewsImage = reatomComponent(({ ctx }) => {
 
 const CreateNewsForm = () => {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-full">
       <CreateNewsTitle />
       <CreateNewsDesc />
       <CreateNewsImage />
@@ -134,7 +140,9 @@ const CreateNewsForm = () => {
         <CreateNewsContent />
         <CreateNewsContentApply />
       </div>
-      <CreateNewsSubmit />
+      <div className="w-fit">
+        <CreateNewsSubmit />
+      </div>
     </div>
   )
 }
@@ -157,18 +165,6 @@ const EditNewsForm = reatomComponent(({ ctx }) => {
     </div>
   )
 })
-
-const CreateNews = reatomComponent(({ ctx }) => {
-  return (
-    <Button
-      onClick={() => createActionsLink(ctx, { parent: "news", type: "create" })}
-      className="w-full border border-neutral-800 rounded-lg text-neutral-50 font-semibold text-lg"
-    >
-      Создать новость
-    </Button>
-  )
-}, "CreateNews")
-
 
 const NewsListItem = reatomComponent<News>(({ ctx, id, title, imageUrl, creator }) => {
   return (
@@ -227,22 +223,61 @@ const NewsList = reatomComponent(({ ctx }) => {
 
   if (!data) return null;
 
-  return data.map(news => <NewsListItem key={news.id} {...news} />)
-}, "NewsList")
-
-const NewsView = () => {
   return (
-    <>
-      <NewsList />
-      <CreateNews />
-    </>
+    <div className="flex flex-col w-full gap-2 h-full">
+      {data.map(news => <NewsListItem key={news.id} {...news} />)}
+    </div>
   )
-}
+}, "NewsList")
 
 const NEWS_VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
   "create": <CreateNewsForm />,
   "edit": <EditNewsForm />,
-  "view": <NewsView />
+  "view": <NewsList />
 }
 
-export const NewsWrapper = reatomComponent(({ ctx }) => NEWS_VARIANTS[ctx.spy(actionsTypeAtom)], "NewsWrapper")
+export const getSelectedParentAtom = (parent: ActionParent) => atom((ctx) => ctx.spy(actionsParentAtom) === parent)
+
+export const NewsWrapper = reatomComponent(({ ctx }) => {
+  if (!ctx.spy(getSelectedParentAtom("news"))) {
+    return NEWS_VARIANTS["view"]
+  }
+
+  return NEWS_VARIANTS[ctx.spy(actionsTypeAtom)]
+}, "NewsWrapper")
+
+export const CreateNews = () => <ToActionButtonX title="Создать" parent="news" type="create" />
+export const EditNews = () => <ToActionButtonX parent="news" type="edit" />
+
+export const ToActionButtonX = reatomComponent<{
+  parent: ActionParent, type: ActionType, title?: string
+}>(({
+  ctx, parent, type, title
+}) => {
+  const isSelected = ctx.spy(getIsSelectedActionAtom(parent, type));
+
+  const handle = () => {
+    if (isSelected) {
+      actionsGoBackAction(ctx)
+    } else {
+      createActionsLink(ctx, { parent, type })
+    }
+  }
+
+  if (!isSelected && type === 'edit') return null;
+
+  return (
+    <Button
+      onClick={handle}
+      data-state={isSelected ? "selected" : "default"}
+      className="
+        h-8 min-w-8 gap-2 border border-neutral-800 rounded-lg font-semibold text-lg
+        data-[state=selected]:text-neutral-950 data-[state=selected]:bg-neutral-50 data-[state=selected]:p-0
+        data-[state=default]:text-neutral-50 data-[state=default]:bg-transparent data-[state=default]:px-4
+      "
+    >
+      {isSelected ? null : title}
+      {isSelected ? <IconX size={18} /> : <IconPlus size={18} />}
+    </Button>
+  )
+}, "ToActionButtonX")

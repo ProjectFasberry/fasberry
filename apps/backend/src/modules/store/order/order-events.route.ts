@@ -7,7 +7,7 @@ import { getOrder } from "./order.model";
 
 const getPaymentEventsSubject = (uniqueId: string) => `payment.events.${uniqueId}`
 
-const sseLogger = logger.withTag("SSE")
+export const sseLogger = logger.withTag("SSE")
 
 export const orderEvents = new Elysia()
   .get("/:id/events", async function* (ctx) {

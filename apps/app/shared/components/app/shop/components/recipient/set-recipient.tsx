@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { Input } from "@repo/ui/input";
 import { Switch } from "@repo/ui/switch";
 import { Typography } from "@repo/ui/typography";
+import { addItemToCartAction } from "../../models/store-cart.model";
 
 const SetRecipientField = reatomComponent(({ ctx }) => {
   const error = ctx.spy(setRecipientErrorAtom);
@@ -49,7 +50,7 @@ const SetRecipientPreference = reatomComponent(({ ctx }) => {
 }, "SetRecipientPreference")
 
 const SetRecipientSave = reatomComponent(({ ctx }) => {
-  const handle = () => void spawn(ctx, async (spawnCtx) => saveRecipientAction(spawnCtx))
+  const handle = () => void spawn(ctx, async (spawnCtx) => saveRecipientAction(spawnCtx, addItemToCartAction))
 
   return (
     <Button

@@ -1,36 +1,48 @@
 import { reatomComponent } from "@reatom/npm-react";
 import {
   acceptRulesAtom,
-  authorize,
+  authorizeAction,
   globalErrorAtom,
-  errorTypeAtom,
+  errorsTypeAtom,
   findoutAtom,
-  isValidAtom,
+  authIsValidAtom,
   nicknameAtom,
   passwordAtom,
   typeAtom,
-  resetErrors
+  auth,
+  passwordShowAtom,
+  findoutTypeAtom,
+  FINDOUT_OPTIONS,
+  findoutSelectedTypeAtom,
 } from "../models/auth.model";
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input"
 import { tv } from "tailwind-variants";
 import { Typography } from "@repo/ui/typography";
-import { toast } from "sonner";
 import { LANDING_ENDPOINT } from "@/shared/env";
+import { Eye, EyeOff } from "lucide-react";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@repo/ui/select"
+import { AtomState } from "@reatom/core";
+import { ReactNode } from "react";
 
 const authInput = tv({
-  base: `p-2 text-lg bg-transparent border rounded-md data-[state=error]:border-red-500 data-[state=default]:border-neutral-600`
+  base: `p-2 h-12 text-lg w-full placeholder:text-neutral-400 
+    bg-transparent border data-[state=error]:border-red-500 data-[state=default]:border-neutral-600`
 })
 
-const Nickname = reatomComponent(({ ctx }) => {
-  const state = ctx.spy(errorTypeAtom).includes("nickname") ? "error" : "default"
+const NicknameInput = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorsTypeAtom).includes("nickname") ? "error" : "default"
 
   return (
     <Input
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck="false"
       className={authInput()}
       data-state={state}
       value={ctx.spy(nicknameAtom)}
-      onClick={() => resetErrors(ctx)}
+      autoComplete="new-nickname"
+      onClick={() => auth.resetError(ctx)}
       onChange={e => nicknameAtom(ctx, e.target.value)}
       placeholder="Никнейм"
       maxLength={32}
@@ -38,46 +50,126 @@ const Nickname = reatomComponent(({ ctx }) => {
   )
 }, "Nickname")
 
-const Password = reatomComponent(({ ctx }) => {
-  const state = ctx.spy(errorTypeAtom).includes("password") ? "error" : "default"
+const PasswordInput = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorsTypeAtom).includes("password") ? "error" : "default"
+
+  const show = ctx.spy(passwordShowAtom)
 
   return (
-    <Input
-      className={authInput()}
-      data-state={state}
-      value={ctx.spy(passwordAtom)}
-      onClick={() => resetErrors(ctx)}
-      onChange={e => passwordAtom(ctx, e.target.value)}
-      placeholder="Пароль"
-      maxLength={64}
-      type="password"
-    />
+    <div className="flex relative items-center justify-between w-full">
+      <Input
+        className={authInput()}
+        data-state={state}
+        value={ctx.spy(passwordAtom)}
+        onClick={() => auth.resetError(ctx)}
+        onChange={e => passwordAtom(ctx, e.target.value)}
+        placeholder="Пароль"
+        autoComplete="new-password"
+        maxLength={64}
+        type={show ? "text" : "password"}
+      />
+      <div
+        className="absolute cursor-pointer right-0 top-1/2 text-neutral-400 -translate-1/2"
+        onClick={() => passwordShowAtom(ctx, (state) => !state)}
+      >
+        {show ? <Eye size={18} /> : <EyeOff size={18} />}
+      </div>
+    </div>
   )
 }, "Password")
 
-const Findout = reatomComponent(({ ctx }) => {
-  const state = ctx.spy(errorTypeAtom).includes("findout") ? "error" : "default"
+const FindoutReferrerInput = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorsTypeAtom).includes("findout") ? "error" : "default"
 
   return (
     <Input
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck="false"
+      autoComplete="new-referrer"
+      placeholder="Никнейм"
+      data-state={state}
+      className={authInput()}
+      value={ctx.spy(findoutAtom) ?? ""}
+      onClick={() => auth.resetError(ctx)}
+      onChange={e => findoutAtom(ctx, e.target.value)}
+      maxLength={32}
+    />
+  )
+}, "Referrer")
+
+const FindoutOtherInput = reatomComponent(({ ctx }) => {
+  const state = ctx.spy(errorsTypeAtom).includes("findout") ? "error" : "default"
+
+  return (
+    <Input
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck="false"
+      autoComplete="new-other"
+      placeholder="Например: Telegram-канал"
       className={authInput()}
       data-state={state}
-      value={ctx.spy(findoutAtom)}
-      onClick={() => resetErrors(ctx)}
+      value={ctx.spy(findoutAtom) ?? ""}
+      onClick={() => auth.resetError(ctx)}
       onChange={e => findoutAtom(ctx, e.target.value)}
-      placeholder="Откуда узнали о проекте?"
       maxLength={128}
     />
   )
 }, "Findout")
+
+const FINDOUT_COMPONENTS: Record<NonNullable<AtomState<typeof findoutTypeAtom>>, ReactNode> = {
+  "referrer": <FindoutReferrerInput />,
+  "custom": <FindoutOtherInput />
+}
+
+const FindoutOptions = reatomComponent(({ ctx }) => {
+  const currentItem = ctx.spy(findoutSelectedTypeAtom)
+  
+  return (
+    <Select
+      defaultValue={currentItem?.value}
+      onValueChange={v => findoutTypeAtom(ctx, v as AtomState<typeof findoutTypeAtom>)}
+    >
+      <SelectTrigger className={authInput({ className: "min-h-12 border-neutral-600" })}>
+        {currentItem ? (
+          <span className="text-neutral-50">{currentItem.title}</span>
+        ) : (
+          <SelectValue placeholder="Откуда узнали о проекте?" />
+        )}
+      </SelectTrigger>
+      <SelectContent>
+        {FINDOUT_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.title}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}, "FindoutOptions")
+
+const FindoutComponent = reatomComponent(({ ctx }) => {
+  const currentValue = ctx.spy(findoutTypeAtom)
+  return currentValue ? FINDOUT_COMPONENTS[currentValue] : null
+}, "FindoutComponent")
+
+const Findout = () => {
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <FindoutOptions />
+      <FindoutComponent />
+    </div>
+  )
+}
 
 export const SubmitAuth = reatomComponent(({ ctx }) => {
   return (
     <Button
       variant="minecraft"
       className="bg-neutral-600 w-full rounded-lg"
-      onClick={() => authorize(ctx)}
-      disabled={ctx.spy(authorize.statusesAtom).isPending || !ctx.spy(isValidAtom)}
+      onClick={() => authorizeAction(ctx)}
+      disabled={ctx.spy(authorizeAction.statusesAtom).isPending || !ctx.spy(authIsValidAtom)}
     >
       <Typography className="font-semibold  text-lg">
         {ctx.spy(typeAtom) === 'register' ? "Зарегистрироваться" : "Войти"}
@@ -85,17 +177,6 @@ export const SubmitAuth = reatomComponent(({ ctx }) => {
     </Button>
   )
 }, "Submit")
-
-const ResetPassword = reatomComponent(({ ctx }) => {
-  return (
-    <Typography
-      className='cursor-pointer text-center text-lg text-neutral-400'
-      onClick={() => toast.warning("Пока не доступно.")}
-    >
-      Я забыл пароль
-    </Typography>
-  )
-}, "ResetPassword")
 
 const checkbox = tv({
   base: `peer h-5 w-5 lg:h-6 lg:w-6 cursor-pointer transition-all appearance-none
@@ -137,44 +218,45 @@ const PrivacyTerms = reatomComponent(({ ctx }) => {
       <label className="select-none cursor-pointer relative -top-1" htmlFor="rules">
         <Typography className="text-base sm:text-lg">
           Я согласен(-на) с положениями
-          <a href="/legal/terms" target="_blank" className="inline text-green-500">&nbsp;пользовательского соглашения</a>,
-          <a href="/legal/privacy" target="_blank" className=" inline text-green-500">&nbsp;политикой конфиденциальности&nbsp;</a>
+          <a href="/legal/terms" target="_blank" className="inline text-green-500">
+            &nbsp;пользовательского соглашения
+          </a>,
+          <a href="/legal/privacy" target="_blank" className=" inline text-green-500">
+            &nbsp;политикой конфиденциальности&nbsp;
+          </a>
           и
-          <a href={`${LANDING_ENDPOINT}/rules`} target="_blank" className="inline text-green-500">&nbsp;правилами проекта</a>.
+          <a href={`${LANDING_ENDPOINT}/rules`} target="_blank" className="inline text-green-500">
+            &nbsp;правилами проекта
+          </a>.
         </Typography>
       </label>
     </div>
   )
 }, "PrivacyTerms")
 
+export const AuthError = reatomComponent(({ ctx }) => {
+  const error = ctx.spy(globalErrorAtom)
+  if (!error) return null;
+
+  return <Typography className='font-semibold text-red-500'>{error}</Typography>
+}, "AuthError")
+
 export const RegisterForm = reatomComponent(({ ctx }) => {
   return (
     <div className="flex flex-col gap-4 w-full h-full">
-      <Nickname />
-      <Password />
+      <NicknameInput />
+      <PasswordInput />
       <Findout />
       <PrivacyTerms />
     </div>
   )
 }, "RegisterForm")
 
-export const AuthError = reatomComponent(({ ctx }) => {
-  const error = ctx.spy(globalErrorAtom)
-  if (!error) return null;
-
-  return (
-    <Typography className='font-semibold text-base text-red-500'>
-      {error}
-    </Typography>
-  )
-}, "AuthError")
-
 export const LoginForm = () => {
   return (
     <div className="flex flex-col gap-4 w-full h-full">
-      <Nickname />
-      <Password />
-      <ResetPassword />
+      <NicknameInput />
+      <PasswordInput />
     </div>
   )
 }

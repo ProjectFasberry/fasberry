@@ -3,6 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import vike from "vike/plugin";
 import tsconfigPaths from 'vite-tsconfig-paths'
+import path from "path"
+import { analyzer } from 'vite-bundle-analyzer';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
@@ -15,29 +17,15 @@ export default defineConfig(({ mode }) => {
       vike(),
       react(),
       tailwindcss(),
-      tsconfigPaths()
+      tsconfigPaths(),
+      analyzer({ enabled: false })
     ],
     ssr: {
       noExternal: ['@tabler/icons-react']
     },
     build: {
       target: "es2022",
-      minify: "esbuild",
-      sourcemap: true,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (
-              id.includes('node_modules') &&
-              // solution to error when sentry tries to initiate variable access before .env assignment
-              // Uncaught ReferenceError: Cannot access '.env.dsn' before initialization
-              !id.includes("sentry")
-            ) {
-              return id.toString().split('node_modules/')[1].split('/')[0].toString();
-            }
-          }
-        }
-      },
+      sourcemap: true
     },
     resolve: {
       dedupe: ['react', 'react-dom'],

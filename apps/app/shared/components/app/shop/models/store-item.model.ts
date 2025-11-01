@@ -1,13 +1,11 @@
 import { reatomAsync, withStatusesAtom } from "@reatom/async";
-import { action, atom, batch, Ctx } from "@reatom/core";
-import { cartDataAtom, getCartData, cartPriceAtom } from "./store-cart.model";
-import { sleep, withInit, withReset } from "@reatom/framework";
+import { action, atom, batch } from "@reatom/core";
+import { addItemToCartAction, updateCart } from "./store-cart.model";
 import { logError } from "@/shared/lib/log";
-import { isAuthAtom } from "@/shared/models/page-context.model";
-import { getRecipient, setRecipientDialogIsOpenAtom, setRecipientItemIdAtom, setRecipientValueAtom, storeGlobalRecipientAtom } from "./store-recipient.model";
-import { currentUserAtom } from "@/shared/models/current-user.model";
 import type { StoreItem } from "@repo/shared/types/entities/store"
 import { client, withJsonBody, withLogging } from "@/shared/lib/client-wrapper";
+import { itemStatusesAtom, SelectItemToCartOptions, simulate } from "./store-item-status.model";
+import { cartDataAtom } from "./store-cart.model.atoms";
 
 export async function getStoreItem(id: string, init: RequestInit) {
   return client<StoreItem>(`store/item/${id}`, { ...init, throwHttpErrors: false, })
@@ -39,30 +37,6 @@ export const updateItemSelectedStatus = reatomAsync(async (ctx, id: number) => {
   }
 }).pipe(withStatusesAtom())
 
-type SelectItemToCartOptions = {
-  isSelected: boolean,
-  isLoading: boolean
-}
-
-type SelectItemToCartStatus = Record<number, SelectItemToCartOptions>
-
-const itemStatusesAtom = atom<SelectItemToCartStatus | null>(null, `itemStatuses`).pipe(
-  withInit((ctx) => {
-    const target = ctx.get(cartDataAtom)
-
-    const record = target.reduce<SelectItemToCartStatus>((acc, item) => {
-      acc[item.id] = {
-        isLoading: false,
-        isSelected: true
-      };
-
-      return acc;
-    }, {});
-
-    return record
-  }),
-  withReset()
-);
 
 type UpdateItemStatusOptions =
   | { patch: Partial<SelectItemToCartOptions> }
@@ -108,42 +82,6 @@ export const handleItemToCart = action((ctx, id: number) => {
   }
 }, "handleItemToCart")
 
-export async function updateCart(ctx: Ctx) {
-  const data = await getCartData()
-
-  batch(ctx, () => {
-    cartDataAtom(ctx, data.products)
-    cartPriceAtom(ctx, data.price);
-  })
-}
-
-function simulate(ctx: Ctx, id: number, type: "load" | "select" | "unload" | "unselect") {
-  itemStatusesAtom(ctx, (state) => {
-    const prev = state?.[id] ?? { isLoading: false, isSelected: false };
-    const next = { ...prev };
-
-    switch (type) {
-      case "load":
-        next.isLoading = true;
-        break;
-      case "unload":
-        next.isLoading = false;
-        break;
-      case "select":
-        next.isSelected = true;
-        break;
-      case "unselect":
-        next.isSelected = false;
-        break;
-    }
-
-    return {
-      ...state,
-      [id]: next,
-    };
-  });
-}
-
 export const removeItemFromCartAction = reatomAsync(async (ctx, id: number) => {
   simulate(ctx, id, "load")
 
@@ -183,70 +121,3 @@ export const removeItemFromCartAction = reatomAsync(async (ctx, id: number) => {
   },
 }).pipe(withStatusesAtom())
 
-export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
-  const isAuth = ctx.get(isAuthAtom);
-
-  if (!isAuth) {
-    const currentRecipient = ctx.get(setRecipientValueAtom);
-
-    if (!currentRecipient) {
-      const globalRecipient = ctx.get(storeGlobalRecipientAtom);
-      
-      if (!globalRecipient) {
-        setRecipientDialogIsOpenAtom(ctx, true);
-        setRecipientItemIdAtom(ctx, id);
-        return;
-      }
-    }
-  } else {
-    const currentUser = ctx.get(currentUserAtom)
-    if (!currentUser) throw new Error('Current user is not defined')
-
-    setRecipientValueAtom(ctx, currentUser.nickname)
-  }
-
-  simulate(ctx, id, "load")
-
-  const recipient = getRecipient(ctx)
-
-  try {
-    await ctx.schedule(() => sleep(60));
-
-    const result = await ctx.schedule(() =>
-      client
-        .post<boolean>("store/cart/add")
-        .pipe(withJsonBody({ id, recipient }), withLogging())
-        .exec()
-    )
-
-    return { id, result }
-  } catch (e) {
-    simulate(ctx, id, 'unload');
-    throw e
-  }
-}, {
-  name: "addItemToCartAction",
-  onFulfill: (ctx, res) => {
-    if (!res) return;
-
-    const { result, id } = res
-
-    if (!id) {
-      console.warn("Store target id is not defined")
-      throw new Error("Store target id is not defined")
-    }
-
-    batch(ctx, () => {
-      simulate(ctx, id, "select")
-      simulate(ctx, id, "unload");
-    })
-
-    updateCart(ctx)
-    setRecipientValueAtom.reset(ctx);
-  },
-  onReject: (ctx, e) => {
-    logError(e, { type: "combined" })
-
-    setRecipientValueAtom.reset(ctx);
-  }
-}).pipe(withStatusesAtom())

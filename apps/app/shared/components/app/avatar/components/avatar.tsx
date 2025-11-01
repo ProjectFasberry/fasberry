@@ -24,8 +24,8 @@ interface AvatarProps extends HTMLAttributes<HTMLDivElement>,
 const AvatarImage = reatomComponent<AvatarProps>(({
   ctx, className, children, withStatus, variant, propWidth, propHeight, nickname, ...props
 }) => {
-  const url = getAvatar(ctx, nickname)
-  const isLoading = getAvatarState(ctx, nickname)
+  const url = ctx.spy(getAvatar(nickname))
+  const isLoading = ctx.spy(getAvatarState(nickname))
 
   if (isLoading) {
     return <Skeleton style={{ height: propHeight, width: propWidth }} />

@@ -2,14 +2,14 @@ import { currentUserAtom } from "@/shared/models/current-user.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
-import { logout } from "../../auth/models/auth.model";
+import { logoutAction } from "../../auth/models/auth.model";
 import { spawn } from "@reatom/framework";
 
 export const Logout = reatomComponent(({ ctx }) => {
   const currentUser = ctx.spy(currentUserAtom)
   if (!currentUser) return null;
 
-  const handle = () => void spawn(ctx, async (spawnCtx) => logout(spawnCtx))
+  const handle = () => void spawn(ctx, async (spawnCtx) => logoutAction(spawnCtx))
 
   return (
     <div className="flex items-center justify-between w-full">
@@ -17,7 +17,7 @@ export const Logout = reatomComponent(({ ctx }) => {
         Сессия
       </Typography>
       <Button
-        disabled={ctx.spy(logout.statusesAtom).isPending}
+        disabled={ctx.spy(logoutAction.statusesAtom).isPending}
         onClick={handle}
         className="bg-neutral-50 w-fit"
       >

@@ -14,7 +14,14 @@ export const Toaster = () => {
   return (
     <ToasterInit
       position="top-left"
-      richColors
+      toastOptions={{
+        classNames: {
+          success: "text-green-500!",
+          info: "text-neutral-950!",
+          error: "text-red-500!",
+          warning: "text-yellow-500!",
+        },
+      }}
       icons={icons}
     />
   )

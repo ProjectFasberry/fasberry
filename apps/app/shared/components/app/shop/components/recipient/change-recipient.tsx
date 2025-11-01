@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog"
 import { Typography } from "@repo/ui/typography"
 import { Input } from "@repo/ui/input"
 import { Button } from "@repo/ui/button"
+import { updateCart } from "../../models/store-cart.model"
 
 const ChangeRecipientError = reatomComponent(({ ctx }) => {
   const error = ctx.spy(changeRecipientErrorAtom);
@@ -49,7 +50,7 @@ const ChangeRecipientSave = reatomComponent<{ id: number }>(({ ctx, id }) => {
     <Button
       className="bg-neutral-50 px-4 w-fit self-end text-neutral-950 font-semibold"
       disabled={isDisabled}
-      onClick={() => changeRecipientAction(ctx, id)}
+      onClick={() => changeRecipientAction(ctx, id, updateCart)}
     >
       Применить
     </Button>

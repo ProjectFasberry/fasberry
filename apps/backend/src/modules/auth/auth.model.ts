@@ -3,7 +3,9 @@ import { general } from "#/shared/database/main-db"
 import { getRedis } from "#/shared/redis/init"
 import { logger } from "#/utils/config/logger"
 import { safeJsonParse } from "#/utils/config/transforms"
+import { DB } from "@repo/shared/types/db/auth-database-types"
 import { registerSchema } from "@repo/shared/types/entities/auth"
+import { Transaction } from "kysely"
 import z from "zod"
 
 export const DEFAULT_SESSION_EXPIRE = 60 * 60 * 24 * 30 // 30 days
@@ -190,15 +192,48 @@ type CreateUser = Omit<z.infer<typeof registerSchema>, "token"> & {
   ip: string
 }
 
-// todo: impl ref syystem
-async function registerReferrer({ initiator, recipient }: { initiator: string, recipient: string }) {
+async function registerReferrer(
+  { referrer, referral, trx }: { referrer: string, referral: string, trx: Transaction<DB> }
+) {
+  const isExist = await trx
+    .selectFrom("players")
+    .select("nickname")
+    .where("nickname", "=", referrer)
+    .executeTakeFirst()
 
+  if (!isExist?.nickname) {
+    logger.withTag('Referals').warn(`Referrer ${referrer} is not defined as player`)
+    return;
+  }
+
+  const isValidByLimitReferrer = await trx
+    .selectFrom("referrals")
+    .select("id")
+    .where("referrer", "=", referrer)
+    .execute()
+
+  if (isValidByLimitReferrer.length >= 4) {
+    logger.withTag('Referals').warn(`Referals limit by referrer`)
+    return;
+  }
+
+  const query = await trx
+    .insertInto("referrals")
+    .values({
+      referrer,
+      referral
+    })
+    .executeTakeFirstOrThrow()
+
+  logger.withTag('Referals').log(`Registered new referal ${referral} of ${referrer}`)
+
+  return query;
 }
 
 export async function createUser({
-  nickname, findout, password, referrer, uuid, ip
+  nickname, findout, password, uuid, ip, findoutType
 }: CreateUser) {
-  return general.transaction().execute(async (trx) => {
+  const result = await general.transaction().execute(async (trx) => {
     const regDateMs = new Date().getTime();
     const lowerCaseNickname = nickname.toLowerCase();
 
@@ -226,13 +261,16 @@ export async function createUser({
         .executeTakeFirstOrThrow()
     ])
 
-    await general
-      .insertInto("findout")
-      .values({ nickname, value: findout })
-      .executeTakeFirst()
+    if (findoutType === 'referrer') {
+      const referrer = findout;
+      const referral = nickname;
 
-    if (referrer) {
-      await registerReferrer({ initiator: nickname, recipient: referrer })
+      await registerReferrer({ trx, referral, referrer })
+    } else if (findoutType === 'custom') {
+      await trx
+        .insertInto("findout")
+        .values({ nickname, value: findout })
+        .executeTakeFirstOrThrow()
     }
 
     logger
@@ -241,6 +279,8 @@ export async function createUser({
 
     return user;
   })
+
+  return result
 }
 
 export function generateOfflineUUID(nickname: string): string {

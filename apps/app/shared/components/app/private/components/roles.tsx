@@ -8,11 +8,8 @@ import { AddButton, DeleteButton, EditButton } from "./ui"
 import { tv } from "tailwind-variants"
 import { IconPlus } from "@tabler/icons-react"
 import {
-  addDeletedPermAction,
-  addDeletedPermRoleAction,
-  addNewPermAction,
   deletedPermIsSelectedAtom,
-  deleteNewPermAction,
+  permission,
   permIsSelectedAtom,
   permissionsByRoleListAction,
   roleAvailablePermsAtom,
@@ -76,8 +73,8 @@ const RolesListItemPermsItem = reatomComponent<RolePayload>(({ ctx, id, name }) 
         </div>
       </div>
       {selected
-        ? <AddButton onClick={() => addDeletedPermRoleAction(ctx, id)} />
-        : <DeleteButton onClick={() => addDeletedPermAction(ctx, { id, name })} />
+        ? <AddButton onClick={() => permission.addDeletedPermRoleAction(ctx, id)} />
+        : <DeleteButton onClick={() => permission.addDeletedPermAction(ctx, { id, name })} />
       }
     </div>
   )
@@ -97,8 +94,8 @@ const RolesListItemNewPermsItem = reatomComponent<RolePayload>(({ ctx, id, name 
         </div>
       </div>
       {selected
-        ? <DeleteButton onClick={() => deleteNewPermAction(ctx, id)} />
-        : <AddButton onClick={() => addNewPermAction(ctx, { id, name })} />
+        ? <DeleteButton onClick={() => permission.deleteNewPermAction(ctx, id)} />
+        : <AddButton onClick={() => permission.addNewPermAction(ctx, { id, name })} />
       }
     </div>
   )
@@ -147,7 +144,7 @@ const RolesListItemAvailableItem = reatomComponent<RolePayload>(({ ctx, id, name
           {id}
         </div>
       </div>
-      {!selected && <AddButton onClick={() => addNewPermAction(ctx, { id, name })} />}
+      {!selected && <AddButton onClick={() => permission.addNewPermAction(ctx, { id, name })} />}
     </div>
   )
 }, "RolesListItemAvailableItem")

@@ -3,14 +3,17 @@ import { EventPayload } from "@repo/shared/types/entities/other";
 import Elysia, { t } from "elysia";
 import z from "zod";
 import { EVENTS_ALL_KEY, EVENTS_TARGET_KEY, EVENTS_TYPE_KEY, eventTypeSchema } from "./events.model";
-import { withData } from "#/shared/schemas";
+import { metaSchema, withData } from "#/shared/schemas";
 
-const eventsListSchema = z.object({
-  type: eventTypeSchema.optional()
-})
+const eventsListSchema = z.intersection(
+  metaSchema.pick({ limit: true }),
+  z.object({
+    type: eventTypeSchema.optional()
+  })
+)
 
 async function getEvents(
-  { type }: z.infer<typeof eventsListSchema>
+  { type, limit }: z.infer<typeof eventsListSchema>
 ): Promise<EventPayload[]> {
   const redis = getRedis();
 
@@ -31,7 +34,6 @@ async function getEvents(
     return getObjects(keys);
   }
 
-  const limit = 32;
   const ids = await redis.lrange(EVENTS_ALL_KEY, 0, limit - 1);
   const keys = ids.map(id => EVENTS_TARGET_KEY(id));
 

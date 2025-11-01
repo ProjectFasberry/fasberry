@@ -33,8 +33,8 @@ async function handleReferalCheck(msg: Msg) {
         .set({ completed: true })
         .where(eb =>
           eb.and([
-            eb("initiator", "=", result.initiator),
-            eb("recipient", "=", result.recipient)
+            eb("referrer", "=", result.initiator),
+            eb("referral", "=", result.recipient)
           ])
         )
         .executeTakeFirstOrThrow()

@@ -7,12 +7,14 @@ import { AtomState, onConnect } from "@reatom/framework";
 import { NotFound } from "@/shared/ui/not-found";
 import { isClientAtom } from "@/shared/models/page-context.model";
 import { scrollableVariant } from "@/shared/consts/style-variants";
+import { tv } from "tailwind-variants";
 
 const EventsSkeleton = () => {
   return (
     <>
-      <Skeleton className="sm:w-64 h-48" />
-      <Skeleton className="sm:w-64 h-48" />
+      <EventCardSkeleton />
+      <EventCardSkeleton />
+      <EventCardSkeleton />
     </>
   )
 }
@@ -21,20 +23,49 @@ onConnect(eventsAction, eventsAction)
 
 type EventCardProps = NonNullable<AtomState<typeof eventsAction.dataAtom>>[number]
 
+const eventCardVariant = tv({
+  base: `
+    flex flex-col md:flex-[0_0_calc((100%/3)-0.666rem)] flex-shrink-0 w-full
+    h-48 p-2 sm:p-4 border border-neutral-800 rounded-xl overflow-hidden justify-between
+  `,
+  slots: {
+    firstGroup: "flex items-center justify-start bg-neutral-50 rounded-lg p-2 w-full truncate",
+    secondGroup: "flex flex-col justify-between h-full mt-2"
+  }
+})
+
+const EventCardSkeleton = () => {
+  return (
+    <div
+      className={eventCardVariant().base()}
+    >
+      <div className={eventCardVariant().firstGroup()}>
+        <Skeleton className="h-6 w-24" />
+      </div>
+      <div className={eventCardVariant().secondGroup()}>
+        <Skeleton className="h-6 w-16" />
+        <div className="flex flex-col justify-center items-end w-full">
+          <Skeleton className="h-6 w-16" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const EventCard = ({ content, id, title }: EventCardProps) => {
   const created_at = dayjs(content.created_at).fromNow();
   
   return (
     <div
       id={id}
-      className="flex flex-col justify-between border border-neutral-800 rounded-xl p-2 sm:p-4 h-48 sm:w-64 w-full"
+      className={eventCardVariant().base()}
     >
-      <div className="flex items-center justify-start bg-neutral-50 rounded-lg p-2 w-full truncate">
+      <div className={eventCardVariant().firstGroup()}>
         <Typography className="text-neutral-950 text-base font-bold truncate">
           {title}
         </Typography>
       </div>
-      <div className="flex flex-col justify-between h-full mt-2">
+      <div className={eventCardVariant().secondGroup()}>
         {content.description && (
           <Typography className="text-base line-clamp-3">
             {content.description}
@@ -72,7 +103,7 @@ export const Events = () => {
       <Typography className="text-3xl font-bold">
         Последние события
       </Typography>
-      <div className={scrollableVariant({ className: "flex overflow-x-auto gap-4 pb-2" })}>
+      <div className={scrollableVariant({ className: "flex rounded-xl overflow-x-auto gap-4 pb-2" })}>
         <EventsList />
       </div>
     </div>

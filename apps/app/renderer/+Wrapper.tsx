@@ -3,7 +3,7 @@ import "@/shared/styles/tailwind.css";
 
 import { initClientGlobalModels } from '@/shared/models/page-context.model';
 import { useUpdate } from '@reatom/npm-react';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/shared/components/config/toaster';
 import { connectLogger, createCtx, Ctx } from '@reatom/framework'
 import { reatomContext } from '@reatom/npm-react'
 import { PropsWithChildren, useRef } from 'react'

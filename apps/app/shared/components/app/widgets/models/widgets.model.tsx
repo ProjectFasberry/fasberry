@@ -2,9 +2,12 @@ import { currentUserAtom } from "@/shared/models/current-user.model";
 import { action, atom } from "@reatom/core";
 import { withReset } from "@reatom/framework";
 import { withCookie } from "@reatom/persist-web-storage";
-import { IconLock } from "@tabler/icons-react";
+import { IconArrowRight, IconLock, IconX } from "@tabler/icons-react";
 import { ReactNode } from "react";
-import { AuthWidgetActions } from "../components/widget-variants";
+import { reatomComponent } from "@reatom/npm-react";
+import { Button } from "@repo/ui/button";
+import { navigate } from "vike/client/router";
+import { Typography } from "@repo/ui/typography";
 
 export type Widget = {
   id: string,
@@ -47,3 +50,33 @@ export const initWidgets = action((ctx) => {
     }
   }
 }, "initWidgets")
+
+const AuthWidgetActions = reatomComponent(({ ctx }) => {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <Button
+        className="bg-neutral-50 px-2"
+        onClick={() => {
+          activeWidgetAtom.reset(ctx)
+          navigate("/auth")
+        }}
+      >
+        <IconArrowRight size={20} className="sm:hidden inline text-neutral-950" />
+        <Typography className="hidden sm:inline text-neutral-950 font-semibold text-base sm:text-lg">
+          Авторизоваться
+        </Typography>
+      </Button>
+      <Button
+        className="bg-neutral-800 px-2"
+        onClick={() => {
+          activeWidgetAtom.reset(ctx)
+          isShowAuthWidgetAtom(ctx, false)
+        }}>
+        <IconX size={20} className="sm:hidden inline"/>
+        <Typography className="hidden text-nowrap sm:inline font-semibold text-base sm:text-lg">
+          Не показывать
+        </Typography>
+      </Button>
+    </div>
+  )
+}, "AuthWidgetActions")

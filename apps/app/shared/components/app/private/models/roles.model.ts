@@ -5,7 +5,7 @@ import { logError } from "@/shared/lib/log"
 import { RolePayload, RolesRolePermissionListPayload } from "@repo/shared/types/entities/role"
 import { toast } from "sonner"
 import { action, atom } from "@reatom/core"
-import { withReset } from "@reatom/framework"
+import { withAssign, withReset } from "@reatom/framework"
 
 export const rolesListAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() => client<RolePayload[]>("privated/role/list").exec())
@@ -136,21 +136,22 @@ export const permIsSelectedAtom = (id: number) => atom((ctx) => {
   return result
 }, "permIsSelected")
 
-export const addNewPermAction = action((ctx, p: RolePayload) => {
-  roleNewPermsAtom(ctx, (state) => state.some((item) => item.id === p.id) ? state : [...state, p])
-}, "addNewPermAction")
-
-export const deleteNewPermAction = action((ctx, id: number) => {
-  roleNewPermsAtom(ctx, (state) => state.filter(t => t.id !== id))
-}, "deletePermAction")
-
-export const addDeletedPermAction = action((ctx, p: RolePayload) => {
-  roleDeletedPermsAtom(ctx, (state) => state.some((item) => item.id === p.id) ? state : [...state, p])
-}, "addDeletedPermAction")
-
-export const addDeletedPermRoleAction = action((ctx, id: number) => {
-  roleDeletedPermsAtom(ctx, (state) => state.filter(d => d.id !== id))
-}, "addDeletedPermRoleAction")
+export const permission = atom(null, "permission").pipe(
+  withAssign((ctx, name) => ({
+    addNewPermAction: action((ctx, payload: RolePayload) => {
+      roleNewPermsAtom(ctx, (state) => state.some((item) => item.id === payload.id) ? state : [...state, payload])
+    }, `${name}.addNewPermAction`),
+    deleteNewPermAction: action((ctx, id: number) => {
+      roleNewPermsAtom(ctx, (state) => state.filter(item => item.id !== id))
+    }, `${name}.deletePermAction`),
+    addDeletedPermAction: action((ctx, payload: RolePayload) => {
+      roleDeletedPermsAtom(ctx, (state) => state.some((item) => item.id === payload.id) ? state : [...state, payload])
+    }, `${name}.addDeletedPermAction`),
+    addDeletedPermRoleAction: action((ctx, id: number) => {
+      roleDeletedPermsAtom(ctx, (state) => state.filter(item => item.id !== id))
+    }, `${name}.addDeletedPermRoleAction`)
+  }))
+)
 
 export const deletedPermIsSelectedAtom = (id: number) => atom(
   (ctx) => ctx.spy(roleDeletedPermsAtom).some(p => p.id === id),

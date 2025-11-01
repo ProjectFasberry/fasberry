@@ -42,8 +42,10 @@ const CartItemUpdateSelectStatus = reatomComponent<{ id: number }>(({ ctx, id })
 }, "CartItemUpdateSelectStatus")
 
 export const CartItem = reatomComponent<CartPayload["products"][number]>(({
-  ctx, title, imageUrl, description, selected, recipient, price, id, summary, currency
+  ctx, ...item
 }) => {
+  const { id, title, imageUrl, summary, recipient, price, currency } = item
+
   return (
     <div
       id={id.toString()}
@@ -66,7 +68,7 @@ export const CartItem = reatomComponent<CartPayload["products"][number]>(({
           <div
             title="Получатель"
             className="flex cursor-pointer items-center gap-1 h-8 justify-center bg-neutral-700 rounded-lg px-2 py-0.5"
-            onClick={() => changeRecipientOpenDialogAction(ctx, id)}
+            onClick={() => changeRecipientOpenDialogAction(ctx, item)}
           >
             <IconGift size={20} className="text-neutral-400" />
             <Typography className="text-nowrap text-truncate text-base">

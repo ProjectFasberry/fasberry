@@ -9,6 +9,7 @@ export const historyList = new Elysia()
     const data = await general
       .selectFrom("admin_activity_log")
       .selectAll()
+      .orderBy("created_at", "desc")
       .execute();
 
     return { data }

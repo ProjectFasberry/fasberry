@@ -79,5 +79,19 @@ export const PERMISSIONS = {
   },
   HISTORY: {
     READ: "history.read"
+  },
+  PRIVATE: {
+    CHAT: {
+      READ: "private.chat.read",
+      CREATE: "private.chat.create",
+      DELETE: "private.chat.delete",
+      UPDATE: "private.chat.update"
+    }
+  },
+  DICTIONARIES: {
+    READ: "dictionaries.read",
+    CREATE: "dictionaries.create",
+    DELETE: "dictionaries.delete",
+    UPDATE: "dictionaries.update"
   }
 } as const;

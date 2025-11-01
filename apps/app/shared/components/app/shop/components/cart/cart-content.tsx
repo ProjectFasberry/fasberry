@@ -1,7 +1,7 @@
 import { atom } from "@reatom/core";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { cartDataAtom, cartIsValidAtom, cartDataSelectedAtom } from "../../models/store-cart.model";
+import { cartIsValidAtom, cartDataSelectedAtom } from "../../models/store-cart.model";
 import { CartPrice } from "./cart-price";
 import { Link } from "@/shared/components/config/link";
 import { Button } from "@repo/ui/button";
@@ -14,6 +14,7 @@ import { ChangeRecipientDialog } from "../recipient/change-recipient";
 import { navigate } from "vike/client/router";
 import { IconPlus } from "@tabler/icons-react";
 import { expImage } from "@/shared/consts/images";
+import { cartDataAtom } from "../../models/store-cart.model.atoms";
 
 export const sectionVariant = tv({
   base: `bg-neutral-900 gap-4 p-2 sm:p-3 lg:p-4 rounded-lg w-full`

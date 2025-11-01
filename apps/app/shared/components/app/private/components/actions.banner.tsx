@@ -6,17 +6,21 @@ import {
   bannersAction,
   createBannerTitleAtom,
   createBannerAction,
-  deleteBannerAction
+  deleteBannerAction,
+  actionsParentAtom,
+  actionsTypeAtom
 } from "../models/actions.model"
 import { Skeleton } from "@repo/ui/skeleton"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"
 import { Input } from "@repo/ui/input"
 import { BannerPayload } from "@repo/shared/types/entities/banner"
-import { action, atom } from "@reatom/core"
+import { action, atom, AtomState } from "@reatom/core"
 import { sleep, withReset } from "@reatom/framework"
 import { IconEye, IconX } from "@tabler/icons-react"
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog"
+import { getSelectedParentAtom, ToActionButtonX } from "./actions.news"
+import { ReactNode } from "react"
 
 const showBannerDialogIsOpenAtom = atom(false)
 const showBannerItemAtom = atom<BannerPayload | null>(null).pipe(withReset())
@@ -86,10 +90,10 @@ const DeleteBanner = reatomComponent<{ id: number }>(({ ctx, id }) => {
 
 const BannerListItem = ({ id, title, description, href }: BannerPayload) => {
   return (
-    <div className="flex items-center gap-2 justify-between w-full h-20 border border-neutral-800 p-2 rounded-lg overflow-hidden">
-      <div className="flex flex-col items-start gap-1">
-        <div className="flex items-center gap-1">
-          <Typography className='font-semibold leading-tight'>
+    <div className="flex items-center gap-2 justify-between w-full h-16 border border-neutral-800 p-2 rounded-lg overflow-hidden">
+      <div className="flex w-full justify-between sm:items-start gap-1">
+        <div className="flex flex-col sm:gap-1 sm:flex-row min-w-0 sm:items-center">
+          <Typography className='truncate font-semibold leading-tight'>
             {title}
           </Typography>
           <Typography>
@@ -114,7 +118,7 @@ export const BannersList = reatomComponent(({ ctx }) => {
   const data = ctx.spy(bannersAction.dataAtom)?.data;
 
   if (ctx.spy(bannersAction.statusesAtom).isPending) {
-    return <Skeleton className="h-12 w-full" />
+    return <Skeleton className="h-16 w-full" />
   }
 
   if (!data) return null;
@@ -122,7 +126,9 @@ export const BannersList = reatomComponent(({ ctx }) => {
   return (
     <>
       <ShowBannerDialog />
-      {data.map(banner => <BannerListItem key={banner.id} {...banner} />)}
+      <div className="flex flex-col w-full gap-2 h-full">
+        {data.map(banner => <BannerListItem key={banner.id} {...banner} />)}
+      </div>
     </>
   )
 }, "BannersList")
@@ -167,27 +173,47 @@ const CreateBannerLinkValue = reatomComponent(({ ctx }) => {
   )
 })
 
-export const CreateBannerForm = () => {
-  return (
-    <>
-      <CreateBannerTitle />
-      <CreateBannerDescription />
-      <CreateBannerLinkTitle />
-      <CreateBannerLinkValue />
-    </>
-  )
-}
-
-export const CreateBanner = reatomComponent(({ ctx }) => {
+const CreateBannerSubmit = reatomComponent(({ ctx }) => {
   return (
     <Button
       onClick={() => createBannerAction(ctx)}
-      className="w-fit px-4 bg-neutral-50"
       disabled={ctx.spy(createBannerAction.statusesAtom).isPending}
+      className="px-4 bg-neutral-50"
     >
       <Typography className="text-lg font-semibold text-neutral-950">
-        Создать баннер
+        Создать
       </Typography>
     </Button>
   )
 }, "CreateBanner")
+
+export const CreateBannerForm = () => {
+  return (
+    <div className="flex flex-col gap-2">
+      <CreateBannerTitle />
+      <CreateBannerDescription />
+      <CreateBannerLinkTitle />
+      <CreateBannerLinkValue />
+      <div className="w-fit">
+        <CreateBannerSubmit />
+      </div>
+    </div>
+  )
+}
+
+const BANNER_VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
+  "create": <CreateBannerForm />,
+  "edit": null,
+  "view": <BannersList />
+}
+
+export const BannersWrapper = reatomComponent(({ ctx }) => {
+  if (!ctx.spy(getSelectedParentAtom("banner"))) {
+    return BANNER_VARIANTS["view"]
+  }
+
+  return BANNER_VARIANTS[ctx.spy(actionsTypeAtom)]
+}, "BannersWrapper")
+
+export const CreateBanner = () => <ToActionButtonX title="Создать" parent="banner" type="create" />
+export const EditBanner = () => <ToActionButtonX parent="banner" type="edit" />

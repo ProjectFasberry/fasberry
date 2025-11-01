@@ -1,29 +1,24 @@
 import { Link } from "@/shared/components/config/link";
-import { scrollableVariant } from "@/shared/consts/style-variants";
-import { currentUserAtom, currentUserPermsAtom, currentUserRoleAtom } from "@/shared/models/current-user.model";
-import { action, atom } from "@reatom/core";
-import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { Separator } from "@repo/ui/separator";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@repo/ui/sheet";
+import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { IconLayoutSidebarRightInactive } from "@tabler/icons-react";
-import { PropsWithChildren } from "react"
+import { PropsWithChildren, useEffect } from "react"
 import { tv } from "tailwind-variants";
-import { 
-  SidebarProvider, 
-  SidebarTrigger, 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarGroup, 
-  SidebarMenu, 
-  SidebarGroupLabel, 
-  useSidebar 
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarMenu,
+  SidebarGroupLabel,
+  useSidebar
 } from "@repo/ui/sidebar"
 import { Logotype } from "@/shared/components/app/layout/components/header";
-import { useIsMobile } from "@/shared/lib/hooks";
-import { appDictionariesAtom } from "@/shared/models/app.model";
+import { Chat } from "@/shared/components/app/private/components/chat";
+import { chatDisabledAtom, chatWs } from "@/shared/components/app/private/models/chat.model";
+import { UserInfo } from "@/shared/components/app/private/components/user-info";
 
 const linkVariant = tv({
   base: `flex justify-start items-center group h-10 border-2 border-neutral-800 rounded-lg px-4
@@ -44,8 +39,7 @@ const links = [
 ]
 
 const Navigation = () => {
-  const isMobile = useIsMobile()
-  const { setOpen } = useSidebar();
+  const { setOpen, isMobile } = useSidebar();
 
   return (
     links.map((link) => (
@@ -63,92 +57,6 @@ const Navigation = () => {
   )
 }
 
-type Perms = {
-  read: string[],
-  create: string[],
-  update: string[],
-  delete: string[],
-  unknown: string[],
-}
-
-const permsAtom = atom<Perms>({
-  read: [],
-  create: [],
-  update: [],
-  delete: [],
-  unknown: [],
-});
-
-const transformPermissionsByNamespaceAction = action((ctx) => {
-  const targets = ctx.get(currentUserPermsAtom);
-  if (!targets) return null;
-
-  permsAtom(ctx, {
-    read: targets.filter(t => t.endsWith(".read")),
-    create: targets.filter(t => t.endsWith(".create")),
-    update: targets.filter(t => t.endsWith(".update")),
-    delete: targets.filter(t => t.endsWith(".delete")),
-    unknown: targets.filter(
-      t => !/\.(read|create|update|delete)$/.test(t)
-    ),
-  });
-}, "transformPermissionsByNamespaceAction")
-
-const Info = reatomComponent(({ ctx }) => {
-  useUpdate(transformPermissionsByNamespaceAction, []);
-
-  const currentUser = ctx.spy(currentUserAtom);
-  if (!currentUser) return null;
-
-  const perms = ctx.spy(permsAtom)
-
-  const groups = [
-    { title: "Read", data: perms.read },
-    { title: "Create", data: perms.create },
-    { title: "Update", data: perms.update },
-    { title: "Delete", data: perms.delete },
-    { title: "Unknown", data: perms.unknown },
-  ].filter(g => g.data && g.data.length > 0);
-
-  const role = ctx.spy(currentUserRoleAtom)
-  if (!role) return null;
-
-  const roleTitle = appDictionariesAtom.get(ctx, role.name)
-
-  return (
-    <Sheet>
-      <SheetTrigger>
-        <div className="flex rounded-lg h-10 overflow-hidden select-none px-4 gap-2 cursor-pointer bg-neutral-50/90 items-center">
-          <Typography className="font-semibold text-neutral-950">
-            Роль: <span className="text-blue-500">{roleTitle}</span>
-          </Typography>
-          <IconLayoutSidebarRightInactive className="text-neutral-950" size={18} />
-        </div>
-      </SheetTrigger>
-      <SheetContent className='flex flex-col w-full rounded-lg gap-1'>
-        <SheetTitle>Разрешения</SheetTitle>
-        <div className="flex flex-col gap-2 overflow-y-auto scrollbar scrollbar-thumb-neutral-800 w-full">
-          {groups.map((group, idx) => (
-            <div key={group.title}>
-              <Typography className="text-lg font-semibold mb-2">
-                {group.title}
-              </Typography>
-              <div className="flex flex-col gap-1 w-full">
-                {group.data.map(item => (
-                  <span key={item} className="text-sm">
-                    {item}
-                  </span>
-                ))}
-              </div>
-              {idx < groups.length - 1 && <Separator />}
-            </div>
-          ))}
-        </div>
-      </SheetContent>
-    </Sheet>
-  )
-}, "Info")
-
 const AppSidebar = () => {
   return (
     <Sidebar>
@@ -157,7 +65,8 @@ const AppSidebar = () => {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <Info />
+          <SidebarGroupLabel>Инфо</SidebarGroupLabel>
+          <UserInfo />
         </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Навигация</SidebarGroupLabel>
@@ -171,14 +80,54 @@ const AppSidebar = () => {
   )
 }
 
+const Sync = reatomComponent(({ ctx }) => {
+  const disabled = ctx.get(chatDisabledAtom);
+
+  useEffect(() => {
+    if (!disabled) {
+      chatWs.init(ctx)
+    }
+
+    return () => {
+      chatWs.closeWs(ctx)
+    }
+  }, [])
+
+  return null
+})
+
+const LayoutContent = ({ children }: PropsWithChildren) => {
+  const { isMobile } = useSidebar()
+
+  return (
+    <div
+      data-state={isMobile ? "mobile" : "desktop"}
+      className="
+        flex flex-col gap-2 min-h-dvh w-full px-2 sm:px-6 
+        data-[state=mobile]:w-full data-[state=desktop]:w-[calc(100%-256px)]
+      "
+    >
+      <SidebarTrigger />
+      <div className="flex flex-col lg:flex-row items-start gap-4 w-full h-full">
+        <div className="order-2 lg:order-1 overflow-hidden flex-1 w-full">
+          {children}
+        </div>
+        <div className="order-1 lg:order-2 flex lg:sticky top-2 w-full lg:w-1/3">
+          <Chat />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Layout({ children }: PropsWithChildren) {
   return (
     <SidebarProvider >
+      <Sync />
       <AppSidebar />
-      <div className="flex flex-col gap-2 px-2 sm:px-6 h-full w-full">
-        <SidebarTrigger />
+      <LayoutContent>
         {children}
-      </div >
+      </LayoutContent>
     </SidebarProvider >
   )
 }

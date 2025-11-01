@@ -1,14 +1,13 @@
 import { action, Atom, atom, batch, Ctx, CtxSpy } from "@reatom/core";
 import z from "zod";
 import { withLocalStorage } from "@reatom/persist-web-storage";
-import { isDeepEqual, reatomAsync, sleep, withInit, withReset, withStatusesAtom } from "@reatom/framework";
-import { cartDataAtom } from "./store-cart.model";
+import { AsyncAction, isDeepEqual, reatomAsync, sleep, withInit, withReset, withStatusesAtom } from "@reatom/framework";
 import { logError } from "@/shared/lib/log";
-import { addItemToCartAction, updateCart } from "./store-item.model";
 import { toast } from "sonner";
 import { client, withJsonBody } from "@/shared/lib/client-wrapper";
+import { CartItem } from "@repo/shared/types/entities/store";
 
-function makeChangeValidator<T>(
+export function makeChangeValidator<T>(
   oldAtom: Atom<T>,
   newAtom: Atom<T>
 ): (ctx: CtxSpy) => boolean {
@@ -66,7 +65,7 @@ const ERRORS: Record<string, string> = {
   "not-found": "Такой игрок не зарегистрирован"
 }
 
-export const saveRecipientAction = reatomAsync(async (ctx) => {
+export const saveRecipientAction = reatomAsync(async (ctx, cb: AsyncAction<[id: number]>) => {
   const value = ctx.get(setRecipientTempValueAtom);
 
   const { success, error, data: validatedRecipient } = validateRecipient(value)
@@ -79,11 +78,13 @@ export const saveRecipientAction = reatomAsync(async (ctx) => {
   const existNickname = await getExistNickname(validatedRecipient)
   if (!existNickname) throw new Error("not-found")
 
-  return existNickname
+  return { existNickname, cb }
 }, {
   name: "saveRecipientAction",
-  onFulfill: async (ctx, nickname) => {
-    if (!nickname) return;
+  onFulfill: async (ctx, res) => {
+    if (!res) return;
+
+    const { existNickname: nickname, cb } = res
 
     const isSave = ctx.get(setRecipientIsSaveAtom);
 
@@ -100,7 +101,7 @@ export const saveRecipientAction = reatomAsync(async (ctx) => {
     if (!targetItemId) throw new Error("Target item id is not defined")
 
     batch(ctx, async () => {
-      await addItemToCartAction(ctx, targetItemId)
+      await cb(ctx, targetItemId)
 
       setRecipientItemIdAtom.reset(ctx)
       setRecipientIsSaveAtom.reset(ctx)
@@ -125,7 +126,7 @@ export const changeRecipientOldRecipientAtom = atom<string | null>(null, "change
 export const changeRecipientDialogIsOpenAtom = atom(false, "changeRecipientDialogIsOpen").pipe(withReset())
 export const changeRecipientErrorAtom = atom<string | null>(null, "changeRecipientError").pipe(withReset())
 
-export const changeRecipientAction = reatomAsync(async (ctx, id: number) => {
+export const changeRecipientAction = reatomAsync(async (ctx, id: number, cb: (ctx: Ctx) => Promise<void>) => {
   const newRecipient = ctx.get(changeRecipientNewRecipientAtom)
 
   const { success, error, data: validatedRecipient } = validateRecipient(newRecipient)
@@ -147,13 +148,13 @@ export const changeRecipientAction = reatomAsync(async (ctx, id: number) => {
       .exec()
   )
 
-  return { id, result }
+  return { id, result, cb }
 }, {
   name: "changeRecipientAction",
   onFulfill: async (ctx, res) => {
     if (!res) return;
 
-    updateCart(ctx);
+    res.cb(ctx)
 
     changeRecipientDialogIsOpenAtom.reset(ctx)
     await ctx.schedule(() => sleep(DIALOG_HANDLING_TIMEOUT))
@@ -183,15 +184,14 @@ export const changeRecipientIsValidAtom = atom<boolean>(
   "changeRecipientIsValid"
 )
 
-export const changeRecipientOpenDialogAction = action(async (ctx, id: number) => {
-  const item = ctx.get(cartDataAtom).find(d => d.id === id)
+export const changeRecipientOpenDialogAction = action(async (ctx, item: CartItem) => {
   if (!item) throw new Error('Item not found');
 
   const { recipient, title } = item;
 
   batch(ctx, () => {
     changeRecipientTitleAtom(ctx, title)
-    changeRecipientIdAtom(ctx, id);
+    changeRecipientIdAtom(ctx, item.id);
     changeRecipientOldRecipientAtom(ctx, recipient);
     changeRecipientNewRecipientAtom(ctx, recipient);
   })
@@ -243,3 +243,21 @@ export const changeGlobalRecipientAction = reatomAsync(async (ctx) => {
     }
   }
 }).pipe(withStatusesAtom())
+
+export function validateRecItem(ctx: Ctx, id: number) {
+  const currentRecipient = ctx.get(setRecipientValueAtom);
+
+  let isExist: boolean = true;
+
+  if (!currentRecipient) {
+    const globalRecipient = ctx.get(storeGlobalRecipientAtom);
+
+    if (!globalRecipient) {
+      setRecipientDialogIsOpenAtom(ctx, true);
+      setRecipientItemIdAtom(ctx, id);
+      isExist = false;
+    }
+  }
+
+  return isExist
+}

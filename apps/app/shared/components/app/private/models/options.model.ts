@@ -4,7 +4,7 @@ import { reatomAsync, withCache, withStatusesAtom } from "@reatom/async";
 import { reatomMap } from "@reatom/framework";
 import { notifyAboutRestrictRole } from "./actions.model";
 
-type Option = {
+export type Option = {
   title: string,
   name: string,
   value: boolean
@@ -30,7 +30,7 @@ export const updateOptionAction = reatomAsync(async (ctx, name: Option["name"], 
     notifyAboutRestrictRole(e)
     logError(e)
   }
-})
+}).pipe(withStatusesAtom())
 
 export const optionsAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() =>

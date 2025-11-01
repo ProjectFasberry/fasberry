@@ -1,11 +1,11 @@
 import sharp from "sharp";
-import ky from "ky";
 import { Blob } from "buffer";
 import { skins } from "#/shared/database/skins-db";
 import { AVATARS_BUCKET, getMinio, SKINS_BUCKET, STATIC_BUCKET } from "#/shared/minio/init";
 import { ItemBucketMetadata } from "minio";
 import { blobToUint8Array, nodeToWebStream } from "#/helpers/streams";
 import { getAvatarName, getObjectUrl, getSkinName } from "#/helpers/volume";
+import { client } from "#/shared/api/client";
 
 type Skin = {
   textures: {
@@ -59,7 +59,7 @@ async function getVanillaPlayerSkin(nickname: string): Promise<SkinOutput | null
 
   if (!query?.uuid) return null
 
-  const blob = await ky.get(`https://api.mineatar.io/skin/${query.uuid}`).blob()
+  const blob = await client.get(`https://api.mineatar.io/skin/${query.uuid}`).blob()
 
   return blob ?? null;
 }
@@ -71,7 +71,7 @@ async function getCustomPlayerSkin(nickname: string): Promise<SkinOutput | null>
 
   const data = atob(query.value);
   const parsed = JSON.parse(data) as Skin
-  const blob = await ky.get(parsed.textures.SKIN.url).blob()
+  const blob = await client.get(parsed.textures.SKIN.url).blob()
 
   return blob ?? null
 }

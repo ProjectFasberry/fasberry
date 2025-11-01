@@ -1,7 +1,7 @@
 import dayjs from "@/shared/lib/create-dayjs";
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { IconEye } from "@tabler/icons-react";
+import { IconEye, IconPencil } from "@tabler/icons-react";
 import { newsItemAtom } from "@/shared/components/app/news/models/news.model";
 import { renderToHTMLString } from '@tiptap/static-renderer'
 import type { JSONContent } from "@tiptap/react";
@@ -9,10 +9,15 @@ import { onDisconnect } from "@reatom/framework";
 import { editorExtensions } from "@/shared/components/config/editor";
 import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { createLink, Link } from "@/shared/components/config/link";
+import { usePageContext } from "vike-react/usePageContext";
+import { CURRENT_USER_KEY } from "@/shared/models/current-user.model";
+import { MePayload } from "@repo/shared/types/entities/user";
+import { createActionsLinkValue } from "@/shared/components/app/private/models/actions.model";
 
 onDisconnect(newsItemAtom, (ctx) => newsItemAtom(ctx, null))
 
 const News = reatomComponent(({ ctx }) => {
+  const currentUser = usePageContext().snapshot[CURRENT_USER_KEY]?.data as MePayload | undefined
   const data = ctx.spy(newsItemAtom);
   if (!data) return null;
 
@@ -25,38 +30,78 @@ const News = reatomComponent(({ ctx }) => {
 
   const html = renderToHTMLString({ extensions: editorExtensions, content })
 
+  const allowEdit = currentUser?.meta.permissions.includes("news.update")
+
+  let editLink: string | null = null;
+
+  if (allowEdit) {
+    const params = new URLSearchParams(
+      createActionsLinkValue(ctx, { 
+        parent: "news", type: "edit", target: data.id.toString() 
+      }).next
+    )
+  
+    editLink = `/private/actions?${params}`
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full h-full">
+      <div className="flex overflow-hidden rounded-xl">
+        <img
+          src={data.imageUrl}
+          alt=""
+          width={1280}
+          height={720}
+          draggable={false}
+          className="object-center object-cover h-80 w-full"
+        />
+      </div>
       <Typography className="text-3xl font-semibold">
         {data.title}
       </Typography>
-      <div className="flex items-center gap-2 w-fit justify-start *:border *:border-neutral-800 *:rounded-lg *:px-4 *:py-1">
+      <div className="flex flex-wrap items-center text-nowrap text-sm gap-2 w-fit justify-start 
+        *:border *:border-neutral-800 *:rounded-lg *:px-2 *:sm:px-4 *:py-1"
+      >
         <div className="flex items-center gap-3 w-fit">
           <Typography>
             Создано
           </Typography>
-          <Link href={createLink("player", data.creator)} className="flex items-center gap-2">
+          <Link
+            href={createLink("player", data.creator)}
+            className="flex items-center gap-1"
+          >
             <Avatar
               nickname={data.creator}
-              propWidth={24}
-              propHeight={24}
+              propWidth={22}
+              propHeight={22}
             />
             <Typography>
               {data.creator}
             </Typography>
           </Link>
         </div>
-        <div title={dayjs(data.created_at).format("DD.MM.YYYY")} className="flex items-center">
-          <Typography color="gray" className="text-md">
+        <div
+          title={dayjs(data.created_at).format("DD.MM.YYYY")}
+          className="flex items-center"
+        >
+          <Typography color="gray">
             {dayjs(data.created_at).format('D MMM YYYY')}
           </Typography>
         </div>
         <div className="flex items-center gap-1">
-          <Typography color="gray" className="text-md">
+          <Typography color="gray">
             {data.views}
           </Typography>
           <IconEye size={20} />
         </div>
+        {allowEdit && (
+          <Link href={editLink!} className="flex items-center font-semibold gap-2 bg-neutral-800 w-fit">
+            <Typography color="gray">
+              Редактировать
+            </Typography>
+            <IconPencil size={18} />
+          </Link>
+        )}
       </div>
       <div
         dangerouslySetInnerHTML={{ __html: html }}

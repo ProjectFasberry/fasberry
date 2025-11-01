@@ -1,13 +1,13 @@
 import { reatomAsync } from "@reatom/async"
 import { getSkinDetails } from "../../skin/models/skin.model"
-import { batch, CtxSpy, reatomMap } from "@reatom/framework"
+import { atom, batch, reatomMap } from "@reatom/framework"
 import { logError } from "@/shared/lib/log"
 
 export const avatarsAtom = reatomMap<string, string>(new Map(), "avatars")
 export const avatarsLoadingAtom = reatomMap<string, boolean>(new Map(), "avatarsLoading")
 
-export const getAvatar = (ctx: CtxSpy, nickname: string) => ctx.spy(avatarsAtom).get(nickname)
-export const getAvatarState = (ctx: CtxSpy, nickname: string) => ctx.spy(avatarsLoadingAtom).get(nickname)
+export const getAvatar = (nickname: string) => atom((ctx) => ctx.spy(avatarsAtom).get(nickname));
+export const getAvatarState = (nickname: string) => atom((ctx) => ctx.spy(avatarsLoadingAtom).get(nickname));
 
 export const avatarAction = reatomAsync(async (ctx, nickname: string) => {
   const cachedUrl = avatarsAtom.get(ctx, nickname)

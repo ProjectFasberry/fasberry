@@ -18,8 +18,8 @@ export async function validateReferal(nickname: string) {
     .selectAll()
     .where(eb =>
       eb.or([
-        eb("initiator", "=", nickname),
-        eb("recipient", "=", nickname)
+        eb("referral", "=", nickname),
+        eb("referrer", "=", nickname)
       ])
     )
     .where("completed", "=", false)
@@ -32,8 +32,8 @@ export async function validateReferal(nickname: string) {
     .select(["TotalPlayTime", "username"])
     .where(eb =>
       eb.or([
-        eb("username", "=", queryRefferals.recipient),
-        eb("username", "=", queryRefferals.initiator)
+        eb("username", "=", queryRefferals.referrer),
+        eb("username", "=", queryRefferals.referral)
       ])
     )
     .execute()
@@ -43,11 +43,11 @@ export async function validateReferal(nickname: string) {
   }
 
   const initiatorPlaytime = queryPlaytime.find(
-    p => p.username === queryRefferals.initiator
+    p => p.username === queryRefferals.referrer
   )
 
   const recipientPlaytime = queryPlaytime.find(
-    p => p.username === queryRefferals.recipient
+    p => p.username === queryRefferals.referral
   )
 
   if (!initiatorPlaytime?.TotalPlayTime || !recipientPlaytime?.TotalPlayTime) {
@@ -62,9 +62,9 @@ export async function validateReferal(nickname: string) {
     }
   }
 
-  console.log(`playtime for ${queryRefferals.initiator} and ${queryRefferals.recipient} is ${isPlaytimeValid}`)
+  console.log(`playtime for ${queryRefferals.referrer} and ${queryRefferals.referral} is ${isPlaytimeValid}`)
 
   if (!isPlaytimeValid) return null;
 
-  return { initiator: queryRefferals.initiator, recipient: queryRefferals.recipient }
+  return { initiator: queryRefferals.referrer, recipient: queryRefferals.referral }
 }

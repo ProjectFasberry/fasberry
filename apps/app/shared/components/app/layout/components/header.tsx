@@ -1,15 +1,14 @@
-import { IconArrowRight, IconBasket, IconCategory, IconChevronUp, IconStars, IconUsersGroup } from "@tabler/icons-react";
+import { IconArrowBadgeRight, IconBasket, IconCategory, IconChevronUp, IconStars, IconUsersGroup } from "@tabler/icons-react";
 import { createLink, Link } from '@/shared/components/config/link';
 import { reatomComponent } from "@reatom/npm-react";
 import { CONFIG_PANEL_READ_PERMISSION, currentUserAtom, currentUserPermsAtom } from "@/shared/models/current-user.model";
 import { Avatar } from "@/shared/components/app/avatar/components/avatar";
 import { Button } from "@repo/ui/button";
-import { navigate } from "vike/client/router";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { Separator } from "@repo/ui/separator";
-import { logout } from "@/shared/components/app/auth/models/auth.model";
+import { logoutAction } from "@/shared/components/app/auth/models/auth.model";
 import { atom, spawn } from "@reatom/framework";
 import { Fragment } from "react/jsx-runtime";
 import { isAuthAtom } from "@/shared/models/page-context.model";
@@ -19,32 +18,28 @@ import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "@/shared/com
 
 export const AuthorizeButton = () => {
   return (
-    <Button
-      id="authorize"
+    <Link
+      href="/auth"
       aria-label="Авторизоваться"
-      onClick={() => navigate("/auth")}
-      className="h-10 p-0 sm:px-4 sm:py-2 aspect-square sm:aspect-auto bg-green-700 rounded-lg"
+      className="inline-flex items-center justify-center gap-1 h-10 min-w-10 p-0 sm:px-4 sm:py-2 bg-green-700 rounded-lg"
     >
-      <Typography className="hidden sm:inline font-semibold text-neutral-50 text-md sm:text-base">
-        Авторизоваться
+      <Typography className="hidden sm:inline select-none font-semibold text-neutral-50 text-md sm:text-base">
+        Войти
       </Typography>
-      <IconArrowRight size={20} className="sm:hidden" />
-    </Button>
+      <IconArrowBadgeRight size={22} />
+    </Link>
   )
 }
 
 const MENU_LINKS = [
   {
-    title: "Задания",
-    href: "/tasks",
-    permission: null,
-    type: "default",
+    title: "Задания", href: "/tasks", permission: null, type: "default",
   },
   {
-    title: "Системная панель",
-    href: "/private",
-    permission: CONFIG_PANEL_READ_PERMISSION,
-    type: "privated"
+    title: "Рефералы", href: "/referrals", permission: null, type: "default"
+  },
+  {
+    title: "Системная панель", href: "/private", permission: CONFIG_PANEL_READ_PERMISSION, type: "privated"
   },
 ];
 
@@ -67,7 +62,7 @@ const validatedLinksAtom = atom((ctx) => {
 }, "validatedLinks")
 
 const HeaderMenuActions = reatomComponent(({ ctx }) => {
-  const handle = () => void spawn(ctx, async (spawnCtx) => logout(spawnCtx))
+  const handle = () => void spawn(ctx, async (spawnCtx) => logoutAction(spawnCtx))
 
   return (
     <>
@@ -84,7 +79,7 @@ const HeaderMenuActions = reatomComponent(({ ctx }) => {
       <PopoverClose asChild>
         <Button
           className="flex items-center justify-start gap-2 hover:bg-neutral-800 w-full rounded-lg px-2 py-1"
-          disabled={ctx.spy(logout.statusesAtom).isPending}
+          disabled={ctx.spy(logoutAction.statusesAtom).isPending}
           onClick={handle}
         >
           <Typography className="font-semibold text-red-500">
@@ -176,7 +171,9 @@ const UserSettingsDialog = reatomComponent(({ ctx }) => {
   return (
     <Dialog open={ctx.spy(userSettingsDialogIsOpenAtom)} onOpenChange={v => userSettingsDialogIsOpenAtom(ctx, v)}>
       <DialogContent>
-        <DialogTitle className="text-center font-bold text-2xl leading-tight">Настройки</DialogTitle>
+        <DialogTitle className="text-center font-bold text-2xl leading-tight">
+          Настройки
+        </DialogTitle>
         <div className="flex flex-col gap-4 w-full h-full">
           <div className="flex items-center justify-between w-full gap-1">
             <Typography className="font-semibold">
@@ -202,14 +199,21 @@ const LINKS = [
 
 const MobileBottomBar = () => {
   return (
-    <div className="md:hidden z-[50] fixed flex items-center justify-center bottom-0 px-4 border-t border-neutral-700 bg-neutral-800 h-20 w-full">
-      <div className="flex items-center justify-between w-full *:data-[state=inactive]:text-neutral-50 *:data-[state=active]:text-green-500">
+    <div
+      className="md:hidden z-[50] fixed flex items-center 
+        rounded-t-xl justify-center bottom-0 px-4 border-t border-neutral-700 bg-neutral-800 h-20 w-full"
+    >
+      <div className="flex items-center justify-between w-full 
+        gap-1 *:data-[state=inactive]:text-neutral-50 *:data-[state=active]:text-green-500"
+      >
         {LINKS.map(link => (
-          <Link key={link.title} aria-label={link.label} href={link.href}>
+          <Link key={link.title} aria-label={link.label} href={link.href} className="truncate min-w-0">
             <div className="flex items-center justify-center">
               <link.icon size={30} />
             </div>
-            <span className="font-semibold text-[13px]">{link.title}</span>
+            <span className="font-semibold text-sm">
+              {link.title}
+            </span>
           </Link>
         ))}
       </div>
@@ -220,6 +224,7 @@ const MobileBottomBar = () => {
 const HeaderCartTrigger = () => {
   return (
     <Link
+      aria-label="Перейти на главную"
       href="/store/cart"
       className="flex items-center h-10 justify-center bg-neutral-800 p-2 rounded-xl"
     >
@@ -230,8 +235,12 @@ const HeaderCartTrigger = () => {
 
 export const Logotype = () => {
   return (
-    <Link aria-label="Перейти на главную" href="/" className="flex h-full w-fit items-center gap-3">
-      <img src="/favicon.ico" width={48} height={48} alt="" className="min-w-12 w-12 max-h-12 min-h-12" />
+    <Link
+      aria-label="Перейти на главную"
+      href="/"
+      className="flex h-full w-fit items-center gap-3"
+    >
+      <img src="/favicon.ico" width={48} height={48} alt="" className="min-w-10 w-10 max-h-10 min-h-10" />
       <Typography className="hidden md:inline font-bold text-2xl">
         Fasberry
       </Typography>
@@ -248,7 +257,7 @@ export const Header = () => {
       <div className="flex items-center justify-start w-full border-b border-neutral-800 relative z-20 h-20 top-0">
         <div className="flex items-center justify-between px-2 gap-2 sm:px-6 w-full">
           <div className="w-1/5 bg-transparent h-14 relative">
-            <Logotype/>
+            <Logotype />
           </div>
           <div
             className="hidden md:flex w-3/5 justify-center items-center h-20 text-neutral-400
@@ -262,7 +271,7 @@ export const Header = () => {
             ))}
           </div>
           <div className="flex gap-1 items-center w-full md:w-1/5 justify-end">
-            {pathname.includes("/store") && <HeaderCartTrigger/>}
+            {pathname.includes("/store") && <HeaderCartTrigger />}
             <HeaderUser />
           </div>
         </div>

@@ -2,8 +2,8 @@ import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Switch } from "@repo/ui/switch";
 import { Typography } from "@repo/ui/typography";
-import { optionsAction, optionsAtom, updateOptionAction } from "../models/options.model";
-import { AtomState } from "@reatom/core";
+import { Option, optionsAction, optionsAtom, updateOptionAction } from "../models/options.model";
+import { atom } from "@reatom/core";
 
 const OptionsListSkeleton = () => {
   return (
@@ -20,9 +20,7 @@ const OptionsListSkeleton = () => {
   )
 }
 
-type OptionItemProps = AtomState<typeof optionsAtom> extends Map<any, infer V> ? V : never;
-
-const OptionItem = reatomComponent<OptionItemProps>(({ ctx, name, title, value }) => {
+const OptionItem = reatomComponent<Option>(({ ctx, name, title, value }) => {
   return (
     <div className="flex border border-neutral-800 p-2 rounded-lg items-center justify-between w-full gap-1">
       <Typography className="text-lg font-semibold">
@@ -30,14 +28,19 @@ const OptionItem = reatomComponent<OptionItemProps>(({ ctx, name, title, value }
       </Typography>
       <Switch
         checked={value}
+        disabled={ctx.spy(updateOptionAction.statusesAtom).isPending}
         onCheckedChange={v => updateOptionAction(ctx, name, v)}
       />
     </div>
   )
 }, "OptionItem")
 
+const optionsArrayAtom = atom((ctx) => Array.from(ctx.spy(optionsAtom).values()))
+
 const OptionsList = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(optionsAtom).values()
+  useUpdate(optionsAction, []);
+  
+  const data = ctx.spy(optionsArrayAtom)
 
   if (ctx.spy(optionsAction.statusesAtom).isPending) {
     return <OptionsListSkeleton />
@@ -53,7 +56,6 @@ const OptionsList = reatomComponent(({ ctx }) => {
 }, "OptionsList")
 
 export const Options = () => {
-  useUpdate(optionsAction, []);
   
   return (
     <OptionsList />

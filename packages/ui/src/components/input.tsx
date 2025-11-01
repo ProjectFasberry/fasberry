@@ -3,7 +3,7 @@ import { tv, VariantProps } from "tailwind-variants"
 
 const inputVariants = tv({
   base: `
-    inline-flex px-4 py-2 text-lg rounded-lg
+    inline-flex px-4 py-2 text-lg rounded-md
     focus-within:outline focus-within:outline-2 focus-within:outline-green
   `,
   variants: {

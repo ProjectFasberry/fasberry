@@ -1,0 +1,3 @@
+{
+  "excludeRegExp": ["node_modules", "dist", "target"]
+}

@@ -12,6 +12,8 @@ import { privatedBanners } from "./banners";
 import { privatedModpacks } from "./modpacks";
 import { privatedEvents } from "./events";
 import { history } from "./history";
+import { chat } from "./chat";
+import { dictionaries } from "./dictionaries";
 
 export const privated = new Elysia()
   .use(validateBannedStatus())
@@ -28,4 +30,6 @@ export const privated = new Elysia()
     .use(privatedEvents)
     .use(analytics)
     .use(history)
+    .use(chat)
+    .use(dictionaries)
   )

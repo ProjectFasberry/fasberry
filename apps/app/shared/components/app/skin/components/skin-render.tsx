@@ -6,7 +6,7 @@ import { Typography } from "@repo/ui/typography";
 import { clientOnly } from "vike-react/clientOnly";
 import { hardwareAccIsEnabledAtom } from "../../player/components/skin";
 
-const ReactSkinview3d = clientOnly(() => import("react-skinview3d").then(m => m.default))
+const ReactSkinview3d = clientOnly(() => import("react-skinview3d").then(m => m.ReactSkinview3d))
 
 export const SkinRender = reatomComponent(({ ctx }) => {
   const skin = ctx.spy(skinAction.dataAtom)

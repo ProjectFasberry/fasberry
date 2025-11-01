@@ -86,12 +86,26 @@ export interface BannersViews {
   nickname: string;
 }
 
+export interface ChatViews {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  message_id: number;
+  nickname: string;
+}
+
 export interface Currencies {
   id: Generated<number>;
   imageUrl: string;
   isAvailable: Generated<boolean>;
   isPublic: Generated<boolean>;
   title: string;
+  value: string;
+}
+
+export interface Dictionaries {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  key: string;
   value: string;
 }
 
@@ -217,12 +231,21 @@ export interface PlayersPermissions {
   permission_id: number;
 }
 
+export interface PrivatedChat {
+  created_at: Generated<Timestamp>;
+  edited: Generated<boolean>;
+  edited_at: Timestamp | null;
+  id: Generated<number>;
+  message: string;
+  nickname: string;
+}
+
 export interface Referrals {
   completed: Generated<boolean>;
   created_at: Generated<Timestamp>;
   id: Generated<number>;
-  initiator: string;
-  recipient: string;
+  referral: string;
+  referrer: string;
 }
 
 export interface RolePermissions {
@@ -337,7 +360,9 @@ export interface DB {
   banned_users: BannedUsers;
   banners: Banners;
   banners_views: BannersViews;
+  chat_views: ChatViews;
   currencies: Currencies;
+  dictionaries: Dictionaries;
   "drizzle.__drizzle_migrations": DrizzleDrizzleMigrations;
   events: Events;
   events_original: EventsOriginal;
@@ -355,6 +380,7 @@ export interface DB {
   permissions: Permissions;
   players: Players;
   players_permissions: PlayersPermissions;
+  privated_chat: PrivatedChat;
   referrals: Referrals;
   role_permissions: RolePermissions;
   roles: Roles;

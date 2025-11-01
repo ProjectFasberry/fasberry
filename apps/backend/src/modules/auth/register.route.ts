@@ -2,7 +2,6 @@ import Elysia, { t } from "elysia";
 import { createUser, generateOfflineUUID, getExistsUser } from "./auth.model";
 import { wrapError } from "#/helpers/wrap-error";
 import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
-import ky from "ky";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { ipPlugin } from "#/lib/plugins/ip";
 import { logger } from "#/utils/config/logger";
@@ -12,6 +11,7 @@ import { createEvent } from "../server/events/events.model";
 import { validateAuthStatus } from "#/lib/middlewares/validators";
 import { registerSchema } from "@repo/shared/types/entities/auth";
 import { withData, withError } from "#/shared/schemas";
+import { client } from "#/shared/api/client";
 
 const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
 
@@ -20,7 +20,8 @@ type MojangPayload =
   | { reason: string, error: string }
 
 async function getLicense(nickname: string) {
-  return ky.get(`${MOJANG_API_URL}/${nickname}`, { throwHttpErrors: false }).json<MojangPayload>();
+  const result = await client.get(`${MOJANG_API_URL}/${nickname}`, { throwHttpErrors: false, timeout: 5000 }).json<MojangPayload>();
+  return result
 }
 
 export function validatePasswordSafe(pwd: string): boolean {
@@ -76,7 +77,7 @@ export const register = new Elysia()
   .use(ipPlugin())
   .use(validateAuthStatus())
   .post("/register", async ({ status, ...ctx }) => {
-    const { findout, nickname, password, token: cfToken, referrer } = ctx.body
+    const { findout, nickname, password, token: cfToken, findoutType } = ctx.body
 
     const registrationIsEnabled = await checkRegistrationState();
 
@@ -113,7 +114,7 @@ export const register = new Elysia()
     })
 
     const result = await createUser({
-      nickname, findout, uuid, referrer, password: hash, ip: ctx.ip
+      nickname, findout, uuid, findoutType, password: hash, ip: ctx.ip
     })
 
     const data = { nickname: result.nickname }

@@ -6,7 +6,7 @@ import { EventPayload } from "@repo/shared/types/entities/other";
 
 const eventsTypeAtom = atom<Maybe<string>>(undefined, "eventsType")
 
-export async function getEvents(init: RequestInit, params: Partial<Record<string, string>>) {
+export async function getEvents(init: RequestInit, params: Partial<Record<string, string | number>>) {
   return client<EventPayload[]>("server/events/list")
     .pipe(withQueryParams(params), withAbort(init.signal))
     .exec()
@@ -14,7 +14,8 @@ export async function getEvents(init: RequestInit, params: Partial<Record<string
 
 export const eventsAction = reatomAsync(async (ctx) => {
   const params = {
-    type: ctx.get(eventsTypeAtom)
+    type: ctx.get(eventsTypeAtom),
+    limit: 3
   }
 
   return await ctx.schedule(() => getEvents({ signal: ctx.controller.signal }, params))

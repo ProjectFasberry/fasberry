@@ -1,4 +1,5 @@
 import { getRedisKey } from "#/helpers/redis";
+import { client } from "#/shared/api/client";
 import { general } from "#/shared/database/main-db";
 import { getNats } from "#/shared/nats/client";
 import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
@@ -6,7 +7,6 @@ import { getRedis } from "#/shared/redis/init";
 import { logger } from "#/utils/config/logger";
 import { safeJsonParse } from "#/utils/config/transforms";
 import { StatusPayload } from "@repo/shared/types/entities/other";
-import ky from "ky";
 import z from "zod";
 
 type ServerStatus = {
@@ -82,7 +82,7 @@ async function getProxyStats(): Promise<ServerStatus | null> {
     ip = query.ip
   }
 
-  const res = await ky.get(`https://api.mcstatus.io/v2/status/java/${ip}:25565`, {
+  const res = await client.get(`https://api.mcstatus.io/v2/status/java/${ip}:25565`, {
     searchParams: { timeout: 1.0 }, throwHttpErrors: false
   })
 

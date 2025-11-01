@@ -1,4 +1,4 @@
-import { atom, createCtx } from "@reatom/core";
+import { atom, batch, createCtx, Ctx } from "@reatom/core";
 import { reatomAsync, sleep, withCache, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
 import { DEFAULT_SOFT_TIMEOUT, Payment } from "./store.model";
 import { withSsr } from "@/shared/lib/ssr";
@@ -7,16 +7,19 @@ import { logError } from "@/shared/lib/log";
 import { mergeSnapshot } from "@/shared/lib/snapshot";
 import { CartFinalPrice } from "@repo/shared/types/entities/store";
 import type { CartItem, CartPayload } from "@repo/shared/types/entities/store"
-import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
+import { client, withAbort, withJsonBody, withLogging, withQueryParams } from "@/shared/lib/client-wrapper";
 import { isEmptyArray } from "@/shared/lib/array";
+import { isAuthAtom } from "@/shared/models/page-context.model";
+import { getRecipient, setRecipientValueAtom, validateRecItem } from "./store-recipient.model";
+import { currentUserAtom } from "@/shared/models/current-user.model";
+import { simulate } from "./store-item-status.model";
+import { cartDataAtom } from "./store-cart.model.atoms";
 
 export async function getCartData(init?: RequestInit) {
   return client<CartPayload>("store/cart/list", init)
     .pipe(withAbort(init?.signal))
     .exec()
 }
-
-export const cartDataAtom = atom<CartPayload["products"]>([], "cartData").pipe(withSsr("cartData"))
 
 export const cartDataSelectedAtom = atom<CartItem[]>(
   (ctx) => ctx.spy(cartDataAtom).filter(t => t.selected)
@@ -107,4 +110,74 @@ export async function defineCartData(pageContext: PageContextServer) {
   const newSnapshot = mergeSnapshot(ctx, pageContext)
 
   pageContext.snapshot = newSnapshot
+}
+
+export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
+  const isAuth = ctx.get(isAuthAtom);
+
+  if (!isAuth) {
+    const isExist = validateRecItem(ctx, id)
+
+    if (!isExist) return;
+  } else {
+    const currentUser = ctx.get(currentUserAtom)
+    if (!currentUser) throw new Error('Current user is not defined')
+
+    setRecipientValueAtom(ctx, currentUser.nickname)
+  }
+
+  simulate(ctx, id, "load")
+
+  const recipient = getRecipient(ctx)
+
+  try {
+    await ctx.schedule(() => sleep(60));
+
+    const result = await ctx.schedule(() =>
+      client
+        .post<boolean>("store/cart/add")
+        .pipe(withJsonBody({ id, recipient }), withLogging())
+        .exec()
+    )
+
+    return { id, result }
+  } catch (e) {
+    simulate(ctx, id, 'unload');
+    throw e
+  }
+}, {
+  name: "addItemToCartAction",
+  onFulfill: (ctx, res) => {
+    if (!res) return;
+
+    const { result, id } = res
+
+    if (!id) {
+      console.warn("Store target id is not defined")
+      throw new Error("Store target id is not defined")
+    }
+
+    batch(ctx, () => {
+      simulate(ctx, id, "select")
+      simulate(ctx, id, "unload");
+    })
+
+    updateCart(ctx)
+    setRecipientValueAtom.reset(ctx);
+  },
+  onReject: (ctx, e) => {
+    logError(e, { type: "combined" })
+
+    setRecipientValueAtom.reset(ctx);
+  }
+}).pipe(withStatusesAtom())
+
+
+export async function updateCart(ctx: Ctx) {
+  const data = await getCartData()
+
+  batch(ctx, () => {
+    cartDataAtom(ctx, data.products)
+    cartPriceAtom(ctx, data.price);
+  })
 }

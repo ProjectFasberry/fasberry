@@ -1,4 +1,4 @@
-import { logout } from "@/shared/components/app/auth/models/auth.model"
+import { logoutAction } from "@/shared/components/app/auth/models/auth.model"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"
@@ -16,11 +16,11 @@ type Banned = {
 }
 
 const BannedActionButton = reatomComponent(({ ctx }) => {
-  const isDisabled = ctx.spy(logout.statusesAtom).isPending || ctx.spy(logout.statusesAtom).isFulfilled;
+  const isDisabled = ctx.spy(logoutAction.statusesAtom).isPending || ctx.spy(logoutAction.statusesAtom).isFulfilled;
 
   return (
     <Button
-      onClick={() => logout(ctx)}
+      onClick={() => logoutAction(ctx)}
       disabled={isDisabled}
       className='bg-neutral-50 text-red-500 font-semibold text-lg'
     >

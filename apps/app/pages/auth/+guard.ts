@@ -1,13 +1,11 @@
 import { PageContextServer } from "vike/types";
 import { redirect } from "vike/abort";
 import { logRouting } from "@/shared/lib/log";
-import { APP_OPTIONS_KEY, AppOptionsPayloadExtend } from "@/shared/models/app.model";
+import { getIsAuth } from "@/shared/lib/validators";
 
 export const guard = async (pageContext: PageContextServer) => {
   logRouting(pageContext.urlPathname, "guard");
 
-  const actualSnapshot = pageContext.snapshot[APP_OPTIONS_KEY].data as AppOptionsPayloadExtend; 
-  const isAuth = actualSnapshot.isAuth
-
+  const isAuth = getIsAuth(pageContext.snapshot)
   if (isAuth) throw redirect("/")
 }
