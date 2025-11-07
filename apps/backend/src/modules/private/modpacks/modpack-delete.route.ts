@@ -21,12 +21,10 @@ export const modpackDelete = new Elysia()
   .delete("/:id", async ({ nickname, status, params }) => {
     const id = params.id;
     const data = await deleteModpack(id)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.MODPACKS.DELETE })
-
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
-    params: z.object({
-      id: z.coerce.number()
-    })
+    params: z.object({ id: z.coerce.number() }),
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

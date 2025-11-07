@@ -11,8 +11,8 @@ import { Avatar } from "../../avatar/components/avatar";
 import { Typography } from "@repo/ui/typography";
 import { ActionButton, ToLink } from "./ui";
 import { IconLayoutBottombarInactive } from "@tabler/icons-react";
-import { UserActionsChangeRoleLocal } from "./users.actions.change-role";
-import { UserActionsRestrictLocal } from "./users.actions.restrict";
+import { UserActionsChangeRoleLocal } from "./users.change-role";
+import { UserActionsRestrictLocal } from "./users.restrict";
 import { useInView } from "react-intersection-observer";
 
 const userItemVariant = tv({

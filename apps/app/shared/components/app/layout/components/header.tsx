@@ -8,13 +8,14 @@ import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { Separator } from "@repo/ui/separator";
-import { logoutAction } from "@/shared/components/app/auth/models/auth.model";
 import { atom, spawn } from "@reatom/framework";
 import { Fragment } from "react/jsx-runtime";
 import { isAuthAtom } from "@/shared/models/page-context.model";
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { Switch } from "@repo/ui/switch";
 import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "@/shared/components/app/player/models/player-seems-like.model";
+import { beforeLogoutAction, logoutAction } from "../../auth/models/logout.model";
+import { AlertDialog } from "@/shared/components/config/alert-dialog";
 
 export const AuthorizeButton = () => {
   return (
@@ -62,7 +63,7 @@ const validatedLinksAtom = atom((ctx) => {
 }, "validatedLinks")
 
 const HeaderMenuActions = reatomComponent(({ ctx }) => {
-  const handle = () => void spawn(ctx, async (spawnCtx) => logoutAction(spawnCtx))
+  const handle = () => beforeLogoutAction(ctx)
 
   return (
     <>
@@ -96,6 +97,7 @@ const HeaderMenu = reatomComponent(({ ctx }) => {
 
   return (
     <>
+      <AlertDialog />
       <UserSettingsDialog />
       <Popover>
         <PopoverTrigger className="group h-full">

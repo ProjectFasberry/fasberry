@@ -57,13 +57,15 @@ declare global {
       REDIS_USER: string;
       REDIS_PORT: number;
       BOT_TOKEN: string;
-      CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
       DOMAIN_NAME: string;
       VOLUME_ENDPOINT: string;
       FRONTEND_ENDPOINT: string;
       HELEKET_MERCHANT_KEY: string;
       HELEKET_PAYMENT_KEY: string;
       HELEKET_PAYOUT_KEY: string;
+      CAP_SITE_KEY: string;
+      CAP_INSTANCE_URL: string;
+      CAP_SECRET: string;
     }
   }
 

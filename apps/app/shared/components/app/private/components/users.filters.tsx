@@ -1,8 +1,8 @@
 import { atom } from "@reatom/core";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { useInView } from "react-intersection-observer";
-import { UserActionsRestrictGlobal } from "./users.actions.restrict";
-import { UserActionsChangeRoleGlobal } from "./users.actions.change-role";
+import { UserActionsRestrictGlobal } from "./users.restrict";
+import { UserActionsChangeRoleGlobal } from "./users.change-role";
 import {
   isCheckedAllAtom,
   selectAllAction,

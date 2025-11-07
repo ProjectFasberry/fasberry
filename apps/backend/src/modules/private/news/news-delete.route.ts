@@ -18,15 +18,13 @@ async function deleteNews(id: number) {
 
 export const newsDeleteRoute = new Elysia()
   .use(validatePermission(PERMISSIONS.NEWS.DELETE))
-  .delete("/:id", async ({ nickname, status, params }) => {
+  .delete("/:id", async ({ status, params }) => {
     const id = params.id;
     const data = await deleteNews(id);
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.NEWS.DELETE })
-
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
-    params: z.object({
-      id: z.coerce.number()
-    })
+    params: z.object({ id: z.coerce.number() }),
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

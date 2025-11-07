@@ -1,22 +1,19 @@
 import { DeleteButton, EditButton, ToLink } from "@/shared/components/app/private/components/ui"
 import {
   createStoreItemAction,
-  createStoreItemFormSchema,
-  editItemAtom,
+  itemToEditAtom,
   editStoreItemAction,
   removeStoreItemAction,
   removeStoreItemBeforeAction,
   searchParamTargetAtom,
-  storeItemsAction
+  storeItemsAction,
 } from "@/shared/components/app/private/models/store.model"
-import { AlertDialog } from "@/shared/components/config/alert-dialog"
 import { editorExtensions, EditorMenuBar } from "@/shared/components/config/editor"
 import { createLink } from "@/shared/components/config/link"
 import { atom, AtomState } from "@reatom/core"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { StoreItem as StoreItemType } from "@repo/shared/types/entities/store"
 import { Button } from "@repo/ui/button"
-import { Input } from "@repo/ui/input"
 import { Skeleton } from "@repo/ui/skeleton"
 import { Typography } from "@repo/ui/typography"
 import { IconArrowLeft, IconPlus } from "@tabler/icons-react"
@@ -25,6 +22,7 @@ import { navigate } from "vike/client/router"
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react"
 import { belkoinImage, charismImage } from "@/shared/consts/images"
 import { appDictionariesAtom } from "@/shared/models/app.model"
+import { CreateItem } from "./store.create"
 
 const titles: Record<AtomState<typeof searchParamTargetAtom>, string> = {
   "create": "Создание товара",
@@ -35,8 +33,8 @@ const titles: Record<AtomState<typeof searchParamTargetAtom>, string> = {
 const headerTitleAtom = atom((ctx) => titles[ctx.spy(searchParamTargetAtom)], "headerTitle")
 const backIsVisibleAtom = atom((ctx) => !!ctx.spy(searchParamTargetAtom), "backIsVisible")
 
-const StoreItem = reatomComponent<StoreItemType>(({ ctx, imageUrl, summary, description, title, id, ...base }) => {
-  const item = { imageUrl, summary, description, title, id, ...base }
+const StoreItem = reatomComponent<StoreItemType>(({ ctx, imageUrl, description, title, id, ...base }) => {
+  const item = { imageUrl, description, title, id, ...base }
 
   return (
     <div className="flex items-center border border-neutral-800 gap-2 sm:gap-4 justify-between px-2 sm:px-4 py-2 w-full h-18 rounded-lg">
@@ -47,7 +45,7 @@ const StoreItem = reatomComponent<StoreItemType>(({ ctx, imageUrl, summary, desc
             {title}
           </Typography>
           <Typography className='text-neutral-400 text-sm text-nowrap truncate'>
-            {summary}
+            {description}
           </Typography>
         </div>
       </div>
@@ -71,7 +69,7 @@ const StoreItem = reatomComponent<StoreItemType>(({ ctx, imageUrl, summary, desc
 const StoreCreateItem = () => {
   return (
     <Button
-      className="h-10 w-fit items-center gap-2 justify-center px-4 border border-neutral-800"
+      className="h-8 w-fit items-center gap-2 justify-center px-4 border border-neutral-800"
       onClick={() => navigate("/private/store?target=create")}
     >
       <Typography className="font-semibold text-lg text-neutral-50">
@@ -82,9 +80,7 @@ const StoreCreateItem = () => {
   )
 }
 
-const StoreItemsSkeleton = () => {
-  return Array.from({ length: 12 }).map((_, idx) => <Skeleton key={idx} className="h-18 w-full" />)
-}
+const StoreItemsSkeleton = () => Array.from({ length: 12 }).map((_, idx) => <Skeleton key={idx} className="h-18 w-full" />)
 
 const StoreItems = reatomComponent(({ ctx }) => {
   useUpdate(storeItemsAction, []);
@@ -97,10 +93,14 @@ const StoreItems = reatomComponent(({ ctx }) => {
 
   if (!data) return null;
 
-  return data.map((item) => <StoreItem key={item.id} {...item} />)
+  return (
+    <div className="flex flex-col gap-2 w-full h-full">
+      {data.map((item) => <StoreItem key={item.id} {...item} />)}
+    </div>
+  )
 }, "StoreItems")
 
-export const Wrapper = reatomComponent<PropsWithChildren>(({ ctx, children }) => {
+const Wrapper = reatomComponent<PropsWithChildren>(({ ctx, children }) => {
   const isLoading =
     ctx.spy(removeStoreItemAction.statusesAtom).isPending ||
     ctx.spy(editStoreItemAction.statusesAtom).isPending ||
@@ -123,7 +123,7 @@ const CURRENCY_IMAGE: Record<string, string> = {
 }
 
 const EditItem = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(editItemAtom);
+  const data = ctx.spy(itemToEditAtom);
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -205,42 +205,9 @@ const EditItem = reatomComponent(({ ctx }) => {
   )
 }, "EditItem")
 
-const CreateItem = reatomComponent(({ ctx }) => {
-  return (
-    <div className="flex flex-col gap-2 w-full h-full">
-      {createStoreItemFormSchema.map((field, i) => {
-        switch (field.type) {
-          case "input":
-            return (
-              <Input
-                key={i}
-                value={field.value(ctx)}
-                onChange={e => field.onChange(ctx, e)}
-                placeholder={field.placeholder}
-              />
-            )
-          default:
-            return null
-        }
-      })}
-    </div>
-  )
-}, "CreateItem")
-
-const ViewStoreItems = () => (
-  <>
-    <div className="flex flex-col gap-2 w-full h-full">
-      <StoreItems />
-    </div>
-    <AlertDialog />
-  </>
-)
-
-export const Components = reatomComponent(({ ctx }) => COMPONENTS[ctx.spy(searchParamTargetAtom)], "Components")
-
 const COMPONENTS: Record<string, ReactNode> = {
   "create": <CreateItem />,
-  "view": <ViewStoreItems />,
+  "view": <StoreItems />,
   "edit": <EditItem />
 }
 
@@ -258,7 +225,7 @@ const Back = reatomComponent(({ ctx }) => {
   )
 }, "Back")
 
-export const StoreHeader = reatomComponent(({ ctx }) => {
+const StoreHeader = reatomComponent(({ ctx }) => {
   const title = ctx.spy(headerTitleAtom);
 
   return (
@@ -273,3 +240,14 @@ export const StoreHeader = reatomComponent(({ ctx }) => {
     </div>
   )
 }, "Header")
+
+const Components = reatomComponent(({ ctx }) => COMPONENTS[ctx.spy(searchParamTargetAtom)], "Components")
+
+export const StorePrivated = () => {
+  return (
+    <Wrapper>
+      <StoreHeader />
+      <Components />
+    </Wrapper>
+  )
+}

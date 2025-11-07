@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { donateSchema } from '../entities/donate-schema';
 import { currencyCryptoSchema, currencyFiatSchema } from '../entities/currencies-schema';
 import { JsonValue } from '../../types/db/auth-database-types';
-import { nicknameSchema } from '../auth/create-session-schema';
+import { nicknameSchema } from '../auth';
 
 export const paymentFiatMethodSchema = z.enum(["card", "sbp"])
 export const paymentTypeSchema = z.enum(['donate', 'belkoin', 'charism', 'item', 'event']);
@@ -61,21 +61,19 @@ export const orderEventPayloadSchema = z.object({
 
 export const STORE_TYPES = ["donate", "event"] as const
 
+export const editorFieldSchema = z.object({}).loose().transform((v) => v as JsonValue)
+
 export const storeItemSchema = z.object({
   id: z.number(),
   title: z.string(),
-  description: z.custom<JsonValue>().nullish(),
+  description: z.string().nullable(),
   imageUrl: z.string(),
-  type: z.union([
-    z.enum(STORE_TYPES),
-    z.string()
-  ]),
+  type: z.union([z.enum(STORE_TYPES),z.string()]),
   command: z.string().nullable(),
   value: z.string(),
   currency: z.string(),
   price: z.number(),
-  summary: z.string(),
-  content: z.object({}).loose().transform((v) => v as JsonValue)
+  content: editorFieldSchema
 })
 
 export const GAME_CURRENCIES = ["CHARISM", "BELKOIN"] as const;

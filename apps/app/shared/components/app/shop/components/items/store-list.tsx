@@ -109,7 +109,7 @@ export const ItemSelectToCart = reatomComponent<Pick<StoreItem, "id">>(({ ctx, i
 const storeItemBgImage = getStaticImage("patterns/pattern_light.png")
 
 const StoreItem = ({
-  description, id, title, price, imageUrl, currency, summary
+  description, id, title, price, imageUrl, currency
 }: StoreItem) => {
   return (
     <div className={storeItemVariant().base()}>
@@ -140,7 +140,7 @@ const StoreItem = ({
           </Typography>
         </a>
         <Typography color="gray" className={storeItemVariant().summary()}>
-          {summary}
+          {description}
         </Typography>
       </div>
       <div className={storeItemVariant().footer()}>

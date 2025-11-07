@@ -14,6 +14,7 @@
       "name": "app",
       "version": "1.0.0",
       "dependencies": {
+        "@better-captcha/react": "0.3.0",
         "@bprogress/react": "1.2.7",
         "@photonjs/hono": "0.1.4",
         "@reatom/async": "3.16.8",
@@ -22,7 +23,8 @@
         "@reatom/npm-react": "3.10.6",
         "@reatom/persist": "3.4.1",
         "@reatom/persist-web-storage": "3.4.6",
-        "@reatom/url": "^3.9.0",
+        "@reatom/undo": "3.4.2",
+        "@reatom/url": "3.9.0",
         "@repo/shared": "workspace:*",
         "@repo/ui": "workspace:*",
         "@sentry/react": "9.38.0",
@@ -258,6 +260,10 @@
     "@babel/traverse": ["@babel/traverse@7.28.3", "", { "dependencies": { "@babel/code-frame": "^7.27.1", "@babel/generator": "^7.28.3", "@babel/helper-globals": "^7.28.0", "@babel/parser": "^7.28.3", "@babel/template": "^7.27.2", "@babel/types": "^7.28.2", "debug": "^4.3.1" } }, "sha512-7w4kZYHneL3A6NP2nxzHvT3HCZ7puDZZjFMqDpBPECub79sTtSO5CGXDkKrTQq8ksAwfD/XI2MRFX23njdDaIQ=="],
 
     "@babel/types": ["@babel/types@7.28.2", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.27.1" } }, "sha512-ruv7Ae4J5dUYULmeXw1gmb7rYRz57OWCPM57pHojnLq/3Z1CK2lNSLTCVjxVk1F/TZHwOZZrOWi0ur95BbLxNQ=="],
+
+    "@better-captcha/core": ["@better-captcha/core@0.3.0", "", { "peerDependencies": { "typescript": "^5.9.2" } }, "sha512-YvRsV+VCFbXlQMjLyTlEvT6uSN3fGfWLxQaCp7FXfVyhuhKOa1fcuxi9Pd9vj0XoBBdjMLuO3enStjQ/TnybrQ=="],
+
+    "@better-captcha/react": ["@better-captcha/react@0.3.0", "", { "dependencies": { "@better-captcha/core": "0.3.0" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "typescript": "^5.9.2" } }, "sha512-wfvq1CFtKfOd8gDirRL5BxnhJkp7zw769+NGaotW9AReWucx3oOHV349U0rZN0FdYWZ1pInnZb8y1wnoduGLUA=="],
 
     "@biomejs/biome": ["@biomejs/biome@2.2.4", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.2.4", "@biomejs/cli-darwin-x64": "2.2.4", "@biomejs/cli-linux-arm64": "2.2.4", "@biomejs/cli-linux-arm64-musl": "2.2.4", "@biomejs/cli-linux-x64": "2.2.4", "@biomejs/cli-linux-x64-musl": "2.2.4", "@biomejs/cli-win32-arm64": "2.2.4", "@biomejs/cli-win32-x64": "2.2.4" }, "bin": { "biome": "bin/biome" } }, "sha512-TBHU5bUy/Ok6m8c0y3pZiuO/BZoY/OcGxoLlrfQof5s8ISVwbVBdFINPQZyFfKwil8XibYWb7JMwnT8wT4WVPg=="],
 
@@ -618,6 +624,8 @@
     "@reatom/persist-web-storage": ["@reatom/persist-web-storage@3.4.6", "", { "dependencies": { "@reatom/core": "^3.3.0", "@reatom/persist": "^3.1.0", "idb-keyval": "^6.2.1" } }, "sha512-bwJPxyTsLW8+/bd3CvdR4Y3wk94VAdiiVIbChKB86WwkJHdQ7M7YZ7Yy2+iOgCvzwDZkA+6BZnw6wiOGyZNOBg=="],
 
     "@reatom/primitives": ["@reatom/primitives@3.11.0", "", { "dependencies": { "@reatom/core": "^3.1.1", "@reatom/utils": "^3.1.1" } }, "sha512-b+jtK7qpQxSP83mYQXpPRMlFyg+C9WPv4sZDWSmm00mwmwetW0KbltftkWiwQjQM1TLwpDLZ6R7DX7fcTraIgg=="],
+
+    "@reatom/undo": ["@reatom/undo@3.4.2", "", { "dependencies": { "@reatom/core": "^3.1.21", "@reatom/effects": "^3.4.0", "@reatom/hooks": "^3.1.2", "@reatom/persist": "^3.3.0", "@reatom/utils": "^3.4.0" } }, "sha512-asceNhY0wrCHKL/lFw+f5oabJ7dbDw2ro+Sp6UNVwW8KOW7VLkyGzLmsmt4f135PypKiINxF3HI6CjwKMq0KHw=="],
 
     "@reatom/url": ["@reatom/url@3.9.0", "", { "dependencies": { "@reatom/core": "^3.5.0", "@reatom/effects": "^3.7.0", "@reatom/hooks": "^3.4.0", "@reatom/utils": "^3.4.0" } }, "sha512-uQ2gilyIf9qxrta15AHFwZhkAE/MynDlV34JNlOfGJdVTAuPd6HmYjuTYGy15yBdTsV8xCK9ry67H8NP1/BrEw=="],
 

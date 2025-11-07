@@ -7,6 +7,9 @@ import { pageContextAtom } from "@/shared/models/page-context.model";
 import { startPageEvents } from "@/shared/lib/events";
 import { useData } from "vike-react/useData"
 import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";
+import { renderToHTMLString } from "@tiptap/static-renderer";
+import { editorExtensions } from "@/shared/components/config/editor";
+import type { JSONContent } from "@tiptap/react";
 
 const events = action((ctx) => {
   const pageContext = ctx.get(pageContextAtom);
@@ -18,8 +21,7 @@ const events = action((ctx) => {
 
 const SelectedDonate = reatomComponent(({ ctx }) => {
   const data = useData<Data>().data
-
-  const desc = data.description ? data.description as [] : []
+  const html = renderToHTMLString({ extensions: editorExtensions, content: data.content as JSONContent })
 
   return (
     <div className="flex flex-col sm:flex-row items-start gap-8 w-full justify-center h-full">
@@ -32,25 +34,13 @@ const SelectedDonate = reatomComponent(({ ctx }) => {
             {data.title}
           </Typography>
           <Typography color="gray" className="text-sm md:text-base lg:text-lg">
-            {data.summary}
+            {data.description}
           </Typography>
         </div>
-        {(desc && (desc.length >= 1 && typeof desc[0] === 'string')) && (
-          <div className="flex flex-col w-full gap-4 items-center overflow-auto max-h-[260px] justify-start rounded-xl">
-            <div className="flex flex-col w-full">
-              <Typography className="text-xl font-semibold">
-                Возможности
-              </Typography>
-              <div className="flex flex-col w-full">
-                {desc.map((feature, idx) => (
-                  <Typography key={idx} className="text-base">
-                    {`-`} {feature}
-                  </Typography>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        <div
+          dangerouslySetInnerHTML={{ __html: html }}
+          className="tiptap whitespace-pre-wrap [&>p]:mt-4"
+        />
         <div className="flex flex-col items-start gap-4 w-fit">
           <ItemPrice currency={data.currency} price={data.price} />
           <ItemSelectToCart id={data.id} />

@@ -23,12 +23,12 @@ export type CartItem = {
   selected: boolean;
   quantity: number;
   id: number;
+  description: string | null,
   value: string;
   type: string;
   command: string | null;
   currency: string;
-  description: JsonValue;
-  summary: string;
+  content: JsonValue;
   title: string;
 }
 

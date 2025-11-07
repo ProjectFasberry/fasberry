@@ -1,8 +1,7 @@
+import Elysia, { t } from "elysia";
+import z from "zod";
 import { general } from "#/shared/database/main-db";
 import { withData } from "#/shared/schemas";
-import Elysia, { t } from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
-import z from "zod";
 
 async function getModpack(id: number) {
   const query = await general
@@ -34,20 +33,18 @@ const modpackPayload = t.Object({
   version: t.String(),
 })
 
-export const modpackSolo = new Elysia()
+export const modpackSingle = new Elysia()
   .model({
     "modpack": withData(
       t.Nullable(modpackPayload)
     )
   })
-  .get("/id", async ({ status, params }) => {
+  .get("/id", async ({ params }) => {
     const id = params.id;
     const data = await getModpack(id)
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
-    params: z.object({
-      id: z.coerce.number()
-    }),
+    params: z.object({ id: z.coerce.number() }),
     response: {
       200: "modpack"
     }

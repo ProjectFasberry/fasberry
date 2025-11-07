@@ -11,7 +11,8 @@ const storePreviewImage = getStaticImage("backgrounds/main_background.png")
 
 function metadata() {
   const title = wrapTitle("Магазин");
-  const description = "Поддержите наш сервер Fasberry, приобретая привилегии, уникальные товары и игровые монеты. Улучшите свой игровой опыт и помогите развитию проекта!";
+  const description = `Поддержите наш сервер Fasberry, 
+    приобретая привилегии, уникальные товары и игровые монеты. Улучшите свой игровой опыт и помогите развитию проекта!`;
 
   return {
     title,

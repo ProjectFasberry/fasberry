@@ -73,7 +73,7 @@ export const UserInfo = reatomComponent(({ ctx }) => {
         <DialogTitle className="text-center text-2xl">
           Разрешения
         </DialogTitle>
-        <div className="flex flex-col gap-2 overflow-y-auto scrollbar scrollbar-thumb-neutral-800 w-full">
+        <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar scrollbar-thumb-neutral-800 w-full">
           {groups.map((group, idx) => (
             <div key={group.title}>
               <Typography className="text-lg font-semibold mb-2">

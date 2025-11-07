@@ -13,7 +13,7 @@ import {
   RatingsPayload
 } from "@repo/shared/types/entities/rating"
 import { client, withAbort, withQueryParams } from "@/shared/lib/client-wrapper";
-import { DEFAULT_SOFT_TIMEOUT } from "../../shop/models/store.model";
+import { DEFAULT_SOFT_TIMEOUT } from "@/shared/consts/delays";
 
 type RatingMap = {
   playtime: RatingPlaytime[]

@@ -1,13 +1,23 @@
-import Elysia from "elysia";
-import { ipPlugin } from "#/lib/plugins/ip";
+import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { defineUser } from "#/lib/middlewares/define";
+import { withData } from "#/shared/schemas";
+import { botValidator } from "#/lib/middlewares/validators";
 
-// todo: impl restore pass for user
 export const restore = new Elysia()
-  .use(ipPlugin())
+  .use(botValidator())
   .use(defineUser())
-  .post("/restore", async ({ status }) => {
+  .model({
+    "login": withData(
+      t.Object({
+        code: t.String()
+      })
+    )
+  })
+  .resolve(({ headers }) => ({ userAgent: headers["user-agent"] }))
+  .post("/restore", async ({ status, userAgent }) => {
+
+
 
     return status(HttpStatusEnum.HTTP_200_OK)
   })

@@ -40,13 +40,11 @@ async function getPermissionsByRole(
 
 export const permissionsListByRole = new Elysia()
   .use(validatePermission(PERMISSIONS.PERMISSIONS.READ))
-  .get("/list/:roleId", async ({ params, query }) => {
-    const roleId = params.roleId;
-    const data = await getPermissionsByRole(roleId, query);
+  .get("/list/:id", async ({ params, query }) => {
+    const id = params.id;
+    const data = await getPermissionsByRole(id, query);
     return { data }
   }, {
     query: permissionsSchema,
-    params: z.object({
-      roleId: z.coerce.number()
-    })
+    params: z.object({ id: z.coerce.number() })
   })

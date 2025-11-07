@@ -2,11 +2,81 @@ import { Options } from "@/shared/components/app/private/components/options";
 import { Typography } from "@repo/ui/typography";
 import { Methods } from "@/shared/components/app/private/components/methods";
 import { Roles } from "@/shared/components/app/private/components/roles";
-import { Dictionaries, DictionariesHeader } from "@/shared/components/app/private/components/dictionaries";
+import { DictionariesWrapper, CreateDictionaries, ViewDictionaries } from "@/shared/components/app/private/components/dictionaries";
+import { Chat } from "@/shared/components/app/private/components/chat";
+import { action } from "@reatom/core";
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
+import { startPageEvents } from "@/shared/lib/events";
+import { pageContextAtom } from "@/shared/models/page-context.model";
+import { ActionParent, actionsParentAtom, actionsSearchParamsAtom, actionsTypeAtom, ActionType } from "@/shared/components/app/private/models/actions.model";
+import { ReactNode } from "react";
+import { CreateNews, EditNews, NewsWrapper, ViewNews } from "@/shared/components/app/private/components/news";
+import { CreateEvent, EventsWrapper, ViewEvent } from "@/shared/components/app/private/components/events";
+import { BannersWrapper, CreateBanner, EditBanner, ViewBanner } from "@/shared/components/app/private/components/banners";
+
+const list: Record<string, Partial<Record<ActionType, ReactNode>>> = {
+  "news": {
+    "create": <CreateNews />,
+    "edit": <EditNews />,
+    "view": <ViewNews />
+  },
+  "event": {
+    "create": <CreateEvent />,
+    "edit": null,
+    "view": <ViewEvent />,
+  },
+  "banner": {
+    "create": <CreateBanner />,
+    "edit": <EditBanner />,
+    "view": <ViewBanner />,
+  },
+  "dictionaries": {
+    "create": <CreateDictionaries />,
+    "edit": null,
+    "view": <ViewDictionaries />,
+  }
+}
+
+const ActionsHeaderSlot = reatomComponent<{ parent: ActionParent }>(({ ctx, parent }) => {
+  const targetParent = ctx.spy(actionsParentAtom)
+  const defaultComponent = list[parent]?.view ?? null
+  if (!targetParent) return defaultComponent
+
+  if (parent !== targetParent) return null;
+
+  const targetType = ctx.spy(actionsTypeAtom);
+
+  return list[parent][targetType]
+}, "ActionsHeaderSlot")
+
+const ActionsHeader = (
+  { title, parent }: { title: string, parent: ActionParent }
+) => {
+  return (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2 h-8">
+        <Typography className="text-xl font-semibold">
+          {title}
+        </Typography>
+      </div>
+      <ActionsHeaderSlot parent={parent} />
+    </div>
+  )
+}
+
+const events = action((ctx) => {
+  const pageContext = ctx.get(pageContextAtom);
+  if (!pageContext) return;
+
+  actionsSearchParamsAtom(ctx, pageContext.urlParsed.search)
+})
 
 export default function Page() {
+  useUpdate((ctx) => startPageEvents(ctx, events), [pageContextAtom])
+
   return (
     <div className="flex flex-col gap-4 w-full h-full">
+      <Chat />
       <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 h-full w-full">
         <div className="flex flex-col gap-4 bg-neutral-900 rounded-xl p-4 w-full">
           <Typography className="text-xl font-bold">
@@ -33,11 +103,21 @@ export default function Page() {
           <Roles />
         </div>
       </div>
-      <div className="flex flex-col gap-4 bg-neutral-900 rounded-xl p-4 w-full h-full">
-        <DictionariesHeader />
-        <div className="flex flex-col gap-1 w-full h-full">
-          <Dictionaries />
-        </div>
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
+        <ActionsHeader parent="event" title="Ивенты" />
+        <EventsWrapper />
+      </div>
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
+        <ActionsHeader parent="banner" title="Баннеры" />
+        <BannersWrapper />
+      </div>
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
+        <ActionsHeader parent="news" title="Новости" />
+        <NewsWrapper />
+      </div>
+      <div className="flex flex-col gap-4 w-full h-full bg-neutral-900 rounded-xl p-4">
+        <ActionsHeader parent="dictionaries" title="Справочник" />
+        <DictionariesWrapper />
       </div>
     </div>
   )

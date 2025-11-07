@@ -10,7 +10,7 @@ import { isEmptyArray } from "@/shared/lib/array";
 export const newsDataAtom = atom<NewsPayload["data"] | null>(null).pipe(withReset());
 export const newsMetaAtom = atom<NewsPayload["meta"] | null>(null).pipe(withReset())
 
-export async function getNews(init: RequestInit, params: Partial<{ limit: number, asc: boolean }>) {
+export async function getNews(init: RequestInit, params: Partial<{ content?: boolean, limit: number, asc: boolean }>) {
   return client<NewsPayload>("shared/news/list", { throwHttpErrors: false })
     .pipe(withQueryParams(params), withAbort(init.signal))
     .exec()

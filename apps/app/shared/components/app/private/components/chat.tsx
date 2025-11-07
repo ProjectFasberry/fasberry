@@ -14,7 +14,8 @@ import {
   getChatItemViews,
   ChatItem,
   chatDisabledAtom,
-  ChatItemViews
+  ChatItemViews,
+  chatWs
 } from "../models/chat.model";
 import { Button } from "@repo/ui/button";
 import {
@@ -32,7 +33,7 @@ import { Typography } from "@repo/ui/typography";
 import { createLink, Link } from "@/shared/components/config/link";
 import { Skeleton } from "@repo/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActionButton, DeleteButton } from "./ui";
 import { currentUserAtom } from "@/shared/models/current-user.model";
 
@@ -276,13 +277,29 @@ const ChatCreateMessage = reatomComponent(({ ctx }) => {
 const ChatShowButton = reatomComponent(({ ctx }) => {
   return (
     <Button
-      className="w-full bg-neutral-800 text-lg font-semibold"
+      className="w-full bg-neutral-900 text-lg font-semibold"
       onClick={() => chatDisabledAtom(ctx, false)}
     >
       Показать чат
     </Button>
   )
 }, "ChatShowButton")
+
+const Sync = reatomComponent(({ ctx }) => {
+  const disabled = ctx.get(chatDisabledAtom);
+
+  useEffect(() => {
+    if (!disabled) {
+      chatWs.init(ctx)
+    }
+
+    return () => {
+      chatWs.closeWs(ctx)
+    }
+  }, [])
+
+  return null
+})
 
 export const Chat = reatomComponent(({ ctx }) => {
   const disabled = ctx.spy(chatDisabledAtom)
@@ -291,6 +308,7 @@ export const Chat = reatomComponent(({ ctx }) => {
 
   return (
     <div className="flex flex-col relative gap-2 bg-neutral-900 rounded-xl w-full h-[400px] sm:h-[700px]">
+      <Sync />
       <div className="flex items-center p-4 justify-between w-full">
         <Typography className="text-xl font-semibold">Чат</Typography>
         <Button className="p-0" onClick={() => chatDisabledAtom(ctx, true)}>

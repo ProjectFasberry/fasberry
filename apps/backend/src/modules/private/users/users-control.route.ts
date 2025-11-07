@@ -15,24 +15,24 @@ const playersControlRestrictCreate = new Elysia()
   .use(validatePermission(PERMISSIONS.PLAYERS.RESTRICT.CREATE))
   .post("/create", async ({ body, nickname }) => {
     const data = await controlRestrictUsers(nickname, body)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.PLAYERS.RESTRICT.CREATE })
-
     return { data }
   }, {
-    body: usersControlRestrictSchema
+    body: usersControlRestrictSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })
 
 const playersControlRestrictDelete = new Elysia()
   .use(validatePermission(PERMISSIONS.PLAYERS.RESTRICT.DELETE))
   .delete("/remove", async ({ body, nickname }) => {
     const data = await controlRestrictUsers(nickname, body)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.PLAYERS.RESTRICT.DELETE })
-
     return { data }
   }, {
-    body: usersControlRestrictSchema
+    body: usersControlRestrictSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })
 
 const playersControlRestrict = new Elysia()
@@ -43,15 +43,15 @@ const playersControlRestrict = new Elysia()
 
 const playersControlRoles = new Elysia()
   .use(validatePermission(PERMISSIONS.PLAYERS.ROLE.UPDATE))
-  .post("/roles", async ({ nickname, body }) => {
+  .post("/roles", async ({ body }) => {
     const { targets, ...base } = body;
     const data = await changeRoleUsers(targets, base)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.PLAYERS.ROLE.UPDATE })
-
     return { data }
   }, {
-    body: usersControlRolesSchema
+    body: usersControlRolesSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })
 
 const playersControlPermissions = new Elysia()
@@ -59,16 +59,16 @@ const playersControlPermissions = new Elysia()
   .post("/permission", async ({ nickname, body }) => {
     const { targets, ...base } = body;
     const data = await editPlayerRole(nickname, targets, base)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.PLAYERS.PERMISSION.UPDATE })
-
     return { data }
   }, {
-    body: playersControlPermissionsSchema
+    body: playersControlPermissionsSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })
 
 export const playersControl = new Elysia()
-  .group("/control", app => app
+  .group("", app => app
     .use(playersControlRestrict)
     .use(playersControlRoles)
     .use(playersControlPermissions)

@@ -2,7 +2,7 @@
 
 import "../imports"
 
-import { Elysia, ElysiaConfig } from "elysia";
+import { Elysia, ElysiaConfig, ValidationError } from "elysia";
 import { serverTiming as serverTimingPlugin } from '@elysiajs/server-timing'
 import { me } from "#/modules/user/me.route";
 import { rateLimitPlugin } from "./lib/plugins/rate-limit";
@@ -31,9 +31,9 @@ import { logger } from "./utils/config/logger";
 import { checkDatabasesHealth } from "./shared/database/init";
 import { corsPlugin } from "./lib/plugins/cors";
 import { prometheusPlugin } from "./lib/plugins/prometheus";
+import { safeJsonParse } from "./utils/config/transforms";
 
 const appConfig: ElysiaConfig<string> = {
-  prefix: "/minecraft",
   serve: {
     hostname: '0.0.0.0',
     // idleTimeout: 3
@@ -51,10 +51,7 @@ const app = new Elysia(appConfig)
   .use(corsPlugin())
   .use(root)
   .use(defineSession())
-  .onBeforeHandle(async ({ cookie, session }) => {
-    if (!session) return;
-    updateSession(session, cookie)
-  })
+  .onBeforeHandle(async ({ cookie, session }) => updateSession(session, cookie))
   .use(shared)
   .use(auth)
   .use(me)
@@ -64,12 +61,24 @@ const app = new Elysia(appConfig)
   .use(rate)
   .onError(({ code, error }) => {
     logger.error(error, code);
+    
+    let message: string | ValidationError = 'Internal Server Error';
 
-    const message =
-      (error instanceof Error && error.message) ||
-      (typeof (error as any)?.response !== "undefined"
-        ? String((error as any).response).slice(0, 128)
-        : "Internal Server Error");
+    if (code === 'VALIDATION') {
+      const result = safeJsonParse<ValidationError>(error.message);
+      message = result.ok ? result.value : error.message;
+      return { error: message };
+    }
+
+    if ('response' in error) {
+      const response = error.response as { error?: string } | number;
+
+      if (typeof response === 'object' && response !== null) {
+        if (response.error) message = response.error;
+      } else {
+        message = String(response);
+      }
+    }
 
     return { error: message };
   })

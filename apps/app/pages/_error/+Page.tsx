@@ -1,16 +1,20 @@
 import { Link } from "@/shared/components/config/link";
+import { isDevelopment } from "@/shared/env";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
+import { IconArrowRight } from "@tabler/icons-react";
 import { ReactNode } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 
 const Back = () => {
   return (
     <Link href="/">
-      <Button className="md:w-max bg-neutral-800">
-        <Typography className='text-neutral-50 text-center text-base md:text-xl'>
-          Вернуться в безопасное место
+      <Button className="gap-2 md:w-max bg-neutral-50 text-neutral-950">
+        <Typography className='text-center font-semibold'>
+          В безопасное место
         </Typography>
+        <IconArrowRight size={18} />
       </Button>
     </Link>
   )
@@ -19,18 +23,26 @@ const Back = () => {
 const NotFoundPage = () => {
   return (
     <>
-      <Typography color="white" className="text-base md:text-xl text-center font-normal">
-        Не удалось найти нужный ресурс.
+      <Typography className="text-xl lg:text-2xl text-center font-semibold">
+        Не удалось найти нужный ресурс
       </Typography>
-      <Back />
     </>
   )
 }
 
 const ErrorPage = () => {
+  const { abortReason } = usePageContext();
+
+  const message = typeof abortReason === 'string' ? abortReason : ""
+
   return (
     <>
-      <Back />
+      <Typography className="text-xl lg:text-2xl text-center font-semibold">
+        Произошла ошибка
+      </Typography>
+      {isDevelopment && (
+        <span className="text-red-500">{message}</span>
+      )}
     </>
   )
 }
@@ -44,11 +56,18 @@ export default function Page() {
   const { is404 } = usePageContext();
 
   return (
-    <div className="flex flex-col h-[80vh] justify-center items-center gap-2">
-      <Typography color="gray" className="text-neutral-400 text-base md:text-xl font-normal">
-        Отключено
-      </Typography>
+    <div className="flex flex-col h-[80vh] justify-center items-center gap-4">
+      <div className="w-full lg:w-2/3 h-72 lg:h-96 rounded-xl overflow-hidden">
+        <img
+          src={getStaticImage("images/marketplace_art.webp")}
+          fetchPriority="high"
+          alt=""
+          className="object-cover w-full h-full"
+          draggable={false}
+        />
+      </div>
       {VARIANTS[is404 ? "404" : "500"]}
+      <Back />
     </div>
   );
 }

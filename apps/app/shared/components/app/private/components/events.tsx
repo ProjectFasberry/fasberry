@@ -1,20 +1,19 @@
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Input } from "@repo/ui/input"
-import { Button } from "@repo/ui/button"
 import {
-  actionsTypeAtom,
   createEventAction,
   createEventDescriptionAtom,
   createEventInitiatorAtom,
   createEventTitleAtom,
   createEventTypeAtom,
   eventsListAction,
-} from "../models/actions.model"
-import { getSelectedParentAtom, ToActionButtonX } from "./actions.news"
+} from "../models/event.model"
 import { AtomState } from "@reatom/core"
 import { ReactNode } from "react"
 import { Typography } from "@repo/ui/typography"
 import { DeleteButton } from "./ui"
+import { actionsTypeAtom, getSelectedParentAtom } from "../models/actions.model"
+import { ButtonXSubmit, ToActionButtonX } from "./global"
 
 const CreateEventTitle = reatomComponent(({ ctx }) => {
   return (
@@ -58,32 +57,26 @@ const CreateEventInitiator = reatomComponent(({ ctx }) => {
 
 const CreateEventSubmit = reatomComponent(({ ctx }) => {
   return (
-    <Button
-      onClick={() => createEventAction(ctx)}
-      disabled={ctx.spy(createEventAction.statusesAtom).isPending}
-      className="px-4 bg-neutral-50"
-    >
-      <Typography className="font-semibold text-lg text-neutral-950">
-        Создать
-      </Typography>
-    </Button>
+    <ButtonXSubmit
+      title="Создать"
+      action={() => createEventAction(ctx)}
+      isDisabled={ctx.spy(createEventAction.statusesAtom).isPending}
+    />
   )
 }, "CreateEventSubmit")
 
-export const CreateEventForm = () => {
+const CreateEventForm = () => {
   return (
     <div className="flex flex-col gap-2 w-full h-full">
       <CreateEventType />
       <CreateEventTitle />
       <CreateEventDesc />
       <CreateEventInitiator />
-      <div className="w-fit">
-        <CreateEventSubmit />
-      </div>
     </div>
   )
 }
 
+// 
 const EventsList = reatomComponent(({ ctx }) => {
   useUpdate(eventsListAction, [])
 
@@ -119,7 +112,8 @@ const EventsList = reatomComponent(({ ctx }) => {
   )
 }, "EventsList")
 
-const EVENTS_VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
+// 
+const VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
   "create": <CreateEventForm />,
   "edit": null,
   "view": <EventsList />
@@ -127,11 +121,19 @@ const EVENTS_VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
 
 export const EventsWrapper = reatomComponent(({ ctx }) => {
   if (!ctx.spy(getSelectedParentAtom("event"))) {
-    return EVENTS_VARIANTS["view"]
+    return VARIANTS["view"]
   }
 
-  return EVENTS_VARIANTS[ctx.spy(actionsTypeAtom)]
+  return VARIANTS[ctx.spy(actionsTypeAtom)]
 }, "EventsWrapper")
 
-export const CreateEvent = () => <ToActionButtonX title="Создать" parent="event" type="create" />
-export const EditEvent = () => <ToActionButtonX parent="event" type="edit" />
+export const ViewEvent = () => <ToActionButtonX title="Создать" parent="event" type="create" />;
+
+export const CreateEvent = () => {
+  return (
+    <div className="flex items-center gap-1">
+      <ToActionButtonX parent="event" type="create" />
+      <CreateEventSubmit />
+    </div>
+  )
+}

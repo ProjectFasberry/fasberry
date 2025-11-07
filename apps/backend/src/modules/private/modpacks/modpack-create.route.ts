@@ -15,12 +15,12 @@ const modpackCreateSchema = z.object({
 
 export const modpackCreate = new Elysia()
   .use(validatePermission(PERMISSIONS.MODPACKS.CREATE))
-  .post('/create', async ({ nickname, status, body }) => {
+  .post('/create', async ({ status, body }) => {
     const data = await createModpack(body)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.MODPACKS.CREATE })
-
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
-    body: modpackCreateSchema
+    body: modpackCreateSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

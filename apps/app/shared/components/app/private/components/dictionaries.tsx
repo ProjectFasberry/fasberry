@@ -1,39 +1,33 @@
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { 
-  dictionariesCreateAction, 
-  dictionariesDeleteAction, 
-  dictionariesEditAction, 
-  dictionariesEditKeyAtom, 
-  dictionariesEditValueAtom, 
-  DictionariesItem, 
-  dictionariesListAction 
+import {
+  deleteDictionariesBeforeAction,
+  dictionariesCreateAction,
+  dictionariesCreateKeyAtom,
+  dictionariesCreateValueAtom,
+  dictionariesDeleteAction,
+  dictionariesEdit,
+  dictionariesEditAction,
+  dictionariesEditKeyAtom,
+  dictionariesEditValueAtom,
+  DictionariesItem,
+  dictionariesListAction
 } from "../models/dictionaries.model";
 import { Typography } from "@repo/ui/typography";
 import { ActionButton, DeleteButton, EditButton } from "./ui";
 import { Input } from "@repo/ui/input";
-import { Button } from "@repo/ui/button";
-import { IconCheck, IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconArrowBackUp, IconCheck } from "@tabler/icons-react";
+import { ReactNode } from "react";
+import { actionsTypeAtom, ActionType, getSelectedParentAtom } from "../models/actions.model";
+import { ButtonXSubmit, ToActionButtonX } from "./global";
 
 type DictionariesListItemProps = Omit<DictionariesItem, "key"> & {
   itemKey: string
 }
 
-const DictionariesCreate = reatomComponent(({ ctx }) => {
-  return (
-    <Button
-      className="gap-2 border h-8 border-neutral-800"
-      disabled={ctx.spy(dictionariesCreateAction.statusesAtom).isPending}
-      onClick={() => dictionariesCreateAction(ctx)}
-    >
-      Создать
-      <IconPlus size={16} />
-    </Button>
-  )
-}, "DictionariesCreate")
-
 const DictionariesListItem = reatomComponent<DictionariesListItemProps>(({ ctx, id, itemKey, value }) => {
-  const [isEdit, setIsEdit] = useState(false)
+  const isEdit = ctx.spy(dictionariesEdit.getIsEdit(id));
+
+  const editIsLoading = ctx.spy(dictionariesEditAction.statusesAtom).isPending
 
   return (
     <div className="flex justify-between items-center gap-1 p-2 border border-neutral-800 rounded-lg">
@@ -62,39 +56,38 @@ const DictionariesListItem = reatomComponent<DictionariesListItemProps>(({ ctx, 
         )}
       </div>
       <div className="flex items-center gap-1">
-        <EditButton
-          disabled={ctx.spy(dictionariesEditAction.statusesAtom).isPending}
-          onClick={() => setIsEdit((state) => !state)}
-        />
         {isEdit ? (
-          <ActionButton
-            variant="selected"
-            onClick={() => dictionariesEditAction(ctx, id)}
-            icon={IconCheck}
-          />
+          <>
+            <ActionButton
+              icon={IconArrowBackUp}
+              disabled={editIsLoading}
+              onClick={() => dictionariesEdit.resetFull(ctx)}
+            />
+            <ActionButton
+              variant="selected"
+              onClick={() => dictionariesEditAction(ctx, id)}
+              icon={IconCheck}
+              disabled={!ctx.spy(dictionariesEdit.isValid) || editIsLoading}
+            />
+          </>
         ) : (
-          <DeleteButton
-            disabled={ctx.spy(dictionariesDeleteAction.statusesAtom).isPending}
-            onClick={() => dictionariesDeleteAction(ctx, id)}
-          />
+          <>
+            <EditButton
+              disabled={editIsLoading}
+              onClick={() => dictionariesEdit.start(ctx, id)}
+            />
+            <DeleteButton
+              disabled={ctx.spy(dictionariesDeleteAction.statusesAtom).isPending}
+              onClick={() => deleteDictionariesBeforeAction(ctx, { id, title: itemKey })}
+            />
+          </>
         )}
       </div>
     </div >
   )
 }, "DictionariesListItem")
 
-export const DictionariesHeader = reatomComponent(({ ctx }) => {
-  return (
-    <div className="flex items-center justify-between w-full">
-      <Typography className="text-xl font-bold">
-        Справочник
-      </Typography>
-      <DictionariesCreate />
-    </div>
-  )
-})
-
-export const DictionariesList = reatomComponent(({ ctx }) => {
+const DictionariesList = reatomComponent(({ ctx }) => {
   useUpdate(dictionariesListAction, [])
 
   const data = ctx.spy(dictionariesListAction.dataAtom)
@@ -112,10 +105,68 @@ export const DictionariesList = reatomComponent(({ ctx }) => {
   )
 }, "DictionariesList")
 
-export const Dictionaries = () => {
+// 
+const CreateDictionariesKeyInput = reatomComponent(({ ctx }) => {
   return (
-    <>
-      <DictionariesList />
-    </>
+    <Input
+      placeholder="Ключ"
+      value={ctx.spy(dictionariesCreateKeyAtom)}
+      onChange={(e) => dictionariesCreateKeyAtom(ctx, e.target.value)}
+    />
+  )
+}, "CreateDictionariesKeyInput")
+
+const CreateDictionariesValueInput = reatomComponent(({ ctx }) => {
+  return (
+    <Input
+      placeholder="Значение"
+      value={ctx.spy(dictionariesCreateValueAtom)}
+      onChange={(e) => dictionariesCreateValueAtom(ctx, e.target.value)}
+    />
+  )
+}, "CreateDictionariesValueInput")
+
+const CreateDictionariesSubmit = reatomComponent(({ ctx }) => {
+  return (
+    <ButtonXSubmit
+      title="Создать"
+      isDisabled={ctx.spy(dictionariesCreateAction.statusesAtom).isPending}
+      action={() => dictionariesCreateAction(ctx)}
+    />
+  )
+}, "DictionariesCreate")
+
+const CreateDictionariesForm = () => {
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <CreateDictionariesKeyInput />
+      <CreateDictionariesValueInput />
+    </div>
+  )
+}
+
+// 
+const VARIANTS: Record<ActionType, ReactNode> = {
+  "view": <DictionariesList />,
+  "create": <CreateDictionariesForm />,
+  "edit": null
+}
+
+export const DictionariesWrapper = reatomComponent(({ ctx }) => {
+  if (!ctx.spy(getSelectedParentAtom("dictionaries"))) {
+    return VARIANTS["view"]
+  }
+
+  return VARIANTS[ctx.spy(actionsTypeAtom)]
+}, "DictionariesWrapper")
+
+export const ViewDictionaries = () => <ToActionButtonX title="Создать" type="create" parent="dictionaries" />
+
+export const CreateDictionaries = () => {
+  return (
+    <div className="flex items-center gap-1">
+      <ToActionButtonX parent="dictionaries" type="create" />
+      <CreateDictionariesSubmit />
+    </div>
   )
 }

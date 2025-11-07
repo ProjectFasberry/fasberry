@@ -1,6 +1,6 @@
 import { atom, batch, createCtx, Ctx } from "@reatom/core";
 import { reatomAsync, sleep, withCache, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
-import { DEFAULT_SOFT_TIMEOUT, Payment } from "./store.model";
+import { Payment } from "./store.model";
 import { withSsr } from "@/shared/lib/ssr";
 import { PageContextServer } from "vike/types";
 import { logError } from "@/shared/lib/log";
@@ -14,6 +14,7 @@ import { getRecipient, setRecipientValueAtom, validateRecItem } from "./store-re
 import { currentUserAtom } from "@/shared/models/current-user.model";
 import { simulate } from "./store-item-status.model";
 import { cartDataAtom } from "./store-cart.model.atoms";
+import { DEFAULT_SOFT_TIMEOUT } from "@/shared/consts/delays";
 
 export async function getCartData(init?: RequestInit) {
   return client<CartPayload>("store/cart/list", init)

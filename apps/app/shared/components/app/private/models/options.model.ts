@@ -13,18 +13,23 @@ export type Option = {
 export const optionsAtom = reatomMap<string, Option>();
 
 export const updateOptionAction = reatomAsync(async (ctx, name: Option["name"], value: Option["value"]) => {
-  const json = { name, value }
+  const json = { value }
 
-  return await ctx.schedule(() =>
+  const result = await ctx.schedule(() =>
     client
-      .post<Option>("privated/options/update",)
+      .post<Pick<Option, "value">>(`privated/options/${name}/edit`,)
       .pipe(withJsonBody(json))
       .exec()
   )
+
+  return { name, result }
 }, {
   name: "updateOptionAction",
-  onFulfill: (ctx, updatedOption) => {
-    optionsAtom.set(ctx, updatedOption.name, updatedOption)
+  onFulfill: (ctx, { name, result }) => {
+    const option = optionsAtom.get(ctx, name)
+    if (!option) return;
+
+    optionsAtom.set(ctx, name, { ...option, value: result.value })
   },
   onReject: (ctx, e) => {
     notifyAboutRestrictRole(e)

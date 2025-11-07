@@ -1,13 +1,12 @@
-import { logoutAction } from "@/shared/components/app/auth/models/auth.model"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"
 import { action } from "@reatom/core"
 import dayjs from "@/shared/lib/create-dayjs"
-import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
-import { client } from "@/shared/lib/client-wrapper"
 import { startPageEvents } from "@/shared/lib/events"
 import { pageContextAtom } from "@/shared/models/page-context.model"
+import { logoutAction } from "@/shared/components/app/auth/models/logout.model"
+import { bannedAction } from "@/shared/components/app/auth/models/banned.model"
 
 type Banned = {
   reason: string
@@ -28,13 +27,6 @@ const BannedActionButton = reatomComponent(({ ctx }) => {
     </Button>
   );
 }, "BannedActionButton")
-
-const bannedAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(() =>
-    client<{ initiator: string, expires: Date, created_at: Date, reason: string | null, nickname: string }>("validate/ban")
-      .exec()
-  )
-}).pipe(withDataAtom(), withStatusesAtom(), withCache({ swr: false }))
 
 const Banned = reatomComponent(({ ctx }) => {
   const data = ctx.spy(bannedAction.dataAtom)

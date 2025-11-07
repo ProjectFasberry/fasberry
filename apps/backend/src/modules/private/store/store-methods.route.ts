@@ -23,15 +23,16 @@ async function getMethods() {
 
 export const storeMethodsList = new Elysia()
   .use(validatePermission(PERMISSIONS.STORE.METHODS.READ))
-  .get("/list", async (ctx) => {
+  .get("/list", async () => {
     const data: PrivatedMethodsPayload = await getMethods()
     return { data }
   })
 
 export const storeMethodsEdit = new Elysia()
   .use(validatePermission(PERMISSIONS.STORE.METHODS.UPDATE))
-  .post("/edit/:method", async ({ nickname, params, body }) => {
+  .post("/edit/:method", async ({ params, body }) => {
     const method = params.method;
+
     const { key, value } = body;
 
     const data = await general
@@ -41,12 +42,13 @@ export const storeMethodsEdit = new Elysia()
       .returning([key])
       .executeTakeFirstOrThrow()
 
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.STORE.METHODS.UPDATE })
-
     return { data }
   }, {
     body: z.object({
       key: z.enum(["isAvailable", "title", "imageUrl", "value"]),
       value: z.string().or(z.stringbool()).or(z.boolean())
-    })
+    }),
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

@@ -1,7 +1,6 @@
 import { Link } from "@/shared/components/config/link";
-import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { PropsWithChildren, useEffect } from "react"
+import { PropsWithChildren } from "react"
 import { tv } from "tailwind-variants";
 import {
   SidebarProvider,
@@ -16,9 +15,8 @@ import {
   useSidebar
 } from "@repo/ui/sidebar"
 import { Logotype } from "@/shared/components/app/layout/components/header";
-import { Chat } from "@/shared/components/app/private/components/chat";
-import { chatDisabledAtom, chatWs } from "@/shared/components/app/private/models/chat.model";
 import { UserInfo } from "@/shared/components/app/private/components/user-info";
+import { AlertDialog } from "@/shared/components/config/alert-dialog";
 
 const linkVariant = tv({
   base: `flex justify-start items-center group h-10 border-2 border-neutral-800 rounded-lg px-4
@@ -30,7 +28,6 @@ const linkVariant = tv({
 
 const links = [
   { title: "Конфигурация", value: "/private/config" },
-  { title: "Действия", value: "/private/actions" },
   { title: "Аналитика", value: "/private/analytics" },
   { title: "Магазин", value: "/private/store" },
   { title: "Игрок", value: "/private/users" },
@@ -80,54 +77,17 @@ const AppSidebar = () => {
   )
 }
 
-const Sync = reatomComponent(({ ctx }) => {
-  const disabled = ctx.get(chatDisabledAtom);
-
-  useEffect(() => {
-    if (!disabled) {
-      chatWs.init(ctx)
-    }
-
-    return () => {
-      chatWs.closeWs(ctx)
-    }
-  }, [])
-
-  return null
-})
-
-const LayoutContent = ({ children }: PropsWithChildren) => {
-  const { isMobile } = useSidebar()
-
-  return (
-    <div
-      data-state={isMobile ? "mobile" : "desktop"}
-      className="
-        flex flex-col gap-2 min-h-dvh w-full px-2 sm:px-6 
-        data-[state=mobile]:w-full data-[state=desktop]:w-[calc(100%-256px)]
-      "
-    >
-      <SidebarTrigger />
-      <div className="flex flex-col lg:flex-row items-start gap-4 w-full h-full">
-        <div className="order-2 lg:order-1 overflow-hidden flex-1 w-full">
-          {children}
-        </div>
-        <div className="order-1 lg:order-2 flex lg:sticky top-2 w-full lg:w-1/3">
-          <Chat />
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function Layout({ children }: PropsWithChildren) {
   return (
     <SidebarProvider >
-      <Sync />
       <AppSidebar />
-      <LayoutContent>
-        {children}
-      </LayoutContent>
+      <div className="flex flex-col gap-2 min-h-dvh w-full px-2 sm:px-6">
+        <SidebarTrigger />
+        <AlertDialog />
+        <div className="flex flex-col overflow-hidden w-full">
+          {children}
+        </div>
+      </div>
     </SidebarProvider >
   )
 }

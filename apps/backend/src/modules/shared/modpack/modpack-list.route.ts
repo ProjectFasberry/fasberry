@@ -40,13 +40,13 @@ export const modpackList = new Elysia()
       t.Array(modpackPayload)
     )
   })
-  .get('/list', async ({ status, set }) => {
+  .get('/list', async ({ set }) => {
     const data = await getModpacks()
 
     set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
     set.headers["vary"] = "Origin";
     
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     response: {
       200: "modpack-list"

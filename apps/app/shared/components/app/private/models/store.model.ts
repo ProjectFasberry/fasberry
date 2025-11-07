@@ -1,64 +1,56 @@
+import { storeItemCreateSchema } from '@repo/shared/schemas/store/index';
 import { logError } from "@/shared/lib/log";
-import { action, atom, AtomState, CtxSpy } from "@reatom/core";
-import { reatomAsync, reatomRecord, sleep, withCache, withDataAtom, withReset, withStatusesAtom } from "@reatom/framework";
-import { DEFAULT_SOFT_TIMEOUT, getStoreItems, StoreItemsParams } from "../../shop/models/store.model";
+import { action, atom, AtomState, batch } from "@reatom/core";
+import { reatomAsync, reatomRecord, withAssign, withCache, withDataAtom, withReset, withStatusesAtom } from "@reatom/framework";
+import { getStoreItems, StoreItemsParams } from "../../shop/models/store.model";
 import { StoreItemsPayload } from "@repo/shared/types/entities/store";
-import { client, withJsonBody } from "@/shared/lib/client-wrapper";
+import { client, withJsonBody, withLogging } from "@/shared/lib/client-wrapper";
 import { toast } from "sonner";
-import { alertDialogIsOpenAtom, openAlertDialogAction } from "@/shared/components/config/alert-dialog";
 import { notifyAboutRestrictRole } from "./actions.model";
+import { alertDialog } from "@/shared/components/config/alert-dialog.model";
+import z from "zod";
+import type { JSONContent } from "@tiptap/react";
+import { navigate } from "vike/client/router";
+import { newsUpdateSchema } from "@repo/shared/schemas/news";
 
-export const createStoreItemTitleAtom = atom("", "createStoreItemTitle");
-export const createStoreItemDescriptionAtom = atom<string | null>(null, "createStoreItemDescription");
-export const createStoreItemSummaryAtom = atom<string | null>(null, "createStoreItemSummary");
-export const createStoreItemImageUrlAtom = atom<string | null>(null, "createStoreItemImageUrl");
-export const createStoreItemCurrencyAtom = atom<string | null>(null, "createStoreItemCurrencyAtom");
-export const createStoreItemValueAtom = atom<number | null>(0, "createStoreItemValue");
+type CreateItemStoreSchema = z.infer<typeof storeItemCreateSchema>
+
+export const createStoreItemTitleAtom = atom<CreateItemStoreSchema["title"]>("", "createStoreItemTitle").pipe(withReset());
+export const createStoreItemImageUrlAtom = atom<Nullable<CreateItemStoreSchema["imageUrl"]>>(null, "createStoreItemImageUrl").pipe(withReset());
+export const createStoreItemCurrencyAtom = atom<CreateItemStoreSchema["currency"]>("CHARISM", "createStoreItemCurrencyAtom").pipe(withReset());
+export const createStoreItemValueAtom = atom<Nullable<CreateItemStoreSchema["value"]>>(null, "createStoreItemValue").pipe(withReset());
+export const createStoreItemContentAtom = atom<JSONContent>({}, "createStoreItemContent").pipe(withReset());
+export const createStoreItemPriceAtom = atom<CreateItemStoreSchema["price"]>("0", "createStoreItemPrice").pipe(withReset());
+export const createStoreItemСommandAtom = atom<CreateItemStoreSchema["command"]>("", "createStoreItemСommand").pipe(withReset());
+export const createStoreItemTypeAtom = atom<Nullable<CreateItemStoreSchema["type"]>>(null, "createStoreItemType").pipe(withReset());
+
+export const createStoreItem = atom(null, "createStoreItem").pipe(
+  withAssign((ctx, name) => ({
+    resetFull: action((ctx) => {
+      createStoreItemTitleAtom.reset(ctx)
+      createStoreItemImageUrlAtom.reset(ctx)
+      createStoreItemCurrencyAtom.reset(ctx)
+      createStoreItemValueAtom.reset(ctx)
+      createStoreItemContentAtom.reset(ctx)
+      createStoreItemPriceAtom.reset(ctx)
+      createStoreItemСommandAtom.reset(ctx)
+      createStoreItemTypeAtom.reset(ctx)
+    }, `${name}.resetFull`)
+  }))
+)
 
 type StoreItem = StoreItemsPayload["data"][number]
-
-type FieldSchema = {
-  type: "input"
-  value: (ctx: CtxSpy) => string
-  onChange: (ctx: CtxSpy, e: React.ChangeEvent<HTMLInputElement>) => void
-  placeholder: string
-}
-
-export const createStoreItemFormSchema: FieldSchema[] = [
-  {
-    type: "input",
-    value: ctx => ctx.spy(createStoreItemTitleAtom),
-    onChange: (ctx, e) => createStoreItemTitleAtom(ctx, e.target.value),
-    placeholder: "Заголовок",
-  },
-  {
-    type: "input",
-    value: ctx => ctx.spy(createStoreItemDescriptionAtom) ?? "",
-    onChange: (ctx, e) => createStoreItemDescriptionAtom(ctx, e.target.value),
-    placeholder: "Описание",
-  },
-  {
-    type: "input",
-    value: ctx => ctx.spy(createStoreItemSummaryAtom) ?? "",
-    onChange: (ctx, e) => createStoreItemSummaryAtom(ctx, e.target.value),
-    placeholder: "Саммери",
-  },
-  {
-    type: "input",
-    value: ctx => ctx.spy(createStoreItemCurrencyAtom) ?? "",
-    onChange: (ctx, e) => createStoreItemCurrencyAtom(ctx, e.target.value),
-    placeholder: "Валюта",
-  },
-]
 
 export const createStoreItemAction = reatomAsync(async (ctx) => {
   const body = {
     title: ctx.get(createStoreItemTitleAtom),
-    summary: ctx.get(createStoreItemSummaryAtom),
     imageUrl: ctx.get(createStoreItemImageUrlAtom),
     value: ctx.get(createStoreItemValueAtom),
     currency: ctx.get(createStoreItemCurrencyAtom),
-    description: ctx.get(createStoreItemDescriptionAtom)
+    content: ctx.get(createStoreItemContentAtom),
+    price: ctx.get(createStoreItemPriceAtom),
+    command: ctx.get(createStoreItemСommandAtom),
+    type: ctx.get(createStoreItemTypeAtom)
   }
 
   return await ctx.schedule(() =>
@@ -70,7 +62,16 @@ export const createStoreItemAction = reatomAsync(async (ctx) => {
 }, {
   name: "createStoreItemAction",
   onFulfill: (ctx, res) => {
+    toast.success("Товар создан");
 
+    batch(ctx, () => {
+      storeItemsAction.cacheAtom.reset(ctx);
+      storeItemsAction(ctx)
+    })
+
+    createStoreItem.resetFull(ctx)
+
+    ctx.schedule(() => navigate("/private/store"))
   },
   onReject: (_, e) => {
     notifyAboutRestrictRole(e)
@@ -78,66 +79,72 @@ export const createStoreItemAction = reatomAsync(async (ctx) => {
   }
 }).pipe(withStatusesAtom())
 
-export const removeStoreItemAtom = atom<StoreItem | null>(null).pipe(withReset())
+// 
+export const itemToRemoveAtom = atom<StoreItem | null>(null, "itemToRemove").pipe(withReset())
 
 export const removeStoreItemBeforeAction = action((ctx, item: StoreItem) => {
-  openAlertDialogAction(ctx, {
+  alertDialog.open(ctx, {
     title: `Вы точно хотите удалить товар "${item.title}"?`,
-    description: "Товар будет удален безвозвратно",
-    action: action((ctx => removeStoreItemAction(ctx, item.id))),
-    actionTitle: "Удалить",
-    rollbackAction: action((ctx) => {
-      removeStoreItemAtom.reset(ctx)
-    })
+    confirmAction: action((ctx => removeStoreItemAction(ctx, item.id))),
+    confirmLabel: "Удалить",
+    cancelAction: action((ctx) => itemToRemoveAtom.reset(ctx)),
+    autoClose: true
   });
 
-  removeStoreItemAtom(ctx, item)
+  itemToRemoveAtom(ctx, item)
 }, "removeStoreItemBeforeAction")
 
 export const removeStoreItemAction = reatomAsync(async (ctx, id: number) => {
-  await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT))
-
-  return await ctx.schedule(() => client.delete<{ id: number }>(`privated/store/item/${id}`).exec())
+  return await ctx.schedule(() =>
+    client
+      .delete<{ id: number }>(`privated/store/item/${id}`)
+      .exec()
+  )
 }, {
   name: "removeStoreItemAction",
   onFulfill: (ctx, res) => {
     toast.success("Товар удален");
 
     storeItemsAction.cacheAtom.reset(ctx);
-
-    storeItemsAction.dataAtom(ctx, (state) => {
-      return state ? { data: state.data.filter(d => d.id !== res.id), meta: state.meta } : undefined
-    })
-
-    alertDialogIsOpenAtom.reset(ctx)
+    storeItemsAction(ctx)
   },
   onReject: (ctx, e) => {
     logError(e, { type: "combined" })
   }
 }).pipe(withStatusesAtom())
 
-export const editItemAtom = atom<StoreItemsPayload["data"][number] | null>(null, "editItem")
+// 
+export const itemToEditAtom = atom<StoreItem | null>(null, "itemToEdit").pipe(withReset())
 
 export const editStoreItemAction = reatomAsync(async (ctx, id: number) => {
-  await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT))
+  const json = {}
 
-  return await ctx.schedule(() => client.post(`privated/store/item/edit/${id}`).exec())
+  const body = Object.entries(json).map(([field, value]) => ({
+    field,
+    value
+  })) as z.infer<typeof newsUpdateSchema>
+
+  return await ctx.schedule(() =>
+    client
+      .post(`privated/store/item/edit/${id}`)
+      .pipe(withJsonBody(body), withLogging())
+      .exec()
+  )
 }, {
   name: "editStoreItemAction",
   onFulfill: (ctx, res) => {
-
+    
   },
   onReject: (ctx, e) => {
     logError(e, { type: "combined" })
   }
 }).pipe(withStatusesAtom())
 
+// 
 export const storeCategoryAtom = atom<StoreItemsParams["type"]>("all");
 export const storeWalletFilterAtom = atom<StoreItemsParams["wallet"]>("ALL");
 
 export const storeItemsAction = reatomAsync(async (ctx) => {
-  await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT))
-
   const params: StoreItemsParams = {
     type: ctx.get(storeCategoryAtom),
     wallet: ctx.get(storeWalletFilterAtom)
@@ -146,13 +153,10 @@ export const storeItemsAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() => getStoreItems(params))
 }, {
   name: "storeItemsAction",
-  onFulfill: (ctx, res) => {
-
-  },
   onReject: (ctx, e) => {
     logError(e, { type: "combined" })
   }
-}).pipe(withDataAtom(), withStatusesAtom(), withCache({ swr: false }))
+}).pipe(withDataAtom(null), withStatusesAtom(), withCache({ swr: false }))
 
 export const searchParamsAtom = reatomRecord<Record<string, string>>({}, "searchParams")
 export const searchParamTargetAtom = atom<"create" | "edit" | "view">("view", "searchParamTarget")
@@ -186,6 +190,6 @@ searchParamsAtom.onChange(async (ctx, state) => {
       throw new Error('Товар не найден')
     }
 
-    editItemAtom(ctx, item)
+    itemToEditAtom(ctx, item)
   }
 })

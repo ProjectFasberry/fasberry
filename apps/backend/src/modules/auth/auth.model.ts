@@ -1,10 +1,13 @@
 import { normalizeIp } from "#/helpers/normalize-ip"
+import { client } from "#/shared/api/client"
 import { general } from "#/shared/database/main-db"
 import { getRedis } from "#/shared/redis/init"
 import { logger } from "#/utils/config/logger"
 import { safeJsonParse } from "#/utils/config/transforms"
+import { textSets } from "#/utils/minio/load-internal-files"
+import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding"
+import { registerSchema } from "@repo/shared/schemas/auth"
 import { DB } from "@repo/shared/types/db/auth-database-types"
-import { registerSchema } from "@repo/shared/types/entities/auth"
 import { Transaction } from "kysely"
 import z from "zod"
 
@@ -19,7 +22,10 @@ export const USER_SESSIONS_LIMIT = 15 // 15 sessions per user
 export const getUserSessionsKey = (nickname: string) => `user_sessions:${nickname}`
 export const getUserKey = (token: string) => `session:${token}`
 
-export async function getExistsUser(nickname: string): Promise<{ hash: string | null, result: boolean }> {
+export async function getExistsUser(nickname: string): Promise<
+  | { result: false; hash: null }
+  | { result: true; hash: string }
+> {
   const query = await general
     .selectFrom("AUTH")
     .select("HASH")
@@ -59,6 +65,12 @@ export async function getIsExistsSession(token: string | undefined) {
   if (!token) return false;
   const result = await getUserNickname(token)
   return Boolean(result)
+}
+
+export function generateSessionToken(): string {
+  const bytes = new Uint8Array(20);
+  crypto.getRandomValues(bytes);
+  return encodeBase32LowerCaseNoPadding(bytes);
 }
 
 export async function createSession(
@@ -309,4 +321,54 @@ export function generateOfflineUUID(nickname: string): string {
   ]
 
   return raw.join("-");
+}
+
+const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
+
+type MojangPayload =
+  | { uuid: string }
+  | { reason: string, error: string }
+
+async function getLicense(nickname: string) {
+  const result = await client
+    .get(`${MOJANG_API_URL}/${nickname}`, { throwHttpErrors: false, timeout: 5000 })
+    .json<MojangPayload>();
+
+  return result
+}
+
+export function validatePasswordSafe(pwd: string): boolean {
+  const unsafePasswords = textSets["unsafe_passwords.txt"];
+  return !unsafePasswords.has(pwd.trim())
+}
+
+export async function getUserUUID(nickname: string) {
+  let uuid: string | null = null;
+  let type: "offline" | "license" = "license"
+
+  try {
+    const license = await getLicense(nickname)
+
+    if ("error" in license) {
+      type = "offline";
+      throw new Error(license.reason)
+    }
+
+    if (license.uuid) {
+      uuid = license.uuid
+    }
+  } catch (e) {
+    // generate offline uuid if user is not licensed
+    uuid = generateOfflineUUID(nickname)
+  }
+
+  logger
+    .withTag("Auth")
+    .log(`Player ${nickname} has a ${type} account`)
+
+  if (!uuid) {
+    throw new Error("UUID must be required")
+  }
+
+  return uuid;
 }

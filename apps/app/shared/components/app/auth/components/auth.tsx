@@ -5,7 +5,6 @@ import {
   globalErrorAtom,
   errorsTypeAtom,
   findoutAtom,
-  authIsValidAtom,
   nicknameAtom,
   passwordAtom,
   typeAtom,
@@ -14,20 +13,27 @@ import {
   findoutTypeAtom,
   FINDOUT_OPTIONS,
   findoutSelectedTypeAtom,
+  showTokenVerifySectionAtom,
+  submitIsDisabledAtom,
 } from "../models/auth.model";
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input"
 import { tv } from "tailwind-variants";
 import { Typography } from "@repo/ui/typography";
-import { LANDING_ENDPOINT } from "@/shared/env";
+import { CAP_INSTANCE_URL, CAP_SITEKEY, LANDING_ENDPOINT } from "@/shared/env";
 import { Eye, EyeOff } from "lucide-react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@repo/ui/select"
 import { AtomState } from "@reatom/core";
 import { ReactNode } from "react";
+import { CapWidget } from "@better-captcha/react/provider/cap-widget";
+
+export const formVariant = tv({
+  base: `rounded-lg border border-neutral-800 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60`
+})
 
 const authInput = tv({
   base: `p-2 h-12 text-lg w-full placeholder:text-neutral-400 
-    bg-transparent border data-[state=error]:border-red-500 data-[state=default]:border-neutral-600`
+    bg-transparent border data-[state=error]:border-red-500 data-[state=default]:border-neutral-800`
 })
 
 const NicknameInput = reatomComponent(({ ctx }) => {
@@ -125,13 +131,13 @@ const FINDOUT_COMPONENTS: Record<NonNullable<AtomState<typeof findoutTypeAtom>>,
 
 const FindoutOptions = reatomComponent(({ ctx }) => {
   const currentItem = ctx.spy(findoutSelectedTypeAtom)
-  
+
   return (
     <Select
       defaultValue={currentItem?.value}
       onValueChange={v => findoutTypeAtom(ctx, v as AtomState<typeof findoutTypeAtom>)}
     >
-      <SelectTrigger className={authInput({ className: "min-h-12 border-neutral-600" })}>
+      <SelectTrigger className={authInput({ className: "min-h-12 border-neutral-800" })}>
         {currentItem ? (
           <span className="text-neutral-50">{currentItem.title}</span>
         ) : (
@@ -154,29 +160,22 @@ const FindoutComponent = reatomComponent(({ ctx }) => {
   return currentValue ? FINDOUT_COMPONENTS[currentValue] : null
 }, "FindoutComponent")
 
-const Findout = () => {
-  return (
-    <div className="flex flex-col gap-2 w-full">
-      <FindoutOptions />
-      <FindoutComponent />
-    </div>
-  )
-}
+export const AuthSubmit = reatomComponent(({ ctx }) => {
+  const isDisabled = ctx.spy(submitIsDisabledAtom)
 
-export const SubmitAuth = reatomComponent(({ ctx }) => {
   return (
     <Button
       variant="minecraft"
-      className="bg-neutral-600 w-full rounded-lg"
+      className="bg-neutral-800 w-full rounded-lg"
       onClick={() => authorizeAction(ctx)}
-      disabled={ctx.spy(authorizeAction.statusesAtom).isPending || !ctx.spy(authIsValidAtom)}
+      disabled={isDisabled}
     >
       <Typography className="font-semibold  text-lg">
         {ctx.spy(typeAtom) === 'register' ? "Зарегистрироваться" : "Войти"}
       </Typography>
     </Button>
   )
-}, "Submit")
+}, "AuthSubmit")
 
 const checkbox = tv({
   base: `peer h-5 w-5 lg:h-6 lg:w-6 cursor-pointer transition-all appearance-none
@@ -241,16 +240,19 @@ export const AuthError = reatomComponent(({ ctx }) => {
   return <Typography className='font-semibold text-red-500'>{error}</Typography>
 }, "AuthError")
 
-export const RegisterForm = reatomComponent(({ ctx }) => {
+export const RegisterForm = () => {
   return (
     <div className="flex flex-col gap-4 w-full h-full">
       <NicknameInput />
       <PasswordInput />
-      <Findout />
+      <div className="flex flex-col gap-2 w-full">
+        <FindoutOptions />
+        <FindoutComponent />
+      </div>
       <PrivacyTerms />
     </div>
   )
-}, "RegisterForm")
+}
 
 export const LoginForm = () => {
   return (
@@ -260,3 +262,27 @@ export const LoginForm = () => {
     </div>
   )
 }
+
+export const Verify = reatomComponent(({ ctx }) => {
+  const isVisible = ctx.spy(showTokenVerifySectionAtom)
+  if (!isVisible) return null;
+
+  return (
+    <CapWidget
+      endpoint={`${CAP_INSTANCE_URL}/${CAP_SITEKEY}/`}
+      options={{
+        i18nInitialState: "Я человек",
+        i18nVerifyingLabel: "Проверка...",
+        i18nVerifyingAriaLabel: "Проверка...",
+        i18nVerifiedAriaLabel: "Пройдено",
+        i18nVerifyAriaLabel: "Пройти",
+        i18nErrorAriaLabel: "Ошибка",
+        i18nErrorLabel: "Ошибка",
+        i18nWasmDisabled: "У вас отключен WASM",
+        i18nSolvedLabel: "Пройдено",
+      }}
+      onSolve={(value) => auth.solve(ctx, value)}
+      onError={(e) => globalErrorAtom(ctx, e instanceof Error ? e.message : e)}
+    />
+  )
+}, "Verify")

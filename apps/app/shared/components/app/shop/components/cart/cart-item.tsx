@@ -44,7 +44,7 @@ const CartItemUpdateSelectStatus = reatomComponent<{ id: number }>(({ ctx, id })
 export const CartItem = reatomComponent<CartPayload["products"][number]>(({
   ctx, ...item
 }) => {
-  const { id, title, imageUrl, summary, recipient, price, currency } = item
+  const { id, title, imageUrl, description, recipient, price, currency } = item
 
   return (
     <div
@@ -61,7 +61,7 @@ export const CartItem = reatomComponent<CartPayload["products"][number]>(({
             {title}
           </Typography>
           <Typography color="gray" className="line-clamp-2 leading-tight text-sm sm:text-md w-full">
-            {summary}
+            {description}
           </Typography>
         </a>
         <div className="flex items-center gap-2">

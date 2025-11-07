@@ -1,68 +1,13 @@
 import Elysia, { t } from "elysia";
-import { createUser, generateOfflineUUID, getExistsUser } from "./auth.model";
+import { createUser, getExistsUser, getUserUUID, validatePasswordSafe } from "./auth.model";
 import { wrapError } from "#/helpers/wrap-error";
-import { validateAuthenticationRequest } from "#/utils/auth/validate-auth-request";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { ipPlugin } from "#/lib/plugins/ip";
-import { logger } from "#/utils/config/logger";
-import { textSets } from "#/utils/minio/load-internal-files";
 import { general } from "#/shared/database/main-db";
 import { createEvent } from "../server/events/events.model";
-import { validateAuthStatus } from "#/lib/middlewares/validators";
-import { registerSchema } from "@repo/shared/types/entities/auth";
+import { botValidator, validateAuthStatus } from "#/lib/middlewares/validators";
 import { withData, withError } from "#/shared/schemas";
-import { client } from "#/shared/api/client";
-
-const MOJANG_API_URL = "https://api.ashcon.app/mojang/v2/user"
-
-type MojangPayload =
-  | { uuid: string }
-  | { reason: string, error: string }
-
-async function getLicense(nickname: string) {
-  const result = await client.get(`${MOJANG_API_URL}/${nickname}`, { throwHttpErrors: false, timeout: 5000 }).json<MojangPayload>();
-  return result
-}
-
-export function validatePasswordSafe(pwd: string): boolean {
-  const unsafePasswords = textSets["unsafe_passwords.txt"];
-  return !unsafePasswords.has(pwd.trim())
-}
-
-async function getUserUUID(nickname: string) {
-  let uuid: string | null = null;
-  let type: "offline" | "license" = "license"
-
-  try {
-    const license = await getLicense(nickname)
-
-    if ("error" in license) {
-      type = "offline";
-      throw new Error(license.reason)
-    }
-
-    if (license.uuid) {
-      uuid = license.uuid
-    }
-  } catch (e) {
-    // generate offline uuid if user is not licensed
-    uuid = generateOfflineUUID(nickname)
-  }
-
-  logger.log(`Player ${nickname} has a ${type} account`)
-
-  return uuid;
-}
-
-async function checkRegistrationState() {
-  const registrationIsEnabled = await general
-    .selectFrom("options")
-    .select("value")
-    .where("name", "=", "registrationEnabled")
-    .executeTakeFirst()
-
-  return Boolean(registrationIsEnabled?.value)
-}
+import { registerSchema } from "@repo/shared/schemas/auth"
+import { ipPlugin } from "#/lib/plugins/ip";
 
 function afterRegistrationEvents({ nickname }: { nickname: string }) {
   createEvent({
@@ -73,64 +18,95 @@ function afterRegistrationEvents({ nickname }: { nickname: string }) {
   })
 }
 
-export const register = new Elysia()
-  .use(ipPlugin())
-  .use(validateAuthStatus())
-  .post("/register", async ({ status, ...ctx }) => {
-    const { findout, nickname, password, token: cfToken, findoutType } = ctx.body
+const registerValidator = () => new Elysia()
+  .onBeforeHandle(async ({ status }) => {
+    const query = await general
+      .selectFrom("options")
+      .select("value")
+      .where("name", "=", "registrationEnabled")
+      .executeTakeFirst()
 
-    const registrationIsEnabled = await checkRegistrationState();
+    const isEnabled = Boolean(query?.value)
 
-    if (!registrationIsEnabled) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("Authorization is disabled"));
+    if (!isEnabled) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "authorization-disabled")
     }
+  })
+  .as("scoped")
 
-    // const validateResult = await validateAuthenticationRequest({ token: cfToken, ip: ctx.ip })
+const MAX_USERS_PER_IP = 3;
 
-    // if (validateResult && "error" in validateResult) {
-    //   return ctx.status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, throwError(validateResult.error))
-    // }
+async function validateIpRestricts(ip: string): Promise<boolean> {
+  const result = await general
+    .selectFrom("AUTH")
+    .select(general.fn.countAll().as("count"))
+    .where("IP", "=", ip)
+    .$castTo<{ count: number }>()
+    .executeTakeFirst();
+
+  if (!result) return false;
+
+  return result.count > MAX_USERS_PER_IP;
+}
+
+const ipValidator = () => new Elysia()
+  .use(ipPlugin())
+  .onBeforeHandle(async ({ ip, status }) => {
+    const isValid = await validateIpRestricts(ip)
+
+    if (isValid) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("ip-limit"))
+    }
+  })
+  .as("scoped")
+
+export const register = new Elysia()
+  .use(botValidator())
+  .use(registerValidator())
+  .use(validateAuthStatus())
+  .use(ipValidator())
+  .model({
+    "register": withData(
+      t.Object({
+        nickname: t.String()
+      })
+    )
+  })
+  .post("/register", async ({ status, body, ip }) => {
+    const { findout, nickname, password, findoutType } = body
 
     const existsUser = await getExistsUser(nickname)
 
     if (existsUser.result) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("User already exists"))
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("exists"))
     }
 
     const isPasswordSafe = validatePasswordSafe(password)
 
     if (!isPasswordSafe) {
-      return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("Unsafe password"))
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("unsafe"))
     }
 
     const uuid = await getUserUUID(nickname)
-
-    if (!uuid) {
-      return status(HttpStatusEnum.HTTP_409_CONFLICT, wrapError("UUID must be required"))
-    }
 
     const hash = Bun.password.hashSync(password, {
       algorithm: "bcrypt", cost: 10
     })
 
-    const result = await createUser({
-      nickname, findout, uuid, findoutType, password: hash, ip: ctx.ip
+    await createUser({
+      nickname, findout, uuid, findoutType, password: hash, ip
     })
 
-    const data = { nickname: result.nickname }
-
-    afterRegistrationEvents({ nickname });
-
+    const data = { nickname }
     return { data }
   }, {
     body: registerSchema,
     response: {
-      200: withData(
-        t.Object({
-          nickname: t.String()
-        })
-      ),
+      200: "register",
       409: withError,
       400: withError,
+    },
+    afterResponse: ({ body: { nickname } }) => {
+      afterRegistrationEvents({ nickname })
     }
   })

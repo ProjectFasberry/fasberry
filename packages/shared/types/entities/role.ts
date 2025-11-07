@@ -3,10 +3,12 @@ export type RolePayload = {
   name: string;
 }
 
+export type RolePermission = {
+  id: number;
+  name: string;
+}
+
 export type RolesRolePermissionListPayload = {
-    role_id: number;
-    permissions: {
-      id: number;
-      name: string;
-    }[];
-  }
+  role_id: number;
+  permissions: RolePermission[];
+}

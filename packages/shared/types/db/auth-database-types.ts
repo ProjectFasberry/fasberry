@@ -306,11 +306,10 @@ export interface StoreItems {
   command: string | null;
   content: Json;
   currency: StoreCurrency;
-  description: Json | null;
+  description: string | null;
   id: Generated<number>;
   imageUrl: string | null;
   price: Int8;
-  summary: string;
   title: string;
   type: string;
   value: string;

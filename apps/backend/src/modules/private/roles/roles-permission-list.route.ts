@@ -7,8 +7,8 @@ import z from "zod";
 
 export const rolesRolePermissionList = new Elysia()
   .use(validatePermission(PERMISSIONS.ROLES.READ))
-  .get("/:roleId/permission/list", async ({ params }) => {
-    const roleId = params.roleId;
+  .get("/:id/permission/list", async ({ params }) => {
+    const roleId = params.id;
 
     const query = await general
       .selectFrom("role_permissions")
@@ -30,7 +30,5 @@ export const rolesRolePermissionList = new Elysia()
 
     return { data }
   }, {
-    params: z.object({
-      roleId: z.coerce.number()
-    })
+    params: z.object({ id: z.coerce.number() })
   })

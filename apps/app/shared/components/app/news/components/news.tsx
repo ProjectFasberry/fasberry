@@ -96,7 +96,7 @@ export const News = () => {
       <Typography className="text-3xl font-bold">
         Новости
       </Typography>
-      <div className={scrollableVariant({ className: "flex rounded-xl overflow-x-auto gap-4 pb-2" })}>
+      <div className={scrollableVariant({ className: "flex rounded-xl scrollbar-h-2 overflow-x-auto gap-4 pb-2" })}>
         <NewsList />
       </div>
     </div>

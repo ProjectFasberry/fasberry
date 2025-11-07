@@ -3,9 +3,9 @@ import { StoreList } from "@/shared/components/app/shop/components/items/store-l
 import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";
 import { Typography } from "@repo/ui/typography";
 
-const DefaultStore = () => {
+export default function Page() {
   return (
-    <>
+    <div className="flex flex-col gap-4 w-full h-full">
       <Typography className="text-3xl font-semibold">
         Магазин
       </Typography>
@@ -24,14 +24,6 @@ const DefaultStore = () => {
           </div>
         </div>
       </div>
-    </>
-  )
-}
-
-export default function Page() {
-  return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <DefaultStore />
     </div>
   )
 }

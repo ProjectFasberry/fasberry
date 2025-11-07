@@ -7,24 +7,24 @@ type ChartData = {
   registrations: number;
 };
 
-export const registrationsTypeAtom = atom<"day" | "month" | "hour">("day", "registrationsType")
-const registrationsHourMin = atom(0)
+export const registrationsPeriodAtom = atom<"day" | "month" | "hour">("day", "registrationsPeriod")
+export const registrationsHourMinAtom = atom(0, "registrationsHourMin")
 
 function refetchRegistrations(ctx: Ctx) {
   registrationsChartsAction.cacheAtom.reset(ctx)
   registrationsChartsAction(ctx)
 }
 
-registrationsTypeAtom.onChange((ctx, state) => {
+registrationsPeriodAtom.onChange((ctx, state) => {
   refetchRegistrations(ctx)
 })
 
 export const registrationsChartsAction = reatomAsync(async (ctx) => {
-  const type = ctx.get(registrationsTypeAtom);
+  const period = ctx.get(registrationsPeriodAtom);
 
   return await ctx.schedule(() =>
     client<ChartData[]>("privated/analytics/registrations")
-      .pipe(withQueryParams({ type }), withAbort(ctx.controller.signal))
+      .pipe(withQueryParams({ period }), withAbort(ctx.controller.signal))
       .exec()
   )
 }, "registrationsChartsAction").pipe(

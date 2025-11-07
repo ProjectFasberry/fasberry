@@ -200,6 +200,17 @@ services:
     depends_on:
       - prometheus
 
+  cap-standalone: 
+    image: tiago2/cap:latest
+    container_name: cap-standalone
+    ports:
+      - "3002:3000"
+    environment:
+      ADMIN_KEY: ${CAP_PASSWORD}
+    volumes:
+      - ./data/fasberry/cap-data:/usr/src/app/.data
+    restart: unless-stopped
+
   # backend:
   #   container_name: backend
   #   build:

@@ -1,4 +1,4 @@
-import { Components, StoreHeader, Wrapper } from "@/shared/components/app/private/components/store";
+import { StorePrivated } from "@/shared/components/app/private/components/store";
 import { searchParamsAtom } from "@/shared/components/app/private/models/store.model";
 import { startPageEvents } from "@/shared/lib/events";
 import { pageContextAtom } from "@/shared/models/page-context.model";
@@ -19,10 +19,7 @@ export default function Page() {
 
   return (
     <div className="bg-neutral-900 rounded-xl p-4">
-      <Wrapper>
-        <StoreHeader />
-        <Components />
-      </Wrapper>
+      <StorePrivated />
     </div>
   )
 }

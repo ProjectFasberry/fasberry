@@ -26,12 +26,11 @@ export async function getStoreItems(
     .select([
       "id",
       "title",
-      "description",
       "price",
+      "description",
       "imageUrl",
       "type",
       "currency",
-      "summary",
       "command",
       "value",
       "content"

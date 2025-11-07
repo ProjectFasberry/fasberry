@@ -3,9 +3,11 @@ import { Context } from "elysia";
 import { CROSS_SESSION_KEY, SESSION_KEY, setCookie } from "./cookie";
 
 export async function updateSession(
-  token: string, 
+  token: string | undefined, 
   cookie: Context["cookie"]
 ) {
+  if (!token) return;
+  
   const refreshResult = await refreshSession(token);
 
   if (refreshResult) {

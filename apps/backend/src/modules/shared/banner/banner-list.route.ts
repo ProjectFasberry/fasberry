@@ -1,10 +1,9 @@
+import Elysia, { t } from "elysia";
 import { general } from "#/shared/database/main-db";
 import { metaSchema, withData, withMeta } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
 import { BannersPayload } from "@repo/shared/types/entities/banner";
-import Elysia, { t } from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 
@@ -73,9 +72,9 @@ export const bannerList = new Elysia()
       })
     )
   })
-  .get("/list", async ({ status, query }) => {
+  .get("/list", async ({ query }) => {
     const data: BannersPayload = await getBanners(query);
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     query: bannersListSchema,
     response: {

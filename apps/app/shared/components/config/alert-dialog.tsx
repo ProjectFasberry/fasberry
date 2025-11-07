@@ -1,77 +1,51 @@
-import { Action, action, atom } from "@reatom/core";
-import { sleep, withReset } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Button } from "@repo/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { Typography } from "@repo/ui/typography";
-
-export const alertDialogIsOpenAtom = atom(false).pipe(withReset())
-const alertDialogOptsAtom = atom<AlertDialogProps | null>(null, "alertDialogOpts").pipe(withReset())
-
-export const openAlertDialogAction = action(async (ctx, args: AlertDialogProps) => {
-  alertDialogOptsAtom(ctx, args);
-  await sleep(200);
-  alertDialogIsOpenAtom(ctx, true);
-}, "openAlertDialogAction")
-
-alertDialogIsOpenAtom.onChange(async (ctx, state) => {
-  if (!state) {
-    await sleep(200);
-    closeAlertDialogAction(ctx)
-  }
-})
-
-export const closeAlertDialogAction = action(async (ctx) => {
-  const opts = ctx.get(alertDialogOptsAtom);
-  if (!opts) return;
-
-  const rollback = opts.rollbackAction;
-
-  if (rollback) {
-    rollback(ctx)
-  }
-  
-  await sleep(200);
-  alertDialogOptsAtom.reset(ctx)
-})
-
-type AlertDialogProps = {
-  title: string,
-  description: string,
-  action: Action,
-  actionTitle: string,
-  rollbackAction?: Action,
-  closeAfterAction?: boolean
-}
+import { alertDialogIsOpenAtom, alertDialogConfigAtom, alertDialog } from "./alert-dialog.model";
 
 export const AlertDialog = reatomComponent(({ ctx }) => {
-  const opts = ctx.spy(alertDialogOptsAtom);
+  const opts = ctx.spy(alertDialogConfigAtom);
   if (!opts) return null;
 
-  const { title, action, actionTitle, description } = opts
+  const { title, confirmAction, confirmLabel, description } = opts
 
   return (
     <Dialog open={ctx.spy(alertDialogIsOpenAtom)} onOpenChange={v => alertDialogIsOpenAtom(ctx, v)}>
       <DialogContent>
-        <DialogTitle className='text-center text-2xl font-bold'>Подтверждение действия</DialogTitle>
+        <DialogTitle className='text-center text-2xl'>
+          Подтверждение действия
+        </DialogTitle>
         <div className="flex flex-col items-center justify-center gap-4 h-full w-full">
           <div className="flex w-full flex-col gap-1 min-w-0">
             <Typography className="text-wrap font-semibold text-lg truncate">
               {title}
             </Typography>
             <Typography className="leading-tight text-neutral-300">
-              {description}
+              {description ?? "Это действие нельзя отменить"}
             </Typography>
           </div>
           <div className="flex items-center justify-end gap-2 w-full h-full">
-            <DialogClose onClick={() => closeAlertDialogAction(ctx)} asChild>
-              <Button className="font-semibold text-neutral-50 border-2 border-neutral-700 text-lg">
-                Отмена
+            <DialogClose asChild>
+              <Button
+                onClick={() => alertDialog.close(ctx)}
+                className="border-2 border-neutral-700"
+              >
+                <Typography className="text-neutral-50 font-semibold text-lg">
+                  Отмена
+                </Typography>
               </Button>
             </DialogClose>
-            <Button onClick={() => action(ctx)} className="bg-neutral-50 text-neutral-950 font-semibold text-lg">
-              {actionTitle}
-            </Button>
+            <DialogClose asChild>
+              <Button
+                onClick={() => confirmAction(ctx)}
+                className="bg-neutral-50"
+              >
+                <Typography className="text-neutral-950 font-semibold text-lg">
+                  {confirmLabel}
+                </Typography>
+              </Button>
+            </DialogClose>
           </div>
         </div>
       </DialogContent>

@@ -3,7 +3,7 @@ import { Button } from "@repo/ui/button";
 import { Skeleton } from "@repo/ui/skeleton";
 import { CartesianGrid, XAxis, YAxis, Tooltip, AreaChart, Area, TooltipContentProps } from 'recharts';
 import { ResponsiveContainer } from 'recharts';
-import { registrationsChartsAction, registrationsTypeAtom } from "../models/analytics.model";
+import { registrationsChartsAction, registrationsPeriodAtom } from "../models/analytics.model";
 
 function CustomTooltip({ active, payload, label }: TooltipContentProps<number, string>) {
   if (!active || !payload || !payload.length) return null;
@@ -74,7 +74,7 @@ const TYPES = [
 ] as const
 
 export const RegistrationsSettings = reatomComponent(({ ctx }) => {
-  const type = ctx.spy(registrationsTypeAtom);
+  const type = ctx.spy(registrationsPeriodAtom);
   const isActive = (target: string) => type === target ? "active" : "inactive"
 
   return (
@@ -84,7 +84,7 @@ export const RegistrationsSettings = reatomComponent(({ ctx }) => {
           key={value}
           data-state={isActive(value)}
           className="bg-neutral-800 font-semibold data-[state=active]:bg-neutral-600"
-          onClick={() => registrationsTypeAtom(ctx, value)}
+          onClick={() => registrationsPeriodAtom(ctx, value)}
         >
           {title}
         </Button>

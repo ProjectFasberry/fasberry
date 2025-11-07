@@ -7,7 +7,6 @@ export const validate = new Elysia()
   .use(defineSession())
   .derive(({ session }) => {
     if (!session) return { data: false }
-  
     return { session }
   })
   .get("/validate-session", async ({ session }) => {

@@ -28,10 +28,10 @@ export const newsCreateRoute = new Elysia()
   .use(validatePermission(PERMISSIONS.NEWS.CREATE))
   .post("/create", async ({ status, body, nickname }) => {
     const data = await createNews(body, nickname);
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.NEWS.CREATE })
-
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
-    body: createNewsSchema
+    body: createNewsSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

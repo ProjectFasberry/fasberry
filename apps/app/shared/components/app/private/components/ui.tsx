@@ -37,6 +37,7 @@ export const ToLink = ({ link }: { link: string }) => {
   return (
     <Link
       href={link}
+      target="_blank"
       className="flex items-center justify-center rounded-md h-6 w-6 aspect-square p-0 bg-neutral-800"
     >
       <IconArrowRight size={18} className="-rotate-45" />
@@ -56,7 +57,7 @@ export const AddButton = (props: ButtonProps) => {
 }
 
 const actionButtonVariant = tv({
-  base: `p-0 h-6 w-6`,
+  base: `p-0 h-6 min-w-6`,
   variants: {
     variant: {
       default: "bg-neutral-800 text-neutral-50",
@@ -69,12 +70,17 @@ type ActionButtonProps = ButtonProps & VariantProps<typeof actionButtonVariant> 
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>
 }
 
-export const ActionButton = ({ variant, icon: Icon, ...props }: ActionButtonProps) => {
+export const ActionButton = ({ variant, children, icon: Icon, ...props }: ActionButtonProps) => {
   return (
     <Button
       {...props}
       className={actionButtonVariant({ variant })}
     >
+      {children && (
+        <div className="px-2">
+          {children}
+        </div>
+      )}
       <Icon size={18} />
     </Button>
   )

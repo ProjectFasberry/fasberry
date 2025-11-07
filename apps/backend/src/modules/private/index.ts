@@ -7,27 +7,27 @@ import { users } from "./users";
 import { roles } from "./roles";
 import { validateBannedStatus } from "#/lib/middlewares/validators";
 import { analytics } from "./analytics";
-import { privatedNews } from "./news";
-import { privatedBanners } from "./banners";
-import { privatedModpacks } from "./modpacks";
-import { privatedEvents } from "./events";
+import { news } from "./news";
+import { banners } from "./banners";
+import { modpacks } from "./modpacks";
+import { events } from "./events";
 import { history } from "./history";
 import { chat } from "./chat";
 import { dictionaries } from "./dictionaries";
 
 export const privated = new Elysia()
   .use(validateBannedStatus())
-  .use(openApiPlugin)
-  .group("/privated", hideOpenApiConfig, ctx => ctx
+  .use(openApiPlugin())
+  .group("/privated", hideOpenApiConfig, app => app
     .use(options)
     .use(permissions)
     .use(storePrivate)
     .use(users)
     .use(roles)
-    .use(privatedNews)
-    .use(privatedBanners)
-    .use(privatedModpacks)
-    .use(privatedEvents)
+    .use(news)
+    .use(banners)
+    .use(modpacks)
+    .use(events)
     .use(analytics)
     .use(history)
     .use(chat)

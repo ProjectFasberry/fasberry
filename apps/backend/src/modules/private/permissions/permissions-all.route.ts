@@ -14,7 +14,7 @@ async function getPermissions() {
 
 export const permissionsListAll = new Elysia()
   .use(validatePermission(PERMISSIONS.PERMISSIONS.READ))
-  .get("/list/all", async (ctx) => {
+  .get("/list/all", async () => {
     const data = await getPermissions();
     return { data }
   })

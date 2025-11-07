@@ -1,7 +1,6 @@
+import Elysia, { t } from "elysia";
 import { defineUser } from "#/lib/middlewares/define";
 import { general } from "#/shared/database/main-db";
-import Elysia, { t } from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bannerSchema } from "./banner.model";
 import { withData } from "#/shared/schemas";
 
@@ -32,7 +31,7 @@ export const bannerView = new Elysia()
   .post("/view/:id", async ({ status, nickname, params }) => {
     const id = params.id;
     const data = await viewBanner(id, nickname);
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     params: bannerSchema,
     response: {

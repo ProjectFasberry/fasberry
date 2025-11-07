@@ -6,16 +6,15 @@ import { PERMISSIONS } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
 
 const updateOptionsSchema = z.object({
-  name: z.string().min(1),
   value: z.boolean()
 })
 
-async function updateOptions({ name, value }: z.infer<typeof updateOptionsSchema>) {
+async function updateOptions(name: string, { value }: z.infer<typeof updateOptionsSchema>) {
   const query = await general
     .updateTable("options")
     .set({ name, value })
     .where("name", "=", name)
-    .returning(["name", "value", "title"])
+    .returning("value")
     .executeTakeFirstOrThrow()
 
   return query;
@@ -23,12 +22,13 @@ async function updateOptions({ name, value }: z.infer<typeof updateOptionsSchema
 
 export const optionsUpdate = new Elysia()
   .use(validatePermission(PERMISSIONS.OPTIONS.UPDATE))
-  .post("/update", async ({ nickname, body }) => {
-    const data = await updateOptions(body);
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.OPTIONS.UPDATE })
-
+  .post("/:name/edit", async ({ params, body }) => {
+    const name = params.name;
+    const data = await updateOptions(name, body);
     return { data }
   }, {
-    body: updateOptionsSchema
+    body: updateOptionsSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

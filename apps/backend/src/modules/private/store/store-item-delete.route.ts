@@ -17,15 +17,15 @@ async function removeStoreItem(id: number) {
 
 export const storeItemDelete = new Elysia()
   .use(validatePermission(PERMISSIONS.STORE.ITEM.DELETE))
-  .delete("/:id", async ({ nickname, params }) => {
+  .delete("/:id", async ({ params }) => {
     const id = params.id;
     const data = await removeStoreItem(id);
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.STORE.ITEM.DELETE })
-    
     return { data }
   }, {
     params: z.object({
       id: z.coerce.number()
-    })
+    }),
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

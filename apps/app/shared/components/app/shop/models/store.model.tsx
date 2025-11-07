@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { client, withAbort, withQueryParams } from '@/shared/lib/client-wrapper';
 import { clientInstance } from "@/shared/api/client"
 import { TopUpButton } from '../components/wallet/top-up-button';
+import { DEFAULT_SOFT_TIMEOUT } from '@/shared/consts/delays';
 
 export type Payment = Selectable<Payments>
 
@@ -46,8 +47,6 @@ export const storeItemsIsPendingAtom = atom((ctx) => ctx.spy(storeItemsAction.st
 
 storeCategoryAtom.onChange((ctx) => storeItemsAction(ctx))
 storeWalletFilterAtom.onChange((ctx) => storeItemsAction(ctx))
-
-export const DEFAULT_SOFT_TIMEOUT = 160
 
 const getOrderUrl = (id: string) => `/store/order/${id}`
 

@@ -67,7 +67,7 @@ export const editorExtensions = [
 const controlVariant = tv({
   base: `
     shrink-0 data-[state=active]:bg-neutral-600 [&:not([data-state])]:bg-neutral-800 data-[state=inactive]:bg-neutral-800
-    disabled:opacity-60 disabled:pointer-events-none h-8 min-w-8 px-2 py-1 rounded-lg text-nowrap
+    disabled:opacity-60 disabled:pointer-events-none font-semibold h-7 min-w-7 px-2 rounded-md text-nowrap
   `
 })
 
@@ -127,7 +127,12 @@ export const EditorMenuBar = ({ editor }: { editor: Editor }) => {
 
   return (
     <>
-      <div className={scrollableVariant({ className: "flex overflow-x-auto pb-2 items-center w-full gap-1" })}>
+      <div
+        className={scrollableVariant({
+          className: "flex overflow-x-auto pb-2 rounded-lg scrollbar-h-2 items-center w-full gap-1",
+          variant: "hovered"
+        })}
+      >
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editorState.canBold}
@@ -226,40 +231,40 @@ export const EditorMenuBar = ({ editor }: { editor: Editor }) => {
           data-state={editorState.isBulletList ? 'active' : 'inactive'}
           className={controlVariant()}
         >
-          Bullet list
+          BL
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           data-state={editorState.isOrderedList ? 'active' : 'inactive'}
           className={controlVariant()}
         >
-          Ordered list
+          OL
         </button>
         <button
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           data-state={editorState.isCodeBlock ? 'active' : 'inactive'}
           className={controlVariant()}
         >
-          Code block
+          CB
         </button>
         <button
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           data-state={editorState.isBlockquote ? 'active' : 'inactive'}
           className={controlVariant()}
         >
-          Blockquote
+          BQ
         </button>
         <button
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           className={controlVariant()}
         >
-          Horizontal rule
+          HR
         </button>
         <button
           onClick={() => editor.chain().focus().setHardBreak().run()}
           className={controlVariant()}
         >
-          Hard break
+          HB
         </button>
         <button
           onClick={setLink}
@@ -300,12 +305,11 @@ const ALLOWED_DOMAINS = [
   'stackoverflow.com',
   'wikipedia.org',
   'mozilla.org',
-  'npmjs.com',
-  'microsoft.com',
   'apple.com',
   'amazon.com',
   'linkedin.com',
-  'fasberry.su'
+  'fasberry.su',
+  'discord.gg'
 ];
 
 const domainPattern = ALLOWED_DOMAINS

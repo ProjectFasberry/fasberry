@@ -5,6 +5,12 @@ import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getUserNickname } from "#/modules/auth/auth.model";
 import { getPermissions } from "#/modules/user/me.model";
 import { isProduction } from "#/shared/env";
+import { ipPlugin } from "../plugins/ip";
+import { client } from "#/shared/api/client";
+import { HTTPError } from "ky";
+import { CAP_INSTANCE_URL, CAP_SECRET, CAP_SITE_KEY } from "#/shared/env";
+import { logError } from "#/utils/config/logger";
+import { safeJsonParse } from "#/utils/config/transforms";
 
 export const validatePermission = (permission: string) => new Elysia()
   .use(defineUserRole())
@@ -34,7 +40,6 @@ export const validateAuthStatus = () => new Elysia()
       }
 
       const nickname = await getUserNickname(session);
-      console.log(session, nickname);
 
       if (nickname) {
         throw status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, "authorized")
@@ -61,6 +66,73 @@ export const validateBannedStatus = () => new Elysia()
 
       if (isExist && isExist.id) {
         throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "banned")
+      }
+    }
+  })
+  .as("scoped")
+
+const capClient = client.extend((opts) => ({
+  ...opts,
+  prefixUrl: `${CAP_INSTANCE_URL}/${CAP_SITE_KEY}`
+}))
+
+const ERRORS: Record<string, string> = {
+  "Token not found": "token-not-found"
+}
+
+async function verifyRequest(token: string): Promise<{ ok: boolean; error?: string }> {
+  const json = { secret: CAP_SECRET, response: token }
+
+  try {
+    const result = await capClient.post("siteverify", { json, retry: 1, timeout: 4000 })
+    const { success } = await result.json<{ success: boolean }>()
+    return { ok: success }
+  } catch (e) {
+    if (e instanceof HTTPError) {
+      const text = await e.response.text()
+      const parsed = safeJsonParse<{ error: string }>(text)
+
+      if (parsed.ok) {
+        const error = parsed.value.error
+        return { ok: false, error: ERRORS[error] ?? error }
+      }
+
+      return { ok: false, error: text }
+    }
+
+    if (e instanceof Error) {
+      return { ok: false, error: e.message }
+    }
+
+    return { ok: false, error: "unknown-error" }
+  }
+}
+
+export const botValidator = () => new Elysia()
+  .use(ipPlugin())
+  .resolve(({ query }) => ({ token: query.token }))
+  .onBeforeHandle(async ({ status, token }) => {
+    const query = await general
+      .selectFrom("options")
+      .select("value")
+      .where("name", "=", "botCheckEnabled")
+      .executeTakeFirst()
+
+    const isEnabled = Boolean(query?.value)
+    if (!isEnabled) return;
+
+    if (token.length <= 1) throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "Bad Request")
+
+    try {
+      if (!token) throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "Token is not provided")
+
+      const result = await verifyRequest(token);
+      if (!result.ok) throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, result.error)
+    } catch (e) {
+      logError(e);
+
+      if (e instanceof Error) {
+        throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, e.message)
       }
     }
   })

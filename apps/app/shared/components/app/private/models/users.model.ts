@@ -88,7 +88,7 @@ export const usersControlRestrictAction = reatomAsync(async (ctx, type: UsersCon
 
   const result = await ctx.schedule(() =>
     client
-      .post<ControlPayload>("privated/user/control/restrict/create")
+      .post<ControlPayload>("privated/user/restrict/create")
       .pipe(withJsonBody(body))
       .exec()
   )
@@ -170,7 +170,7 @@ export const usersControlRolesAction = reatomAsync(async (
   const body: BodyPayload = { type, targets, targetRoleId }
 
   const result = await ctx.schedule(() =>
-    client.post<ControlPayload>("privated/user/control/roles")
+    client.post<ControlPayload>("privated/user/roles")
       .pipe(withJsonBody(body))
       .exec()
   )

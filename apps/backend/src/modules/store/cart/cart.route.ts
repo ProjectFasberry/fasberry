@@ -55,19 +55,18 @@ const basketEditItem = new Elysia()
   })
 
 const cartListPayload = t.Object({
+  id: t.Number(),
+  title: t.String(),
+  description: t.Nullable(t.String()),
   imageUrl: t.String(),
   price: t.Number(),
   recipient: t.String(),
   selected: t.Boolean(),
   quantity: t.Number(),
-  id: t.Number(),
   value: t.String(),
   type: t.String(),
   command: t.Nullable(t.String()),
   currency: t.String(),
-  description: t.Object(t.Unknown()),
-  summary: t.String(),
-  title: t.String(),
 })
 
 const cartPricePayload = t.Object({

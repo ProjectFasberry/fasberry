@@ -12,9 +12,33 @@ import { createLink, Link } from "@/shared/components/config/link";
 import { usePageContext } from "vike-react/usePageContext";
 import { CURRENT_USER_KEY } from "@/shared/models/current-user.model";
 import { MePayload } from "@repo/shared/types/entities/user";
-import { createActionsLinkValue } from "@/shared/components/app/private/models/actions.model";
+import { createActionsLinkValueAction } from "@/shared/components/app/private/models/actions.model";
+import { useEffect, useState } from "react";
 
 onDisconnect(newsItemAtom, (ctx) => newsItemAtom(ctx, null))
+
+const NewsEdit = reatomComponent<{ id: number }>(({ ctx, id }) => {
+  const [editLink, setEditLink] = useState<string>("")
+
+  useEffect(() => {
+    const params = new URLSearchParams(
+      createActionsLinkValueAction(ctx, {
+        parent: "news", type: "edit", target: id.toString()
+      }).next
+    )
+
+    setEditLink(`/private/config?${params}`)
+  }, [])
+
+  return (
+    <Link href={editLink} className="flex items-center font-semibold gap-2 bg-neutral-800 w-fit">
+      <Typography color="gray">
+        Редактировать
+      </Typography>
+      <IconPencil size={18} />
+    </Link>
+  )
+}, "NewsEdit")
 
 const News = reatomComponent(({ ctx }) => {
   const currentUser = usePageContext().snapshot[CURRENT_USER_KEY]?.data as MePayload | undefined
@@ -22,27 +46,9 @@ const News = reatomComponent(({ ctx }) => {
   if (!data) return null;
 
   const content = data.content as JSONContent
-
-  if (!content) {
-    console.warn("Content is not defined");
-    return null;
-  }
-
   const html = renderToHTMLString({ extensions: editorExtensions, content })
 
   const allowEdit = currentUser?.meta.permissions.includes("news.update")
-
-  let editLink: string | null = null;
-
-  if (allowEdit) {
-    const params = new URLSearchParams(
-      createActionsLinkValue(ctx, { 
-        parent: "news", type: "edit", target: data.id.toString() 
-      }).next
-    )
-  
-    editLink = `/private/actions?${params}`
-  }
 
   return (
     <div className="flex flex-col gap-4 w-full h-full">
@@ -94,14 +100,7 @@ const News = reatomComponent(({ ctx }) => {
           </Typography>
           <IconEye size={20} />
         </div>
-        {allowEdit && (
-          <Link href={editLink!} className="flex items-center font-semibold gap-2 bg-neutral-800 w-fit">
-            <Typography color="gray">
-              Редактировать
-            </Typography>
-            <IconPencil size={18} />
-          </Link>
-        )}
+        {allowEdit && <NewsEdit id={data.id} />}
       </div>
       <div
         dangerouslySetInnerHTML={{ __html: html }}
@@ -109,7 +108,7 @@ const News = reatomComponent(({ ctx }) => {
       />
     </div>
   )
-}, "NewsItem")
+}, "News")
 
 export default function Page() {
   return <News />

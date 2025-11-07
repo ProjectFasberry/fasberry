@@ -1,21 +1,21 @@
 import { withHistory } from "@/shared/lib/reatom-helpers"
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
-import { action, atom, batch } from "@reatom/core"
-import { reatomRecord, withAssign, withReset } from "@reatom/framework"
+import { action, atom, batch, Ctx } from "@reatom/core"
+import { reatomRecord, sleep, withAssign, withReset } from "@reatom/framework"
 import { toast } from "sonner"
 import { logError } from "@/shared/lib/log"
-import { client, withJsonBody } from "@/shared/lib/client-wrapper"
+import { client, withJsonBody, withQueryParams } from "@/shared/lib/client-wrapper"
 import z, { ZodError } from "zod"
-import { registerSchema, authSchema as loginSchema } from "@repo/shared/types/entities/auth"
+import { registerSchema, authSchema as loginSchema } from "@repo/shared/schemas/auth"
 import { withSearchParamsPersist } from '@reatom/url'
 
-type TypeAtom = "register" | "login"
+export type AuthTypeAtom = "register" | "login"
 type ErrorType = "nickname" | "password" | "findout"
 type FindoutType = "referrer" | "custom"
 
-const DEFAULT_TYPE: TypeAtom = "login";
+const DEFAULT_TYPE: AuthTypeAtom = "login";
 
-export const typeAtom = atom<TypeAtom>(DEFAULT_TYPE, "type").pipe(
+export const typeAtom = atom<AuthTypeAtom>(DEFAULT_TYPE, "type").pipe(
   withHistory(),
   withSearchParamsPersist('type', (type = 'login') => type)
 )
@@ -26,12 +26,13 @@ export const passwordShowAtom = atom(false, "passwordShow")
 export const findoutTypeAtom = atom<FindoutType | null>(null, "findoutType").pipe(withReset())
 
 // Must be refererr nickname or other findout info
-export const findoutAtom = atom<string | undefined>(undefined, "findoutAtom").pipe(
+export const findoutAtom = atom<Maybe<string>>(undefined, "findoutAtom").pipe(
   withReset(),
 )
 
-export const tokenAtom = atom<string>("test", "tokenAtom").pipe(withReset());
+export const tokenAtom = atom<Nullable<string>>(null, "tokenAtom").pipe(withReset());
 export const acceptRulesAtom = atom(false, "acceptRules").pipe(withReset());
+export const showTokenVerifySectionAtom = atom(false, "showTokenVerifySection").pipe(withReset())
 
 export const authSearchParamsAtom = reatomRecord<Record<string, string>>({}, "authSearchParams")
 
@@ -61,6 +62,17 @@ authSearchParamsAtom.onChange((ctx, state) => {
 
 typeAtom.onChange((ctx) => auth.resetErrors(ctx))
 
+tokenAtom.onChange((ctx, state) => {
+  if (state) {
+    showTokenVerifySectionAtom.reset(ctx)
+  }
+})
+
+export const submitIsDisabledAtom = atom((ctx) => ctx.spy(showTokenVerifySectionAtom)
+  || ctx.spy(authorizeAction.statusesAtom).isPending || !ctx.spy(authIsValidAtom),
+  "submitIsDisabled"
+)
+
 export const authIsValidAtom = atom<boolean>((ctx) => {
   const type = ctx.spy(typeAtom)
   const nickname = ctx.spy(nicknameAtom)
@@ -82,9 +94,6 @@ export const auth = atom(null, "auth").pipe(
     login: action((ctx) => {
       ctx.schedule(() => window.location.reload())
     }, `${name}.login`),
-    logout: action((ctx) => {
-      ctx.schedule(() => window.location.reload())
-    }, `${name}.logout`),
     resetFull: action((ctx) => {
       batch(ctx, () => {
         nicknameAtom.reset(ctx)
@@ -107,11 +116,15 @@ export const auth = atom(null, "auth").pipe(
       for (const target of errors) {
         errorsTypeAtom(ctx, state => state.filter(error => error !== target))
       }
-    }, `${name}.resetError`)
+    }, `${name}.resetError`),
+    solve: action(async (ctx, value: string) => {
+      await ctx.schedule(() => sleep(1600));
+      tokenAtom(ctx, value)
+    }, `${name}.solve`)
   }))
 )
 
-const authTargets = {
+const AUTH_TARGETS = {
   "register": {
     schema: registerSchema,
     event: auth.register
@@ -122,6 +135,53 @@ const authTargets = {
   }
 }
 
+const ERRORS = {
+  auth: {
+    "exists": "Такой игрок уже зарегистрирован",
+    "not-exists": "Такой игрок не зарегистрирован",
+    "invalid": "Неверный никнейм или пароль",
+  },
+  system: {
+    "authorization-disabled": "Авторизация недоступна",
+    "ip-limit": "Превышен лимит регистраций",
+  },
+  captcha: {
+    "token-not-found": "Нужна проверка",
+    "unsafe": "Пароль ненадежный",
+  },
+} as const
+
+type ScopeName = keyof typeof ERRORS
+
+type ErrorKey = {
+  [S in ScopeName]: keyof typeof ERRORS[S]
+}[ScopeName] & string
+
+function getError(key: ErrorKey): { scope: ScopeName; message: string } | null {
+  for (const [name, errors] of Object.entries(ERRORS)) {
+    if (key in errors) {
+      return { scope: name as ScopeName, message: (errors as Record<string, string>)[key] }
+    }
+  }
+  return null
+}
+
+const SCOPE_ACTIONS: Record<ScopeName, (ctx: Ctx) => void> = {
+  auth: (ctx) => {
+    batch(ctx, () => {
+      errorsTypeAtom(ctx, state => [...state, 'password'])
+      errorsTypeAtom(ctx, state => [...state, 'nickname'])
+    })
+  },
+  captcha: (ctx) => {
+    batch(ctx, () => {
+      showTokenVerifySectionAtom(ctx, true)
+      tokenAtom.reset(ctx)
+    })
+  },
+  system: () => { }
+}
+
 export const authorizeAction = reatomAsync(async (ctx) => {
   const type = ctx.get(typeAtom)
 
@@ -130,27 +190,25 @@ export const authorizeAction = reatomAsync(async (ctx) => {
     password: ctx.get(passwordAtom),
     findout: ctx.get(findoutAtom),
     findoutType: ctx.get(findoutTypeAtom),
-    token: ctx.get(tokenAtom)
   }
 
-  if (type === 'register') {
-    const accept = ctx.get(acceptRulesAtom);
+  const token = ctx.get(tokenAtom)
 
-    if (!accept) {
-      toast.error("Вы должны принять правила");
-      return;
-    };
+  if (!token) {
+    toast.info("Пройдите проверку")
+    showTokenVerifySectionAtom(ctx, true)
+    return;
   }
 
   authIsProcessingAtom(ctx, true)
 
-  const { success, error, data } = z.safeParse(authTargets[type].schema, raw)
+  const { success, error, data } = z.safeParse(AUTH_TARGETS[type].schema, raw)
   if (!success) return error;
 
   return await ctx.schedule(() =>
     client
       .post(`auth/${type}`, { throwHttpErrors: false, timeout: 10000 })
-      .pipe(withJsonBody(data))
+      .pipe(withQueryParams({ token }), withJsonBody(data))
       .exec()
   )
 }, {
@@ -178,38 +236,26 @@ export const authorizeAction = reatomAsync(async (ctx) => {
       authIsProcessingAtom(ctx, false)
     }
 
-    authTargets[type].event(ctx);
+    AUTH_TARGETS[type].event(ctx);
   },
   onReject: (ctx, e) => {
     logError(e);
     authIsProcessingAtom(ctx, false);
 
     if (e instanceof Error) {
-      globalErrorAtom(ctx, e.message)
+      const error = getError(e.message as ErrorKey);
 
-      if (e.message.includes("password")) {
-        errorsTypeAtom(ctx, state => [...state, 'password'])
+      if (!error) {
+        console.warn("Unknown error", e.message)
+        return;
       }
 
-      if (e.message.includes("nickname")) {
-        errorsTypeAtom(ctx, state => [...state, 'nickname'])
-      }
-    }
-  }
-}).pipe(withStatusesAtom())
+      const { scope, message } = error
 
-export const logoutAction = reatomAsync(async (ctx) => {
-  return await ctx.schedule(() =>
-    client.post("auth/invalidate-session").exec()
-  )
-}, {
-  name: "logoutAction",
-  onFulfill: (ctx) => auth.logout(ctx),
-  onReject: (ctx, e) => {
-    logError(e);
+      globalErrorAtom(ctx, message)
 
-    if (e instanceof Error) {
-      globalErrorAtom(ctx, e.message)
+      const action = SCOPE_ACTIONS[scope];
+      action(ctx)
     }
   }
 }).pipe(withStatusesAtom())

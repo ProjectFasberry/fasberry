@@ -6,12 +6,12 @@ import { createAdminActivityLog } from "../private.model";
 
 export const eventsCreate = new Elysia()
   .use(validatePermission(PERMISSIONS.EVENTS.CREATE))
-  .post("/create", async ({ nickname, body }) => {
+  .post("/create", async ({ body }) => {
     const data = await createEvent(body)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.EVENTS.CREATE })
-
     return { data }
   }, {
-    body: createEventSchema
+    body: createEventSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

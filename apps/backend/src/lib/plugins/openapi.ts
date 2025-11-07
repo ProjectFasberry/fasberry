@@ -5,7 +5,7 @@ import { ElysiaOpenAPIConfig, fromTypes, openapi } from "@elysiajs/openapi"
 const swaggerConfig: ElysiaOpenAPIConfig = {
   scalar: {
     spec: {
-      url: '/minecraft/openapi/json'
+      url: '/openapi/json'
     }
   },
   references: fromTypes("dist/index.d.ts"),

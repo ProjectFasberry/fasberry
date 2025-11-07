@@ -15,6 +15,7 @@
     "**/*.css"
   ],
   "dependencies": {
+    "@better-captcha/react": "0.3.0",
     "@bprogress/react": "1.2.7",
     "@photonjs/hono": "0.1.4",
     "@reatom/async": "3.16.8",
@@ -23,7 +24,8 @@
     "@reatom/npm-react": "3.10.6",
     "@reatom/persist": "3.4.1",
     "@reatom/persist-web-storage": "3.4.6",
-    "@reatom/url": "^3.9.0",
+    "@reatom/undo": "3.4.2",
+    "@reatom/url": "3.9.0",
     "@repo/shared": "workspace:*",
     "@repo/ui": "workspace:*",
     "@sentry/react": "9.38.0",

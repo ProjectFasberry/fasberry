@@ -26,16 +26,14 @@ const rolesRemovePermissionForRoleSchema = z.object({
 
 export const rolesRemovePermissionForRole = new Elysia()
   .use(validatePermission(PERMISSIONS.ROLES.UPDATE))
-  .delete("/:roleId/permission/remove", async ({ nickname, params, body }) => {
-    const roleId = params.roleId
-    const data = await removePermissionForRole(roleId, body)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.ROLES.UPDATE })
-    
+  .delete("/:id/permission/remove", async ({ params, body }) => {
+    const id = params.id
+    const data = await removePermissionForRole(id, body)
     return { data }
   }, {
     body: rolesRemovePermissionForRoleSchema,
-    params: z.object({
-      roleId: z.coerce.number()
-    })
+    params: z.object({ id: z.coerce.number() }),
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

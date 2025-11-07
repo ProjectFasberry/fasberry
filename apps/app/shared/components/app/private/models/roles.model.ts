@@ -118,23 +118,15 @@ roleEditableAtom.onChange((ctx, state) => {
 export const roleNewPermsAtom = atom<RolePayload[]>([], "roleNewPerms").pipe(withReset())
 export const roleDeletedPermsAtom = atom<RolePayload[]>([], "roleDeletedPerms").pipe(withReset())
 
-export const roleAvailablePermsAtom = atom<RolePayload[]>((ctx) => {
-  const all = ctx.spy(permissionsAllListAction.dataAtom);
-  if (!all) return [];
+export const getPermIsSelectedAtom = (id: number) => atom(
+  (ctx) => ctx.spy(roleNewPermsAtom).some(t => t.id === id), 
+  "getPermIsSelected"
+)
 
-  const rolePerms = ctx.spy(permissionsByRoleListAction.dataAtom)?.permissions;
-  if (!rolePerms) return [];
-
-  const roleIds = new Set(rolePerms.map(p => p.id));
-  const resultPerms = all.filter(p => !roleIds.has(p.id));
-
-  return resultPerms;
-}, "roleAvailablePerms")
-
-export const permIsSelectedAtom = (id: number) => atom((ctx) => {
-  const result = ctx.spy(roleNewPermsAtom).some(t => t.id === id)
-  return result
-}, "permIsSelected")
+export const getDeletedPermIsSelectedAtom = (id: number) => atom(
+  (ctx) => ctx.spy(roleDeletedPermsAtom).some(p => p.id === id),
+  "getDeletedPermIsSelected"
+)
 
 export const permission = atom(null, "permission").pipe(
   withAssign((ctx, name) => ({
@@ -149,13 +141,20 @@ export const permission = atom(null, "permission").pipe(
     }, `${name}.addDeletedPermAction`),
     addDeletedPermRoleAction: action((ctx, id: number) => {
       roleDeletedPermsAtom(ctx, (state) => state.filter(item => item.id !== id))
-    }, `${name}.addDeletedPermRoleAction`)
-  }))
-)
+    }, `${name}.addDeletedPermRoleAction`),
+    availablePerms: atom<RolePayload[]>((ctx) => {
+      const all = ctx.spy(permissionsAllListAction.dataAtom);
+      if (!all) return [];
 
-export const deletedPermIsSelectedAtom = (id: number) => atom(
-  (ctx) => ctx.spy(roleDeletedPermsAtom).some(p => p.id === id),
-  "deletedPermIsSelected"
+      const rolePerms = ctx.spy(permissionsByRoleListAction.dataAtom)?.permissions;
+      if (!rolePerms) return [];
+
+      const roleIds = new Set(rolePerms.map(p => p.id));
+      const resultPerms = all.filter(p => !roleIds.has(p.id));
+
+      return resultPerms;
+    }, "roleAvailablePerms")
+  }))
 )
 
 export const saveChangesIsValidAtom = atom((ctx) => {
@@ -178,19 +177,15 @@ export const saveChangesAction = reatomAsync(async (ctx) => {
     events.push(deletePermissionForRoleAction)
   }
 
-  if (events.length === 0) {
-    throw new Error()
-  }
+  if (events.length === 0) throw new Error("Events is empty")
 
   const roleId = ctx.get(roleEditableAtom)?.id;
 
-  if (!roleId) {
-    throw new Error("Role id is not defined")
-  }
+  if (!roleId) throw new Error("Role id is not defined")
 
   const eventsToExec = events.map((event) => event(ctx, roleId))
 
-  return await ctx.schedule(async () => Promise.all(eventsToExec))
+  return await ctx.schedule(() => Promise.all(eventsToExec))
 }, {
   name: "saveChangesAction",
   onFulfill: (ctx, res) => {
@@ -202,9 +197,9 @@ export const saveChangesAction = reatomAsync(async (ctx) => {
   }
 }).pipe(withStatusesAtom(), withErrorAtom())
 
-export const roleIsSelectedRoleAtom = (id: number) => atom(
+export const getRoleIsSelectedRoleAtom = (id: number) => atom(
   (ctx) => ctx.spy(roleEditableAtom)?.id === id,
-  "roleIsSelectedRole"
+  "getRoleIsSelectedRole"
 )
 
 export const toggleRoleEditAction = action((ctx, roleToEdit: RolePayload) => {

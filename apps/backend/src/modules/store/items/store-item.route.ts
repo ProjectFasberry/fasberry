@@ -13,7 +13,6 @@ async function getItem(id: number): Promise<StoreItem | null> {
       "description",
       "price",
       "imageUrl",
-      "summary",
       "type",
       "value",
       "currency",

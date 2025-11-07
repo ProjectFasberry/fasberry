@@ -4,18 +4,17 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from "@repo/ui
 import { Skeleton } from "@repo/ui/skeleton"
 import { Typography } from "@repo/ui/typography"
 import { Button } from "@repo/ui/button"
-import { AddButton, DeleteButton, EditButton } from "./ui"
+import { ActionButton, AddButton, DeleteButton, EditButton } from "./ui"
 import { tv } from "tailwind-variants"
-import { IconPlus } from "@tabler/icons-react"
+import { IconArrowBackUp, IconCheck, IconPlus } from "@tabler/icons-react"
 import {
-  deletedPermIsSelectedAtom,
+  getDeletedPermIsSelectedAtom,
   permission,
-  permIsSelectedAtom,
+  getPermIsSelectedAtom,
   permissionsByRoleListAction,
-  roleAvailablePermsAtom,
   roleDeletedPermsAtom,
   roleEditableAtom,
-  roleIsSelectedRoleAtom,
+  getRoleIsSelectedRoleAtom,
   roleNewPermsAtom,
   rolesIsEditableAtom,
   rolesListAction,
@@ -24,6 +23,7 @@ import {
   toggleRoleEditAction
 } from "../models/roles.model"
 import { appDictionariesAtom } from "@/shared/models/app.model"
+import { scrollableVariant } from "@/shared/consts/style-variants"
 
 const rolesListPermItemVariant = tv({
   base: `
@@ -57,7 +57,7 @@ const RolesListItemPermsItemSkeleton = () => {
 }
 
 const RolesListItemPermsItem = reatomComponent<RolePayload>(({ ctx, id, name }) => {
-  const selected = ctx.spy(deletedPermIsSelectedAtom(id));
+  const selected = ctx.spy(getDeletedPermIsSelectedAtom(id));
 
   return (
     <div
@@ -81,7 +81,7 @@ const RolesListItemPermsItem = reatomComponent<RolePayload>(({ ctx, id, name }) 
 }, "RolesListItemPermsItem")
 
 const RolesListItemNewPermsItem = reatomComponent<RolePayload>(({ ctx, id, name }) => {
-  const selected = ctx.spy(permIsSelectedAtom(id))
+  const selected = ctx.spy(getPermIsSelectedAtom(id))
 
   return (
     <div className={rolesListPermItemVariant().base()} data-state="active">
@@ -129,7 +129,7 @@ const RolesListItemPerms = reatomComponent(({ ctx }) => {
 
 
 const RolesListItemAvailableItem = reatomComponent<RolePayload>(({ ctx, id, name }) => {
-  const selected = ctx.spy(permIsSelectedAtom(id))
+  const selected = ctx.spy(getPermIsSelectedAtom(id))
 
   return (
     <div
@@ -150,16 +150,16 @@ const RolesListItemAvailableItem = reatomComponent<RolePayload>(({ ctx, id, name
 }, "RolesListItemAvailableItem")
 
 const RolesListItemSaveChanges = reatomComponent(({ ctx }) => {
-  const isDisabled = !ctx.spy(saveChangesIsValidAtom) || ctx.spy(saveChangesAction.statusesAtom).isPending
+  const isDisabled = !ctx.spy(saveChangesIsValidAtom)
+    || ctx.spy(saveChangesAction.statusesAtom).isPending
 
   return (
-    <Button
-      className="bg-neutral-50 w-full sm:w-2/3 text-neutral-950 font-semibold text-lg"
+    <ActionButton
+      icon={IconCheck}
       onClick={() => saveChangesAction(ctx)}
       disabled={isDisabled}
-    >
-      Сохранить
-    </Button>
+      variant="selected"
+    />
   )
 }, "RolesListItemSaveChanges")
 
@@ -167,14 +167,16 @@ const RolesListItemAddPerm = reatomComponent(({ ctx }) => {
   const id = ctx.spy(roleEditableAtom)?.id
   if (!id) return null;
 
-  const availablePerms = ctx.spy(roleAvailablePermsAtom)
+  const availablePerms = ctx.spy(permission.availablePerms)
 
   const isDisabled = availablePerms.length === 0
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger disabled={isDisabled} asChild>
-        <Button className="gap-2 font-semibold text-lg w-full sm:w-fit grow bg-neutral-900">
+        <Button
+          className="gap-2 font-semibold text-lg bg-neutral-800"
+        >
           Добавить
           <IconPlus size={18} />
         </Button>
@@ -196,17 +198,17 @@ const RolesListItemAddPerm = reatomComponent(({ ctx }) => {
 }, "RolesListItemAddPerm")
 
 const rolesListItemVariant = tv({
-  base: `flex items-center justify-between w-full gap-1 border border-neutral-800 rounded-lg p-2`,
+  base: `flex flex-col w-full gap-2 border border-neutral-800 rounded-lg p-2`,
   slots: {
-    group: `flex items-center justify-center gap-2`,
+    group: "flex items-center justify-between gap-1",
+    name: `flex items-center justify-center gap-2`,
   }
 })
 
 const RolesListItemSkeleton = () => {
   return (
     <div className={rolesListItemVariant().base()}>
-      <div className={rolesListItemVariant().group()}>
-        <Skeleton className="h-6 w-6" />
+      <div className={rolesListItemVariant().name()}>
         <Skeleton className="h-6 w-24" />
       </div>
       <Skeleton className="h-6 w-6" />
@@ -215,22 +217,36 @@ const RolesListItemSkeleton = () => {
 }
 
 const RolesListItem = reatomComponent<RolePayload>(({ ctx, id, name }) => {
-  const selected = ctx.spy(roleIsSelectedRoleAtom(id));
+  const isSelected = ctx.spy(getRoleIsSelectedRoleAtom(id));
 
   const title = appDictionariesAtom.get(ctx, name)
 
   return (
     <div className={rolesListItemVariant().base()}>
       <div className={rolesListItemVariant().group()}>
-        <div className="flex items-center bg-neutral-800 rounded-sm justify-center h-6 min-w-6 p-1">
-          {id}
+        <div className={rolesListItemVariant().name()}>
+          <Typography className="text-lg">{title}</Typography>
         </div>
-        <Typography>{title}</Typography>
+        <div className="flex gap-1 items-center">
+          {isSelected ? (
+            <>
+              <ActionButton
+                icon={IconArrowBackUp}
+                variant="default"
+                onClick={() => toggleRoleEditAction(ctx, { id, name })}
+              />
+              <RolesListItemSaveChanges />
+            </>
+          ) : (
+            <>
+              <EditButton
+                onClick={() => toggleRoleEditAction(ctx, { id, name })}
+              />
+            </>
+          )}
+        </div>
       </div>
-      <EditButton
-        className={selected ? "bg-neutral-50 text-neutral-950" : ""}
-        onClick={() => toggleRoleEditAction(ctx, { id, name })}
-      />
+      {isSelected && <RolesEditable />}
     </div>
   )
 }, "RolesListItem")
@@ -270,26 +286,21 @@ const RolesListItemNewPerms = reatomComponent(({ ctx }) => {
   )
 }, "RolesListItemNewPerms")
 
-const RolesEditableRoleName = reatomComponent(
-  ({ ctx }) => ctx.spy(roleEditableAtom)?.name ?? null,
-  "RolesEditableRoleName"
-)
-
 const RolesEditablePermHeader = reatomComponent(({ ctx }) => {
   return (
-    <div className="flex flex-col">
+    <div className="flex gap-3 items-center">
       <Typography className="text-neutral-50 text-base">
-        Текущие разрешения
+        Разрешения
       </Typography>
-      <div className="flex items-center gap-2  text-neutral-400 text-sm">
+      <div className="flex items-center text-sm">
         <Typography>
-          всего: {ctx.spy(permissionsByRoleListAction.dataAtom)?.permissions.length ?? 0}
+          {"("}всего: {ctx.spy(permissionsByRoleListAction.dataAtom)?.permissions.length ?? 0},&nbsp;
         </Typography>
-        <Typography>
-          на добавление: {ctx.spy(roleNewPermsAtom).length}
+        <Typography className="text-green-500">
+          +: {ctx.spy(roleNewPermsAtom).length},&nbsp;
         </Typography>
-        <Typography>
-          на удаление: {ctx.spy(roleDeletedPermsAtom).length}
+        <Typography className="text-red-500">
+          -: {ctx.spy(roleDeletedPermsAtom).length}{")"}
         </Typography>
       </div>
     </div>
@@ -300,26 +311,20 @@ const RolesEditable = reatomComponent(({ ctx }) => {
   if (!ctx.spy(rolesIsEditableAtom)) return null;
 
   return (
-    <div className="flex flex-col h-fit w-full sm:w-1/2 gap-2 bg-neutral-900/40 rounded-xl p-4">
-      <div className="flex items-center justify-between w-full gap-1">
-        <Typography className="text-xl font-semibold">
-          Редактирование роли <RolesEditableRoleName />
-        </Typography>
-      </div>
+    <div className="flex flex-col h-fit w-full gap-2">
       <div className="flex flex-col gap-2">
         <RolesEditablePermHeader />
         <div
-          className="flex flex-col gap-1
-            scrollbar scrollbar-thumb-neutral-800 max-h-[200px] 
-            bg-neutral-900 rounded-lg p-1 overflow-y-auto h-fit"
+          className={scrollableVariant({
+            className: `flex flex-col gap-1 max-h-[200px] scrollbar-w-2 rounded-lg pr-1 overflow-y-auto`
+          })}
         >
           <RolesListItemPerms />
           <RolesListItemNewPerms />
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+      <div className="flex justify-end items-center gap-2 w-full">
         <RolesListItemAddPerm />
-        <RolesListItemSaveChanges />
       </div>
     </div>
   )
@@ -327,11 +332,10 @@ const RolesEditable = reatomComponent(({ ctx }) => {
 
 export const Roles = () => {
   return (
-    <div className="flex flex-col sm:flex-row items-start w-full gap-4 justify-between">
-      <div className="flex flex-col gap-2 h-fit w-full sm:w-fit grow">
+    <div className="flex flex-col w-full gap-4 justify-between">
+      <div className="flex flex-col gap-2 w-full grow">
         <RolesList />
       </div>
-      <RolesEditable />
     </div>
   )
 }

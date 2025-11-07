@@ -1,5 +1,5 @@
-import { general } from "#/shared/database/main-db";
 import Elysia from "elysia";
+import { general } from "#/shared/database/main-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bannerSchema } from "../../shared/banner/banner.model";
 import { PERMISSIONS } from "#/shared/constants/permissions";
@@ -18,13 +18,13 @@ async function deleteBanner(id: number) {
 
 export const bannerDelete = new Elysia()
   .use(validatePermission(PERMISSIONS.BANNERS.DELETE))
-  .delete("/:id", async ({ nickname, status, params }) => {
+  .delete("/:id", async ({ status, params }) => {
     const id = params.id;
     const data = await deleteBanner(id);
-    
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.BANNERS.DELETE })
-
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {
-    params: bannerSchema
+    params: bannerSchema,
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-export const tokenSchema = process.env.NODE_ENV === 'production' ? z.string() : z.nullable(z.string())
-
 export const nicknameSchema = z
   .string()
   .min(1, { error: "Поле обязательно для заполнения!" })
@@ -19,23 +17,31 @@ export const passwordSchema = z
     error: "Пароль не должен содержать пробельные символы (пробелы, табы и т.д.)",
   });
 
-export const findoutSchema = z
-  .string()
-  .min(2, { error: "Опишите причину подробнее, пожалуйста", })
-  .max(128)
-
 export const referrerSchema = z.nullable(z.string())
 
-export const createSessionBodySchema = z.object({
-  nickname: z.string(),
-  password: z.string().min(4),
-  token: tokenSchema
-});
-
-export const registerSchema = z.object({
+export const authSchema = z.object({
   nickname: nicknameSchema,
-  password: passwordSchema,
-  token: tokenSchema,
-  findout: findoutSchema,
-  referrer: referrerSchema
+  password: z.string().min(6),
 })
+
+export const registerSchema = z.intersection(
+  authSchema,
+  z.object({
+    findout: z.string().min(2).max(128),
+    findoutType: z.enum(["custom", "referrer"])
+  }).superRefine((data, ctx) => {
+    if (data.findoutType === 'referrer') {
+      const { error, success } = nicknameSchema.safeParse(data.findout)
+      
+      if (!success) {
+        const msg = JSON.parse(error.message)[0]
+        
+        ctx.addIssue({
+          path: ["findout"],
+          code: "custom",
+          message: msg.message
+        })
+      }
+    }
+  })
+)

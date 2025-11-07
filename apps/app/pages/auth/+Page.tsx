@@ -1,9 +1,16 @@
-import { AuthError, LoginForm, RegisterForm, SubmitAuth } from "@/shared/components/app/auth/components/auth";
-import { authIsProcessingAtom, authorizeAction, authSearchParamsAtom, typeAtom } from "@/shared/components/app/auth/models/auth.model";
+import { AuthError, LoginForm, RegisterForm, AuthSubmit, Verify, formVariant } from "@/shared/components/app/auth/components/auth";
+import { 
+  authIsProcessingAtom, 
+  authSearchParamsAtom, 
+  AuthTypeAtom, 
+  showTokenVerifySectionAtom, 
+  tokenAtom, 
+  typeAtom 
+} from "@/shared/components/app/auth/models/auth.model";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { Typography } from "@repo/ui/typography";
-import { action, AtomState } from "@reatom/core";
+import { action } from "@reatom/core";
 import { Link } from "@/shared/components/config/link";
 import { startPageEvents } from "@/shared/lib/events";
 import { pageContextAtom } from "@/shared/models/page-context.model";
@@ -13,7 +20,7 @@ const ResetPassword = reatomComponent(({ ctx }) => {
 
   return (
     <Link href="/auth/restore">
-      <Typography className='text-center text-lg text-neutral-400'>
+      <Typography className='text-center text-lg text-green-700'>
         Я забыл пароль
       </Typography>
     </Link>
@@ -23,29 +30,34 @@ const ResetPassword = reatomComponent(({ ctx }) => {
 const Auth = reatomComponent(({ ctx }) => {
   const type = ctx.spy(typeAtom)
 
-  const isDisabled = ctx.spy(authIsProcessingAtom)
+  const isDisabled = ctx.spy(authIsProcessingAtom) || ctx.spy(showTokenVerifySectionAtom)
+
+  const triggerIsDisabled = !!ctx.spy(tokenAtom)
 
   return (
     <Tabs
       data-disabled={isDisabled.toString()}
-      onValueChange={value => typeAtom(ctx, value as AtomState<typeof typeAtom>)}
+      onValueChange={value => typeAtom(ctx, value as AuthTypeAtom)}
       value={type}
-      className="flex flex-col gap-4 w-full max-w-lg border rounded-lg border-neutral-800 p-4 sm:p-5 lg:p-6 
-        data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60"
+      className={formVariant({ className: `flex flex-col gap-4 w-full p-3 sm:p-4 lg:p-6 max-w-xl` })}
     >
-      <TabsList className="flex flex-col sm:flex-row w-full">
-        <TabsTrigger className="w-full h-12" value="login">
-          <Typography className="text-lg">
+      <TabsList
+        data-disabled={triggerIsDisabled.toString()}
+        className="flex flex-col sm:flex-row w-full gap-2
+          data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60 *:h-10 *:w-full"
+      >
+        <TabsTrigger value="login">
+          <Typography className="text-lg font-semibold">
             Вход
           </Typography>
         </TabsTrigger>
-        <TabsTrigger className="w-full h-12" value="register">
-          <Typography className="text-lg">
+        <TabsTrigger value="register">
+          <Typography className="text-lg font-semibold">
             Регистрация
           </Typography>
         </TabsTrigger>
       </TabsList>
-      <div className="flex flex-col gap-4 w-full h-full">
+      <div className="flex flex-col gap-4 min-w-0 w-full h-full">
         <TabsContents>
           <TabsContent value="register">
             <RegisterForm />
@@ -54,11 +66,11 @@ const Auth = reatomComponent(({ ctx }) => {
             <LoginForm />
           </TabsContent>
         </TabsContents>
-        <SubmitAuth />
+        <AuthSubmit />
         <ResetPassword />
         <AuthError />
       </div>
-    </Tabs>
+    </Tabs >
   )
 }, "Auth")
 
@@ -74,14 +86,17 @@ export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events), [])
 
   return (
-    <form
-      className="flex items-center justify-center h-[80dvh] w-full"
-      onSubmit={(e) => e.preventDefault()}
-      autoComplete="off"
-    >
-      <div className="flex items-start justify-center h-[60dvh] w-full">
+    <div className="flex flex-col gap-4 h-[90vh] items-center justify-center w-full">
+      <form
+        className="flex gap-4 items-center justify-center flex-1 w-full"
+        onSubmit={(e) => e.preventDefault()}
+        autoComplete="off"
+      >
         <Auth />
+      </form>
+      <div className="flex items-start justify-center h-48 w-full">
+        <Verify />
       </div>
-    </form>
+    </div>
   )
-} 
+}

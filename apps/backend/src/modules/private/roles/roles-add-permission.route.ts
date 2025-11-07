@@ -30,16 +30,14 @@ const rolesAddPermissionForRoleSchema = z.object({
 
 export const rolesAddPermissionForRole = new Elysia()
   .use(validatePermission(PERMISSIONS.ROLES.UPDATE))
-  .post("/:roleId/permission/add", async ({ nickname, params, body }) => {
-    const roleId = params.roleId
-    const data = await addPermissionForRole(roleId, body)
-
-    createAdminActivityLog({ initiator: nickname, event: PERMISSIONS.ROLES.UPDATE })
-
+  .post("/:id/permission/add", async ({ params, body }) => {
+    const id = params.id
+    const data = await addPermissionForRole(id, body)
     return { data }
   }, {
     body: rolesAddPermissionForRoleSchema,
-    params: z.object({
-      roleId: z.coerce.number()
-    })
+    params: z.object({ id: z.coerce.number() }),
+    afterResponse: ({ nickname: initiator, permission }) => {
+      createAdminActivityLog({ initiator, event: permission })
+    }
   })

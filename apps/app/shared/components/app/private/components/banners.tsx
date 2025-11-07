@@ -1,137 +1,30 @@
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import {
-  createBannerDescriptionAtom,
-  createBannerHrefTitleAtom,
-  createBannerHrefValueAtom,
   bannersAction,
-  createBannerTitleAtom,
-  createBannerAction,
   deleteBannerAction,
-  actionsParentAtom,
-  actionsTypeAtom
-} from "../models/actions.model"
+  deleteBannerBeforeAction
+} from "../models/banner.model"
 import { Skeleton } from "@repo/ui/skeleton"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"
-import { Input } from "@repo/ui/input"
 import { BannerPayload } from "@repo/shared/types/entities/banner"
 import { action, atom, AtomState } from "@reatom/core"
 import { sleep, withReset } from "@reatom/framework"
 import { IconEye, IconX } from "@tabler/icons-react"
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog"
-import { getSelectedParentAtom, ToActionButtonX } from "./actions.news"
 import { ReactNode } from "react"
-
-const showBannerDialogIsOpenAtom = atom(false)
-const showBannerItemAtom = atom<BannerPayload | null>(null).pipe(withReset())
-
-const controlShowBannerAction = action(async (ctx, value: boolean, id?: number) => {
-  if (value) {
-    if (!id) throw new Error('Target banner id is not defined')
-
-    const item = ctx.get(bannersAction.dataAtom)?.data.find(target => target.id === id)
-    if (!item) throw new Error('Target banner is not defined')
-
-    showBannerItemAtom(ctx, item)
-    showBannerDialogIsOpenAtom(ctx, true)
-  } else {
-    showBannerDialogIsOpenAtom(ctx, false)
-    await sleep(300)
-    showBannerItemAtom.reset(ctx)
-  }
-}, "controlShowBannerAction")
-
-const ShowBanner = reatomComponent<{ id: number }>(({ ctx, id }) => {
-  return (
-    <Button
-      onClick={() => controlShowBannerAction(ctx, true, id)}
-      className="h-6 w-6 aspect-square p-0 bg-neutral-800"
-    >
-      <IconEye size={18} />
-    </Button>
-  )
-})
-
-const ShowBannerDialog = reatomComponent(({ ctx }) => {
-  const item = ctx.spy(showBannerItemAtom);
-  if (!item) return null;
-
-  return (
-    <Dialog open={ctx.spy(showBannerDialogIsOpenAtom)} onOpenChange={v => controlShowBannerAction(ctx, v)}>
-      <DialogContent>
-        <DialogTitle className="hidden"></DialogTitle>
-        <div className="flex flex-col justify-center w-full h-full items-center">
-          <Typography className='font-semibold'>
-            {item.title}
-          </Typography>
-          <Typography>
-            {item.description}
-          </Typography>
-          <a href={item.href.value} className="text-green-500 text-sm">
-            {item.href.title}
-          </a>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-})
-
-const DeleteBanner = reatomComponent<{ id: number }>(({ ctx, id }) => {
-  return (
-    <Button
-      onClick={() => deleteBannerAction(ctx, id)}
-      disabled={ctx.spy(deleteBannerAction.statusesAtom).isPending}
-      className="h-6 w-6 aspect-square p-0 bg-neutral-800"
-    >
-      <IconX size={18} />
-    </Button>
-  )
-}, "DeleteBanner")
-
-const BannerListItem = ({ id, title, description, href }: BannerPayload) => {
-  return (
-    <div className="flex items-center gap-2 justify-between w-full h-16 border border-neutral-800 p-2 rounded-lg overflow-hidden">
-      <div className="flex w-full justify-between sm:items-start gap-1">
-        <div className="flex flex-col sm:gap-1 sm:flex-row min-w-0 sm:items-center">
-          <Typography className='truncate font-semibold leading-tight'>
-            {title}
-          </Typography>
-          <Typography>
-            {description}
-          </Typography>
-          <Typography>
-            {href.title} ({href.value})
-          </Typography>
-        </div>
-        <div className="flex items-center gap-1">
-          <ShowBanner id={id} />
-          <DeleteBanner id={id} />
-        </div>
-      </div>
-    </div >
-  )
-}
-
-export const BannersList = reatomComponent(({ ctx }) => {
-  useUpdate(bannersAction, [])
-
-  const data = ctx.spy(bannersAction.dataAtom)?.data;
-
-  if (ctx.spy(bannersAction.statusesAtom).isPending) {
-    return <Skeleton className="h-16 w-full" />
-  }
-
-  if (!data) return null;
-
-  return (
-    <>
-      <ShowBannerDialog />
-      <div className="flex flex-col w-full gap-2 h-full">
-        {data.map(banner => <BannerListItem key={banner.id} {...banner} />)}
-      </div>
-    </>
-  )
-}, "BannersList")
+import { actionsTypeAtom, getSelectedParentAtom } from "../models/actions.model"
+import { ToActionButtonX } from "./global"
+import { ActionButton } from "./ui"
+import { 
+  createBannerAction, 
+  createBannerDescriptionAtom, 
+  createBannerHrefTitleAtom, 
+  createBannerHrefValueAtom, 
+  createBannerTitleAtom 
+} from "../models/banner.model"
+import { Input } from "@repo/ui/input"
+import { ButtonXSubmit } from "./global"
 
 const CreateBannerTitle = reatomComponent(({ ctx }) => {
   return (
@@ -175,33 +68,136 @@ const CreateBannerLinkValue = reatomComponent(({ ctx }) => {
 
 const CreateBannerSubmit = reatomComponent(({ ctx }) => {
   return (
-    <Button
-      onClick={() => createBannerAction(ctx)}
-      disabled={ctx.spy(createBannerAction.statusesAtom).isPending}
-      className="px-4 bg-neutral-50"
-    >
-      <Typography className="text-lg font-semibold text-neutral-950">
-        Создать
-      </Typography>
-    </Button>
+    <ButtonXSubmit
+      title="Создать"
+      action={() => createBannerAction(ctx)}
+      isDisabled={ctx.spy(createBannerAction.statusesAtom).isPending}
+    />
   )
 }, "CreateBanner")
 
-export const CreateBannerForm = () => {
+const CreateBannerForm = () => {
   return (
     <div className="flex flex-col gap-2">
       <CreateBannerTitle />
       <CreateBannerDescription />
       <CreateBannerLinkTitle />
       <CreateBannerLinkValue />
-      <div className="w-fit">
-        <CreateBannerSubmit />
-      </div>
     </div>
   )
 }
 
-const BANNER_VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
+const showBannerDialogIsOpenAtom = atom(false)
+const showBannerItemAtom = atom<BannerPayload | null>(null).pipe(withReset())
+
+const controlShowBannerAction = action(async (ctx, value: boolean, id?: number) => {
+  if (value) {
+    if (!id) throw new Error('Target banner id is not defined')
+
+    const item = ctx.get(bannersAction.dataAtom)?.data.find(target => target.id === id)
+    if (!item) throw new Error('Target banner is not defined')
+
+    showBannerItemAtom(ctx, item)
+    showBannerDialogIsOpenAtom(ctx, true)
+  } else {
+    showBannerDialogIsOpenAtom(ctx, false)
+    await sleep(300)
+    showBannerItemAtom.reset(ctx)
+  }
+}, "controlShowBannerAction")
+
+const ShowBanner = reatomComponent<{ id: number }>(({ ctx, id }) => {
+  return (
+    <ActionButton
+      icon={IconEye}
+      variant="default"
+      onClick={() => controlShowBannerAction(ctx, true, id)}
+    />
+  )
+})
+
+const ShowBannerDialog = reatomComponent(({ ctx }) => {
+  const item = ctx.spy(showBannerItemAtom);
+  if (!item) return null;
+
+  return (
+    <Dialog open={ctx.spy(showBannerDialogIsOpenAtom)} onOpenChange={v => controlShowBannerAction(ctx, v)}>
+      <DialogContent>
+        <DialogTitle className="hidden"></DialogTitle>
+        <div className="flex flex-col justify-center w-full h-full items-center">
+          <Typography className='font-semibold'>
+            {item.title}
+          </Typography>
+          <Typography>
+            {item.description}
+          </Typography>
+          <a href={item.href.value} className="text-green-500 text-sm">
+            {item.href.title}
+          </a>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+})
+
+const DeleteBanner = reatomComponent<{ id: number, title: string }>(({ ctx, id, title }) => {
+  return (
+    <Button
+      onClick={() => deleteBannerBeforeAction(ctx, { id, title })}
+      disabled={ctx.spy(deleteBannerAction.statusesAtom).isPending}
+      className="h-6 w-6 aspect-square p-0 bg-neutral-800"
+    >
+      <IconX size={18} />
+    </Button>
+  )
+}, "DeleteBanner")
+
+const BannerListItem = ({ id, title, description, href }: BannerPayload) => {
+  return (
+    <div className="flex items-center gap-2 justify-between w-full h-16 border border-neutral-800 p-2 rounded-lg overflow-hidden">
+      <div className="flex w-full justify-between sm:items-start gap-1">
+        <div className="flex flex-col sm:gap-1 sm:flex-row min-w-0 sm:items-center">
+          <Typography className='truncate font-semibold leading-tight'>
+            {title}
+          </Typography>
+          <Typography>
+            {description}
+          </Typography>
+          <Typography>
+            {href.title} ({href.value})
+          </Typography>
+        </div>
+        <div className="flex items-center gap-1">
+          <ShowBanner id={id} />
+          <DeleteBanner id={id} title={title} />
+        </div>
+      </div>
+    </div >
+  )
+}
+
+export const BannersList = reatomComponent(({ ctx }) => {
+  useUpdate(bannersAction, [])
+
+  const data = ctx.spy(bannersAction.dataAtom)?.data;
+
+  if (ctx.spy(bannersAction.statusesAtom).isPending) {
+    return <Skeleton className="h-16 w-full" />
+  }
+
+  if (!data) return null;
+
+  return (
+    <>
+      <ShowBannerDialog />
+      <div className="flex flex-col gap-2 w-full h-full">
+        {data.map(banner => <BannerListItem key={banner.id} {...banner} />)}
+      </div>
+    </>
+  )
+}, "BannersList")
+
+const VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
   "create": <CreateBannerForm />,
   "edit": null,
   "view": <BannersList />
@@ -209,11 +205,27 @@ const BANNER_VARIANTS: Record<AtomState<typeof actionsTypeAtom>, ReactNode> = {
 
 export const BannersWrapper = reatomComponent(({ ctx }) => {
   if (!ctx.spy(getSelectedParentAtom("banner"))) {
-    return BANNER_VARIANTS["view"]
+    return VARIANTS["view"]
   }
 
-  return BANNER_VARIANTS[ctx.spy(actionsTypeAtom)]
+  return VARIANTS[ctx.spy(actionsTypeAtom)]
 }, "BannersWrapper")
 
-export const CreateBanner = () => <ToActionButtonX title="Создать" parent="banner" type="create" />
-export const EditBanner = () => <ToActionButtonX parent="banner" type="edit" />
+export const ViewBanner = () => <ToActionButtonX title="Создать" parent="banner" type="create" />
+
+export const EditBanner = () => {
+  return (
+    <div className="flex items-center gap-1">
+      <ToActionButtonX parent="banner" type="edit" />
+    </div>
+  )
+}
+
+export const CreateBanner = () => {
+  return (
+    <div className="flex items-center gap-1">
+      <ToActionButtonX parent="banner" type="create" />
+      <CreateBannerSubmit />
+    </div>
+  )
+}

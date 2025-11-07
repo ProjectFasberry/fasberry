@@ -14,10 +14,7 @@ export const invalidate = new Elysia()
     )
   })
   .derive(async ({ session, status }) => {
-    if (!session) {
-      throw status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
-    }
-
+    if (!session) throw status(HttpStatusEnum.HTTP_401_UNAUTHORIZED)
     return { session }
   })
   .post("/invalidate-session", async ({ cookie, session, status }) => {
