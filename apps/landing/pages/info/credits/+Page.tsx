@@ -1,7 +1,10 @@
+import { getStaticObject } from '@/shared/lib/volume';
 import { MainWrapperPage } from '@repo/ui/main-wrapper';
 import { Typography } from '@repo/ui/typography';
 
-export default function CreditsPage() {
+const image = getStaticObject("arts", "credits-bzzvanet.jpg")
+
+export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
       <div className="flex flex-col min-h-screen responsive mx-auto py-36 gap-y-6">
@@ -12,13 +15,14 @@ export default function CreditsPage() {
           <a
             href="https://linktr.ee/bzzvanet"
             target="_blank"
-            className="flex items-end p-4 justify-center relative group hover:backdrop-blur-md duration-300 rounded-lg h-full overflow-hidden"
+            className="flex items-end justify-center relative group rounded-lg h-full overflow-hidden"
           >
-            <div className="flex flex-col justify-center items-center duration-300 absolute group-hover:translate-y-0 translate-y-64 gap-2">
+            <div className="absolute inset-0 backdrop-blur-none group-hover:backdrop-blur-md duration-150" />
+            <div className="flex flex-col z-1 justify-center items-center duration-150 absolute group-hover:-translate-y-4 translate-y-64 gap-2">
               <Typography color="white" className="text-2xl font-semibold">Изображения</Typography>
               <Typography className="text-lg text-fuchsia-300">bzzVanet</Typography>
             </div>
-            <img src="https://volume.fasberry.su/static/arts/credits-bzzvanet.jpg" loading="lazy" alt="" />
+            <img src={image} loading="lazy" alt="" />
           </a>
         </div>
       </div>

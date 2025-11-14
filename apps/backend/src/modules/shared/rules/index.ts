@@ -1,73 +1,58 @@
 import Elysia, { t } from "elysia";
 import { general } from "#/shared/database/main-db";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { withData } from "#/shared/schemas";
 
-const ruleTypes: Record<"chat" | "game" | "based", string> = {
-  'chat': 'Правила чата',
-  'game': 'Игровые правила',
-  'based': 'Основные правила проекта',
-}
-
 async function getRules() {
-  const [rules, terms] = await Promise.all([
-    general
-      .selectFrom("rules")
-      .selectAll()
-      .where("rule_list_id", "in", ["chat", "game", "based"])
-      .execute(),
-    general
-      .selectFrom("rules_termins")
-      .selectAll()
-      .execute()
-  ])
+  const rules = await general
+    .selectFrom("rules")
+    .selectAll()
+    .orderBy("created_at", "asc")
+    .execute()
 
-  const termsResult = {
-    categoryTitle: 'Терминология', content: terms,
-  };
-
-  const categorizedRules = ["chat", "game", "based"].reduce((acc, type) => {
-    acc[type] = {
-      categoryTitle: ruleTypes[type as "chat", "game", "based"],
-      content: rules.filter((rule) => rule.rule_list_id === type),
-    };
-
-    return acc;
-  }, {} as Record<string, { categoryTitle: string; content: any[] }>);
-
-  return { rules: categorizedRules, terms: termsResult };
+  return rules
 }
 
-const rulesPayload = t.Object({
-  rules: t.Record(
-    t.String(),
-    t.Object({
-      categoryTitle: t.String(),
-      content: t.Array(t.Unknown())
-    })
-  ),
-  terms: t.Object({
-    categoryTitle: t.String(),
-    content: t.Array(
-      t.Object({
-        id: t.Number(),
-        article_desc: t.String(),
-        article_title: t.String(),
-      })
-    )
+const rulesPayload = t.Array(
+  t.Object({
+    id: t.Number(),
+    created_at: t.Date(),
+    updated_at: t.Nullable(t.Date()),
+    content: t.Any(),
+    category: t.String()
   })
-})
+)
 
-export const rules = new Elysia()
-  .get("/rules", async ({ status, set }) => {
+const rulesTags = new Elysia()
+  .get("/tags", async (ctx) => {
+    const data = [
+      { title: "Правила", value: "rules" },
+      { title: "База", value: "main" },
+      { title: "кодекс", value: "codex" },
+      { title: "никтонечитает", value: "nothingtoread" }
+    ]
+
+    return { data }
+  })
+
+export const rulesList = new Elysia()
+  .model({
+    "rules": withData(rulesPayload)
+  })
+  .get("/list", async ({ set }) => {
     const data = await getRules()
 
-    set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
-    set.headers["vary"] = "Origin";
+    // set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+    // set.headers["vary"] = "Origin";
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     response: {
-      200: withData(rulesPayload)
+      200: "rules"
     }
   })
+
+export const rules = new Elysia()
+  .group("/rules", app => app
+    .use(rulesList)
+    .use(rulesTags)
+  )

@@ -16,6 +16,7 @@ import { Switch } from "@repo/ui/switch";
 import { playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "@/shared/components/app/player/models/player-seems-like.model";
 import { beforeLogoutAction, logoutAction } from "../../auth/models/logout.model";
 import { AlertDialog } from "@/shared/components/config/alert-dialog";
+import { cartDataSelectedItemsLengthAtom, cartIsTriggeredAtom } from "../../shop/models/store-cart.model";
 
 export const AuthorizeButton = () => {
   return (
@@ -103,7 +104,7 @@ const HeaderMenu = reatomComponent(({ ctx }) => {
         <PopoverTrigger className="group h-full">
           <IconChevronUp
             size={20}
-            className="group-data-[state=open]:rotate-0 group-data-[state=closed]:rotate-180 
+            className="group-data-[state=open]:rotate-0 group-data-[state=closed]:rotate-180
               duration-150 ease-in-out text-neutral-400"
           />
         </PopoverTrigger>
@@ -202,10 +203,10 @@ const LINKS = [
 const MobileBottomBar = () => {
   return (
     <div
-      className="md:hidden z-[50] fixed flex items-center 
+      className="md:hidden z-[50] fixed flex items-center
         rounded-t-xl justify-center bottom-0 px-4 border-t border-neutral-700 bg-neutral-800 h-20 w-full"
     >
-      <div className="flex items-center justify-between w-full 
+      <div className="flex items-center justify-between w-full
         gap-1 *:data-[state=inactive]:text-neutral-50 *:data-[state=active]:text-green-500"
       >
         {LINKS.map(link => (
@@ -223,17 +224,34 @@ const MobileBottomBar = () => {
   )
 }
 
-const HeaderCartTrigger = () => {
+const HeaderCartTrigger = reatomComponent(({ ctx }) => {
+  const isTriggered = ctx.spy(cartIsTriggeredAtom);
+  const cartLength = ctx.spy(cartDataSelectedItemsLengthAtom)
+
   return (
     <Link
       aria-label="Перейти на главную"
       href="/store/cart"
-      className="flex items-center h-10 justify-center bg-neutral-800 p-2 rounded-xl"
+      data-trigger={isTriggered}
+      className="duration-150 relative flex items-center h-10 justify-center bg-neutral-800 p-2 rounded-xl
+        data-[trigger=true]:scale-[1.15] group data-[trigger=false]:scale-100
+      "
     >
-      <IconBasket size={26} className="text-neutral-400" />
+      <IconBasket
+        size={26}
+        className="group-data-[trigger=true]:text-green-500 group-data-[trigger=false]:text-neutral-400"
+      />
+      {cartLength >= 1 && (
+        <div
+          className="absolute font-semibold -bottom-1 -right-1
+          bg-neutral-50 text-neutral-950 rounded-sm aspect-square w-4 h-4 flex items-center justify-center"
+        >
+          <span className="text-sm">{cartLength}</span>
+        </div>
+      )}
     </Link>
   )
-}
+}, "HeaderCartTrigger")
 
 export const Logotype = () => {
   return (
@@ -263,7 +281,7 @@ export const Header = () => {
           </div>
           <div
             className="hidden md:flex w-3/5 justify-center items-center h-20 text-neutral-400
-            *:flex *:items-center *:justify-center *:border-b *:h-full *:px-4 
+            *:flex *:items-center *:justify-center *:border-b *:h-full *:px-4
             *:data-[state=inactive]:border-transparent *:data-[state=active]:border-green-500"
           >
             {LINKS.map(link => (

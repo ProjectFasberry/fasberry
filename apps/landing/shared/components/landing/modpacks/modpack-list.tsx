@@ -2,9 +2,8 @@ import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from '@reatom/
 import { Typography } from '@repo/ui/typography';
 import { Skeleton } from '@repo/ui/skeleton';
 import { reatomComponent, useUpdate } from '@reatom/npm-react';
-import { BASE } from '@/shared/api/client';
+import { client } from '@/shared/api/client';
 import { toast } from 'sonner';
-import { sleep } from '@reatom/framework';
 import { dayjs } from '@/shared/lib/create-dayjs';
 import { Dialog, DialogContent } from '@repo/ui/dialog';
 import { action, atom } from '@reatom/core';
@@ -14,7 +13,7 @@ import { Button } from '@repo/ui/button';
 const selectedModpackItemAtom = atom<Modpack | null>(null, "selectedModpackItem").pipe(withReset())
 const selectedModpackDialogIsOpenAtom = atom(false, "selectedModpackDialogIsOpen")
 
-const openModpackMore = action((ctx, id: string) => {
+const openModpackMoreAction = action((ctx, id: string) => {
   const modpacks = ctx.get(modpacksAction.dataAtom);
   if (!modpacks) throw new Error("Modpacks is not defined")
 
@@ -46,7 +45,7 @@ const SelectedModpack = reatomComponent(({ ctx }) => {
         {mods ? (
           <div className="flex items-center gap-2 flex-wrap">
             {mods.map((mod, idx) =>
-              <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
+              <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-sm">
                 <Typography className="text-lg text-white">{mod}</Typography>
               </div>
             )}
@@ -62,7 +61,7 @@ const SelectedModpack = reatomComponent(({ ctx }) => {
         {shaders ? (
           <div className="flex items-center gap-2 flex-wrap">
             {shaders.map((shader, idx) =>
-              <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-[4px]">
+              <div key={idx} className="flex bg-neutral-600/80 px-4 py-1 rounded-sm">
                 <Typography color="white" className="text-lg">
                   {shader}
                 </Typography>
@@ -122,7 +121,7 @@ const ModpackItem = reatomComponent<Modpack>(({
           </a>
           <Button
             variant="minecraft"
-            onClick={() => openModpackMore(ctx, id)}
+            onClick={() => openModpackMoreAction(ctx, id)}
             className="w-full py-0.5 md:w-1/2"
           >
             <Typography color="white" className="text-xl">
@@ -144,14 +143,14 @@ const ModpackItem = reatomComponent<Modpack>(({
             {mods ? (
               <div className="flex items-center gap-1 flex-wrap">
                 {mods.slice(0, 3).map((name, idx) =>
-                  <div key={idx} className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                  <div key={idx} className="flex bg-neutral-600/80 px-2 py-0.5 rounded-sm">
                     <Typography color="white" className="text-md">
                       {name}
                     </Typography>
                   </div>
                 )}
                 {(mods.length >= 3) && (
-                  <div className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                  <div className="flex bg-neutral-600/80 px-2 py-0.5 rounded-sm">
                     <Typography color="white" className="text-md">
                       +{mods.length - 3}
                     </Typography>
@@ -169,14 +168,14 @@ const ModpackItem = reatomComponent<Modpack>(({
             {shaders.length >= 1 ? (
               <div className="flex items-center gap-1 flex-wrap">
                 {shaders.slice(0, 3).map((name, idx) =>
-                  <div key={idx} className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                  <div key={idx} className="flex bg-neutral-600/80 px-2 py-0.5 rounded-sm">
                     <Typography color="white" className="text-md">
                       {name}
                     </Typography>
                   </div>,
                 )}
                 {shaders.length >= 3 && (
-                  <div className="flex bg-neutral-600/80 px-2 py-0.5 rounded-[4px]">
+                  <div className="flex bg-neutral-600/80 px-2 py-0.5 rounded-sm">
                     <Typography color="white" className="text-md">
                       +{shaders.length - 3}
                     </Typography>
@@ -205,34 +204,30 @@ export type Modpack = {
   imageUrl: string
 }
 
-type ModpacksPayload = { data: Array<Modpack> } | { error: string }
-
 const modpacksAction = reatomAsync(async (ctx) => {
-  await sleep(1000);
-
   return await ctx.schedule(async () => {
-    const res = await BASE("shared/modpack/list", {
-      throwHttpErrors: false, signal: ctx.controller.signal
-    })
-
-    const data = await res.json<ModpacksPayload>()
-
+    const res = await client("shared/modpack/list", { signal: ctx.controller.signal })
+    const data = await res.json<{ data: Array<Modpack> } | { error: string }>()
     if ("error" in data) return null;
-
     return data.data
   })
-}, "modpacksAction").pipe(
+}, {
+  name: "modpacksAction",
+  onReject: (ctx, e) => {
+    if (e instanceof Error) toast.error(e.message.slice(0, 26))
+  }
+}).pipe(
   withDataAtom([], (_, data) => data && data.length >= 1 ? data : null),
   withStatusesAtom(),
   withCache({ swr: false })
 )
 
-modpacksAction.onReject.onCall((_, e) => {
-  if (e instanceof Error) toast.error(e.message.slice(0, 26))
-})
-
 const ModpackListEmpty = () => {
-  return <Typography className="text-neutral-400 text-2xl">Модпаков еще нет</Typography>
+  return (
+    <Typography className="text-neutral-400 text-2xl">
+      Модпаков еще нет
+    </Typography>
+  )
 };
 
 const ModpackListSkeleton = () => {

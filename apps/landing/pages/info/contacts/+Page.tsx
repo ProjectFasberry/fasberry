@@ -1,6 +1,9 @@
-import { MAIL_FASBERRY_SUPPORT, TELEGRAM_CHANNEL_LINK, VK_GROUP_LINK } from "@/shared/data/configs";
+import { MAIL_FASBERRY_SUPPORT } from "@/shared/data/configs";
+import { TG_NAME } from "@/shared/env";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Typography } from "@repo/ui/typography";
+
+const tgLink = `https://t.me/${TG_NAME}`
 
 export default function InfoContactsPage() {
   return (
@@ -12,27 +15,25 @@ export default function InfoContactsPage() {
         <Typography className="text-black dark:text-white text-3xl">
           Контакты
         </Typography>
-        <div className="flex flex-col gap-y-8 rounded-[8px]">
+        <div className="flex flex-col gap-6">
           <div
-            className="flex flex-col gap-y-4 border-2 border-[#454545] hover:duration-300 duration-300 rounded-[8px] p-4">
+            className="flex flex-col gap-4 border-2 border-[#454545] duration-300 rounded-lg p-4"
+          >
             <Typography color="white" className="text-xl">
               Социальные сети и мессенджеры
             </Typography>
             <div className="flex flex-col text-white text- md lg:text-lg gap-y-4">
-              <Typography color="white">Группа VK:&nbsp;
-                <a href='https://vk.com/fasberry' target="_blank">
-                  {VK_GROUP_LINK}
-                </a>
-              </Typography>
-              <Typography color="white">Канал в Telegram:&nbsp;
-                <a href='https://t.me/fasberry' target="_blank">
-                  {TELEGRAM_CHANNEL_LINK}
+              <Typography color="white">
+                Канал в Telegram:&nbsp;&nbsp;
+                <a href={tgLink} target="_blank" className="text-green">
+                  {tgLink}
                 </a>
               </Typography>
             </div>
           </div>
           <div
-            className="flex flex-col gap-y-4 border-2 text-md lg:text-lg border-[#454545] hover:duration-300 duration-300 rounded-[8px] p-4">
+            className="flex flex-col gap-4 border-2 text-md lg:text-lg border-[#454545] duration-300 rounded-lg p-4"
+          >
             <Typography color="white" className="text-xl">
               Электронная почта
             </Typography>

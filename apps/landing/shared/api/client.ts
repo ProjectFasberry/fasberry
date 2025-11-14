@@ -1,6 +1,7 @@
 import ky from "ky";
+import { API_PREFIX } from "../env";
 
-export const BASE = ky.extend({
-  prefixUrl: import.meta.env.PUBLIC_ENV__API_PREFIX,
+export const client = ky.extend({
+  prefixUrl: API_PREFIX,
   credentials: "include"
 })

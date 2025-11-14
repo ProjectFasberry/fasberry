@@ -6,16 +6,31 @@ import { Overlay } from "@repo/ui/overlay";
 import { Typography } from "@repo/ui/typography";
 import { WrapperTitle } from "@repo/ui/wrapper-title";
 import { LANDING_ENDPOINT } from '@/shared/env';
+import { cardWrapper } from "@/shared/styles/variants";
+import { PropsWithChildren } from "react";
 
 const bgImage = getStaticObject("backgrounds", "support_background.png");
+
+const alexImage = getStaticObject("support", "alex.webp")
+const steveImage = getStaticObject("support", "steve.webp");
+
+const Card = ({ children }: PropsWithChildren) => {
+  return (
+    <div
+      className={cardWrapper({
+        className: "flex flex-col xl:flex-row overflow-hidden md:items-center justify-center md:justify-start items-center w-full"
+      })}
+    >
+      {children}
+    </div>
+  )
+}
 
 export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
       <div
-        className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start
-          bg-bottom bg-no-repeat bg-cover
-        `}
+        className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start bg-bottom bg-no-repeat bg-cover`}
         style={{ backgroundImage: `url(${bgImage})` }}
       >
         <Overlay variant="default" />
@@ -25,50 +40,45 @@ export default function Page() {
               <h1 className="text-left text-shadow-xl text-5xl lg:text-6xl text-gold">
                 Поддержка проекта
               </h1>
-              <Typography color="white" className="text-left text-2xl md:text-3xl">
+              <Typography className="text-left text-2xl md:text-3xl">
                 Здесь можно узнать о способах поддержки развития проекта. Это не связано с донатом!
               </Typography>
             </div>
             <Link href="#support-list">
               <Button variant="minecraft" className="group px-6 py-0.5 gap-2">
-                <span className="font-[Monocraft] relative -top-0.5 group-hover:rotate-0 rotate-90 duration-150">○</span>
-                <Typography color="white" className="text-lg">
-                  &nbsp;Как поддержать?
+                <Typography className="text-lg">
+                  Как поддержать?
                 </Typography>
               </Button>
             </Link>
           </div>
         </WrapperTitle>
       </div>
-      <div id="support-list" className="full-screen-section flex flex-col justify-center items-center relative py-24 lg:py-36">
+      <div
+        id="support-list"
+        className="full-screen-section flex flex-col justify-center items-center relative py-24 lg:py-36"
+      >
         <div className="flex flex-col justify-center gap-y-6 w-[90%] mx-auto">
           <div className="flex flex-col justify-center items-center mb-6">
-            <Typography
-              color="white" className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl"
-            >
+            <Typography className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl">
               Поддержка проекта
             </Typography>
             <Typography className="text-xl text-center text-gold">
               ниже представлены пока что основные способы помочь проекту. Спасибо!
             </Typography>
           </div>
-          <div
-            className="flex flex-col sm:flex-row gap-4 w-full h-full 
-            *:flex *:flex-col *:xl:flex-row *:bg-neutral-900 *:rounded-xl
-              *:overflow-hidden *:p-3 *:lg:p-4 *:md:items-center *:justify-center *:md:justify-start *:items-center *:gap-4 *:lg:gap-6 *:w-full
-            "
-          >
-            <div>
+          <div className="flex flex-col sm:flex-row gap-4 w-full h-full">
+            <Card>
               <img
                 width={244}
                 height={244}
                 loading="lazy"
                 alt="Monitoring"
                 className="max-h-[244px] w-auto"
-                src={getStaticObject("support", "steve.webp")}
+                src={steveImage}
               />
               <div className="flex flex-col items-center xl:items-start gap-1 md:gap-2 w-full">
-                <h1 className="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-fuchsia-400">
+                <h1 className="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
                   Мониторинг
                 </h1>
                 <div className="flex flex-col mt-2 w-full">
@@ -78,24 +88,24 @@ export default function Page() {
                     rel="noreferrer"
                     className="flex justify-center w-full xl:w-fit items-center button px-4 py-1"
                   >
-                    <Typography color="white" className="text-nowrap text-base lg:text-xl">
+                    <Typography className="text-nowrap text-base lg:text-xl">
                       Проголосовать
                     </Typography>
                   </a>
                 </div>
               </div>
-            </div>
-            <div>
+            </Card>
+            <Card>
               <img
                 width={244}
                 height={244}
                 className="max-h-[244px] w-auto"
-                src={getStaticObject("support", "alex.webp")}
+                src={alexImage}
                 loading="lazy"
                 alt="Share"
               />
               <div className="flex flex-col items-center xl:items-start gap-2 w-full">
-                <h1 className='text-shadow-md text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-fuchsia-400'>
+                <h1 className='text-shadow-md text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl'>
                   Поделиться
                 </h1>
                 <div
@@ -125,7 +135,7 @@ export default function Page() {
                   </a>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reat
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip";
-import { BASE } from "@/shared/api/client";
+import { client } from "@/shared/api/client";
 import { Button } from "@repo/ui/button";
 import { tv } from "tailwind-variants";
 import { getStaticObject } from "@/shared/lib/volume";
@@ -22,7 +22,7 @@ const NumericItem = ({ index }: { index: number }) => {
 
 const serverIpResource = reatomResource(async (ctx) => {
   return await ctx.schedule(async () => {
-    const res = await BASE("shared/server-ip", {
+    const res = await client("shared/server-ip", {
       signal: ctx.controller.signal, throwHttpErrors: false
     })
 
@@ -118,7 +118,7 @@ const stepImageVariant = tv({
 })
 
 
-export default function StartPage() {
+export default function Page() {
   return (
     <MainWrapperPage>
       <div className="flex flex-col items-center w-full gap-12 h-full">
@@ -142,7 +142,14 @@ export default function StartPage() {
               </div>
             </div>
             <div className={stepImageVariant()}>
-              <img src={getStaticObject("items", "seeking_wolf.png")} draggable={false} width={128} height={128} alt="Register" loading="lazy" />
+              <img
+              src={getStaticObject("items", "seeking_wolf.png")}
+              draggable={false}
+              width={128}
+              height={128}
+              alt="Register"
+              loading="lazy"
+              />
             </div>
           </div>
           <div className={stepVariant()}>
@@ -164,7 +171,14 @@ export default function StartPage() {
               </div>
             </div>
             <div className={stepImageVariant()}>
-              <img src={getStaticObject("items", "enderman_boosts.png")} draggable={false} width={128} height={128} alt="Cabinet" loading="lazy" />
+              <img
+              src={getStaticObject("items", "enderman_boosts.png")}
+              draggable={false}
+              width={128}
+              height={128}
+              alt="Cabinet"
+              loading="lazy"
+              />
             </div>
           </div>
           <div className={stepVariant()}>
@@ -175,13 +189,20 @@ export default function StartPage() {
               </Typography>
             </div>
             <div className={stepImageVariant()}>
-              <img src={getStaticObject("items", "adventure_icon.png")} draggable={false}  width={128} height={128} alt="Done" loading="lazy" />
+              <img
+              src={getStaticObject("items", "adventure_icon.png")}
+              draggable={false}
+              width={128}
+              height={128}
+              alt="Done"
+              loading="lazy"
+              />
             </div>
           </div>
           <div className="flex border-4 border-black rounded-lg overflow-hidden h-[80vh] relative w-full">
             <div
               className="absolute w-full h-[80vh] left-0 right-0 top-0 bottom-0"
-              style={{ backgroundImage: `url("images/static/dirt.webp")` }}
+              style={{ backgroundImage: `url(${getStaticObject("static", "dirt.webp")})` }}
             />
             <HowToConnectOnServer />
           </div>

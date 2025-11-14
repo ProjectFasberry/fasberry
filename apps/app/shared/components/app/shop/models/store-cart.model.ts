@@ -1,5 +1,5 @@
-import { atom, batch, createCtx, Ctx } from "@reatom/core";
-import { reatomAsync, sleep, withCache, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
+import { action, atom, batch, createCtx, Ctx } from "@reatom/core";
+import { reatomAsync, sleep, withAssign, withCache, withConcurrency, withDataAtom, withInit, withStatusesAtom } from "@reatom/framework";
 import { Payment } from "./store.model";
 import { withSsr } from "@/shared/lib/ssr";
 import { PageContextServer } from "vike/types";
@@ -36,11 +36,13 @@ export const cartDataItemIsSelectAtom = (id: number) => atom((ctx) => {
 
 export const cartPriceAtom = atom<CartFinalPrice>({ BELKOIN: 0, CHARISM: 0 }, "cartPrice").pipe(withSsr("cartPrice"))
 
+export const cartDataSelectedItemsLengthAtom = atom((ctx) => ctx.spy(cartDataSelectedAtom).length, "cartDataSelectedItemsLength")
+
 export const cartWarningDialogIsOpenAtom = atom(false, "cartWarningDialogIsOpen")
 export const cartWarningDialogDataAtom = atom<{ title: string, description: string } | null>(null, "cartWarningDialogData")
 
 export const cartIsValidAtom = atom((ctx) => {
-  const productsLengthValidate = ctx.spy(cartDataSelectedAtom).length >= 1;
+  const productsLengthValidate = ctx.spy(cartDataSelectedItemsLengthAtom) >= 1;
   const productsRecipientValidate = ctx.spy(cartDataSelectedAtom).filter(target => target.recipient).length >= 1
 
   return productsLengthValidate && productsRecipientValidate
@@ -66,8 +68,8 @@ export const storeOrdersListAction = reatomAsync(async (ctx) => {
     logError(e)
   }
 }).pipe(
-  withDataAtom(null, (_, data) => isEmptyArray(data) ? null : data), 
-  withStatusesAtom(), 
+  withDataAtom(null, (_, data) => isEmptyArray(data) ? null : data),
+  withStatusesAtom(),
   withCache({ swr: false })
 )
 
@@ -163,6 +165,8 @@ export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
       simulate(ctx, id, "unload");
     })
 
+    cartTrigger.touch(ctx)
+
     updateCart(ctx)
     setRecipientValueAtom.reset(ctx);
   },
@@ -182,3 +186,17 @@ export async function updateCart(ctx: Ctx) {
     cartPriceAtom(ctx, data.price);
   })
 }
+
+export const cartIsTriggeredAtom = atom(false, "cartIsTriggered")
+
+export const cartTrigger = atom(null, "cartTrigger").pipe(
+  withAssign((ctx, name) => ({
+    touch: action(async (ctx) => {
+      cartIsTriggeredAtom(ctx, true)
+      await ctx.schedule(() => sleep(300));
+      cartIsTriggeredAtom(ctx, false)
+    }).pipe(withConcurrency())
+  }))
+)
+
+cartIsTriggeredAtom.onChange((ctx, state) => console.log("cartIsTriggeredAtom", state))

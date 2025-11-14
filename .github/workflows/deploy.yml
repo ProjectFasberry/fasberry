@@ -1,0 +1,31 @@
+name: Deploy landing to vercel
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install --force
+
+      - name: Build app
+        run: bun run --cwd apps/landing build
+
+      - name: Build vercel output
+        run: bunx vercel build --cwd apps/landing
+
+      - name: Deploy to vercel
+        run: bunx vercel deploy --prebuilt --cwd apps/landing --prod --token $VERCEL_TOKEN

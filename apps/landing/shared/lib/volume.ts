@@ -1,3 +1,5 @@
+import { VOLUME_ENDPOINT } from "../env";
+
 export function getStaticObject(path: string, target: string) {
-  return `https://volume.fasberry.su/static/${path}/${target}`
+  return `${VOLUME_ENDPOINT}/static/${path}/${target}`
 }

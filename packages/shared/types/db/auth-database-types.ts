@@ -259,17 +259,11 @@ export interface Roles {
 }
 
 export interface Rules {
+  category: string;
+  content: Json;
+  created_at: Generated<Timestamp>;
   id: Generated<number>;
-  punishment: string | null;
-  rule_list_id: string;
-  subtitle: string | null;
-  title: string;
-}
-
-export interface RulesTermins {
-  article_desc: string;
-  article_title: string;
-  id: Generated<number>;
+  updated_at: Timestamp | null;
 }
 
 export interface SOCIAL {
@@ -351,6 +345,22 @@ export interface VotedUsers {
   nickname: string;
 }
 
+export interface Wiki {
+  category: string;
+  category_title: string;
+  content: Json;
+  created_at: Generated<Timestamp | null>;
+  group_id: Generated<number>;
+  id: Generated<number>;
+  updated_at: Timestamp | null;
+}
+
+export interface WikiGroups {
+  id: Generated<number>;
+  name: string;
+  title: string;
+}
+
 export interface DB {
   activity_heatmap: ActivityHeatmap;
   activity_users: ActivityUsers;
@@ -384,7 +394,6 @@ export interface DB {
   role_permissions: RolePermissions;
   roles: Roles;
   rules: Rules;
-  rules_termins: RulesTermins;
   SOCIAL: SOCIAL;
   store_cart_items: StoreCartItems;
   store_economy: StoreEconomy;
@@ -393,4 +402,6 @@ export interface DB {
   store_promotions: StorePromotions;
   tasks: Tasks;
   voted_users: VotedUsers;
+  wiki: Wiki;
+  wiki_groups: WikiGroups;
 }

@@ -1,10 +1,11 @@
 import { general } from "#/shared/database/main-db";
-import { metaSchema } from "#/shared/schemas";
+import { metaSchema, searchQuerySchema } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
 import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
 import { GAME_CURRENCIES } from "@repo/shared/schemas/payment";
 import { StoreItemsPayload } from "@repo/shared/types/entities/store";
+import { sql } from "kysely";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 
@@ -15,11 +16,12 @@ export const storeListSchema = z.intersection(
   z.object({
     type: z.enum(STORE_LIST_TYPE).optional().default("all"),
     wallet: z.enum([...GAME_CURRENCIES, "ALL"]).default("ALL"),
+    searchQuery: searchQuerySchema
   })
 )
 
 export async function getStoreItems(
-  { wallet, type, endCursor }: z.infer<typeof storeListSchema>
+  { wallet, type, endCursor, searchQuery }: z.infer<typeof storeListSchema>
 ): Promise<StoreItemsPayload> {
   let storeQuery = general
     .selectFrom("store_items")
@@ -36,6 +38,20 @@ export async function getStoreItems(
       "content"
     ])
     .orderBy("id", "asc")
+
+  if (searchQuery && searchQuery.trim().length >= 1) {
+    if (searchQuery.length < 2) {
+      const firstLetter = searchQuery[0]
+
+      storeQuery = storeQuery
+        .where('title', 'ilike', `${firstLetter}%`)
+        .orderBy(sql<number>`similarity(title, ${searchQuery}) DESC`)
+    } else {
+      storeQuery = storeQuery
+        .where(sql<boolean>`similarity(title, ${searchQuery}) > 0.2`)
+        .orderBy(sql<number>`similarity(title, ${searchQuery})`, 'desc')
+    }
+  }
 
   if (wallet !== 'ALL') {
     storeQuery = storeQuery.where('currency', "=", wallet)

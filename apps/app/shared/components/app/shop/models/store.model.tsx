@@ -1,7 +1,7 @@
 import { createOrderSchema, paymentCurrencySchema } from '@repo/shared/schemas/payment';
 import { reatomAsync, withStatusesAtom } from "@reatom/async"
-import { atom, batch, createCtx } from "@reatom/core"
-import { sleep, withReset } from "@reatom/framework"
+import { action, atom, batch, createCtx } from "@reatom/core"
+import { sleep, withConcurrency, withReset } from "@reatom/framework"
 import { z } from 'zod';
 import type { Selectable } from "kysely"
 import type { StoreItemsPayload } from "@repo/shared/types/entities/store"
@@ -17,19 +17,32 @@ import { client, withAbort, withQueryParams } from '@/shared/lib/client-wrapper'
 import { clientInstance } from "@/shared/api/client"
 import { TopUpButton } from '../components/wallet/top-up-button';
 import { DEFAULT_SOFT_TIMEOUT } from '@/shared/consts/delays';
+import { withSearchParamsPersist } from '@reatom/url';
 
 export type Payment = Selectable<Payments>
 
 type StoreCategory = "donate" | "event" | "all"
 type StoreWalletFilter = "CHARISM" | "BELKOIN" | "ALL"
-export type StoreItemsParams = { type: StoreCategory, wallet: StoreWalletFilter }
+export type StoreItemsParams = { type: StoreCategory, wallet: StoreWalletFilter, searchQuery: string | undefined }
 type CreateOrder = z.infer<typeof createOrderSchema>
 
 export const storeTargetNicknameAtom = atom<string>("", "storeTargetNickname").pipe(withReset())
 export const storeCurrencyAtom = atom<z.infer<typeof paymentCurrencySchema>>("RUB", "storeCurrency").pipe(withReset())
 export const storePayMethodAtom = atom<CreateOrder["method"]>("card", "storePayMethod").pipe(withReset())
-export const storeCategoryAtom = atom<StoreCategory>("all", "storeCategory").pipe(withReset())
-export const storeWalletFilterAtom = atom<StoreWalletFilter>("ALL", "storeWalletFilter")
+
+export const storeCategoryAtom = atom<StoreCategory>("all", "storeCategory").pipe(
+  withSearchParamsPersist('c', (c = "all") => c),
+  withReset(),
+)
+
+export const storeWalletFilterAtom = atom<StoreWalletFilter>("ALL", "storeWalletFilter").pipe(
+  withSearchParamsPersist('w', (w = "ALL") => w),
+)
+
+export const storeItemsSearchQueryAtom = atom<string>("", "storeItemsSearchQuery").pipe(
+  withSearchParamsPersist('sq', (sq = "") => sq)
+);
+
 export const storePrivacyAtom = atom(false, "privacy").pipe(withReset())
 
 export const createdOrderDataAtom = atom<CreateOrderRoutePayload | null>(null)
@@ -48,6 +61,15 @@ export const storeItemsIsPendingAtom = atom((ctx) => ctx.spy(storeItemsAction.st
 storeCategoryAtom.onChange((ctx) => storeItemsAction(ctx))
 storeWalletFilterAtom.onChange((ctx) => storeItemsAction(ctx))
 
+export const onChange = action(async (ctx, e: React.ChangeEvent<HTMLInputElement>) => {
+  const { value } = e.target;
+  storeItemsSearchQueryAtom(ctx, value)
+
+  await ctx.schedule(() => sleep(300))
+
+  storeItemsAction(ctx)
+}).pipe(withConcurrency())
+
 const getOrderUrl = (id: string) => `/store/order/${id}`
 
 export const storeItemsAction = reatomAsync(async (ctx) => {
@@ -55,7 +77,8 @@ export const storeItemsAction = reatomAsync(async (ctx) => {
 
   const params: StoreItemsParams = {
     type: ctx.get(storeCategoryAtom),
-    wallet: ctx.get(storeWalletFilterAtom)
+    wallet: ctx.get(storeWalletFilterAtom),
+    searchQuery: ctx.get(storeItemsSearchQueryAtom)
   }
 
   return await ctx.schedule(() => getStoreItems(params, { signal: ctx.controller.signal }))

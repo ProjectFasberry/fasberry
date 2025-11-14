@@ -48,7 +48,7 @@ export const login = new Elysia()
     const result = await createSession({ token, nickname, info: { ...ua, ip } })
 
     setCookie({ cookie, key: SESSION_KEY, expires: result.expires_at, value: token })
-    setCookie({ cookie, key: CROSS_SESSION_KEY, expires: result.expires_at, value: nickname })
+    // setCookie({ cookie, key: CROSS_SESSION_KEY, expires: result.expires_at, value: nickname })
 
     const data = { nickname: result.nickname }
 

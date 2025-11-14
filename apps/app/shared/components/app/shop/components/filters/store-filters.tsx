@@ -1,10 +1,13 @@
 import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
-import { Checkbox } from "@repo/ui/checkbox"
+import { Checkbox, CheckboxProps } from "@repo/ui/checkbox"
 import { AtomState, Ctx } from "@reatom/core";
 import { storeCategoryAtom, storeWalletFilterAtom } from "../../models/store.model";
 import { IconFilter } from "@tabler/icons-react";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@repo/ui/sheet"
+import { storeSectionWrapper } from "@/pages/store/index/+Page";
+import { LabelHTMLAttributes } from "react";
+import { isClientAtom } from "@/shared/models/page-context.model";
 
 const FILTERS = [
   {
@@ -32,7 +35,31 @@ const FILTERS = [
   }
 ]
 
-const StoreFilterList = reatomComponent(({ ctx }) => {
+type FilterItem = {
+  label?: LabelHTMLAttributes<HTMLLabelElement>,
+  checkbox?: CheckboxProps,
+  filterName: string
+}
+
+const FilterItem = ({ filterName, label: labelProps, checkbox: checkboxProps }: FilterItem) => {
+  return (
+    <label
+      {...labelProps}
+      className="flex items-center gap-2 bg-neutral-800 rounded-md p-2"
+    >
+      <Checkbox
+        {...checkboxProps}
+      />
+      <Typography color="white" className="text-base">
+        {filterName}
+      </Typography>
+    </label>
+  )
+}
+
+export const StoreFilterList = reatomComponent(({ ctx }) => {
+  const isClient = ctx.spy(isClientAtom)
+
   const handle = (
     updater: (ctx: Ctx, value: string) => void,
     isChecked: string | boolean,
@@ -54,20 +81,18 @@ const StoreFilterList = reatomComponent(({ ctx }) => {
           </Typography>
           <div className='flex flex-col gap-2 w-full'>
             {item.filters.map((filter, idx) => (
-              <label
+              <FilterItem
                 key={idx}
-                htmlFor={getUniqueFilterId(item.origin, filter.value)}
-                className="flex items-center gap-2 bg-neutral-800 rounded-md p-2"
-              >
-                <Checkbox
-                  id={getUniqueFilterId(item.origin, filter.value)}
-                  checked={ctx.spy(item.atom) === filter.value}
-                  onCheckedChange={e => handle(item.updater, e, filter.value)}
-                />
-                <Typography color="white" className="text-base">
-                  {filter.name}
-                </Typography>
-              </label>
+                label={{
+                  htmlFor: getUniqueFilterId(item.origin, filter.value)
+                }}
+                checkbox={{
+                  id: getUniqueFilterId(item.origin, filter.value),
+                  checked: isClient ? ctx.spy(item.atom) === filter.value : false,
+                  onCheckedChange: e => handle(item.updater, e, filter.value)
+                }}
+                filterName={filter.name}
+              />
             ))}
           </div>
         </div>
@@ -76,18 +101,18 @@ const StoreFilterList = reatomComponent(({ ctx }) => {
   )
 }, "StoreFilterList")
 
-const StoreFiltersSheet = reatomComponent(({ctx}) => {
+export const StoreFiltersSheet = () => {
   return (
     <Sheet>
-      <SheetTrigger className="flex w-full cursor-pointer gap-2 items-center justify-center">
-        <IconFilter size={24} className="text-neutral-400" />
+      <SheetTrigger className={storeSectionWrapper({ className: "flex w-full cursor-pointer h-full gap-2 items-center justify-center" })}>
+        <IconFilter size={20} className="text-neutral-400" />
         <Typography color="gray" className="text-lg font-semibold">
           Изменить фильтры
         </Typography>
       </SheetTrigger>
       <SheetContent
         side="bottom"
-        className='flex flex-col items-center justify-start max-h-[60vh] overflow-y-auto gap-4 rounded-t-2xl'
+        className='flex flex-col px-4 py-2 items-center justify-start max-h-[60vh] overflow-y-auto gap-4 rounded-t-xl'
       >
         <SheetTitle>Фильтры</SheetTitle>
         <div className='flex flex-col gap-2 w-full'>
@@ -95,18 +120,5 @@ const StoreFiltersSheet = reatomComponent(({ctx}) => {
         </div>
       </SheetContent>
     </Sheet>
-  )
-}, "StoreFiltersSheet")
-
-export const StoreFilters = () => {
-  return (
-    <div className="flex sm:flex-col justify-center gap-y-6 gap-x-2 w-full h-fit">
-      <div className="sm:hidden block">
-        <StoreFiltersSheet/>
-      </div>
-      <div className="hidden sm:block">
-        <StoreFilterList />
-      </div>
-    </div>
   )
 }

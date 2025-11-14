@@ -32,11 +32,11 @@ export async function getMe(init: RequestInit) {
     [SKIP_HOOK_HEADER]: "true"
   }
 
-  const res = await clientInstance("me", { 
-    ...init, 
-    headers, 
-    throwHttpErrors: false, 
-    retry: 0 
+  const res = await clientInstance("me", {
+    ...init,
+    headers,
+    throwHttpErrors: false,
+    retry: 0
   })
 
   return parseWrappedJson<MePayload>(res)

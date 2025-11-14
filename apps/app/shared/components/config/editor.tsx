@@ -4,9 +4,29 @@ import { Editor, EditorContent, useEditor, useEditorState } from "@tiptap/react"
 import { useCallback } from "react"
 import { tv } from "tailwind-variants"
 import { scrollableVariant } from "@/shared/consts/style-variants"
+import { TableKit } from '@tiptap/extension-table'
+import { reatomComponent } from "@reatom/npm-react"
+import { action, atom } from "@reatom/core"
+import { withAssign } from "@reatom/framework"
+import { IconArrowBackUp, IconArrowForwardUp, IconArrowLeft, IconArrowRight, IconPictureInPicture, IconSettings } from "@tabler/icons-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/ui/dropdown-menu"
+import Image from '@tiptap/extension-image'
+import { isDevelopment } from "@/shared/env"
 
 export const editorExtensions = [
   TextStyleKit,
+  Image.configure({
+    resize: {
+      enabled: true,
+      directions: ['top', 'bottom', 'left', 'right'],
+      minWidth: 50,
+      minHeight: 50,
+      alwaysPreserveAspectRatio: true,
+    }
+  }),
+  TableKit.configure({
+    table: { resizable: true },
+  }),
   StarterKit.configure({
     link: {
       openOnClick: false,
@@ -61,7 +81,7 @@ export const editorExtensions = [
         }
       },
     }
-  }),
+  })
 ]
 
 const controlVariant = tv({
@@ -71,7 +91,21 @@ const controlVariant = tv({
   `
 })
 
-export const EditorMenuBar = ({ editor }: { editor: Editor }) => {
+const isTableAtom = atom(false)
+const isLinkAtom = atom(false)
+
+const bar = atom(null, "bar").pipe(
+  withAssign((ctx, name) => ({
+    toggleLink: action((ctx) => {
+      isLinkAtom(ctx, (state) => !state)
+    }),
+    toggleTable: action((ctx) => {
+      isTableAtom(ctx, (state) => !state)
+    })
+  }))
+)
+
+export const EditorMenuBar = reatomComponent<{ editor: Editor }>(({ ctx, editor }) => {
   const editorState = useEditorState({
     editor,
     selector: ctx => {
@@ -125,14 +159,62 @@ export const EditorMenuBar = ({ editor }: { editor: Editor }) => {
     }
   }, [editor])
 
+  const isTable = ctx.spy(isTableAtom);
+  const isLink = ctx.spy(isLinkAtom);
+
+  const addImage = useCallback(() => {
+    const url = window.prompt('URL')
+
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run()
+    }
+  }, [editor])
+
   return (
     <>
       <div
         className={scrollableVariant({
-          className: "flex overflow-x-auto pb-2 rounded-lg scrollbar-h-2 items-center w-full gap-1",
+          className: "flex flex-wrap pb-2 rounded-lg scrollbar-h-2 items-center w-full gap-1",
           variant: "hovered"
         })}
       >
+        <button
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editorState.canUndo}
+          className={controlVariant()}
+        >
+          <IconArrowBackUp />
+        </button>
+        <button
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editorState.canRedo}
+          className={controlVariant()}
+        >
+          <IconArrowForwardUp />
+        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger className={controlVariant()} data-state={"inactive"}>
+            <IconSettings />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem asChild>
+              <button
+                onClick={() => editor.chain().focus().unsetAllMarks().run()}
+                className={controlVariant()}
+              >
+                Clear marks
+              </button>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <button
+                onClick={() => editor.chain().focus().clearNodes().run()}
+                className={controlVariant()}
+              >
+                Clear nodes
+              </button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editorState.canBold}
@@ -164,18 +246,6 @@ export const EditorMenuBar = ({ editor }: { editor: Editor }) => {
           className={controlVariant()}
         >
           C
-        </button>
-        <button
-          onClick={() => editor.chain().focus().unsetAllMarks().run()}
-          className={controlVariant()}
-        >
-          Clear marks
-        </button>
-        <button
-          onClick={() => editor.chain().focus().clearNodes().run()}
-          className={controlVariant()}
-        >
-          Clear nodes
         </button>
         <button
           onClick={() => editor.chain().focus().setParagraph().run()}
@@ -266,38 +336,161 @@ export const EditorMenuBar = ({ editor }: { editor: Editor }) => {
         >
           HB
         </button>
-        <button
-          onClick={setLink}
-          data-state={editorState.isLink ? 'active' : 'inactive'}
+        <div
           className={controlVariant()}
+          onClick={() => bar.toggleLink(ctx)}
+          data-state={isLink ? 'active' : 'inactive'}
         >
-          Set link
-        </button>
+          Link
+        </div>
         <button
-          onClick={() => editor.chain().focus().unsetLink().run()}
-          disabled={!editorState.isLink}
           className={controlVariant()}
+          onClick={addImage}
+          data-state={isLink ? 'active' : 'inactive'}
         >
-          Unset link
+          <IconPictureInPicture />
         </button>
-        <button
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editorState.canUndo}
+        {isLink && (
+          <>
+            <button
+              onClick={setLink}
+              data-state={editorState.isLink ? 'active' : 'inactive'}
+              className={controlVariant()}
+            >
+              Set link
+            </button>
+            <button
+              onClick={() => editor.chain().focus().unsetLink().run()}
+              disabled={!editorState.isLink}
+              className={controlVariant()}
+            >
+              Unset link
+            </button>
+          </>
+        )}
+        <div
           className={controlVariant()}
+          onClick={() => bar.toggleTable(ctx)}
+          data-state={isTable ? 'active' : 'inactive'}
         >
-          Undo
-        </button>
-        <button
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editorState.canRedo}
-          className={controlVariant()}
-        >
-          Redo
-        </button>
+          Table
+        </div>
+        {isTable && (
+          <div className="flex items-center gap-1 w-full">
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            >
+              Insert table
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().addColumnBefore().run()}
+            >
+              Add column before
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().addColumnAfter().run()}
+            >
+              Add column after
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+            >
+              Delete column
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().addRowBefore().run()}
+            >
+              Add row before
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().addRowAfter().run()}
+            >
+              Add row after
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().deleteRow().run()}
+            >
+              Delete row
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().deleteTable().run()}
+            >
+              Delete table
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().mergeCells().run()}
+            >
+              Merge cells
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().splitCell().run()}
+            >
+              Split cell
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
+            >
+              Toggle header column
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+            >
+              Toggle header row
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().toggleHeaderCell().run()}
+            >
+              Toggle header cell
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().mergeOrSplit().run()}
+            >
+              Merge or split
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().setCellAttribute('colspan', 2).run()}
+            >
+              Set cell attribute
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().fixTables().run()}
+            >
+              Fix tables
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().goToNextCell().run()}
+            >
+              Go to next cell
+            </button>
+            <button
+              className={controlVariant()}
+              onClick={() => editor.chain().focus().goToPreviousCell().run()}
+            >
+              Go to previous cell
+            </button>
+          </div>
+        )}
       </div>
     </>
   )
-}
+}, "EditorMenuBar")
 
 const ALLOWED_DOMAINS = [
   'google.com',
@@ -329,12 +522,21 @@ const ALLOWED_HOSTNAME_RE = new RegExp(
 );
 
 
-const content = `<h2>Hi there</h2>`
+const content = atom(`<h2>Hi there</h2>`)
 
-export const EditorTest = () => {
+export const EditorTest = reatomComponent(({ ctx }) => {
   const editor = useEditor({
     extensions: editorExtensions,
-    content
+    content: `<h2>Hi there</h2>`,
+    onUpdate: ({ editor }) => {
+      let value = editor.getHTML();
+
+      if (isDevelopment) {
+        value = value.replaceAll("https://volume.fasberry.su", "http://127.0.0.1:9000")
+      }
+
+      content(ctx, value)
+    },
   })
 
   return (
@@ -346,4 +548,4 @@ export const EditorTest = () => {
       </button>
     </div>
   )
-}
+}, "EditorPreview")

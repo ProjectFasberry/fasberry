@@ -1,44 +1,48 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vike from "vike/plugin";
-import mdx from '@mdx-js/rollup'
-import path from 'path'; 
+import tsconfigPaths from 'vite-tsconfig-paths'
+import path from "path";
 
-export default defineConfig({
-  plugins: [
-    {
-      enforce: 'pre', ...mdx({})
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd())
+
+  return {
+    plugins: [
+      vike(),
+      react(),
+      tailwindcss(),
+      tsconfigPaths(),
+    ],
+    build: {
+      target: "es2022",
     },
-    vike(),
-    react(),
-    tailwindcss(),
-  ],
-  build: {
-    target: "es2022",
-    minify: "esbuild",
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
-          }
-        }
-      }
+    resolve: {
+      dedupe: ['react', 'react-dom'],
+      alias: {
+        "@": path.resolve(__dirname, "./"),
+        '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
+      },
     },
-  },
-  resolve: {
-    dedupe: ['react', 'react-dom'],
-    alias: {
-      "@": new URL("./", import.meta.url).pathname,
-      '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
+    css: {
+      postcss: {
+        plugins: [
+          {
+            postcssPlugin: 'replace-css-env',
+            Once(root) {
+              root.walkDecls(decl => {
+                if (decl.value.includes('_VOLUME_URL')) {
+                  decl.value = decl.value.replaceAll('_VOLUME_URL', env.VITE_VOLUME_PREFIX)
+                }
+              })
+            },
+          },
+        ],
+      },
     },
-  },
-  preview: {
-    allowedHosts: true
-  },
-  server: {
-    allowedHosts: true
+    server: {
+      allowedHosts: true
+    }
   }
 });

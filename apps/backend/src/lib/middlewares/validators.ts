@@ -40,7 +40,8 @@ export const validateAuthStatus = () => new Elysia()
       }
 
       const nickname = await getUserNickname(session);
-
+      console.log(nickname);
+      
       if (nickname) {
         throw status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, "authorized")
       }

@@ -5,6 +5,7 @@ import { banner } from "./banner";
 import { fact } from "./fact";
 import { rules } from "./rules";
 import { serverip } from "./server-ip";
+import { wiki } from "./wiki";
 
 export const shared = new Elysia()
   .group("/shared", app => app
@@ -14,4 +15,5 @@ export const shared = new Elysia()
     .use(serverip)
     .use(fact)
     .use(banner)
+    .use(wiki)
   )

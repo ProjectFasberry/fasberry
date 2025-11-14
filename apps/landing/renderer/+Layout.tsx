@@ -6,10 +6,10 @@ import { Toaster } from "@/shared/components/config/toaster";
 import { PropsWithChildren } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { useUpdate } from "@reatom/npm-react";
-import { ReatomProvider } from '@/shared/layouts/reatom-provider';
 import { pageContextAtom } from '@/shared/api/global.model';
-import { Header } from '@/shared/layouts/header';
-import { Footer } from '@/shared/layouts/footer';
+import { ReatomProvider } from '@/shared/components/landing/layouts/reatom-provider';
+import { Footer } from '@/shared/components/landing/layouts/footer';
+import { Header } from '@/shared/components/landing/layouts/header';
 
 const SyncPageContext = () => {
   const pageContext = usePageContext()

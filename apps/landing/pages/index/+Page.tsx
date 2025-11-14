@@ -1,12 +1,14 @@
 import { Link } from "@/shared/components/config/link"
-import { IdeaMain } from "@/shared/components/landing/intro/idea-main";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
-import { SpawnCarousel } from "@/shared/components/landing/gallery/spawn-carousel";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { tv } from "tailwind-variants";
-import { CONTACTS_LIST } from "@/shared/data/contacts";
 import { getStaticObject } from "@/shared/lib/volume";
+import { Carousel, CarouselContent, CarouselIndicator, CarouselItem } from '@repo/ui/carousel';
+import { atom } from '@reatom/core';
+import { reatomComponent } from '@reatom/npm-react';
+import { action } from "@reatom/core";
+import { Fragment } from "react/jsx-runtime";
 
 const introImage = getStaticObject("arts", "server-status-widget.webp")
 const shareImage = getStaticObject("arts", "bzzvanet-.jpg")
@@ -23,6 +25,322 @@ const sectionVariant = tv({
     variant: "default"
   }
 })
+
+const SPAWN_IMAGES = [
+  getStaticObject("images", "offenburg-1.webp"),
+  getStaticObject("images", "offenburg-2.webp"),
+  getStaticObject("images", "offenburg-3.webp"),
+  getStaticObject("images", "offenburg-4.webp"),
+  getStaticObject("images", "offenburg-5.webp"),
+]
+
+const carouselSelectedKeyAtom = atom(0, "carouselSelectedKey")
+
+const SpawnCarousel = reatomComponent(({ ctx }) => {
+  const selected = ctx.spy(carouselSelectedKeyAtom)
+
+  return (
+    <div className="flex items-center justify-center relative w-full overflow-hidden rounded-xl h-full">
+      <Carousel
+        className="z-20 w-full h-full"
+        index={selected}
+        onIndexChange={v => carouselSelectedKeyAtom(ctx, v)}
+      >
+        <CarouselIndicator className='bottom-16' />
+        <CarouselContent>
+          {SPAWN_IMAGES.map((image, index) => {
+            return (
+              <CarouselItem key={index} className="w-full h-screen">
+                <img
+                  src={image}
+                  draggable={false}
+                  className="w-full select-none brightness-75
+                     h-full rounded-xl object-cover"
+                  width={1920}
+                  height={1080}
+                  loading="lazy"
+                  alt=""
+                />
+              </CarouselItem>
+            )
+          })}
+        </CarouselContent>
+      </Carousel>
+      <div className="select-none flex absolute bottom-24 right-0 left-0 w-full items-end justify-center h-full">
+        <div
+          className="flex flex-col bg-white/10
+            backdrop-blur-sm px-2 py-4 rounded-sm border-2
+            border-neutral-600 w-full gap-2 z-[21] lg:w-[40%]"
+        >
+          <Typography color="white" className="text-xl leading-6 text-center">
+            Спавн сервера
+          </Typography>
+          <Typography color="gray" className="!leading-5 text-base text-center">
+            Спавном сервера является город Оффенбург, в котором можно найти много интересных и даже секретных мест,
+            персонажей, с которыми можно пообщаться и прочие активности.
+          </Typography>
+        </div>
+      </div>
+    </div>
+  )
+}, "SpawnCarousel")
+
+const IDEAS = [
+	{
+		title: "Геймплей",
+		image: getStaticObject("images", "steve-alex.webp"),
+		description: "Выживайте, создавайте поселения и города, общайтесь с игроками, создавайте себя",
+		type: "full"
+	},
+	{
+		title: "Персонализация",
+		image: "https://kong.fasberry.su/storage/v1/object/public/static/minecraft/wild-west.webp",
+		link: {
+			title: "Узнать больше",
+			href: "/wiki?tab=profile"
+		},
+		description: "Создайте себе свой стиль: новые эмоции, частицы и питомцы",
+		type: "full"
+	},
+	{
+		title: "Карта",
+		image: getStaticObject("images", "map-preview.webp"),
+		link: {
+			title: "Перейти к карте",
+			href: "https://map.fasberry.su"
+		},
+		description: "На сервере имеется кастомная генерация мира с данжами и замками, поэтому вы не соскучитесь",
+		type: "module"
+	},
+	{
+		title: "Квесты",
+		image: getStaticObject("images", "casino-barebones.webp"),
+		link: {
+			title: "Узнать больше",
+			href: "/wiki?tab=quests"
+		},
+		description: "Квесты - неотъемлемая часть геймплея, если вы хотите быстро заработать",
+		type: "full"
+	},
+	{
+		title: "Ресурспак",
+		image: getStaticObject("images", "custom-armor.webp"),
+		link: {
+			title: "Узнать больше",
+			href: "/wiki?tab=resourcepack"
+		},
+		description: "Ресурспак добавляет новые предметы: броню, инструменты, оружие и мебель.",
+		type: "module"
+	},
+	{
+		title: "Эмоции",
+		image: getStaticObject("images", "emotes-preview.webp"),
+		link: {
+			title: "Узнать больше",
+			href: "/wiki?tab=emotes"
+		},
+		description: "Сервер поддерживает кастомные движения игрока",
+		type: "module"
+	}
+]
+
+const selectedKeyAtom = atom(0, "selectedKey")
+
+const toggle = action((ctx, type: "prev" | "next") => {
+	const target = ctx.get(selectedKeyAtom)
+
+	switch (type) {
+		case "prev":
+			if (target === 0) {
+				selectedKeyAtom(ctx, IDEAS.length - 1)
+				return
+			}
+			selectedKeyAtom(ctx, target - 1);
+			break;
+		case "next":
+			if (target === IDEAS.length - 1) {
+				selectedKeyAtom(ctx, 0);
+				return
+			}
+			selectedKeyAtom(ctx, target + 1);
+			break;
+	}
+})
+
+const IdeaMainNavigation = reatomComponent<{ type: "next" | "prev" }>(({ ctx, type }) => {
+	return (
+		<div
+			className="flex items-center gap-4 px-4 md:p-0 bg-neutral-800 md:bg-transparent cursor-pointer py-2"
+			onClick={() => toggle(ctx, type)}
+		>
+			{type === 'prev' ? (
+				<img src={getStaticObject("minecraft/icons", "large-arrow-left-hover.png")} width={20} loading="lazy" height={20} alt="назад" />
+			) : (
+				<img src={getStaticObject("minecraft/icons", "large-arrow-right-hover.png")} width={20} loading="lazy" height={20} alt="далее" />
+			)}
+			<Typography className="inline md:hidden">{type === 'prev' ? 'Назад' : 'Далее'}</Typography>
+		</div>
+	)
+}, `IdeaMainNavigation`)
+
+const navigationBadge = tv({
+	base: `flex cursor-pointer duration-300 transition-all border-2 border-neutral-800 px-4 py-2`,
+	variants: {
+		variant: { unselected: "text-neutral-50", selected: "bg-neutral-50 text-neutral-900", }
+	}
+})
+
+const previewCard = tv({
+	base: `flex flex-col sm:flex-row relative sm:items-center w-full gap-2 lg:w-2/3
+		overflow-hidden p-4 sm:p-6 xl:p-14 h-[360px] lg:h-[460px] lg:max-w-full justify-start rounded-xl`,
+	variants: {
+		variant: { module: `bg-neutral-300`, full: `` }
+	}
+})
+
+const previewChildCard = tv({
+	base: `flex z-[3] flex-col relative `,
+	variants: {
+		variant: { module: `sm:w-2/4 w-full`, full: `sm:w-2/3 w-full` }
+	}
+})
+
+
+const previewTitle = tv({
+	base: `mb-4 text-xl sm:text-3xl lg:text-4xl`,
+	variants: {
+		variant: { full: `text-neutral-50`, module: `text-neutral-900` }
+	}
+})
+
+const previewDescription = tv({
+	base: `text-shadow-xl text-base sm:text-lg lg:text-xl`,
+	variants: {
+		variant: { full: `text-neutral-200`, module: `text-neutral-900` }
+	}
+})
+
+const previewLink = tv({
+	base: `text-base sm:text-lg`,
+	variants: {
+		variant: { full: `text-neutral-300`, module: `text-neutral-700` }
+	}
+})
+
+const IdeaPreviewCard = reatomComponent(({ ctx }) => {
+	const selected = ctx.spy(selectedKeyAtom)
+
+	const { type, image, link, title, description } = IDEAS[selected]
+
+	return (
+		<div className={previewCard({ variant: type as "module" | "full" })}>
+			{type === 'full' && (
+				<div className="absolute top-0 bottom-0 right-0 left-0 w-full h-full">
+					<div className="absolute left-0 h-full w-full z-[2] bg-gradient-to-r from-neutral-900/60 via-transparent to-transparent" />
+					<img src={image} loading="lazy" alt="" width={1000} height={1000} className="brightness-[55%] w-full h-full object-cover" />
+				</div>
+			)}
+			<div className={previewChildCard({ variant: type as "module" | "full" })}>
+				<Typography className={previewTitle({ variant: type as "module" | "full" })}>
+					{title}
+				</Typography>
+				<Typography className={previewDescription({ variant: type as "module" | "full" })}>
+					{description}
+				</Typography>
+				{link && (
+					<Link href={link.href} className="w-fit mt-2 sm:mt-4 underline underline-offset-8">
+						<Typography className={previewLink({ variant: type as "module" | "full" })}>
+							{link.title}
+						</Typography>
+					</Link>
+				)}
+			</div>
+			{type === 'module' && (
+				<div className="flex items-center justify-center w-full sm:w-2/4 h-full">
+					<img src={image} loading="lazy" alt="" width={1000} height={1000} className="w-full h-full object-cover rounded-xl" />
+				</div>
+			)}
+		</div>
+	)
+}, "IdeaPreviewCard")
+
+const IdeaMainNavigationTarget = reatomComponent(({ ctx }) => {
+	const selected = ctx.spy(selectedKeyAtom)
+
+	return (
+		<div className="hidden md:flex items-center justify-center w-fit">
+			{IDEAS.map((preview, idx) => (
+				<Fragment key={preview.title}>
+					<div
+						onClick={() => selectedKeyAtom(ctx, idx)}
+						className={navigationBadge({ variant: selected === idx ? "selected" : "unselected" })}
+					>
+						<Typography className="truncate">{preview.title}</Typography>
+					</div>
+					{(idx + 1) < IDEAS.length && <hr className="w-4 h-[1px] border-2 border-neutral-600" />}
+				</Fragment>
+			))}
+		</div>
+	)
+}, "IdeaMainNavigationTarget")
+
+const IdeaMain = () => {
+	return (
+		<>
+			<div className="flex items-center justify-center w-full gap-6 md:gap-4">
+				<IdeaMainNavigation type="prev" />
+				<IdeaMainNavigationTarget />
+				<IdeaMainNavigation type="next" />
+			</div>
+			<IdeaPreviewCard />
+		</>
+	)
+}
+
+const CONTACTS_LIST = [
+	{
+		name: "Discord",
+		href: "https://discord.gg/vnqfVX4frH",
+		content: {
+			pluses: [
+				"общение напрямую с челами в чатике",
+				"самым первым узнаёшь новости о проекте",
+				"я ЛИЧНО скажу тебе СПАСИБО на сервере",
+				"ты 1% счастливчиков, кто выполняет просьбы, прочитав их",
+			],
+			minuses: ["самым первым узнавать новости ты можешь и в телеге проекта"],
+		}
+	},
+	{
+		name: "Telegram",
+		href: "https://t.me/fasberry",
+		content: {
+			pluses: [
+				"самым первым узнаёшь новости о проекте",
+				"я ЛИЧНО скажу тебе СПАСИБО на сервере",
+				"ты 1% счастливчиков, кто выполняет просьбы, прочитав их",
+			],
+			minuses: [
+				"скудная активность в комментариях (100%)",
+				"самым первым узнавать новости ты можешь и в дискорде проекта",
+			],
+		}
+	},
+	{
+		name: "VK",
+		href: "https://discord.gg/vnqfVX4frH",
+		content: {
+			pluses: [
+				"общение напрямую с челами в чатике",
+				"самым первым узнаёшь новости о проекте",
+				"я ЛИЧНО скажу тебе СПАСИБО на сервере",
+				"ты 1% счастливчиков, кто выполняет просьбы, прочитав их",
+			],
+			minuses: ["самым первым узнавать новости ты можешь и в телеге проекта"],
+		}
+	},
+];
+
 
 export default function Page() {
   return (
@@ -47,12 +365,11 @@ export default function Page() {
               </h2>
               <h3 className="text-white text-shadow-lg text-lg lg:text-xl">
                 Ламповый, ванильный сервер с приятной атмосферой и дружелюбными игроками! Присоединяйся с друзьями чиллить вместе!
-                <span className="font-[Monocraft]">♦</span>
               </h3>
             </div>
             <div className="flex sm:flex-row flex-col mt-2 select-none items-start gap-4 w-full justify-start">
               <Link href="/start" className="mx-auto w-[calc(100%-16px)] sm:mx-0 sm:w-1/2">
-                <Button variant="minecraft" draggable={false} className="w-full py-0.5" >
+                <Button variant="minecraft" className="w-full py-1.5" >
                   <Typography color="white" className="text-nowrap text-xl text-shadow-xl">
                     Начать играть
                   </Typography>

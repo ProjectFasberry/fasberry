@@ -16,7 +16,7 @@ export const SESSION_KEY = "session";
 export const CROSS_SESSION_KEY = "logged_nickname"
 
 export function setCookie({ cookie, key, expires, value }: SetCookie) {
-  cookie[key].domain = isProduction ? DOMAIN : "localhost"
+  cookie[key].domain = isProduction ? DOMAIN : "127.0.0.1"
   cookie[key].value = value
   cookie[key].expires = expires
   cookie[key].httpOnly = true
@@ -26,7 +26,7 @@ export function setCookie({ cookie, key, expires, value }: SetCookie) {
 }
 
 export function unsetCookie({ cookie, key }: Properties) {
-  cookie[key].domain = isProduction ? DOMAIN : "localhost"
+  cookie[key].domain = isProduction ? DOMAIN : "127.0.0.1"
   cookie[key].value = ""
   cookie[key].expires = new Date(0)
   cookie[key].path = "/"

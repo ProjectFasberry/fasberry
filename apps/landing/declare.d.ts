@@ -9,7 +9,7 @@ declare global {
     }
   }
 
-  interface PaginatedMeta {
+  type PaginatedMeta = {
     hasNextPage: false,
     hasPrevPage: false,
     endCursor?: string,

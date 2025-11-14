@@ -102,7 +102,7 @@ function AccordionTrigger({
         ref={triggerRef}
         data-slot="accordion-trigger"
         className={cn(
-          'flex flex-1 text-start items-center justify-between py-4 font-medium hover:underline',
+          'flex flex-1 text-start items-center justify-between py-4 font-medium',
           className,
         )}
         {...props}
@@ -110,13 +110,14 @@ function AccordionTrigger({
         {children}
 
         {chevron && (
-          <motion.div
-            data-slot="accordion-trigger-chevron"
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={transition}
+          <div
+            data-state={isOpen ? "opened" : "closed"}
+            className={`duration-150 relative data-[state=opened]:rotate-180 data-[state=opened]:-top-2 data-[state=closed]:rotate-0 data-[state=closed]:top-2`}
           >
-            <ChevronDown className="size-5 shrink-0" />
-          </motion.div>
+            <span className='decoration-0 text-xl'>
+              ^
+            </span>
+          </div>
         )}
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>

@@ -30,7 +30,7 @@ export const RatingNavigation = reatomComponent(({ ctx }) => {
       onValueChange={v => changeBy(ctx, v as AtomState<typeof ratingByAtom>)}
       activationMode="manual"
     >
-      <TabsList className={scrollableVariant({ className: "flex w-full scrollbar-h-2 overflow-x-auto overflow-y-hidden" })}>
+      <TabsList className={scrollableVariant({ className: "flex w-full border border-neutral-800 scrollbar-h-2 overflow-x-auto overflow-y-hidden" })}>
         {RATING_NAVIGATION.map(rating => (
           <TabsTrigger key={rating.by} value={rating.by} className="w-full px-4 h-12">
             <Typography className="text-lg">
