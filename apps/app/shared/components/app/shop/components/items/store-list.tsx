@@ -10,7 +10,6 @@ import { isClientAtom } from "@/shared/models/page-context.model"
 import { getItemStatus, handleItemToCart } from "../../models/store-item.model"
 import { CURRENCIES } from "../cart/cart-price"
 import type { StoreItem } from "@repo/shared/types/entities/store"
-import { SetRecipientDialog } from "../recipient/set-recipient"
 
 const buyButtonVariants = tv({
   base: `group gap-2 duration-150 h-10 *:duration-150 px-6 w-full rounded-xl`,
@@ -154,7 +153,7 @@ const StoreItem = ({
   )
 }
 
-const itemsNotFoundImage = getStaticImage("items/block_inspect.webp")
+const itemsNotFoundImage = getStaticImage("minecraft/items/block_inspect.webp")
 
 const ItemsNotFound = () => {
   return (
@@ -205,11 +204,8 @@ export const StoreList = reatomComponent(({ ctx }) => {
   if (!data?.length) return <ItemsNotFound />;
 
   return (
-    <>
-      <SetRecipientDialog />
-      <div className={storeListVariant()}>
-        {data.map(item => <StoreItem key={item.id} {...item} />)}
-      </div>
-    </>
+    <div className={storeListVariant()}>
+      {data.map(item => <StoreItem key={item.id} {...item} />)}
+    </div>
   )
 }, "StoreList")

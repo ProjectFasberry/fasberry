@@ -1,11 +1,14 @@
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Skeleton } from "@repo/ui/skeleton";
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
-import { Typography } from "@repo/ui/typography";
+import { Typography, typographyVariants } from "@repo/ui/typography";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
 import { Link } from "@/shared/components/config/link";
 import { getStaticObject } from '@/shared/lib/volume';
 import { serverStatusAction } from "@/shared/components/landing/status/models/status.model";
+import { tv } from "tailwind-variants";
+import { Button } from "@repo/ui/button";
+import { usePageContext } from "vike-react/usePageContext";
 
 export type Player = {
   uuid: string;
@@ -15,6 +18,86 @@ export type Player = {
 export type PlayerStatusProps = {
   nickname: string
 }
+
+
+const serverTitle = tv({
+  extend: typographyVariants,
+  base: `text-md sm:text-base md:text-lg lg:text-xl`
+})
+
+const descTitle = tv({
+  extend: typographyVariants,
+  base: `text-md sm:text-base text-neutral-400 truncate md:text-lg lg:text-xl`
+})
+
+const StatusItem = reatomComponent(({ ctx }) => {
+  const status = ctx.spy(serverStatusAction.dataAtom);
+  const isLoading = ctx.spy(serverStatusAction.statusesAtom).isPending
+
+  return (
+    <div className="card-wrapper flex flex-col h-fit gap-4">
+      <Typography className="text-xl lg:text-2xl">
+        Статус
+      </Typography>
+      <div className="flex flex-col items-start gap-4">
+        <div className="flex flex-col gap-2 w-full">
+          <div className="grid grid-cols-[1fr_1fr] grid-rows-1 w-full bg-neutral-800 p-2 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center justify-center bg-neutral-700/40 rounded-lg p-2">
+                <img
+                  src={getStaticObject("minecraft", "items/netherite_sword.webp")}
+                  alt=""
+                  width={24}
+                  draggable={false}
+                  height={24}
+                />
+              </div>
+              <Typography className={serverTitle()}>Bisquite</Typography>
+            </div>
+            <div className="flex items-center w-full justify-end gap-3">
+              <Typography color="gray" className={descTitle()}>
+                <span className="hidden sm:inline">играет</span> {status?.servers.bisquite.online ?? 0} игроков
+              </Typography>
+            </div>
+          </div>
+          <div className="grid grid-cols-[1fr_1fr] gap-2 grid-rows-1 w-full bg-neutral-800 p-2 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center justify-center bg-neutral-700/40 rounded-lg p-2">
+                <img
+                  src={getStaticObject("minecraft", "items/wild_armor_trim_ыmithing_еemplate.webp")}
+                  alt=""
+                  width={24}
+                  draggable={false}
+                  height={24}
+                />
+              </div>
+              <Typography className={serverTitle()}>Muffin</Typography>
+            </div>
+            <div className="flex items-center w-full justify-end gap-3">
+              <Typography color="gray" className={descTitle()}>
+                <span className="hidden sm:inline">играет</span> {status?.servers.muffin.online} игроков
+              </Typography>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between w-full">
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <Typography className={descTitle({ className: "text-right" })}>
+                Всего:
+              </Typography>
+              <Skeleton className="h-8 w-8" />
+            </div>
+          ) : (
+            <Typography className={descTitle({ className: "text-right" })}>
+              Всего: {status?.proxy.online ?? 0}
+            </Typography>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}, "StatusItem")
 
 type PlayerStatusImageProps = {
   type?: "small" | "full"
@@ -103,24 +186,34 @@ const PlayerStatus = ({
   )
 }
 
-const PageServerStatus = reatomComponent(({ ctx }) => {
+const ServerStatusSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      <Skeleton className="w-full h-10" />
+      <div className="flex flex-col gap-2 w-full">
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+      </div>
+    </div>
+  )
+}
+
+const ServerStatus = reatomComponent(({ ctx }) => {
+  const isClient = usePageContext().isClientSide
+  
   useUpdate(serverStatusAction, []);
+
+  if (!isClient) {
+    return <ServerStatusSkeleton />
+  }
 
   const data = ctx.spy(serverStatusAction.dataAtom)
 
   if (ctx.spy(serverStatusAction.statusesAtom).isPending) {
-    return (
-      <div className="flex flex-col gap-6 px-4 w-full">
-        <Skeleton className="w-full h-10" />
-        <div className="flex flex-col gap-2 w-full">
-          <Skeleton className="w-full h-12" />
-          <Skeleton className="w-full h-12" />
-          <Skeleton className="w-full h-12" />
-          <Skeleton className="w-full h-12" />
-          <Skeleton className="w-full h-12" />
-        </div>
-      </div>
-    )
+    return <ServerStatusSkeleton />
   }
 
   const isServerOnline = data?.proxy.status === 'online'
@@ -132,16 +225,16 @@ const PageServerStatus = reatomComponent(({ ctx }) => {
   return (
     <>
       {!isServerOnline && (
-        <p className="text-xl px-4 lg:text-2xl">
+        <p className="text-xl lg:text-2xl">
           Список игроков недоступен
         </p>
       )}
       {(isServerOnline && playersList) && (
         <>
-          <p className="text-xl px-4 lg:text-2xl">
+          <p className="text-xl lg:text-2xl">
             Все игроки: {playersOnline}/{playersMax}
           </p>
-          <div className="flex flex-col px-4 gap-2 h-full">
+          <div className="flex flex-col gap-2 h-full">
             {playersList.length === 0 && (
               <p className="px-2">
                 тишина...
@@ -160,22 +253,24 @@ const PageServerStatus = reatomComponent(({ ctx }) => {
 export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
-      <div className="full-screen-section min-h-screen flex items-center justify-center">
-        <div className="flex h-full lg:max-h-[500px] flex-col lg:flex-row justify-start overflow-hidden items-start gap-6 responsive">
+      <div className="full-screen-section min-h-screen flex items-center justify-center py-32">
+        <div className="flex h-full flex-col lg:flex-row justify-start overflow-hidden items-start gap-6 responsive">
           <iframe
             src="https://discord.com/widget?id=958086036393689098&theme=dark"
             width="350"
             height="500"
             // @ts-ignore
             allowtransparency={true.toString()}
-            className="!rounded-[12px] w-full lg:w-1/4"
+            className="rounded-[4px]! border-2 border-[#454545] w-full lg:w-1/4"
             sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
           />
-          <div
-            className="flex flex-col max-h-[496px] overflow-y-scroll gap-6 rounded-xl py-4 border-2
-          border-neutral-600 bg-background-light dark:bg-background-dark w-full lg:w-3/4 h-full"
-          >
-            <PageServerStatus />
+          <div className="flex flex-col w-full gap-6 lg:w-3/4 h-full">
+            <StatusItem />
+            <div
+              className="flex flex-col max-h-[496px] overflow-y-scroll gap-6 card-wrapper w-full h-full"
+            >
+              <ServerStatus />
+            </div>
           </div>
         </div>
       </div>

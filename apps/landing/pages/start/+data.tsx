@@ -8,18 +8,20 @@ const bgImage = getStaticObject("background", "rules_background.png")
 
 const description = "Присоединяйтесь к сообществу Fasberry и помогайте нам развиваться! Ваша поддержка имеет значение."
 
-export const data = async (ctx: PageContextServer) => {
+export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()
+
+  const url = `${LANDING_ENDPOINT}${pageContext.urlPathname}`
 
   config({
     title: wrapTitle(`Начать играть`),
     description,
     Head: (
       <>
-        <link rel="canonical" href={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
-        <meta property="og:url" content={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
+        <link rel="canonical" href={url} />
+        <meta property="og:url" content={url} />
         <meta property="og:title" content="Начать играть на Fasberry" />
-        <meta property="og:description" content={description}/>
+        <meta property="og:description" content={description} />
         <meta property="og:locale" content="ru_RU" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Начать играть на Fasberry" />

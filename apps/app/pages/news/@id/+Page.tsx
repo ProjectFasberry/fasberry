@@ -104,7 +104,7 @@ const News = reatomComponent(({ ctx }) => {
       </div>
       <div
         dangerouslySetInnerHTML={{ __html: html }}
-        className="tiptap whitespace-pre-wrap [&>p]:mt-4"
+        className="tiptap whitespace-pre-wrap"
       />
     </div>
   )

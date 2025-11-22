@@ -3,7 +3,6 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import vike from "vike/plugin";
 import tsconfigPaths from 'vite-tsconfig-paths'
-import path from "path"
 import { analyzer } from 'vite-bundle-analyzer';
 
 export default defineConfig(({ mode }) => {
@@ -21,7 +20,7 @@ export default defineConfig(({ mode }) => {
       analyzer({ enabled: false })
     ],
     ssr: {
-      noExternal: ['@tabler/icons-react']
+      noExternal: process.env.NODE_ENV === 'production' ? true : undefined
     },
     build: {
       target: "es2022",

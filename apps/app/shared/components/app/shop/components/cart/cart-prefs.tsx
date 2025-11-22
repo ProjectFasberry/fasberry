@@ -21,11 +21,6 @@ const GlobalRecipient = reatomComponent(({ ctx }) => {
       <Typography className="text-lg leading-tight">
         Получатель, который присваивается всем добавленным товарам в корзину.
       </Typography>
-      <div className="flex border border-neutral-700 rounded-lg p-2">
-        <Typography className="text-lg leading-tight">
-          Если вы вошли в аккаунт, то это автоматически вы.
-        </Typography>
-      </div>
       <div className="flex flex-col gap-1">
         <Typography>
           Текущий получатель

@@ -12,8 +12,10 @@ export const playerSeemsLikePlayersIsShowKey = "playerSeemsLikeShow"
 
 export const playerSeemsLikePlayersIsShowAtom = atom(true, 'playerSeemsLikePlayersIsShow').pipe(withSsr(playerSeemsLikePlayersIsShowKey))
 
-export const toggleShowAction = action((ctx) => {
-  const value = !ctx.get(playerSeemsLikePlayersIsShowAtom);
+export const toggleShowAction = action((ctx, inputValue?: boolean) => {
+  const isInputed = typeof inputValue !== 'undefined'
+
+  const value = isInputed ? inputValue : !ctx.get(playerSeemsLikePlayersIsShowAtom);
 
   setCookie(playerSeemsLikePlayersIsShowKey, String(value), {
     maxAgeMs: dayjs().add(1, "month").diff(dayjs()), path: "/"
@@ -21,8 +23,10 @@ export const toggleShowAction = action((ctx) => {
 
   playerSeemsLikePlayersIsShowAtom(ctx, value);
 
-  if (!value) {
-    toast.success(`Блок скрыт на 30 дней`)
+  if (!isInputed) {
+    if (!value) {
+      toast.success(`Блок скрыт на 30 дней`)
+    }
   }
 }, "toggleShowAction")
 
@@ -48,7 +52,7 @@ export const playerSeemsLikeAction = reatomAsync(async (ctx) => {
 
   return await ctx.schedule(() =>
     client<SeemsLikePlayersPayload>(`server/seems-like/${nickname}`)
-      .pipe(withQueryParams({ limit: 6 }))
+      .pipe(withQueryParams({ limit: 8 }))
       .exec()
   )
 }, "playerSeemsLikeAction").pipe(withDataAtom(), withStatusesAtom())

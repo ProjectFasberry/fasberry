@@ -9,6 +9,7 @@ import { isClientAtom } from "@/shared/models/page-context.model";
 import { playerSeemsLikeAction, playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "../models/player-seems-like.model";
 import { IconX } from "@tabler/icons-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip"
+import { scrollableVariant } from "@/shared/consts/style-variants";
 
 const playerSeemsLikePlayersCountAtom = atom((ctx) => ctx.spy(playerSeemsLikeAction.dataAtom)?.meta.count ?? 0, "playerLandsCount")
 
@@ -67,11 +68,10 @@ export const PlayerSeemsLikePlayers = reatomComponent(({ ctx }) => {
 }, "PlayerSeemsLikePlayers")
 
 const seemsLikeGridVariant = tv({
-  base: `grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-2 w-full h-full`,
+  base: `${scrollableVariant()} grid grid-flow-col auto-cols-max scrollbar-h-2 pb-2 whitespace-nowrap overflow-x-auto gap-2 w-full`,
   slots: {
-    card: `flex flex-col rounded-lg overflow-hidden`,
-    cardText: "text-base sm:text-lg font-semibold text-neutral-50 truncate text-center",
-    cardAvatar: `w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center bg-neutral-800`
+    card: `flex flex-col rounded-lg bg-neutral-800 overflow-hidden w-fit h-fit`,
+    cardAvatar: `w-full h-full rounded-lg overflow-hidden flex items-center justify-center`
   }
 })
 
@@ -117,16 +117,7 @@ const PlayerSeemsLikePlayersList = reatomComponent(({ ctx }) => {
             aria-label={`Профиль игрока ${nickname}`}
             className={seemsLikeGridVariant().cardAvatar()}
           >
-            <Avatar nickname={nickname} />
-          </Link>
-          <Link
-            href={createLink("player", nickname)}
-            aria-label={`Профиль игрока $${nickname}`}
-            className="pt-1"
-          >
-            <Typography className={seemsLikeGridVariant().cardText()}>
-              {nickname}
-            </Typography>
+            <Avatar nickname={nickname} propWidth={64} propHeight={64} />
           </Link>
         </div>
       ))}

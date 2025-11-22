@@ -8,6 +8,7 @@ import { playerActivity } from "../activity";
 import { playerAchievements } from "../achievements";
 import { seemsPlayers } from "#/modules/user/seems-players.route";
 import { balance } from "#/modules/user/balance.route";
+import { playerSocials } from "#/modules/user/socials.route";
 
 export const playerGroup = new Elysia()
   .group("", app => app
@@ -20,4 +21,5 @@ export const playerGroup = new Elysia()
     .use(favoriteItem)
     .use(seemsPlayers)
     .use(balance)
+    .use(playerSocials)
   )

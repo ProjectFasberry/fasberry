@@ -35,10 +35,16 @@ export const AuthorizeButton = () => {
 
 const MENU_LINKS = [
   {
+    title: "Корзина", href: "/store/cart", permission: null, type: "default"
+  },
+  {
     title: "Задания", href: "/tasks", permission: null, type: "default",
   },
   {
     title: "Рефералы", href: "/referrals", permission: null, type: "default"
+  },
+  {
+    title: "FAQ", href: "https://fasberry.su/wiki", permission: null, type: "default"
   },
   {
     title: "Системная панель", href: "/private", permission: CONFIG_PANEL_READ_PERMISSION, type: "privated"
@@ -68,15 +74,15 @@ const HeaderMenuActions = reatomComponent(({ ctx }) => {
 
   return (
     <>
-      <PopoverClose asChild>
-        <Button
+      <PopoverClose>
+        <Link
+          href="/settings"
           className="flex items-center justify-start gap-2 hover:bg-neutral-800 w-full rounded-lg px-2 py-1"
-          onClick={() => userSettingsDialogIsOpenAtom(ctx, true)}
         >
           <Typography className="font-semibold">
             Настройки
           </Typography>
-        </Button>
+        </Link>
       </PopoverClose>
       <PopoverClose asChild>
         <Button
@@ -99,9 +105,8 @@ const HeaderMenu = reatomComponent(({ ctx }) => {
   return (
     <>
       <AlertDialog />
-      <UserSettingsDialog />
       <Popover>
-        <PopoverTrigger className="group h-full">
+        <PopoverTrigger className="group w-8 flex cursor-pointer h-8 items-center justify-center">
           <IconChevronUp
             size={20}
             className="group-data-[state=open]:rotate-0 group-data-[state=closed]:rotate-180
@@ -148,50 +153,25 @@ const HeaderUser = reatomComponent(({ ctx }) => {
   if (!currentUser) return null;
 
   return (
-    <div className="flex items-center w-fit min-w-0 gap-2 h-10 bg-neutral-800 px-3 rounded-xl">
+    <div className="flex items-center w-fit min-w-0 cursor-pointer gap-2 h-10 bg-neutral-800 px-2 rounded-lg">
       <Link
         href={createLink("player", currentUser.nickname)}
-        className="flex items-center gap-3 h-8 overflow-hidden"
+        className="flex items-center gap-2 h-8 overflow-hidden"
       >
-        <Typography className="text-base font-semibold truncate">
-          {currentUser.nickname.slice(0, 32)}
-        </Typography>
         <Avatar
           nickname={currentUser.nickname}
           propHeight={32}
           propWidth={32}
           className="min-w-8 min-h-8 w-8 h-8 aspect-square"
         />
+        <Typography className="text-base text-neutral-50 font-semibold truncate">
+          {currentUser.nickname.slice(0, 32)}
+        </Typography>
       </Link>
       <HeaderMenu />
     </div>
   )
 }, "HeaderUser")
-
-const userSettingsDialogIsOpenAtom = atom(false, "userSettingsDialogIsOpen")
-
-const UserSettingsDialog = reatomComponent(({ ctx }) => {
-  return (
-    <Dialog open={ctx.spy(userSettingsDialogIsOpenAtom)} onOpenChange={v => userSettingsDialogIsOpenAtom(ctx, v)}>
-      <DialogContent>
-        <DialogTitle className="text-center font-bold text-2xl leading-tight">
-          Настройки
-        </DialogTitle>
-        <div className="flex flex-col gap-4 w-full h-full">
-          <div className="flex items-center justify-between w-full gap-1">
-            <Typography className="font-semibold">
-              Показывать похожих игроков
-            </Typography>
-            <Switch
-              checked={ctx.spy(playerSeemsLikePlayersIsShowAtom)}
-              onCheckedChange={v => toggleShowAction(ctx)}
-            />
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}, "UserSettingsDialog")
 
 const LINKS = [
   { title: "Главная", icon: IconCategory, label: "Перейти на главную", href: "/", },

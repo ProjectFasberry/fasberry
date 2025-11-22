@@ -1,58 +1,31 @@
 import { getRedisKey } from "#/helpers/redis";
 import { client } from "#/shared/api/client";
-import { general } from "#/shared/database/main-db";
-import { getNats } from "#/shared/nats/client";
-import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
+import { PANEL_PASSWORD, PANEL_PREFIX_URL, PANEL_USER } from "#/shared/env";
 import { getRedis } from "#/shared/redis/init";
-import { logger } from "#/utils/config/logger";
 import { safeJsonParse } from "#/utils/config/transforms";
 import { StatusPayload } from "@repo/shared/types/entities/other";
-import z from "zod";
 
-type ServerStatus = {
-  online: boolean;
-  host: string;
-  port: number;
-  ip_address: string | null;
-  eula_blocked: boolean;
-  retrieved_at: number;
-  expires_at: number;
-  version?: {
-    name_raw: string;
-    name_clean: string;
-    name_html: string;
-    protocol: number;
-  };
-  players?: {
-    online: number;
-    max: number;
-    list: Array<{
-      uuid: string;
-      name_raw: string;
-      name_clean: string;
-      name_html: string;
-    }>;
-  };
-  motd?: {
-    raw: string;
-    clean: string;
-    html: string;
-  };
-  icon: string | null;
-  mods: Array<{
-    name: string;
-    version: string;
-  }>;
-  software?: string | null;
-  plugins?: Array<{
-    name: string;
-    version: string | null;
-  }>;
-  srv_record: {
-    host: string;
-    port: number;
-  } | null;
-};
+type CountPayload = { count: number }
+
+type Player = {
+  username: string,
+  uuid: string,
+  currentServer: string
+}
+
+type PlayerListPayload = {
+  count: number,
+  players: Player[]
+}
+
+type ServersPayload = { [key: string]: number }
+
+export type PlayerPayload = Player & {
+  ping: number,
+  sessionDurationSeconds: number
+}
+
+type HealthPayload = { status: string }
 
 const initial = {
   status: "offline",
@@ -61,102 +34,95 @@ const initial = {
   players: []
 }
 
-type StatusPayloadGlobal = {
-  maxPlayers: number,
-  players: Array<string>,
-  tps: Array<number>,
-  currentOnline: number,
-  mspt: number
+const panel = client.extend((opts) => ({ prefixUrl: PANEL_PREFIX_URL, ...opts }));
+const authHeaders = { 
+  "authorization": `Basic ${btoa(PANEL_USER + ":" + PANEL_PASSWORD)}` 
 }
 
-async function getProxyStats(): Promise<ServerStatus | null> {
-  let ip: string = "play.fasberry.su";
+async function getCount(): Promise<CountPayload> {
+  return panel("count", { headers: { ...authHeaders } }).json()
+}
 
-  const query = await general
-    .selectFrom("ip_list")
-    .select("ip")
-    .where("name", "=", "server_proxy")
-    .executeTakeFirst()
+async function getPlayerList(): Promise<PlayerListPayload> {
+  return panel("playerlist", { headers: { ...authHeaders } }).json()
+}
 
-  if (query?.ip) {
-    ip = query.ip
+async function getServers(): Promise<ServersPayload> {
+  return panel("servers", { headers: { ...authHeaders } }).json()
+}
+
+async function getHealth(): Promise<HealthPayload> {
+  return panel("health", { headers: { ...authHeaders } }).json()
+}
+
+export async function getPlayerStatusGlobal(username: string): Promise<PlayerPayload | null> {
+  try {
+    const result = await panel(`player/${username}`, { headers: { ...authHeaders }, timeout: 1000, retry: 1 })
+    return await result.json()
+  } catch (e) {
+    return null;
   }
-
-  const res = await client.get(`https://api.mcstatus.io/v2/status/java/${ip}:25565`, {
-    searchParams: { timeout: 1.0 }, throwHttpErrors: false
-  })
-
-  const data = await res.json<ServerStatus>()
-
-  return data
 }
 
-export async function updateServerStatus() {
-  const redis = getRedis()
+async function getProxyStats() {
+  const [onlineResult, serversResult, statusResult, playersList] = await Promise.all([
+    getCount(), getServers(), getHealth(), getPlayerList()
+  ])
 
-  async function getData() {
-    const rawProxy = await getProxyStats()
+  return {
+    online: onlineResult.count,
+    servers: serversResult,
+    status: statusResult.status,
+    playersList
+  }
+}
 
-    if (rawProxy && rawProxy.online === false) {
-      const data = {
-        proxy: initial,
-        servers: { bisquite: initial }
-      }
-
-      return data;
-    }
-
-    let rawBisquite: StatusPayloadGlobal | null = null;
-
-    try {
-      rawBisquite = await getBisquiteStats()
-    } catch (e) {
-      if (e instanceof Error) {
-        logger.warn(e.message, e.stack)
-      }
-    }
-
-    const proxy = rawProxy as ServerStatus
-
-    const bisquite = (rawBisquite && "players" in rawBisquite) ? {
-      online: rawBisquite.currentOnline,
-      max: rawBisquite.maxPlayers,
-      players: rawBisquite.players,
-      status: "online"
-    } : initial
-
-    const data: StatusPayload = {
-      proxy: {
-        status: "online",
-        online: proxy.players?.online ?? 0,
-        max: proxy.players?.max ?? 200,
-        players: proxy.players?.list ? proxy.players.list.map((player) => player.name_raw) : []
-      },
-      servers: { bisquite }
+async function getData() {
+  const proxy = await getProxyStats()
+  
+  if (proxy.status !== 'ok') {
+    const data = {
+      proxy: initial,
+      servers: { }
     }
 
     return data;
   }
 
-  const data = await getData()
+  const servers: StatusPayload["servers"] = Object.entries(proxy.servers)
+    .reduce((acc, [key, _]) => {
+      const online = proxy.servers[key];
+      const list = proxy.playersList.players
+        .filter(d => d.currentServer === key)
+        .map(d => d.username);
 
-  await redis.set(SERVER_STATUS_KEY, JSON.stringify(data))
-}
+      acc[key.toLowerCase()] = {
+        online,
+        players: list,
+        status: "online",
+        max: 200
+      };
 
-async function getBisquiteStats(): Promise<StatusPayloadGlobal | null> {
-  const nc = getNats()
+      return acc;
+    }, {} as StatusPayload["servers"]);
 
-  const res = await nc.request(
-    SERVER_USER_EVENT_SUBJECT, JSON.stringify({ event: "getServerStats" }), { timeout: 1000 }
-  )
-
-  if (!res) return null;
-
-  if ("mspt" in res) {
-    return res.json<StatusPayloadGlobal>()
+  const data: StatusPayload = {
+    proxy: {
+      status: "online",
+      online: proxy.playersList.count,
+      max: 200,
+      players: proxy.playersList.players.map(d => d.username)
+    },
+    servers
   }
 
-  return null;
+  return data;
+}
+
+export async function updateServerStatus() {
+  const redis = getRedis()
+  const data = await getData()
+  await redis.set(SERVER_STATUS_KEY, JSON.stringify(data))
 }
 
 const SERVER_STATUS_KEY = getRedisKey("internal", "server-status:data")

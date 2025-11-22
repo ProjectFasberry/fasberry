@@ -66,6 +66,10 @@ declare global {
       CAP_SITE_KEY: string;
       CAP_INSTANCE_URL: string;
       CAP_SECRET: string;
+      PANEL_PREFIX_URL: string;
+      PANEL_USER: string;
+      PANEL_PASSWORD: string;
+      FALLBACK_IP: string;
     }
   }
 

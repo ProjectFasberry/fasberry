@@ -4,7 +4,7 @@ import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
 import { usePageContext } from "vike-react/usePageContext";
 
-const dirtImage = getStaticObject("static", "dirt.webp")
+const dirtImage = getStaticObject("minecraft/static", "dirt.webp")
 
 const NotFound = () => {
   return (

@@ -9,7 +9,7 @@ type ServerStatus = {
     max: number
   },
   servers: {
-    bisquite: {
+    [key: string]: {
       online: number
     }
   }

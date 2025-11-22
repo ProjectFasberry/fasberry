@@ -5,18 +5,19 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "general-gen-types": "kysely-codegen --dialect postgres --url=env\\(GENERAL_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
-    "sqlite-gen-types": "kysely-codegen --dialect sqlite --url=env\\(SQLITE_DATABASE_URL\\) --out-file=./types/db/sqlite-database-types.ts",
-    "payments-gen-types": "kysely-codegen --dialect postgres --url=env\\(PAYMENTS_DATABASE_URL\\) --out-file=./types/db/payments-database-types.ts",
-    "skins-gen-types": "kysely-codegen --dialect mysql --url=env\\(SKINS_DATABASE_URL\\) --out-file=./types/db/skins-database-types.ts",
-    "bisquite-gen-types": "kysely-codegen --dialect mysql --url=env\\(BISQUITE_DATABASE_URL\\) --out-file=./types/db/bisquite-database-types.ts",
-    "lobby-gen-types": "kysely-codegen --dialect mysql --url=env\\(LOBBY_DATABASE_URL\\) --out-file=./types/db/lobby-database-types.ts",
-    "luckperms-gen-types": "kysely-codegen --dialect postgres --url=env\\(LUCKPERMS_DATABASE_URL\\) --out-file=./types/db/luckperms-database-types.ts"
+    "general": "kysely-codegen --dialect postgres --url=env\\(GENERAL_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
+    "sqlite": "kysely-codegen --dialect sqlite --url=env\\(SQLITE_DATABASE_URL\\) --out-file=./types/db/sqlite-database-types.ts",
+    "payments": "kysely-codegen --dialect postgres --url=env\\(PAYMENTS_DATABASE_URL\\) --out-file=./types/db/payments-database-types.ts",
+    "skins": "kysely-codegen --dialect mysql --url=env\\(SKINS_DATABASE_URL\\) --out-file=./types/db/skins-database-types.ts",
+    "bisquite": "kysely-codegen --dialect mysql --url=env\\(BISQUITE_DATABASE_URL\\) --out-file=./types/db/bisquite-database-types.ts",
+    "lobby": "kysely-codegen --dialect mysql --url=env\\(LOBBY_DATABASE_URL\\) --out-file=./types/db/lobby-database-types.ts",
+    "luckperms": "kysely-codegen --dialect postgres --url=env\\(LUCKPERMS_DATABASE_URL\\) --out-file=./types/db/luckperms-database-types.ts"
   },
   "dependencies": {
     "clsx": "2.1.1",
     "tailwind-merge": "3.4.0",
-    "zod": "4.1.11"
+    "zod": "4.1.11",
+    "kysely": "0.28.2"
   },
   "devDependencies": {
     "@repo/config-typescript": "workspace:*",

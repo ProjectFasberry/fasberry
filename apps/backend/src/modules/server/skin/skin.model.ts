@@ -1,4 +1,4 @@
-import sharp from "sharp";
+// import sharp from "sharp";
 import { Blob } from "buffer";
 import { skins } from "#/shared/database/skins-db";
 import { AVATARS_BUCKET, getMinio, SKINS_BUCKET, STATIC_BUCKET } from "#/shared/minio/init";
@@ -6,6 +6,9 @@ import { ItemBucketMetadata } from "minio";
 import { blobToUint8Array, nodeToWebStream } from "#/helpers/streams";
 import { getAvatarName, getObjectUrl, getSkinName } from "#/helpers/volume";
 import { client } from "#/shared/api/client";
+import { Context } from "elysia";
+import { readableStreamToBlob } from "bun";
+import { Timing } from "#/utils/config/timing";
 
 type Skin = {
   textures: {
@@ -21,15 +24,12 @@ type Skin = {
 type SkinOutput = globalThis.Blob | Blob
 
 async function extractHeadFromSkin(sb: ArrayBuffer) {
-  return sharp(sb)
-    .extract({ left: 8, top: 8, width: 8, height: 8 })
-    .resize(128, 128, { kernel: 'nearest' })
-    .toBuffer();
+  return ""
 }
 
 const DEFAULT_SKIN_VARIANT = "CLASSIC"
-const DEFAULT_HEAD = "steve_head.png"
-const DEFAULT_SKIN = "steve_skin.png"
+const DEFAULT_HEAD = "fallback/steve_head.png"
+const DEFAULT_SKIN = "fallback/steve_skin.png"
 
 async function getExistsCustomPlayerSkin(nickname: string) {
   const queryPlayersCustomSkins = await skins
@@ -85,13 +85,11 @@ async function putSkinInMinio(nickname: string, file: Uint8Array) {
 
   async function uploadSkin(buffer: Buffer<ArrayBuffer>) {
     await minio.putObject(SKINS_BUCKET, destination, buffer, buffer.length, metadata)
-    console.log(`[${SKINS_BUCKET}]: ` + 'file ' + ' uploaded as object ' + destination)
   }
 
   async function uploadHead(buffer: Buffer<ArrayBuffer>) {
     const head = await extractHeadFromSkin(buffer.buffer)
     await minio.putObject(AVATARS_BUCKET, avatarDest, head, head.length, metadata)
-    console.log(`[${AVATARS_BUCKET}]: ` + 'file ' + ' uploaded as object ' + avatarDest)
   }
 
   try {
@@ -102,7 +100,6 @@ async function putSkinInMinio(nickname: string, file: Uint8Array) {
     ])
 
   } catch (e) {
-    console.error(e)
     throw e;
   }
 }
@@ -113,13 +110,13 @@ export async function getRawSkin(nickname: string): Promise<SkinOutput> {
   try {
     const stream = await minio.getObject(SKINS_BUCKET, getSkinName(nickname))
     const readable = nodeToWebStream(stream)
-    const blob = await Bun.readableStreamToBlob(readable)
+    const blob = await readableStreamToBlob(readable)
 
     return blob
   } catch (e) {
     const steve = await minio.getObject(STATIC_BUCKET, DEFAULT_SKIN)
     const readable = nodeToWebStream(steve)
-    const blob = await Bun.readableStreamToBlob(readable)
+    const blob = await readableStreamToBlob(readable)
 
     return blob;
   }
@@ -139,54 +136,68 @@ async function extract(
   return skin;
 }
 
-export async function getSkin(nickname: string): Promise<string> {
+export async function getSkin(set: Context["set"], nickname: string): Promise<string> {
+  const t = new Timing(); 
   const minio = getMinio();
-  
-  let target: string = ""
+
+  let result: string = ""
 
   try {
+    t.start("get stream");
     const stream = await minio.getObject(SKINS_BUCKET, getSkinName(nickname))
+    t.end("get stream");
 
-    if (!stream) {
-      throw new Error()
-    }
+    if (!stream) throw new Error()
 
+    t.start("get url");
     const url = getObjectUrl(SKINS_BUCKET, getSkinName(nickname))
+    t.start("get url");
 
-    target = url
+    result = url
   } catch (e) {
-    const custom = await extract(nickname, getCustomPlayerSkin)
+    // t.start("extract custom");
+    // const custom = await extract(nickname, getCustomPlayerSkin)
     // if (custom) return custom;
+    // t.end("extract custom");
 
-    const vanilla = await extract(nickname, getVanillaPlayerSkin)
+    // t.start("extract vanilla");
+    // const vanilla = await extract(nickname, getVanillaPlayerSkin)
     // if (vanilla) return vanilla;
+    // t.end("extract vanilla");
 
     const steve = getObjectUrl(STATIC_BUCKET, DEFAULT_SKIN)
-    target = steve
+    result = steve
   }
 
-  return target;
+  set.headers["server-timing"] = t.header();
+
+  return result;
 }
 
-export async function getPlayerAvatar({ recipient: nickname }: { recipient: string }) {
+export async function getPlayerAvatar(set: Context["set"], nickname: string): Promise<string> {
+  const t = new Timing(); 
   const minio = getMinio();
-  
-  let target: string = "";
+
+  let result: string = "";
 
   try {
+    t.start("get stream");
     const stream = await minio.getObject(AVATARS_BUCKET, getAvatarName(nickname))
+    t.end("get stream");
 
-    if (!stream) {
-      throw new Error()
-    }
+    if (!stream) throw new Error()
 
-    const res = getObjectUrl(AVATARS_BUCKET, getAvatarName(nickname))
+    t.start("get url");
+    const url = getObjectUrl(AVATARS_BUCKET, getAvatarName(nickname))
+    t.end("get url");
 
-    target = res;
+    result = url;
   } catch (e) {
     const steve = getObjectUrl(STATIC_BUCKET, DEFAULT_HEAD)
-    target = steve;
+    result = steve;
   }
 
-  return target;
+  set.headers["server-timing"] = t.header();
+
+  return result;
 }

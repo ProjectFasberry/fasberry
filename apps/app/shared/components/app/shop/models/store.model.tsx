@@ -70,8 +70,6 @@ export const onChange = action(async (ctx, e: React.ChangeEvent<HTMLInputElement
   storeItemsAction(ctx)
 }).pipe(withConcurrency())
 
-const getOrderUrl = (id: string) => `/store/order/${id}`
-
 export const storeItemsAction = reatomAsync(async (ctx) => {
   await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT));
 
@@ -110,7 +108,7 @@ export const createOrderAction = reatomAsync(async (ctx) => {
 
     ctx.schedule(() => {
       createdOrderDataAtom(ctx, res);
-      navigate(getOrderUrl(res.purchase.uniqueId))
+      navigate(`/store/order/status/${res.purchase.uniqueId}`)
     })
   },
   onReject: (ctx, e) => {

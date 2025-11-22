@@ -1,33 +1,27 @@
-FROM oven/bun:1-debian AS build
+FROM oven/bun:1 AS build
 
-WORKDIR /app
+WORKDIR /
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  python3 make g++ libvips-dev \
-  && rm -rf /var/lib/apt/lists/* \
-  && ln -s /usr/bin/python3 /usr/bin/python
+COPY bun.lock* package.json bunfig.toml ./
 
-COPY package.json bun.lock ./
-COPY /apps/backend/package.json ./apps/backend/package.json
-COPY /packages/shared/package.json ./packages/shared/package.json
-COPY /packages/config-typescript/package.json ./packages/config-typescript/package.json
-COPY /packages/config-biome/package.json ./packages/config-biome/package.json
+COPY apps/backend ./apps/backend
+COPY packages ./packages
 
 RUN bun install
 
-COPY /apps/backend ./apps/backend
-COPY /packages/shared ./packages/shared
-COPY /packages/config-typescript ./packages/config-typescript
-COPY /packages/config-biome ./packages/config-biome
+WORKDIR /apps/backend
 
-RUN mkdir -p /app/data/sqlite
+RUN bun run build
 
-RUN bun run --cwd apps/backend build
+FROM oven/bun:1-debian AS runtime
+
+WORKDIR /
+
+COPY --from=build /apps/backend/dist ./dist
+COPY --from=build /apps/backend/package.json ./package.json
+
+RUN rm -rf node_modules
 
 ENV NODE_ENV=production
-
-WORKDIR /app
-
-CMD ["bun", "run", "apps/backend/dist/index.js"]
-
+CMD ["node", "dist/index.js"]
 EXPOSE 4104

@@ -4,21 +4,22 @@ import Elysia, { t } from "elysia";
 import { getPlayerStatus } from "./activity.model";
 
 export const activityNow = new Elysia()
-  .model({
-    "activity-now": withData(
-      t.Object({
-        nickname: t.String(),
-        type: t.String(),
-        issued_date: t.Union([t.Date(), t.Null()])
-      })
-    )
-  })
+  // .model({
+  //   "activity-now": withData(
+  //     t.Object({
+  //       nickname: t.String(),
+  //       type: t.String(),
+  //       issued_date: t.Nullable(t.Date())
+  //     })
+  //   )
+  // })
   .get("/now/:nickname", async ({ params }) => {
     const nickname = params.nickname;
     const data: PlayerActivityPayload = await getPlayerStatus(nickname);
+    console.log(data)
     return { data }
   }, {
-    response: {
-      200: "activity-now"
-    }
+    // response: {
+    //   200: "activity-now"
+    // }
   })

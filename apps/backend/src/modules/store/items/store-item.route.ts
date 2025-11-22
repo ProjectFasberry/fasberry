@@ -33,15 +33,13 @@ async function getItem(id: number): Promise<StoreItem | null> {
   return data
 }
 
-const storeItemSchema = z.object({
-  id: z.coerce.number()
-})
-
 export const storeItem = new Elysia()
   .get("/item/:id", async ({ params }) => {
     const id = params.id
     const data: StoreItem | null = await getItem(id)
     return { data }
   }, {
-    params: storeItemSchema
+    params: z.object({
+      id: z.coerce.number()
+    })
   })

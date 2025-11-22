@@ -3,22 +3,15 @@ import { usePageContext } from "vike-react/usePageContext";
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@repo/ui/dropdown-menu";
 import { getStaticObject } from "../../../lib/volume";
-import { navigate } from 'vike/client/router';
 import { atom } from '@reatom/core';
 import { reatomComponent } from '@reatom/npm-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@repo/ui/sheet';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@repo/ui/accordion';
+import { Typography } from "@repo/ui/typography";
+import { Fragment } from "react/jsx-runtime";
+import { tv } from "tailwind-variants";
 
-type MainHeaderDetails = {
-  name: string,
-  href: string | null
-}
-
-type MainHeaderType = MainHeaderDetails & Partial<{
-  childs: MainHeaderDetails[]
-}>
-
-const MAIN_HEADER: MainHeaderType[] = [
+const MAIN_HEADER = [
   { name: "Главная", href: "/", },
   { name: "Правила", href: "/rules", },
   { name: "Поддержка", href: "/support", },
@@ -26,15 +19,15 @@ const MAIN_HEADER: MainHeaderType[] = [
   {
     name: "Игра",
     childs: [
-      // { name: "Карта мира", href: "https://map.fasberry.su", },
+      { name: "Карта мира", href: "https://map.fasberry.su", },
       { name: "Вики", href: "/wiki", },
-      { name: "Модпак", href: "/wiki/modpack", },
+      { name: "Модпак", href: "/modpack", },
+      { name: "Аккаунт", href: "https://app.fasberry.su/", },
     ],
-    href: null
   },
 ];
 
-const expImage = getStaticObject("minecraft/icons", "experience_big.webp")
+const expImage = getStaticObject("minecraft", "icons/experience_big.webp")
 const logoImage = getStaticObject("static", "fasberry_logo.webp")
 
 const ExperienceCircle = () => {
@@ -50,13 +43,15 @@ const ExperienceCircle = () => {
   )
 }
 
+const itemVariant = tv({
+  base: `flex border-2 border-neutral-600 hover:bg-neutral-600 group bg-neutral-800 rounded-md gap-6 py-2 px-2 w-full`
+})
+
 const Content = reatomComponent(({ ctx }) => {
   const pathname = usePageContext().urlParsed.pathname;
 
-  const handleToPage = (href: string | null) => {
+  const handleToPage = (href?: string | null) => {
     if (!href) return;
-
-    navigate(href);
     sheetIsOpenAtom(ctx, state => !state);
   };
 
@@ -67,52 +62,62 @@ const Content = reatomComponent(({ ctx }) => {
           <img src={logoImage} draggable={false} alt="Fasberry" width={224} height={64} />
         </Link>
       </div>
-      <Accordion type="single" collapsible className="flex flex-col items-center justify-center w-full gap-4 px-4">
+      <Accordion
+        type="single"
+        collapsible
+        className="flex flex-col items-center justify-center w-full gap-4 px-4"
+      >
         {MAIN_HEADER.map(({ name, href, childs }) => (
-          <AccordionItem key={name} value={name} className="w-full">
-            <AccordionTrigger
-              onClick={() => handleToPage(href)}
-              className="flex border-2 border-neutral-600 hover:bg-neutral-600 group bg-neutral-800 rounded-md gap-6 py-2 px-2 w-full"
-            >
-              <div className="flex items-center gap-1">
-                {href === pathname && <ExperienceCircle />}
-                <p data-state={href} className="text-white data-[state=/shop]:text-gold text-lg">
-                  {name}
-                </p>
-                {childs && (
-                  <>
-                    <span className="text-white group-data-[state=open]:inline hidden">⏶</span>
-                    <span className="text-white group-data-[state=closed]:inline hidden">⏷</span>
-                  </>
-                )}
-              </div>
-            </AccordionTrigger>
-            {childs && (
-              <AccordionContent className="flex flex-col gap-2 pt-1">
-                {childs.map(({ name, href }) => (
-                  <div
-                    key={name}
-                    onClick={() => handleToPage(href!)}
-                    className="flex group border-2 border-neutral-600 hover:bg-neutral-600 bg-neutral-800
-                      cursor-pointer rounded-md gap-6 p-2 w-full"
-                  >
-                    <div className="flex items-center gap-1">
-                      {href === pathname && <ExperienceCircle />}
-                      <p className="text-lg text-white">
-                        {name}
-                      </p>
-                      {childs && (
-                        <>
-                          <span className="text-white group-data-[state=open]:inline hidden">⏶</span>
-                          <span className="text-white group-data-[state=closed]:inline hidden">⏷</span>
-                        </>
-                      )}
-                    </div>
+          <Fragment key={name}>
+            {childs ? (
+              <AccordionItem value={name} className="w-full">
+                <AccordionTrigger
+                  onClick={() => handleToPage(href)}
+                  className={itemVariant()}
+                >
+                  <div className="flex items-center gap-1">
+                    {href === pathname && <ExperienceCircle />}
+                    <Typography className="text-white text-lg">
+                      {name}
+                    </Typography>
                   </div>
-                ))}
-              </AccordionContent>
+                </AccordionTrigger>
+                <AccordionContent className="flex gap-2 pt-1">
+                  <div className="w-[2px] mt-1 bg-neutral-800" />
+                  <div className="flex flex-col gap-2 w-full">
+                    {childs.map(({ name, href }) => (
+                      <a
+                        key={name}
+                        href={href!}
+                        onClick={() => handleToPage(href)}
+                        className={itemVariant()}
+                      >
+                        <div className="flex items-center gap-1">
+                          {href === pathname && <ExperienceCircle />}
+                          <Typography className="text-lg text-white">
+                            {name}
+                          </Typography>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ) : (
+              <a
+                href={href!}
+                onClick={() => handleToPage(href)}
+                className={itemVariant()}
+              >
+                <div className="flex items-center gap-1">
+                  {href === pathname && <ExperienceCircle />}
+                  <Typography className="text-white text-lg">
+                    {name}
+                  </Typography>
+                </div>
+              </a>
             )}
-          </AccordionItem>
+          </Fragment>
         ))}
       </Accordion>
     </>
@@ -138,7 +143,7 @@ export const HeaderSheet = reatomComponent(({ ctx }) => {
       </SheetTrigger>
       <SheetContent
         side="bottom"
-        className="xl:hidden flex flex-col items-start justify-between bg-neutral-950 border-none rounded-xl min-h-1/3 h-fit p-4 w-full"
+        className="xl:hidden flex flex-col items-start justify-between bg-neutral-900 border-none rounded-t-xl min-h-1/3 h-fit p-4 w-full"
       >
         <SheetTitle className="hidden"></SheetTitle>
         <Content />
@@ -151,11 +156,11 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   const pathname = usePageContext().urlParsed.pathname;
   const isActive = pathname === href;
 
-  const pathDetect = (href: string | null) => {
+  const pathDetect = (href?: string | null) => {
     if (!href) return;
 
     if (pathname === href) {
-      return toast.info("Вы уже на этой странице", {
+      toast.info("Вы уже на этой странице", {
         icon: <img alt="" loading="lazy" width={32} height={32} src={getStaticObject("minecraft/icons", "bell.webp")} />
       })
     }
@@ -171,15 +176,16 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
             className="flex items-center gap-1 mx-2"
           >
             {isActive && (
-              <img src={getStaticObject("minecraft/icons", "experience_big.webp")} width={20} alt="" height={20} />
+              <img
+                src={expImage}
+                width={20}
+                alt=""
+                height={20}
+              />
             )}
-            <p
-              data-href={href}
-              data-state={isActive}
-              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8]"
-            >
+            <Typography className="text-neutral-300 text-md">
               {name}
-            </p>
+            </Typography>
             {childs && (
               <span
                 className="text-white relative duration-150
@@ -195,13 +201,9 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
             onClick={() => pathDetect(href)}
             className="flex items-center gap-1 mx-2 cursor-pointer"
           >
-            <p
-              data-href={href}
-              data-state={isActive}
-              className="hover:brightness-150 text-neutral-300 text-md data-[state=active]:brightness-[1.8]"
-            >
+            <Typography className="text-neutral-300 text-md">
               {name}
-            </p>
+            </Typography>
             {childs && (
               <span
                 className="text-white relative duration-150
@@ -219,13 +221,10 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
           <div className="flex flex-col py-2 px-4 gap-2 w-full">
             {childs.map(item => (
               <div key={item.name} className="flex items-center gap-1 cursor-pointer">
-                {item.href === pathname && (
-                  <img src={getStaticObject("minecraft/icons", "experience_big.webp")} width={16} alt="" height={16} />
-                )}
-                <Link href={item.href || "/"}>
-                  <p className="hover:brightness-150 text-lg text-green-600">
+                <Link href={item.href || "/"} className="tr">
+                  <Typography>
                     {item.name}
-                  </p>
+                  </Typography>
                 </Link>
               </div>
             ))}
@@ -236,7 +235,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
   )
 }
 
-const bgImage = getStaticObject("static", "cracked_polished_blacked.webp")
+const bgImage = getStaticObject("minecraft/static", "cracked_polished_blacked.webp")
 
 export const Header = () => {
   return (
@@ -245,11 +244,17 @@ export const Header = () => {
       style={{ backgroundSize: '160px', backgroundImage: `url(${bgImage})` }}
     >
       <Link href="/" className="bg-transparent cursor-pointer relative md:-right-[40px] top-3 xl:-right-[60px]">
-        <img src={logoImage} width={224} height={64} title="Fasberry" alt="Fasberry" />
+        <img src={logoImage} draggable={false} width={224} height={64} title="Fasberry" alt="Fasberry" />
       </Link>
       <div className="hidden xl:flex gap-5 items-center justify-start pr-[132px]">
         {MAIN_HEADER.map(item => (
-          <HeaderItemMenu key={item.name} childs={item.childs} name={item.name} href={item.href} />
+          // @ts-expect-error
+          <HeaderItemMenu
+            key={item.name}
+            childs={item.childs}
+            name={item.name}
+            href={item.href}
+          />
         ))}
       </div>
       <HeaderSheet />

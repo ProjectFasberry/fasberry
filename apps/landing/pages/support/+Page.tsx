@@ -6,8 +6,8 @@ import { Overlay } from "@repo/ui/overlay";
 import { Typography } from "@repo/ui/typography";
 import { WrapperTitle } from "@repo/ui/wrapper-title";
 import { LANDING_ENDPOINT } from '@/shared/env';
-import { cardWrapper } from "@/shared/styles/variants";
 import { PropsWithChildren } from "react";
+import { sectionVariant, sectionVariantChild } from "@/shared/styles/variants";
 
 const bgImage = getStaticObject("backgrounds", "support_background.png");
 
@@ -17,9 +17,7 @@ const steveImage = getStaticObject("support", "steve.webp");
 const Card = ({ children }: PropsWithChildren) => {
   return (
     <div
-      className={cardWrapper({
-        className: "flex flex-col xl:flex-row overflow-hidden md:items-center justify-center md:justify-start items-center w-full"
-      })}
+      className="card-wrapper flex flex-col xl:flex-row overflow-hidden md:items-center justify-center md:justify-start items-center w-full"
     >
       {children}
     </div>
@@ -30,22 +28,22 @@ export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
       <div
-        className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start bg-bottom bg-no-repeat bg-cover`}
+        className={sectionVariant()}
         style={{ backgroundImage: `url(${bgImage})` }}
       >
         <Overlay variant="default" />
         <WrapperTitle>
-          <div className="flex flex-col gap-6 w-full lg:max-w-3xl items-start justify-center">
+          <div className="flex flex-col gap-6 w-full lg:max-w-3xl items-start justify-start">
             <div className="flex flex-col gap-2 w-full lg:max-w-3xl">
-              <h1 className="text-left text-shadow-xl text-5xl lg:text-6xl text-gold">
+              <h1 className={sectionVariantChild().title({ className: "text-gold" })}>
                 Поддержка проекта
               </h1>
-              <Typography className="text-left text-2xl md:text-3xl">
-                Здесь можно узнать о способах поддержки развития проекта. Это не связано с донатом!
+              <Typography className={sectionVariantChild().subtitle()}>
+                Здесь можно узнать о способах поддержки развития проекта
               </Typography>
             </div>
-            <Link href="#support-list">
-              <Button variant="minecraft" className="group px-6 py-0.5 gap-2">
+            <Link href="#support-list" className={sectionVariantChild().action()}>
+              <Button variant="minecraft" className="w-full px-6 py-0.5 gap-2">
                 <Typography className="text-lg">
                   Как поддержать?
                 </Typography>

@@ -9,8 +9,8 @@ export const SERVER_USER_EVENT_SUBJECT = "server.user.event";
 export const LUCKPERMS_UPDATE_SUBJECT = "luckperms:update"
 export const USER_REFERAL_REWARD_SUBJECT = "users.referal.reward"
 export const USER_REFERAL_CHECK_SUBJECT = "users.referal.check"
-export const SERVER_STATUS_SUBJECT = "server.status"
-   // EVENTS
+
+// EVENTS
   export const SERVER_EVENT_EXECUTE_COMMAND = "executeCommand"
   export const SERVER_EVENT_CHECK_PLAYER_STATUS = "checkOnline"
   export const SERVER_EVENT_GET_USER_LOCATION = "getLocation"

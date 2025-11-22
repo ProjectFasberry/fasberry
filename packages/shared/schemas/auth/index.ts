@@ -27,7 +27,7 @@ export const authSchema = z.object({
 export const registerSchema = z.intersection(
   authSchema,
   z.object({
-    findout: z.string().min(2).max(128),
+    findout: z.string().min(1).max(128),
     findoutType: z.enum(["custom", "referrer"])
   }).superRefine((data, ctx) => {
     if (data.findoutType === 'referrer') {

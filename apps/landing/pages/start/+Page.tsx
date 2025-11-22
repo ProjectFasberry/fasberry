@@ -10,6 +10,8 @@ import { Button } from "@repo/ui/button";
 import { tv } from "tailwind-variants";
 import { getStaticObject } from "@/shared/lib/volume";
 
+const dirtImage = getStaticObject("minecraft/static", "dirt.webp")
+
 const NumericItem = ({ index }: { index: number }) => {
   return (
     <div className="flex items-center justify-center aspect-square border-shark-800">
@@ -143,12 +145,12 @@ export default function Page() {
             </div>
             <div className={stepImageVariant()}>
               <img
-              src={getStaticObject("items", "seeking_wolf.png")}
-              draggable={false}
-              width={128}
-              height={128}
-              alt="Register"
-              loading="lazy"
+                src={getStaticObject("minecraft", "items/seeking_wolf.png")}
+                draggable={false}
+                width={128}
+                height={128}
+                alt="Register"
+                loading="lazy"
               />
             </div>
           </div>
@@ -172,12 +174,12 @@ export default function Page() {
             </div>
             <div className={stepImageVariant()}>
               <img
-              src={getStaticObject("items", "enderman_boosts.png")}
-              draggable={false}
-              width={128}
-              height={128}
-              alt="Cabinet"
-              loading="lazy"
+                src={getStaticObject("minecraft", "items/enderman_boosts.png")}
+                draggable={false}
+                width={128}
+                height={128}
+                alt="Cabinet"
+                loading="lazy"
               />
             </div>
           </div>
@@ -190,19 +192,19 @@ export default function Page() {
             </div>
             <div className={stepImageVariant()}>
               <img
-              src={getStaticObject("items", "adventure_icon.png")}
-              draggable={false}
-              width={128}
-              height={128}
-              alt="Done"
-              loading="lazy"
+                src={getStaticObject("minecraft", "items/adventure_icon.png")}
+                draggable={false}
+                width={128}
+                height={128}
+                alt="Done"
+                loading="lazy"
               />
             </div>
           </div>
           <div className="flex border-4 border-black rounded-lg overflow-hidden h-[80vh] relative w-full">
             <div
               className="absolute w-full h-[80vh] left-0 right-0 top-0 bottom-0"
-              style={{ backgroundImage: `url(${getStaticObject("static", "dirt.webp")})` }}
+              style={{ backgroundImage: `url(${dirtImage})` }}
             />
             <HowToConnectOnServer />
           </div>

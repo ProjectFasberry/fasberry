@@ -1,6 +1,6 @@
 import { getStaticImage } from "../lib/volume-helpers";
 
-export const expImage = getStaticImage("icons/exp-active.webp")
+export const expImage = getStaticImage("minecraft/icons/experience_big.webp")
 
-export const belkoinImage = getStaticImage("items/belkoin_wallet.png")
-export const charismImage = getStaticImage("items/charism_wallet.png")
+export const belkoinImage = getStaticImage("minecraft/items/belkoin_wallet.png")
+export const charismImage = getStaticImage("minecraft/items/charism_wallet.png")

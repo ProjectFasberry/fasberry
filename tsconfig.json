@@ -4,6 +4,7 @@
     { "path": "./apps/backend" },
     { "path": "./apps/app" },
     { "path": "./apps/landing" },
-    { "path": "./packages/shared" }
+    { "path": "./packages/shared" },
+    { "path": "./packages/ui" }
   ]
 }

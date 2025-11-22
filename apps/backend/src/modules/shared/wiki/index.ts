@@ -53,7 +53,7 @@ const wikiCategory = new Elysia()
 
     const data = await general
       .selectFrom("wiki")
-      .select(["id", "category", "content", "category_title", "updated_at"])
+      .select(["id", "category", "content", "category_title as title", "updated_at"])
       .where("category", "=", category)
       .executeTakeFirst()
 

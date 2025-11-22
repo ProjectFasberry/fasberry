@@ -272,8 +272,8 @@ function DropdownMenuItem({
     <MotionHighlightItem
       activeClassName={
         variant === 'default'
-          ? 'bg-accent'
-          : 'bg-destructive/10 dark:bg-destructive/20'
+          ? 'bg-neutral-800'
+          : 'bg-red-600/10 dark:bg-red-600/20'
       }
       disabled={disabled}
     >
@@ -285,7 +285,7 @@ function DropdownMenuItem({
           data-disabled={disabled}
           whileTap={{ scale: 0.95 }}
           className={cn(
-            "[&:not([data-highlight])]:focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive [&:not([data-highlight])]:data-[variant=destructive]:focus:bg-destructive/10 dark:[&:not([data-highlight])]:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground relative z-[1] flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus-visible:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+            "[&:not([data-highlight])]:focus:bg-neutral-800 focus:text-accent-foreground data-[variant=destructive]:text-red-600 [&:not([data-highlight])]:data-[variant=destructive]:focus:bg-red-600/10 dark:[&:not([data-highlight])]:data-[variant=destructive]:focus:bg-red-600/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:!text-red-600 [&_svg:not([class*='text-'])]:text-neutral-400 relative z-[1] flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus-visible:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
             inset && 'pl-8',
             className,
           )}

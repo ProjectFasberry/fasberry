@@ -8,36 +8,6 @@ import { useState } from "react";
 import { isEmptyArray } from "@/shared/lib/array";
 import { NotFound } from "@/shared/ui/not-found";
 
-export const ChangePassword = reatomComponent(({ ctx }) => {
-  return (
-    <div className="flex items-center gap-2 justify-between w-full">
-      <div className="flex flex-col min-w-0">
-        <Typography color="white" className="text-2xl font-semibold">
-          Пароль
-        </Typography>
-        <Typography color="gray" className="truncate">
-          Изменение пароля от аккаунта
-        </Typography>
-      </div>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="bg-neutral-50 w-fit">
-            <Typography className="text-neutral-950 font-semibold">
-              Изменить
-            </Typography>
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogTitle>Изменение пароля</DialogTitle>
-          <Typography>
-
-          </Typography>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}, "ChangePassword")
-
 const ordersHistory = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => getOrders({ type: "all" }, { signal: ctx.controller.signal }))
 }).pipe(withDataAtom(null))

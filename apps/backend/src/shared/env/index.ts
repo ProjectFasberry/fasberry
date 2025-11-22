@@ -75,3 +75,10 @@ export const CRYPTO_PAY_TESTNET_TOKEN = Bun.env.CRYPTO_PAY_TESTNET_TOKEN
 export const CAP_SECRET = Bun.env.CAP_SECRET
 export const CAP_INSTANCE_URL = Bun.env.CAP_INSTANCE_URL
 export const CAP_SITE_KEY = Bun.env.CAP_SITE_KEY
+
+export const PANEL_USER = Bun.env.PANEL_USER
+export const PANEL_PASSWORD = Bun.env.PANEL_PASSWORD
+
+export const FALLBACK_IP = Bun.env.FALLBACK_IP
+
+export const PANEL_PREFIX_URL = Bun.env.PANEL_PREFIX_URL

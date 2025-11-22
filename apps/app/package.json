@@ -5,11 +5,16 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development vike dev",
-    "build": "NODE_ENV=production vike build",
+    "dev": "bun run vike dev",
+    "build": "NODE_ENV=production bun run vike build",
     "start": "NODE_ENV=production node ./dist/server/index.mjs",
     "lint": "bunx biome lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "------------------": "",
+    "build:prod": "make build",
+    "build:tag": "make tag",
+    "build:push": "make push",
+    "release": "make build && make tag && make push"
   },
   "sideEffects": [
     "**/*.css"
@@ -17,6 +22,7 @@
   "dependencies": {
     "@better-captcha/react": "0.3.0",
     "@bprogress/react": "1.2.7",
+    "@bprogress/core": "1.3.4",
     "@photonjs/hono": "0.1.6",
     "@reatom/async": "3.16.10",
     "@reatom/core": "3.10.3",
@@ -32,6 +38,7 @@
     "@tabler/icons-react": "3.34.0",
     "@tanstack/react-table": "8.21.3",
     "@tiptap/extension-image": "3.10.5",
+    "@tiptap/extension-table": "3.10.5",
     "@tiptap/extension-text-style": "3.10.5",
     "@tiptap/extensions": "3.10.5",
     "@tiptap/html": "3.10.5",

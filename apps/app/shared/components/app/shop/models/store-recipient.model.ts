@@ -1,11 +1,12 @@
 import { action, Atom, atom, batch, Ctx, CtxSpy } from "@reatom/core";
 import z from "zod";
 import { withLocalStorage } from "@reatom/persist-web-storage";
-import { AsyncAction, isDeepEqual, reatomAsync, sleep, withInit, withReset, withStatusesAtom } from "@reatom/framework";
+import { isDeepEqual, reatomAsync, sleep, withInit, withReset, withStatusesAtom } from "@reatom/framework";
 import { logError } from "@/shared/lib/log";
 import { toast } from "sonner";
 import { client, withJsonBody } from "@/shared/lib/client-wrapper";
 import { CartItem } from "@repo/shared/types/entities/store";
+import { currentUserAtom } from "@/shared/models/current-user.model";
 
 export function makeChangeValidator<T>(
   oldAtom: Atom<T>,
@@ -23,15 +24,15 @@ export function makeChangeValidator<T>(
 }
 
 export function getRecipient(ctx: Ctx): string {
-  const currentRecipient = ctx.get(setRecipientValueAtom);
+  const custom = ctx.get(storeGlobalRecipientAtom)
 
-  if (!currentRecipient) {
-    const global = ctx.get(storeGlobalRecipientAtom);
-    if (!global) throw new Error("Global recipient is not defined")
-    return global;
+  if (!custom) {
+    const current = ctx.get(currentUserAtom)?.nickname;
+    if (!current) throw new Error("Global recipient is not defined")
+    return current;
   }
 
-  return currentRecipient;
+  return custom;
 }
 
 const DIALOG_HANDLING_TIMEOUT = 200
@@ -44,13 +45,6 @@ const nicknameSchema = z.string()
 export const storeGlobalRecipientAtom = atom<string | null>(null, "storeGlobalRecipient").pipe(
   withLocalStorage({ key: "store-recipient" })
 );
-
-export const setRecipientDialogIsOpenAtom = atom(false, "setRecipientDialogIsOpen").pipe(withReset())
-export const setRecipientIsSaveAtom = atom(false, "setRecipientIsSave").pipe(withReset())
-export const setRecipientTempValueAtom = atom("", "setRecipientTempValue").pipe(withReset());
-export const setRecipientValueAtom = atom<string | null>(null, "setRecipientValue").pipe(withReset())
-export const setRecipientErrorAtom = atom<string | null>(null, "setRecipientError").pipe(withReset())
-export const setRecipientItemIdAtom = atom<number | null>(null, "setRecipientItemIdAtom").pipe(withReset())
 
 function validateRecipient(recipient: string | null) {
   const result = nicknameSchema.safeParse(recipient)
@@ -65,60 +59,6 @@ const ERRORS: Record<string, string> = {
   "not-found": "Такой игрок не зарегистрирован"
 }
 
-export const saveRecipientAction = reatomAsync(async (ctx, cb: AsyncAction<[id: number]>) => {
-  const value = ctx.get(setRecipientTempValueAtom);
-
-  const { success, error, data: validatedRecipient } = validateRecipient(value)
-
-  if (!success) {
-    setRecipientErrorAtom(ctx, z.treeifyError(error).errors[0])
-    return
-  }
-
-  const existNickname = await getExistNickname(validatedRecipient)
-  if (!existNickname) throw new Error("not-found")
-
-  return { existNickname, cb }
-}, {
-  name: "saveRecipientAction",
-  onFulfill: async (ctx, res) => {
-    if (!res) return;
-
-    const { existNickname: nickname, cb } = res
-
-    const isSave = ctx.get(setRecipientIsSaveAtom);
-
-    if (isSave) {
-      storeGlobalRecipientAtom(ctx, nickname)
-    }
-
-    setRecipientValueAtom(ctx, nickname)
-
-    setRecipientDialogIsOpenAtom.reset(ctx);
-    await ctx.schedule(() => sleep(DIALOG_HANDLING_TIMEOUT))
-
-    const targetItemId = ctx.get(setRecipientItemIdAtom)
-    if (!targetItemId) throw new Error("Target item id is not defined")
-
-    batch(ctx, async () => {
-      await cb(ctx, targetItemId)
-
-      setRecipientItemIdAtom.reset(ctx)
-      setRecipientIsSaveAtom.reset(ctx)
-      setRecipientTempValueAtom.reset(ctx);
-      setRecipientValueAtom.reset(ctx)
-      setRecipientErrorAtom.reset(ctx)
-    })
-  },
-  onReject: (ctx, e) => {
-    if (e instanceof Error) {
-      const message = ERRORS[e.message] ?? "Произошла ошибка"
-      setRecipientErrorAtom(ctx, message)
-    }
-  }
-}).pipe(withStatusesAtom())
-
-//
 export const changeRecipientIdAtom = atom<number | null>(null, "changeRecipientId").pipe(withReset())
 export const changeRecipientTitleAtom = atom<string | null>(null, "changeRecipientTitle").pipe(withReset())
 export const changeRecipientNewRecipientAtom = atom<string | null>(null, "changeRecipientNewRecipient").pipe(withReset())
@@ -206,13 +146,31 @@ export const changeGlobalRecipientOldAtom = atom<string | null>((ctx) => ctx.spy
 export const changeGlobalRecipientNewAtom = atom<string | null>(null, "changeGlobalRecipientNew").pipe(withReset())
 export const changeGlobalRecipientErrorAtom = atom<string | null>(null, "changeGlobalRecipientError").pipe(withReset())
 
-export const changeGlobalRecipientIsValidAtom = atom<boolean>(
+export const changeGlobalRecipientIsValidAtom = atom<boolean>((ctx) => {
+  const input = ctx.spy(changeGlobalRecipientNewAtom)
+
+  const is = typeof input !== null && input === "" 
+  if (is) return true;
+
+  const d = !ctx.spy(changeGlobalRecipientValueIsValidAtom)
+  return d
+}, "changeGlobalRecipientIsValid")
+
+changeGlobalRecipientIsValidAtom.onChange((ctx, s) => console.log("changeGlobalRecipientIsValidAtom", s))
+
+const changeGlobalRecipientValueIsValidAtom = atom<boolean>(
   makeChangeValidator(changeGlobalRecipientOldAtom, changeGlobalRecipientNewAtom),
   "changeGlobalRecipientIsValid"
 )
 
 export const changeGlobalRecipientAction = reatomAsync(async (ctx) => {
   const newRecipient = ctx.get(changeGlobalRecipientNewAtom)
+
+  if (!newRecipient || newRecipient === "") {
+    const current = ctx.get(currentUserAtom)?.nickname
+    if (!current) throw new Error('Current nickname is not defined')
+    return current;
+  }
 
   const { success, error, data: validatedRecipient } = validateRecipient(newRecipient)
 
@@ -243,21 +201,3 @@ export const changeGlobalRecipientAction = reatomAsync(async (ctx) => {
     }
   }
 }).pipe(withStatusesAtom())
-
-export function validateRecItem(ctx: Ctx, id: number) {
-  const currentRecipient = ctx.get(setRecipientValueAtom);
-
-  let isExist: boolean = true;
-
-  if (!currentRecipient) {
-    const globalRecipient = ctx.get(storeGlobalRecipientAtom);
-
-    if (!globalRecipient) {
-      setRecipientDialogIsOpenAtom(ctx, true);
-      setRecipientItemIdAtom(ctx, id);
-      isExist = false;
-    }
-  }
-
-  return isExist
-}

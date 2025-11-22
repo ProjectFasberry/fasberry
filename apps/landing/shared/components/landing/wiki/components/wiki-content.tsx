@@ -1,10 +1,10 @@
 import { Typography } from "@repo/ui/typography";
-import { reatomComponent } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";
 import { renderToHTMLString } from "@tiptap/static-renderer";
 import { editorExtensions } from "@/shared/components/config/editor";
-import { wikiAction } from "../models/wiki.model";
 import { isDevelopment } from "@/shared/env";
+import { useData } from "vike-react/useData";
+import { Data } from "@/pages/wiki/@category/+data";
 
 export const WikiContentItemSkeleton = () => {
   return (
@@ -57,12 +57,8 @@ export const WikiContentItemSkeleton = () => {
   )
 }
 
-export const WikiContentItem = reatomComponent<{ category: string }>(({ ctx, category }) => {
-  const data = ctx.spy(wikiAction.dataAtom)
-
-  if (ctx.spy(wikiAction.statusesAtom).isPending) {
-    return <WikiContentItemSkeleton />
-  }
+export const WikiContentItem = () => {
+  const { data } = useData<Data>()
 
   if (!data) return (
     <div className="flex items-center justify-center w-full h-[60vh]">
@@ -87,4 +83,4 @@ export const WikiContentItem = reatomComponent<{ category: string }>(({ ctx, cat
       className="tiptap whitespace-pre-wrap"
     />
   )
-}, "WikiContentItem")
+}

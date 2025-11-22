@@ -10,6 +10,9 @@ import { AnimatedNumber } from "@repo/ui/animated-number"
 import { navigate } from "vike/client/router";
 import { appDictionariesAtom } from "@/shared/models/app.model";
 import { belkoinImage, charismImage } from "@/shared/consts/images";
+import { isClientAtom } from "@/shared/models/page-context.model";
+import { Skeleton } from "@repo/ui/skeleton";
+import { scrollableVariant } from "@/shared/consts/style-variants";
 
 const cardImage = getStaticImage("arts/steve_night.jpg")
 
@@ -24,9 +27,23 @@ type BalanceCardProps = {
   image: string
 }
 
+const CardValue = reatomComponent<{ balance: number }>(({ ctx, balance }) => {
+  const animate = ctx.spy(animateBalanceAtom);
+
+  return (
+    <div className="inline-flex items-center text-neutral-50 text-2xl font-light">
+      {animate ? (
+        <AnimatedNumber springOptions={animateOptions} value={balance} />
+      ) : (
+        <span>{balance}</span>
+      )}
+    </div>
+  )
+}, "CardValue")
+
 const BalanceCard = reatomComponent<BalanceCardProps>(({ ctx, balance, value, image }) => {
   const title = appDictionariesAtom.get(ctx, value)
-  const animate = ctx.spy(animateBalanceAtom);
+  const isLoading = !ctx.spy(isClientAtom)
 
   return (
     <div className="relative rounded-2xl min-w-80 overflow-hidden w-full h-56">
@@ -55,13 +72,7 @@ const BalanceCard = reatomComponent<BalanceCardProps>(({ ctx, balance, value, im
               draggable={false}
               className='select-none'
             />
-            <div className="inline-flex items-center text-neutral-50 text-2xl font-light">
-              {animate ? (
-                <AnimatedNumber springOptions={animateOptions} value={balance} />
-              ) : (
-                <span>{balance}</span>
-              )}
-            </div>
+            {isLoading ? <Skeleton className="h-8 w-24" /> : <CardValue balance={balance} />}
           </div>
           <Button
             className="cursor-pointer bg-neutral-50/80 rounded-lg p-1"
@@ -156,8 +167,9 @@ export const Balance = () => {
         <BalanceSettings />
       </div>
       <div
-        className="flex items-center h-full scrollbar scrollbar-thumb-neutral-300 scrollbar-track-background-dark 
-          justify-start overflow-x-auto w-full gap-2"
+        className={scrollableVariant({
+          className: `flex items-center h-full pb-2 justify-start scrollbar-h-2 overflow-x-auto w-full gap-2`
+        })}
       >
         <CharismCard />
         <BelkoinCard />

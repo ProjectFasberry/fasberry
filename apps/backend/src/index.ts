@@ -32,6 +32,7 @@ import { checkDatabasesHealth } from "./shared/database/init";
 import { corsPlugin } from "./lib/plugins/cors";
 import { prometheusPlugin } from "./lib/plugins/prometheus";
 import { safeJsonParse } from "./utils/config/transforms";
+import { startOrderConsumer } from "./utils/server/call-command";
 
 const appConfig: ElysiaConfig<string> = {
   serve: {
@@ -86,6 +87,7 @@ const app = new Elysia(appConfig)
 async function startServices() {
   await checkDatabasesHealth();
   await startNats();
+  startOrderConsumer();
 
   async function startMinio() {
     initMinio()

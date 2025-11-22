@@ -27,15 +27,15 @@ async function getEvents(
       .map(v => JSON.parse(v) as EventPayload);
   }
 
+  let keys: string[] = []
+
   if (type) {
     const ids = await redis.zrevrange(EVENTS_TYPE_KEY(type), 0, 31);
-    const keys = ids.map(id => EVENTS_TARGET_KEY(id));
-
-    return getObjects(keys);
+    keys = ids.map(id => EVENTS_TARGET_KEY(id));
+  } else {
+    const ids = await redis.lrange(EVENTS_ALL_KEY, -limit, -1);
+    keys = ids.map(id => EVENTS_TARGET_KEY(id));
   }
-
-  const ids = await redis.lrange(EVENTS_ALL_KEY, 0, limit - 1);
-  const keys = ids.map(id => EVENTS_TARGET_KEY(id));
 
   return getObjects(keys);
 }
@@ -51,13 +51,13 @@ export const eventPayload = t.Object({
   })
 })
 
-const eventsListPayload = t.Array(
-  eventPayload
-)
-
 export const eventsList = new Elysia()
   .model({
-    "events-list": withData(eventsListPayload)
+    "events-list": withData(
+      t.Array(
+        eventPayload
+      )
+    )
   })
   .get("/list", async ({ query }) => {
     const data = await getEvents(query);

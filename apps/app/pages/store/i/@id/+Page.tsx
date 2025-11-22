@@ -6,7 +6,6 @@ import { action } from "@reatom/core";
 import { pageContextAtom } from "@/shared/models/page-context.model";
 import { startPageEvents } from "@/shared/lib/events";
 import { useData } from "vike-react/useData"
-import { SetRecipientDialog } from "@/shared/components/app/shop/components/recipient/set-recipient";
 import { renderToHTMLString } from "@tiptap/static-renderer";
 import { editorExtensions } from "@/shared/components/config/editor";
 import type { JSONContent } from "@tiptap/react";
@@ -57,9 +56,6 @@ export default function Page() {
   useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "i" }), [pageContextAtom]);
 
   return (
-    <>
-      <SelectedDonate />
-      <SetRecipientDialog />
-    </>
+    <SelectedDonate />
   )
 }

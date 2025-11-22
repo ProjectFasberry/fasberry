@@ -67,7 +67,7 @@ const JOBS: Job[] = [
     callback: async function () {
       await wrapJobCb(this.name, updateServerStatus)
     },
-    immediately: false,
+    immediately: true,
     schedule: false
   },
   {

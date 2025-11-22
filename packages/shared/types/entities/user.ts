@@ -30,9 +30,14 @@ export type Player = {
   }
 }
 
-export type PlayerActivityPayload = {
+export type PlayerActivityPayload = | {
+  type: "online",
   nickname: string;
-  type: string;
+  server: string
+  issued_date: Date;
+} | {
+  type: "offline",
+  nickname: string,
   issued_date: Date | null;
 }
 

@@ -1,5 +1,5 @@
 import { reatomAsync } from "@reatom/async"
-import { getSkinDetails } from "../../skin/models/skin.model"
+import { getSkinDetails } from "../../player/models/skin.model"
 import { atom, batch, reatomMap } from "@reatom/framework"
 import { logError } from "@/shared/lib/log"
 

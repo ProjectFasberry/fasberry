@@ -9,12 +9,6 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
-export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
-
-export type Numeric = ColumnType<string, number | string, number | string>;
-
-export type PaymentCryptoTonStatus = "cancelled" | "captured" | "created" | "failed" | "received";
-
 export type PaymentStatus = "canceled" | "pending" | "succeeded" | "waitingForCapture";
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
@@ -23,7 +17,7 @@ export interface Payments {
   asset: string;
   comment: string | null;
   created_at: Generated<Timestamp>;
-  id: Generated<number>;
+  id: number;
   initiator: string;
   invoice_id: number;
   order_id: string;
@@ -34,31 +28,24 @@ export interface Payments {
   unique_id: string;
 }
 
-export interface PaymentsCrypto {
-  created_at: Generated<Timestamp | null>;
-  currency: string;
-  id: Generated<string>;
-  nickname: string;
-  orderid: string;
-  payment_type: string;
-  payment_value: string;
-  price: Numeric;
-  status: PaymentCryptoTonStatus;
+export interface PaymentsGame {
+  created_at: Generated<Timestamp>;
+  finished_at: Timestamp | null;
+  id: Generated<number>;
+  initiator: string;
+  item_id: number;
+  unique_id: string;
 }
 
-export interface PaymentsFiat {
-  created_at: Generated<Timestamp | null>;
-  id: Generated<string>;
-  nickname: string;
-  orderid: string;
-  payment_type: string;
-  payment_value: string;
-  price: Int8;
-  status: PaymentStatus;
+export interface PaymentsGameChilds {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  recipient: string;
+  store_item_id: number;
 }
 
 export interface DB {
   payments: Payments;
-  payments_crypto: PaymentsCrypto;
-  payments_fiat: PaymentsFiat;
+  payments_game: PaymentsGame;
+  payments_game_childs: PaymentsGameChilds;
 }

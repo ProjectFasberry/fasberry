@@ -19,8 +19,8 @@ services:
     environment:
       - NATS_TOKEN=${NATS_AUTH_TOKEN}
     volumes:
-      - ./data/fasberry/nats/data:/nats
-      - ./data/fasberry/nats/jetstream:/nats/jetstream
+      - ./data/nats/data:/nats
+      - ./data/nats/jetstream:/nats/jetstream
     networks:
       - fasberry
       
@@ -34,28 +34,30 @@ services:
       MINIO_ROOT_USER: ${MINIO_USER}      
       MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
     volumes:
-      - ./data/fasberry/minio/data:/data
+      - ./data/minio/data:/data
     command: server /data --console-address ":9001"
     restart: unless-stopped
     networks:
       - fasberry
 
-  redis:
-    image: 'redis:8.0.3'
-    container_name: redis
-    ports:
-      - '6379:6379'
-    volumes:
-      - ./data/fasberry/redis/data:/data 
-      - ./config/redis/redis.conf.tpl:/redis.conf.tpl:ro
-      - ./config/redis/entrypoint.sh:/entrypoint.sh:ro
+  dragonfly:
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    container_name: dragonfly
     environment:
-      - REDIS_USER_NAME=${REDIS_USER_NAME}
-      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
-    entrypoint: /entrypoint.sh
-    restart: always
-    networks:
-      - fasberry
+       - REDIS_USER_NAME=${REDIS_USER_NAME}
+       - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+    # `host` mode is NOT currently supported in Swarm Mode.
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+    # network_mode: "host"
+    volumes:
+      - ./data/dragonfly/data:/data
+      - ./scripts/dragonfly/init.sh:/usr/local/bin/init.sh
+    command: ["/usr/local/bin/init.sh"]
 
   lobby-db:
     container_name: lobby-db
@@ -69,10 +71,16 @@ services:
     ports:
       - ${LOBBY_MYSQL_PORT}:3306/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/lobby/data:/var/lib/mysql
+      - ./data/db/minecraft/lobby/data:/var/lib/mysql
     networks:
       - fasberry
-
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1;"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      
   bisquite-db:
     container_name: bisquite-db
     image: mariadb:11.8
@@ -85,10 +93,16 @@ services:
     ports:
       - ${BISQUITE_MYSQL_PORT}:3306/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/bisquite/data:/var/lib/mysql
-      - ./data/fasberry/db/minecraft/bisquite/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - ./data/db/minecraft/bisquite/data:/var/lib/mysql
+      - ./data/db/minecraft/bisquite/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
     networks:
       - fasberry
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1;"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   luckperms-db:
     container_name: luckperms-db
@@ -101,10 +115,16 @@ services:
     ports:
       - ${LUCKPERMS_POSTGRES_PORT}:5432/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/luckperms/data:/var/lib/postgresql/data
+      - ./data/db/minecraft/luckperms/data:/var/lib/postgresql/data
     networks:
       - fasberry
-
+    healthcheck:
+      test: ["CMD", "true"]
+      start_period: 0s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      
   general-db:
     container_name: general-db
     image: postgres:18
@@ -116,10 +136,16 @@ services:
     ports:
       - ${GENERAL_POSTGRES_PORT}:5432/tcp
     volumes:
-      - ./data/fasberry/db/main/data:/var/lib/postgresql/18/docker
+      - ./data/db/main/data:/var/lib/postgresql/18/docker
     networks:
       - fasberry
-  
+    healthcheck:
+      test: ["CMD", "true"]
+      start_period: 0s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   eco-db:
     container_name: eco-db
     image: mysql:9.2
@@ -132,7 +158,7 @@ services:
     ports:
       - ${ECO_MYSQL_PORT}:3306/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/eco/data:/var/lib/mysql
+      - ./data/db/minecraft/eco/data:/var/lib/mysql
 
   playerpoints-db:
     container_name: playerpoints-db
@@ -146,9 +172,15 @@ services:
     ports:
       - ${PLAYERPOINTS_MYSQL_PORT}:3306/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/playerpoints/data:/var/lib/mysql
+      - ./data/db/minecraft/playerpoints/data:/var/lib/mysql
     networks:
       - fasberry
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1;"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   reputation-db:
     container_name: reputation-db
@@ -162,9 +194,15 @@ services:
     ports:
       - ${REPUTATION_MYSQL_PORT}:3306/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/reputation/data:/var/lib/mysql
+      - ./data/db/minecraft/reputation/data:/var/lib/mysql
     networks:
       - fasberry
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1;"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   skins-proxy-db:
     container_name: skins-proxy-db
@@ -178,39 +216,16 @@ services:
     ports:
       - ${SKINS_MYSQL_PORT}:3306/tcp
     volumes:
-      - ./data/fasberry/db/minecraft/skins_proxy/data:/var/lib/mysql
+      - ./data/db/minecraft/skins_proxy/data:/var/lib/mysql
     networks:
       - fasberry
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./apps/backend/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=hibelkin
-    ports:
-      - "3001:3000"
-    depends_on:
-      - prometheus
-
-  cap-standalone: 
-    image: tiago2/cap:latest
-    container_name: cap-standalone
-    ports:
-      - "3002:3000"
-    environment:
-      ADMIN_KEY: ${CAP_PASSWORD}
-    volumes:
-      - ./data/fasberry/cap-data:/usr/src/app/.data
-    restart: unless-stopped
-
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1;"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      
   # backend:
   #   container_name: backend
   #   build:
@@ -236,18 +251,20 @@ services:
   #     - LUCKPERMS_POSTGRES_PORT=5432
   #     - GENERAL_POSTGRES_HOST=general-db
   #     - GENERAL_POSTGRES_PORT=5432
+  #     - MINIO_ENDPOINT=minio
   #   env_file:
   #     - apps/backend/.env
+  #     - apps/backend/.env.production
   #   volumes:
-  #     - ./data/fasberry/db/sqlite:/app/data/sqlite
+  #     - ./data/db/sqlite:/app/data/sqlite
   #   depends_on:
   #     - nats
   #     - redis
   #     - minio
   #   networks:
-  #     - fasberry
-  #     - traefik-internal
-      
+  #   - fasberry
+  #   - traefik-internal
+
   # app:
   #   container_name: app
   #   build:
@@ -256,15 +273,12 @@ services:
   #   ports:
   #     - "3003:3003"
   #   env_file:
-  #     - apps/app/.env.production.local
+  #     - apps/app/.env
+  #     - apps/app/.env.production
   #   networks:
+  #     - fasberry
   #     - traefik-internal
 
 networks:
-  traefik-internal:
-    external: true
   fasberry:
     name: fasberry
-
-volumes:
-  acme_data:

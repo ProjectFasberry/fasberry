@@ -4,10 +4,10 @@ import { getPlayerAvatar, getSkin } from "./skin.model";
 const head = new Elysia()
   .get("/head/:nickname", async ({ set, params }) => {
     const nickname = params.nickname;
-    const data = await getPlayerAvatar({ recipient: nickname })
+    const data = await getPlayerAvatar(set, nickname)
 
-    set.headers["Cache-Control"] = "public, max-age=60";
-    set.headers["vary"] = "Origin"
+    // set.headers["Cache-Control"] = "public, max-age=60";
+    // set.headers["vary"] = "Origin"
 
     return data
   }, {
@@ -19,10 +19,10 @@ const head = new Elysia()
 const skinData = new Elysia()
   .get('/skin/:nickname', async ({ set, params }) => {
     const nickname = params.nickname
-    const data = await getSkin(nickname)
+    const data = await getSkin(set, nickname)
 
-    set.headers["Cache-Control"] = "public, max-age=60";
-    set.headers["vary"] = "Origin"
+    // set.headers["Cache-Control"] = "public, max-age=60";
+    // set.headers["vary"] = "Origin"
 
     return data
   }, {

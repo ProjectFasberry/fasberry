@@ -10,11 +10,11 @@ import type { CartItem, CartPayload } from "@repo/shared/types/entities/store"
 import { client, withAbort, withJsonBody, withLogging, withQueryParams } from "@/shared/lib/client-wrapper";
 import { isEmptyArray } from "@/shared/lib/array";
 import { isAuthAtom } from "@/shared/models/page-context.model";
-import { getRecipient, setRecipientValueAtom, validateRecItem } from "./store-recipient.model";
-import { currentUserAtom } from "@/shared/models/current-user.model";
+import { getRecipient } from "./store-recipient.model";
 import { simulate } from "./store-item-status.model";
 import { cartDataAtom } from "./store-cart.model.atoms";
 import { DEFAULT_SOFT_TIMEOUT } from "@/shared/consts/delays";
+import { navigate } from "vike/client/router";
 
 export async function getCartData(init?: RequestInit) {
   return client<CartPayload>("store/cart/list", init)
@@ -119,14 +119,8 @@ export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
   const isAuth = ctx.get(isAuthAtom);
 
   if (!isAuth) {
-    const isExist = validateRecItem(ctx, id)
-
-    if (!isExist) return;
-  } else {
-    const currentUser = ctx.get(currentUserAtom)
-    if (!currentUser) throw new Error('Current user is not defined')
-
-    setRecipientValueAtom(ctx, currentUser.nickname)
+    ctx.schedule(() => navigate("/auth"))
+    return;
   }
 
   simulate(ctx, id, "load")
@@ -168,12 +162,9 @@ export const addItemToCartAction = reatomAsync(async (ctx, id: number) => {
     cartTrigger.touch(ctx)
 
     updateCart(ctx)
-    setRecipientValueAtom.reset(ctx);
   },
   onReject: (ctx, e) => {
     logError(e, { type: "combined" })
-
-    setRecipientValueAtom.reset(ctx);
   }
 }).pipe(withStatusesAtom())
 

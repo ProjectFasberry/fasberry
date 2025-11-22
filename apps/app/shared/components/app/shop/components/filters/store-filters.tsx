@@ -2,12 +2,44 @@ import { reatomComponent } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Checkbox, CheckboxProps } from "@repo/ui/checkbox"
 import { AtomState, Ctx } from "@reatom/core";
-import { storeCategoryAtom, storeWalletFilterAtom } from "../../models/store.model";
-import { IconFilter } from "@tabler/icons-react";
+import { onChange, storeCategoryAtom, storeItemsSearchQueryAtom, storeWalletFilterAtom } from "../../models/store.model";
+import { IconFilter, IconSearch } from "@tabler/icons-react";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@repo/ui/sheet"
-import { storeSectionWrapper } from "@/pages/store/index/+Page";
 import { LabelHTMLAttributes } from "react";
 import { isClientAtom } from "@/shared/models/page-context.model";
+import { tv } from "tailwind-variants";
+import { Input } from "@repo/ui/input";
+
+export const storeSectionWrapper = tv({
+  base: `bg-neutral-900 rounded-lg`,
+  variants: {
+    variant: {
+      default: "p-2 sm:p-3 lg:p-4",
+      reset: ""
+    }
+  },
+  defaultVariants: {
+    variant: "default"
+  }
+})
+
+export const StoreSearch = reatomComponent(({ ctx }) => {
+  const isClient = ctx.spy(isClientAtom);
+  const searchQuery = isClient ? ctx.spy(storeItemsSearchQueryAtom) : ""
+
+  return (
+    <div className={storeSectionWrapper({ className: "flex h-10 items-center justify-start w-full relative", variant: "reset" })}>
+      <IconSearch size={18} className="text-neutral-400 absolute left-2 sm:left-4" />
+      <Input
+        value={searchQuery}
+        placeholder="Найти..."
+        className='bg-transparent w-full pl-8 sm:pl-12'
+        onChange={e => onChange(ctx, e)}
+        maxLength={1024}
+      />
+    </div>
+  )
+}, "StoreSearch")
 
 const FILTERS = [
   {

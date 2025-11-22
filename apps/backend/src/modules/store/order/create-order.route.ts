@@ -4,12 +4,12 @@ import type { CreateOrderRoutePayload } from "@repo/shared/types/entities/paymen
 import { defineInitiator } from "#/lib/middlewares/define";
 import { wrapError } from "#/helpers/wrap-error";
 import { getCartSelectedItems } from "../cart/cart.model";
-import { processStoreGamePurchase } from "./order.model";
+import { createGamePaymentRecord, initialPrices, processStoreGamePurchase, updateGamePaymentRecord } from "./order.model";
 import { defineGlobalPrice } from "#/utils/store/store-transforms";
-import { nanoid } from "nanoid";
 import { GameCurrency } from "@repo/shared/schemas/payment";
 import { withError } from "#/shared/schemas";
 import { getBalance } from "#/modules/user/balance.model";
+import { nanoid } from "nanoid";
 
 const ERRORS_MAP: Record<string, string> = {
   "TIMEOUT": "Похоже игровой сервер не доступен"
@@ -39,14 +39,36 @@ export const createOrder = new Elysia()
     const itemsMap = new Map(items.map(item => [item.id, item.recipient]));
 
     try {
-      const result = await processStoreGamePurchase({ items, itemsMap });
+      const finishPrice = items.reduce((acc, item) => {
+        const { currency, price } = item;
 
-      if (!result.data) {
+        if (currency in acc) {
+          acc[currency] += parseFloat(price);
+        } else {
+          acc[currency] = parseFloat(price);
+        }
+
+        return acc;
+      }, initialPrices);
+
+      const uniqueId = nanoid(9);
+
+      const products = items.map(target => ({
+        ...target,
+        recipient: itemsMap.get(target.id)!
+      }));
+
+      console.log(products);
+
+      await createGamePaymentRecord(uniqueId, initiator, products)
+      
+      const result = await processStoreGamePurchase(initiator, finishPrice, products);
+
+      if (result.error) {
         return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, wrapError(result.error))
       }
 
-      const uniqueId = nanoid(9);
-      const { BELKOIN, CHARISM } = result.data.totalPrice;
+      const { BELKOIN, CHARISM } = finishPrice;
 
       const price: Record<GameCurrency, number> = {
         BELKOIN: Number(BELKOIN ?? 0),
@@ -54,18 +76,22 @@ export const createOrder = new Elysia()
       }
 
       const data: CreateOrderRoutePayload = {
-        purchase: { uniqueId },
-        payload: { price }
+        purchase: { 
+          uniqueId 
+        },
+        payload: { 
+          price 
+        }
       };
+
+      await updateGamePaymentRecord(uniqueId)
 
       return { data }
     } catch (e) {
       if (e instanceof Error) {
         const message = ERRORS_MAP[e.message] ?? e.message
-        return status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, wrapError(message))
+        throw status(HttpStatusEnum.HTTP_500_INTERNAL_SERVER_ERROR, wrapError(message))
       }
-
-      throw e
     }
   }, {
     response: {

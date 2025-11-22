@@ -6,7 +6,9 @@ import { processDonatePayment } from "#/utils/payment/process-donate-payment";
 import { payments } from "#/shared/database/payments-db";
 import { getRedis } from "#/shared/redis/init";
 import z from "zod";
+import { nanoid } from "nanoid"
 import { safeJsonParse } from "#/utils/config/transforms";
+import { StoreCurrency } from "@repo/shared/types/db/auth-database-types";
 
 export async function getOrder(uniqueId: string): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
   async function getCachedOrder(): Promise<Omit<PaymentCacheData, "expires_in"> | null> {
@@ -137,112 +139,129 @@ type Item = {
   value: string;
 }
 
-type ProcessStoreGamePurchase = {
-  items: Array<Item & { currency: GameCurrency }>,
-  itemsMap: Map<number, string>
-}
-
-type ProcessStoreGamePurchasePayload = {
-  data: {
-    isSuccess: boolean;
-    totalPrice: Record<"CHARISM" | "BELKOIN", number>;
-  } | null,
-  error: string | null
-}
-
-const initialPrices = Object.fromEntries(
+export const initialPrices = Object.fromEntries(
   GAME_CURRENCIES.map(currency => [currency, 0])
 ) as Record<GameCurrency, number>;
 
-export async function processStoreGamePurchase({
-  items, itemsMap
-}: ProcessStoreGamePurchase): Promise<ProcessStoreGamePurchasePayload> {
-  if (!items.length) return { data: null, error: null }
+export async function createGamePaymentRecord(
+  uniqueId: string,
+  initiator: string,
+  products: {
+    recipient: string;
+    id: number;
+    title: string;
+    price: string;
+    type: string;
+    value: string;
+    currency: GameCurrency;
+  }[],
+) {
+  const ids: number[] = []
 
-  const finishPrice = items.reduce((acc, item) => {
-    const { currency, price } = item;
-
-    if (currency in acc) {
-      acc[currency] += parseFloat(price);
-    } else {
-      acc[currency] = parseFloat(price);
+  const query = await payments.transaction().execute(async (trx) => {
+    for (const { recipient, id: store_item_id } of products) {
+      const { id } = await trx
+        .insertInto("payments_game_childs")
+        .values({ recipient, store_item_id, })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+  
+      ids.push(id)
     }
+  
+    const payloadOrderItemIds = ids.map((item_id) => ({
+      unique_id: uniqueId, initiator, item_id
+    }))
+  
+    await trx
+      .insertInto("payments_game")
+      .values(payloadOrderItemIds)
+      .executeTakeFirstOrThrow()
+  })
 
-    return acc;
-  }, initialPrices);
+  return query;
+}
 
-  async function execute() {
-    const globalTasks: TransactionalTask[] = []
+export async function updateGamePaymentRecord(uniqueId: string) {
+  const query = await payments
+    .updateTable("payments_game")
+    .set({ finished_at: new Date().toISOString() })
+    .where("unique_id", "=", uniqueId)
+    .executeTakeFirstOrThrow();
 
-    if (finishPrice.BELKOIN > 0) {
-      const takeBelkoinTask: TransactionalTask = {
-        name: "take-belkoin",
-        execute: (signal) => callServerCommand(
-          { parent: "p", value: `take ${finishPrice.BELKOIN}` },
-          { signal }
-        ),
-        rollback: (signal) => callServerCommand(
-          { parent: "p", value: `give ${finishPrice.BELKOIN}` },
-          { signal }
-        )
-      };
+  return query;
+}
 
-      globalTasks.push(takeBelkoinTask);
-    }
-
-    if (finishPrice.CHARISM > 0) {
-      const takeCharismTask: TransactionalTask = {
-        name: "take-charism",
-        execute: (signal) => callServerCommand(
-          { parent: "p", value: `take ${finishPrice.CHARISM}` },
-          { signal }
-        ),
-        rollback: (signal) => callServerCommand(
-          { parent: "p", value: `give ${finishPrice.CHARISM}` },
-          { signal }
-        )
-      };
-
-      globalTasks.push(takeCharismTask);
-    }
-
-    const products = items.map(target => ({
-      ...target,
-      recipient: itemsMap.get(target.id)!
-    }));
-
-    products.forEach(product => {
-      const productTasks = createTasksForItem(product);
-      globalTasks.push(...productTasks);
-    });
-
-    const results = await executeSaga(globalTasks)
-
-    console.log(results)
-
-    return results;
-  }
-
+export async function processStoreGamePurchase(
+  initiator: string,
+  finishPrice: typeof initialPrices,
+  products: {
+    recipient: string;
+    id: number;
+    price: string;
+    type: string;
+    value: string;
+    currency: StoreCurrency;
+    title: string;
+  }[]
+) {
   try {
+    async function execute() {
+      const globalTasks: TransactionalTask[] = []
+
+      const { BELKOIN, CHARISM } = finishPrice
+
+      if (BELKOIN > 0) {
+        const takeBelkoinTask: TransactionalTask = {
+          name: "take-belkoin",
+          execute: (signal) => callServerCommand(
+            { parent: "p", value: `take ${initiator} ${BELKOIN}` },
+            { signal }
+          ),
+          rollback: (signal) => callServerCommand(
+            { parent: "p", value: `give ${initiator} ${BELKOIN}` },
+            { signal }
+          )
+        };
+
+        globalTasks.push(takeBelkoinTask);
+      }
+
+      if (CHARISM > 0) {
+        const takeCharismTask: TransactionalTask = {
+          name: "take-charism",
+          execute: (signal) => callServerCommand(
+            { parent: "cmi", value: `money take ${initiator} ${CHARISM}` },
+            { signal }
+          ),
+          rollback: (signal) => callServerCommand(
+            { parent: "cmi", value: `money give ${initiator} ${CHARISM} ` },
+            { signal }
+          )
+        };
+
+        globalTasks.push(takeCharismTask);
+      }
+
+      products.forEach(product => {
+        const productTasks = createTasksForItem(product);
+        globalTasks.push(...productTasks);
+      });
+
+      const results = await executeSaga(globalTasks)
+      return results;
+    }
+
     const result = await execute()
+    console.log(result);
 
     if (result.status === 'error') {
-      console.error("Game currency purchase failed and was rolled back.", result.error);
-
-      return {
-        data: null,
-        error: `${result.error instanceof Error ? result.error.message : 'Unknown error'}`
-      };
+      const error = `${result.error instanceof Error ? result.error.message : 'Unknown error'}`
+      return { data: null, error };
     }
 
-    const data = { isSuccess: result.results.length >= 1, totalPrice: finishPrice }
-
-    return { data, error: null }
+    return { result }
   } catch (e) {
-    if (e instanceof Error) {
-      return { data: null, error: e.message }
-    }
+    throw e
   }
-
-  return { data: null, error: null }
 }

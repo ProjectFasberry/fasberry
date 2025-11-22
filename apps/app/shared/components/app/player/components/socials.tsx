@@ -1,0 +1,58 @@
+import { isClientAtom } from "@/shared/models/page-context.model"
+import { reatomComponent, useUpdate } from "@reatom/npm-react"
+import { Separator } from "@repo/ui/separator"
+import { Skeleton } from "@repo/ui/skeleton"
+import { playerSocialsAction, PlayerSocialsPayload, PlayerSocialsValuePayload, SOCIAL_EVENTS, SOCIAL_ICONS } from "../models/socials.model"
+import { userParamAtom } from "../models/player.model"
+
+const SocialCard = ({ type, value }: { type: PlayerSocialsPayload["type"], value: PlayerSocialsValuePayload }) => {
+  const icon = SOCIAL_ICONS[type]()
+  const { cb, type: cbType } = SOCIAL_EVENTS[type];
+
+  return (
+    cbType === 'link' ? (
+      <a href={cb(value)} className="flex items-center cursor-pointer gap-2">
+        {icon}
+        <span className="hidden sm:inline text-lg">{value.username}</span>
+      </a>
+    ) : (
+      <div className="flex items-center cursor-pointer gap-2" onClick={() => cb(value)}>
+        {icon}
+        <span className="hidden sm:inline text-lg">{value.username}</span>
+      </div>
+    )
+  )
+}
+
+export const PlayerSocials = reatomComponent(({ ctx }) => {
+  useUpdate(playerSocialsAction, [userParamAtom]);
+
+  const data = ctx.spy(playerSocialsAction.dataAtom);
+
+  if (!ctx.spy(isClientAtom) || ctx.spy(playerSocialsAction.statusesAtom).isPending) {
+    return (
+      <div className="flex flex-col w-full gap-4">
+        <Separator />
+        <div className="flex items-center gap-2">
+          <Skeleton className="w-5 h-5 rounded-md" />
+          <Skeleton className="w-32 h-5 rounded-md" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="w-5 h-5 rounded-md" />
+          <Skeleton className="w-32 h-5 rounded-md" />
+        </div>
+        <Separator />
+      </div>
+    )
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="flex flex-col w-full gap-4">
+      <Separator className="hidden sm:block" />
+      {data.map((item) => <SocialCard key={item.type} type={item.type} value={item.value} />)}
+      <Separator className="hidden sm:block" />
+    </div>
+  )
+}, "PlayerSocials")

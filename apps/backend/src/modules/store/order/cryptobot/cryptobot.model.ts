@@ -13,7 +13,6 @@ import { logger } from "#/utils/config/logger";
 import { CreateOrderTopUpSchema, OrderInputPayload, OutputPayload } from "@repo/shared/schemas/payment";
 import { getRedis } from "#/shared/redis/init";
 import { nanoid } from "nanoid";
-import { DEFAULT_EXPIRATION_DATE } from "#/shared/constants/invoice-defaults";
 import { CRYPTO_PAY_API } from "#/shared/api/crypto-api";
 import { ExchangeRate, InvoiceType } from "#/shared/types/payment/payment-types";
 import { z } from "zod"
@@ -43,6 +42,8 @@ type CreateCryptoOrder = {
 }
 
 export type CryptoPayPayload<T> = { ok: boolean, result: T }
+
+const DEFAULT_EXPIRATION_DATE = 10 * 60
 
 async function createCryptoOrder({
   totalPrice, asset, initiator, value, target, comment

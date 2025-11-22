@@ -3,78 +3,74 @@ import { getNats } from "#/shared/nats/client";
 import { SERVER_EVENT_CHECK_PLAYER_STATUS, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
 import dayjs from "dayjs";
 import { sql } from "kysely";
+import { getPlayerStatusGlobal } from "../status/status.model";
+import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
 
 type PlayerStatus = {
   nickname: string;
   type: "online" | "offline"
 }
 
-type GameStatusPayload = {
-  nickname: string;
-  type: string;
-  issued_date: Date | null;
-}
-
 async function getUserLastVisitTime(nickname: string) {
   const query = await general
-    .selectFrom('activity_users as lj')
+    .selectFrom('activity_users')
     .select([
-      'lj.event as join_event',
+      'activity_users.event',
       sql<string>`(
         SELECT q.event
         FROM activity_users q
-        WHERE q.nickname = lj.nickname
+        WHERE q.nickname = activity_users.nickname
           AND q.type = 'quit'
-          AND q.event > lj.event
+          AND q.event > activity_users.event
         ORDER BY q.event ASC
         LIMIT 1
       )`.as('quit_event'),
     ])
-    .where('lj.nickname', '=', nickname)
-    .where('lj.type', '=', 'join')
-    .orderBy('lj.event', 'desc')
+    .where('activity_users.nickname', '=', nickname)
+    .where('activity_users.type', '=', 'join')
+    .orderBy('activity_users.event', 'desc')
     .limit(1)
     .executeTakeFirst();
 
   const data = {
-    quited: query?.join_event ? dayjs(query.quit_event).toDate() : null,
-    joined: query?.join_event ? dayjs(query.join_event).toDate() : null
+    quited: query?.quit_event ? dayjs(query.quit_event).toDate() : null,
+    joined: query?.event ? dayjs(query.event).toDate() : null
   }
 
   return data
 }
 
-export async function getPlayerStatus(nickname: string): Promise<GameStatusPayload> {
+export async function getPlayerStatus(nickname: string): Promise<PlayerActivityPayload> {
   const nc = getNats();
 
-  const lastVisitTime = await getUserLastVisitTime(nickname);
-
-  const payload = {
-    event: SERVER_EVENT_CHECK_PLAYER_STATUS,
-    nickname
-  }
-
   try {
-    const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 1000 })
+    const playerStatus = await getPlayerStatusGlobal(nickname)
 
-    if (res) {
-      const status = res.json<PlayerStatus>();
+    if (playerStatus) {
+      const { currentServer } = playerStatus
 
-      if (!lastVisitTime) {
-        return { ...status, issued_date: null }
-      }
-
-      let statusType: "joined" | "quited" = "quited";
-
-      if (status.type) {
-        statusType = status.type === "online" ? "joined" : "quited";
-      }
-
-      return { ...status, issued_date: lastVisitTime[statusType] }
+      return { type: "online", nickname, server: currentServer, issued_date: dayjs().toDate() }
     } else {
-      return { nickname, type: "offline", issued_date: lastVisitTime?.quited ?? null }
+      const payload = {
+        event: SERVER_EVENT_CHECK_PLAYER_STATUS,
+        nickname
+      }
+
+      const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 1000 })
+
+      if (res) {
+        const { type } = res.json<PlayerStatus>();
+        if (!type) throw new Error();
+
+        const lastVisitTime = await getUserLastVisitTime(nickname);
+
+        return { type: "offline", nickname, issued_date: dayjs(lastVisitTime["quited"]).toDate() }
+      } else {
+        return { nickname, issued_date: null, type: "offline" }
+      }
     }
   } catch (e) {
-    return { nickname, type: "offline", issued_date: lastVisitTime?.quited ?? null }
+    console.error(e)
+    return { nickname, type: "offline", issued_date: null }
   }
 }

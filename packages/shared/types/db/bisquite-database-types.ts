@@ -9,6 +9,69 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
+export interface BetonquestBackpack {
+  amount: number;
+  id: Generated<number>;
+  instruction: string;
+  profileID: string;
+}
+
+export interface BetonquestGlobalPoints {
+  category: string;
+  count: number;
+}
+
+export interface BetonquestGlobalTags {
+  tag: string;
+}
+
+export interface BetonquestJournal {
+  date: Date;
+  id: Generated<number>;
+  pointer: string;
+  profileID: string;
+}
+
+export interface BetonquestMigration {
+  migration_id: number;
+  namespace: string;
+  time: Generated<Date | null>;
+}
+
+export interface BetonquestObjectives {
+  instructions: string;
+  objective: string;
+  profileID: string;
+}
+
+export interface BetonquestPlayer {
+  active_profile: string;
+  conversation: Generated<string | null>;
+  language: string;
+  playerID: string;
+}
+
+export interface BetonquestPlayerProfile {
+  name: string;
+  playerID: string;
+  profileID: string;
+}
+
+export interface BetonquestPoints {
+  category: string;
+  count: number;
+  profileID: string;
+}
+
+export interface BetonquestProfile {
+  profileID: string;
+}
+
+export interface BetonquestTags {
+  profileID: string;
+  tag: string;
+}
+
 export interface ChatControl {
   Data: Generated<string | null>;
   LastModified: Generated<number | null>;
@@ -148,7 +211,7 @@ export interface Favorites {
   id: Generated<number | null>;
 }
 
-export interface INDEXMAPPING {
+export interface IndexMapping {
   BITMASK_INDEX: Generated<number | null>;
   ENTRY: Generated<string | null>;
 }
@@ -174,7 +237,7 @@ export interface JobsBlocks {
   z: Generated<number | null>;
 }
 
-export interface JobsExploreData {
+export interface JobsExploredata {
   chunkX: Generated<number | null>;
   chunkZ: Generated<number | null>;
   id: Generated<number>;
@@ -183,7 +246,7 @@ export interface JobsExploreData {
   worldname: Generated<string | null>;
 }
 
-export interface JobsJobNames {
+export interface JobsJobnames {
   id: Generated<number>;
   name: Generated<string | null>;
 }
@@ -387,12 +450,6 @@ export interface PlayerpointsUsernameCache {
   uuid: string;
 }
 
-export interface Players {
-  Name: string;
-  TeamID: number;
-  UUID: string;
-}
-
 export interface Reputation {
   acceptReputation: Generated<number | null>;
   id: Generated<number>;
@@ -416,22 +473,11 @@ export interface TabUsers {
   world: Generated<string | null>;
 }
 
-export interface Teams {
-  ID: Generated<number>;
-}
-
-export interface Unredeemed {
-  GiveRewards: number;
-  Key: string;
-  Namespace: string;
-  TeamID: number;
-}
-
-export interface USELOCK {
+export interface UseLock {
   STATUS_LOCK: Generated<number | null>;
 }
 
-export interface USERPERFERENCES {
+export interface UserPerferences {
   HOLOGRAM: Generated<string | null>;
   ITEMDROP: Generated<string | null>;
   ITEMSTAND: Generated<string | null>;
@@ -440,6 +486,17 @@ export interface USERPERFERENCES {
 }
 
 export interface DB {
+  betonquest_backpack: BetonquestBackpack;
+  betonquest_global_points: BetonquestGlobalPoints;
+  betonquest_global_tags: BetonquestGlobalTags;
+  betonquest_journal: BetonquestJournal;
+  betonquest_migration: BetonquestMigration;
+  betonquest_objectives: BetonquestObjectives;
+  betonquest_player: BetonquestPlayer;
+  betonquest_player_profile: BetonquestPlayerProfile;
+  betonquest_points: BetonquestPoints;
+  betonquest_profile: BetonquestProfile;
+  betonquest_tags: BetonquestTags;
   ChatControl: ChatControl;
   ChatControl_Log: ChatControlLog;
   ChatControl_Mail: ChatControlMail;
@@ -449,11 +506,11 @@ export interface DB {
   CMI_users: CMIUsers;
   commands: Commands;
   favorites: Favorites;
-  INDEX_MAPPING: INDEXMAPPING;
+  index_mapping: IndexMapping;
   jobs_archive: JobsArchive;
   jobs_blocks: JobsBlocks;
-  jobs_exploreData: JobsExploreData;
-  jobs_jobNames: JobsJobNames;
+  jobs_exploredata: JobsExploredata;
+  jobs_jobnames: JobsJobnames;
   jobs_jobs: JobsJobs;
   jobs_limits: JobsLimits;
   jobs_log: JobsLog;
@@ -476,12 +533,9 @@ export interface DB {
   playerpoints_migrations: PlayerpointsMigrations;
   playerpoints_points: PlayerpointsPoints;
   playerpoints_username_cache: PlayerpointsUsernameCache;
-  Players: Players;
   reputation: Reputation;
   tab_groups: TabGroups;
   tab_users: TabUsers;
-  Teams: Teams;
-  Unredeemed: Unredeemed;
-  USE_LOCK: USELOCK;
-  USER_PERFERENCES: USERPERFERENCES;
+  use_lock: UseLock;
+  user_perferences: UserPerferences;
 }

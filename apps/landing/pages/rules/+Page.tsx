@@ -14,7 +14,8 @@ import { JSONContent } from "@tiptap/react"
 import { renderToHTMLString } from '@tiptap/static-renderer'
 import { editorExtensions } from "@/shared/components/config/editor";
 import { dayjs } from "@/shared/lib/create-dayjs";
-import { cardWrapper } from "@/shared/styles/variants";
+import { sectionVariant, sectionVariantChild } from "@/shared/styles/variants";
+import { clientOnly } from "vike-react/clientOnly";
 
 type RulesTag = {
   title: string,
@@ -36,20 +37,24 @@ const rulesTagVariant = tv({
   base: `flex bg-neutral-500 items-center rounded-sm text-xs md:text-base lg:text-md px-2`
 })
 
+const RulesTagsSkeleton = () => {
+  return (
+    <>
+      <Skeleton className={rulesTagVariant({ className: "h-6 w-24" })} />
+      <Skeleton className={rulesTagVariant({ className: "h-6 w-8" })} />
+      <Skeleton className={rulesTagVariant({ className: "h-6 w-14" })} />
+      <Skeleton className={rulesTagVariant({ className: "h-6 w-12" })} />
+    </>
+  )
+}
+
 const RulesTags = reatomComponent(({ ctx }) => {
   useUpdate(rulesTagsAction, []);
 
   const data = ctx.spy(rulesTagsAction.dataAtom);
 
   if (ctx.spy(rulesTagsAction.statusesAtom).isPending) {
-    return (
-      <>
-        <Skeleton className={rulesTagVariant({ className: "h-6 w-24" })} />
-        <Skeleton className={rulesTagVariant({ className: "h-6 w-8" })} />
-        <Skeleton className={rulesTagVariant({ className: "h-6 w-14" })} />
-        <Skeleton className={rulesTagVariant({ className: "h-6 w-12" })} />
-      </>
-    )
+    return <RulesTagsSkeleton/>
   }
 
   if (!data) return null;
@@ -102,7 +107,7 @@ const RuleItem = ({ content }: { content: JSONContent }) => {
 
 const RulesItemSkeleton = () => {
   return (
-    <div className={cardWrapper({ className: "flex flex-col gap-4 w-full h-full" })}>
+    <div className="card-wrapper flex flex-col gap-4 w-full h-full">
       <Skeleton className="w-1/3 h-10" />
       <div className="flex flex-col *:h-4 gap-1 w-full">
         <Skeleton className="w-full" />
@@ -116,20 +121,24 @@ const RulesItemSkeleton = () => {
   )
 }
 
+const RulesSkeleton = () => {
+  return (
+    <>
+      <RulesItemSkeleton />
+      <RulesItemSkeleton />
+      <RulesItemSkeleton />
+      <RulesItemSkeleton />
+    </>
+  )
+}
+
 const Rules = reatomComponent(({ ctx }) => {
   useUpdate(rulesAction, []);
 
   const data = ctx.spy(rulesAction.dataAtom);
 
   if (ctx.spy(rulesAction.statusesAtom).isPending) {
-    return (
-      <>
-        <RulesItemSkeleton />
-        <RulesItemSkeleton />
-        <RulesItemSkeleton />
-        <RulesItemSkeleton />
-      </>
-    )
+    return <RulesSkeleton />
   }
 
   if (ctx.spy(rulesAction.statusesAtom).isRejected || !data) {
@@ -142,7 +151,7 @@ const Rules = reatomComponent(({ ctx }) => {
 
   return (
     data.map((item) => (
-      <div key={item.id} className={cardWrapper({ className: "flex flex-col gap-4 w-full h-full" })}>
+      <div key={item.id} className="card-wrapper flex flex-col gap-4 w-full h-full">
         <Typography className="text-2xl font-semibold">
           {item.category}
         </Typography>
@@ -161,28 +170,29 @@ const Rules = reatomComponent(({ ctx }) => {
 
 const url = getStaticObject("backgrounds", "rules_background.png")
 
+const RulesWrapper = clientOnly(async () => Rules)
+const RulesTagsWrapper = clientOnly(async () => RulesTags);
+
 export default function Page() {
   return (
     <MainWrapperPage variant="with_section">
       <div
-        className={`full-screen-section h-[80vh] lg:min-h-screen flex items-center justify-start
-					bg-bottom md:bg-center bg-cover
-        `}
+        className={sectionVariant({ className: "bg-bottom md:bg-center bg-cover" })}
         style={{ backgroundImage: `url(${url})` }}
       >
         <Overlay variant="default" />
         <WrapperTitle>
-          <div className="flex flex-col gap-6 w-full lg:max-w-3xl items-start justify-center">
+          <div className="flex flex-col gap-6 w-full lg:max-w-3xl items-start justify-start">
             <div className="flex flex-col gap-2 lg:max-w-3xl">
-              <h1 className="text-left text-shadow-xl text-5xl lg:text-6xl text-gold">
+              <h1 className={sectionVariantChild().title({ className: "text-gold" })}>
                 Правила проекта
               </h1>
-              <Typography color="white" className="text-left text-2xl md:text-3xl">
+              <Typography color="white" className={sectionVariantChild().subtitle()}>
                 Правила созданы для чего? Чтобы их не нарушать!
               </Typography>
             </div>
-            <Link href="#rules-list">
-              <Button variant="minecraft" className="group px-6 py-0.5 gap-2">
+            <Link href="#rules-list" className={sectionVariantChild().action()}>
+              <Button variant="minecraft" className="w-full px-6 py-0.5 gap-2">
                 <Typography color="white" className="text-lg">
                   Список правил
                 </Typography>
@@ -194,19 +204,19 @@ export default function Page() {
       <div className="full-screen-section py-32">
         <div className="flex flex-col gap-10 responsive mx-auto">
           <div
-            className={cardWrapper({ className: "flex flex-col md:flex-row w-full gap-2 justify-between" })}
+            className="card-wrapper flex flex-col md:flex-row w-full gap-2 justify-between"
           >
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2">
               <Typography title="Актуальные теги" color="white" className="text-md lg:text-lg xl:text-xl">
                 Актуальные теги:
               </Typography>
               <div className="flex flex-wrap gap-2">
-                <RulesTags />
+                <RulesTagsWrapper fallback={<RulesTagsSkeleton />} />
               </div>
             </div>
           </div>
           <div id="rules-list" className="flex flex-col gap-6 w-full h-full">
-            <Rules />
+            <RulesWrapper fallback={<RulesSkeleton />} />
           </div>
         </div>
       </div>

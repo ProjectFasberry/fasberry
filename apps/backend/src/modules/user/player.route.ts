@@ -27,13 +27,13 @@ export const player = new Elysia()
   .model({
     "player": withData(PlayerPayload)
   })
-  .get("/player/:nickname", async ({ status, nickname: initiator, params }) => {
+  .get("/player/:nickname", async ({ status, set, nickname: initiator, params }) => {
     const recipient = params.nickname;
 
     const [main, group, avatar, rate] = await Promise.all([
       getMain({ recipient }),
       getDonate({ recipient }),
-      getPlayerAvatar({ recipient }),
+      getPlayerAvatar(set, recipient),
       getRate({ recipient, initiator }),
     ]);
 

@@ -9,16 +9,18 @@ const bgImage = getStaticObject("community", "dragon_dead.webp")
 const description = `Помогите развитию проекта Fasberry, поддержав нас! Ваш вклад пойдет на развитие серверов, 
 улучшение игрового опыта и создание уникального контента для игроков.`
 
-export const data = async (ctx: PageContextServer) => {
+export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()
+
+  const url = `${LANDING_ENDPOINT}${pageContext.urlPathname}`
 
   config({
     title: wrapTitle(`Поддержка`),
     description,
     Head: (
       <>
-        <link rel="canonical" href={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
-        <meta property="og:url" content={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
+        <link rel="canonical" href={url} />
+        <meta property="og:url" content={url} />
         <meta property="og:title" content="Поддержка Fasberry" />
         <meta property="og:description" content={description} />
         <meta property="og:locale" content="ru_RU" />

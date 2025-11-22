@@ -8,6 +8,8 @@ export default {
   reactStrictMode: false,
   prefetchStaticAssets: 'viewport',
   passToClient: ['snapshot'],
-  ssr: false,
-  prerender: true,
+  ssr: true,
+  redirects: {
+    "/wiki": "/wiki/general"
+  }
 } satisfies Config;

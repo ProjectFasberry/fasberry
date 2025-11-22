@@ -231,6 +231,14 @@ export interface PlayersPermissions {
   permission_id: number;
 }
 
+export interface PlayersSocials {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  nickname: string;
+  social: string;
+  value: Json;
+}
+
 export interface PrivatedChat {
   created_at: Generated<Timestamp>;
   edited: Generated<boolean>;
@@ -389,6 +397,7 @@ export interface DB {
   permissions: Permissions;
   players: Players;
   players_permissions: PlayersPermissions;
+  players_socials: PlayersSocials;
   privated_chat: PrivatedChat;
   referrals: Referrals;
   role_permissions: RolePermissions;

@@ -6,13 +6,13 @@ export type StatusPayload = {
     players: string[];
   };
   servers: {
-    bisquite: {
+    [key: string]: {
       online: number;
       max: number;
       players: string[];
       status: string;
-    };
-  };
+    }
+  }
 }
 
 export type EventPayload = {

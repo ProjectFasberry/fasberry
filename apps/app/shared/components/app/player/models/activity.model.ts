@@ -14,8 +14,8 @@ export const playerActivityAction = reatomAsync(async (ctx) => {
 
   if (!nickname) return null;
 
-  const result = await ctx.schedule(() => 
-    client<PlayerActivityPayload>(`server/activity/now/${nickname}`).exec()
+  const result = await ctx.schedule(() =>
+    client<PlayerActivityPayload>(`server/activity/now/${nickname}`, { retry: 1 }).exec()
   )
 
   return { nickname, result }
@@ -47,7 +47,23 @@ type PlayerLocation = {
 }
 
 export const playerLocationAction = reatomAsync(async (ctx, nickname: string) => {
-  return await ctx.schedule(() => 
-    client<PlayerLocation>(`server/location/${nickname}`).exec()
+  return await ctx.schedule(() =>
+    client<PlayerLocation>(`server/location/${nickname}`, { retry: 1 }).exec()
   )
-}).pipe(withDataAtom(null), withStatusesAtom(), withCache({ swr: false }))
+}).pipe(
+  withDataAtom(null),
+  withStatusesAtom(),
+  withCache({ swr: false })
+)
+
+playerLocationAction.onReject.onCall((ctx) => {
+  playerLocationAction.dataAtom(ctx, {
+    world: "asdsad",
+    x: 5,
+    y: 5,
+    z: 5,
+    pitch: 5,
+    yaw: 5,
+    customLocation: "asd"
+  })
+})

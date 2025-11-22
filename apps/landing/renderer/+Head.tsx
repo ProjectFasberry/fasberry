@@ -1,9 +1,8 @@
 import { getStaticObject } from "@/shared/lib/volume";
-import { usePageContext } from "vike-react/usePageContext";
+
+const bgImage = getStaticObject("backgrounds", "donate_background.png")
 
 export default function HeadDefault() {
-  const ctx = usePageContext()
-
   return (
     <>
       <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -36,28 +35,20 @@ export default function HeadDefault() {
       <meta property="og:locale" content="ru_RU" />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Официальный сайт майнкрафт сервера Fasberry." />
-      <meta property="og:image" content={getStaticObject("background", "donate_background.png")} />
+      <meta property="og:image" content={bgImage} />
       <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta name="twitter:title" content="Fasberry Project" />
       <meta name="twitter:description" content="Сколько хороших и комфортных для вас майнкрафт-серверов вы знаете/знали? Теперь знаете на один больше." />
-      <meta name="twitter:image" content={getStaticObject("background", "donate_background.png")} />
+      <meta name="twitter:image" content={bgImage} />
       <meta property="twitter:image:type" content="image/jpeg" />
       <meta property="twitter:image:width" content="1200" />
       <meta property="twitter:image:height" content="630" />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow, noimageindex, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
-      <link rel="preconnect" href="https://mc.fasberry.su" crossOrigin="" />
+      <link rel="preconnect" href="https://api.fasberry.su" crossOrigin="" />
       <link rel="preconnect" href="https://volume.fasberry.su" crossOrigin="" />
-      <link rel="preconnect" href="https://kong.fasberry.su" crossOrigin="" />
-      <link
-        rel="preload"
-        as="font"
-        type="font/woff2"
-        href="/fonts/Monocraft.woff2"
-        crossOrigin=""
-      />
       <link
         rel="preload"
         as="font"
