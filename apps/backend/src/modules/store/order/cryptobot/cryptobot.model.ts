@@ -5,18 +5,18 @@ import {
   getOrderKey, 
   getOrderLink, 
   getPriceInCurrency, 
-  PaymentCacheData, 
   rollbackOrder, 
   validateOrderLimit 
 } from "../create-crypto-order";
 import { logger } from "#/utils/config/logger";
-import { CreateOrderTopUpSchema, OrderInputPayload, OutputPayload } from "@repo/shared/schemas/payment";
+import type { CreateOrderTopUpSchema, OrderInputPayload, OutputPayload } from "@repo/shared/schemas/payment";
 import { getRedis } from "#/shared/redis/init";
 import { nanoid } from "nanoid";
 import { CRYPTO_PAY_API } from "#/shared/api/crypto-api";
-import { ExchangeRate, InvoiceType } from "#/shared/types/payment/payment-types";
-import { z } from "zod"
+import type { ExchangeRate, InvoiceType } from "#/shared/types/payment/payment-types";
+import type { z } from "zod"
 import { getRedisKey } from "#/helpers/redis";
+import type { OrderSingleDefault } from "@repo/shared/types/entities/store";
 
 type CreateInvoicePayload = Pick<InvoiceType,
   | "currency_type"
@@ -76,7 +76,7 @@ async function createCryptoOrder({
 
   const orderKey = getOrderKey(uniqueId)
 
-  const orderData: PaymentCacheData = {
+  const orderData: OrderSingleDefault = {
     unique_id: uniqueId,
     asset,
     price,

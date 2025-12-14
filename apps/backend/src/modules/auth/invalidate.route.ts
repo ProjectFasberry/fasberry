@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { deleteSession } from "./auth.model";
-import { CROSS_SESSION_KEY, SESSION_KEY, unsetCookie } from "#/utils/auth/cookie";
+import { SESSION_KEY, unsetCookie } from "#/utils/auth/cookie";
 import { defineUser } from "#/lib/middlewares/define";
 import { withData, withError } from "#/shared/schemas";
 import { wrapError } from "#/helpers/wrap-error";
@@ -25,7 +25,6 @@ export const invalidate = new Elysia()
     }
 
     unsetCookie({ cookie, key: SESSION_KEY })
-    unsetCookie({ cookie, key: CROSS_SESSION_KEY })
 
     return { data: true }
   }, {

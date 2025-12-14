@@ -1,5 +1,5 @@
 import { getNats } from "#/shared/nats/client"
-import { SERVER_EVENT_GET_USER_LOCATION, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
+import { SUBJECTS } from "#/shared/nats/subjects"
 
 export type UserLocation = {
   world: string,
@@ -14,10 +14,10 @@ export type UserLocation = {
 export async function getLocation(nickname: string) {
   const nc = getNats()
 
-  const payload = { event: SERVER_EVENT_GET_USER_LOCATION, nickname }
+  const payload = { event: SUBJECTS.SERVER.EVENTS.USER.GET_LOCATION, nickname }
   
   try {
-    const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 1000 })
+    const res = await nc.request(SUBJECTS.SERVER.EVENTS.USER.EVENT, JSON.stringify(payload), { timeout: 1000 })
     if (!res) return null;
   
     const data = res.json<Omit<UserLocation, "customLocation">>()

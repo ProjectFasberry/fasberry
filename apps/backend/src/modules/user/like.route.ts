@@ -39,9 +39,7 @@ const like = new Elysia()
       t.UnionEnum(["unrated", "rated"])
     )
   })
-  .post("/:nickname", async ({ nickname: initiator, status, params }) => {
-    const recipient = params.nickname;
-
+  .post("/:nickname", async ({ nickname: initiator, status, params: { nickname: recipient } }) => {
     if (initiator === recipient) {
       return status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("Dont like yourself"))
     }

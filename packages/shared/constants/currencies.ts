@@ -2,9 +2,7 @@ import { z } from 'zod';
 
 export const currencyCryptoSchema = z.enum(["USDT", "TON", "BTC", "ETH", "LTC", "BNB", "TRX", "USDC"]);
 
-export type PaymentCryptoCurrency = z.infer<typeof currencyCryptoSchema>
-
-export const PAYMENT_CURRENCIES_MAPPING: Record<PaymentCryptoCurrency, string> = {
+export const PAYMENT_CURRENCIES_MAPPING: Record<z.infer<typeof currencyCryptoSchema>, string> = {
   "BTC": "bitcoin",
   "ETH": "ethereum",
   'USDT': 'tether',
@@ -14,11 +12,3 @@ export const PAYMENT_CURRENCIES_MAPPING: Record<PaymentCryptoCurrency, string> =
   "BNB": "binancecoin",
   "LTC": "litecoin",
 };
-
-export type PaymentCurrency = "USDT" | "TON" | "BTC" | "ETH" | "LTC" | "BNB" | "TRX" | "USDC" | "RUB"
-
-export type CurrencyString = typeof PAYMENT_CURRENCIES_MAPPING[keyof typeof PAYMENT_CURRENCIES_MAPPING];
-
-export const currencyFiatSchema = z.enum(['RUB']);
-export const paymentCurrencySchema = z.union([currencyFiatSchema, currencyCryptoSchema]);
-export const paymentFiatMethodSchema = z.enum(["card", "sbp"])

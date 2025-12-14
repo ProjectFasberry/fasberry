@@ -43,7 +43,7 @@ export type Land = {
   }
 }
 
-export type Lands = Pick<Land, "ulid" | "title" | "name" | "level" | "created_at" | "type" | "stats"> & {
+export type Lands = Pick<Land, "ulid" | "title" | "name" | "level" | "created_at" | "type" | "stats" | "details"> & {
   members: {
     [key: string]: number
   }

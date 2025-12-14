@@ -1,7 +1,7 @@
 import { logger } from "#/utils/config/logger";
 
 export function wrapError(e: unknown): { error: string } {
-  let error = 'Internal Server Error';
+  const error = 'Internal Server Error';
 
   if (
     typeof e === 'object' &&

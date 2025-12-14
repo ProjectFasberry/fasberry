@@ -1,10 +1,11 @@
 import Elysia, { t } from "elysia";
-import { defineInitiator } from "#/lib/middlewares/define";
 import { processStoreCryptoPurchaseCryptobot } from "./cryptobot/cryptobot.model";
 import { processStoreCryptoPurchaseHeleket } from "./heleket/heleket.model";
-import { createOrderTopUpSchema, MethodType, OrderInputPayload, OutputPayload } from "@repo/shared/schemas/payment";
-import { general } from "#/shared/database/main-db";
+import { createOrderTopUpSchema, type MethodType, type OrderInputPayload, type OutputPayload } from "@repo/shared/schemas/payment";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
+import { defineUser } from "#/lib/middlewares/define";
+import { invariant } from "#/helpers/invariant";
 
 async function validateMethodAvailable(method: string) {
   const query = await general
@@ -22,15 +23,15 @@ const targets: Record<MethodType, (pd: OrderInputPayload) => Promise<OutputPaylo
     return processStoreCryptoPurchaseCryptobot(payload)
   },
   "heleket": async (payload) => {
-    throw new Error("Некорректный способ оплаты. Heleket пока не доступен")
+    return processStoreCryptoPurchaseHeleket(payload)
   },
   "sbp": async (payload) => {
-    throw new Error("Некорректный способ оплаты. SBP пока не доступен")
+    invariant(false, "Некорректный способ оплаты. SBP пока не доступен")
   },
 }
 
 export const createOrderTopUp = new Elysia()
-  .use(defineInitiator())
+  .use(defineUser())
   .model({
     "top-up": withData(
       t.Object({
@@ -42,7 +43,7 @@ export const createOrderTopUp = new Elysia()
       })
     )
   })
-  .post("/top-up", async ({ initiator, body }) => {
+  .post("/top-up", async ({ nickname: initiator, body }) => {
     const { target, method, comment, value, recipient } = body;
 
     const event = targets[method.type];

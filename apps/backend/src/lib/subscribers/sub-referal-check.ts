@@ -1,11 +1,11 @@
 import { abortablePromiseAll } from "#/helpers/abortable";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { getNats } from "#/shared/nats/client";
-import { USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/subjects";
-import { logError, logger } from "#/utils/config/logger";
+import { logErrorMsg } from "#/utils/config/log-utils";
+import { logger } from "#/utils/config/logger";
 import { callServerCommand } from "#/utils/server/call-command";
 import { validateReferal } from "#/utils/server/validate-referal";
-import { Msg } from "@nats-io/nats-core";
+import type { Msg } from "@nats-io/nats-core";
 
 async function handleReferalCheck(msg: Msg) {
   const nickname: string = new TextDecoder().decode(msg.data)
@@ -42,16 +42,16 @@ async function handleReferalCheck(msg: Msg) {
       logger.log(update.numUpdatedRows > 0 ? "updated" : "not updated")
     })
   } catch (e) {
-    logError(e)
+    logErrorMsg(e)
   }
 }
 
-export const subscribeRefferalCheck = () => {
+export const subscribeRefferalCheck = (subject: string) => {
   const nc = getNats()
 
-  const subscription = nc.subscribe(USER_REFERAL_CHECK_SUBJECT, {
-    callback:  (e, msg) => {
-      if (e) return logError(e)
+  const subscription = nc.subscribe(subject, {
+    callback: (e, msg) => {
+      if (e) return logErrorMsg(e)
 
       void handleReferalCheck(msg)
     }

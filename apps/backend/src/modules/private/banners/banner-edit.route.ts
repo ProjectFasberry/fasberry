@@ -1,8 +1,8 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { buildUpdates } from "#/utils/config/transforms";
-import { Banners } from "@repo/shared/types/db/auth-database-types";
+import type { Banners } from "@repo/shared/types/db/auth-database-types";
 import Elysia from "elysia";
-import { Selectable } from "kysely";
+import type { Selectable } from "kysely";
 import z from "zod";
 
 const bannerEditSchema = z.array(

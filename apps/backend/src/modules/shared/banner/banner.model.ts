@@ -1,4 +1,4 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { metaSchema } from "#/shared/schemas";
 import z from "zod";
 

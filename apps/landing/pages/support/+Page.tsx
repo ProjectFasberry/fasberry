@@ -76,9 +76,9 @@ export default function Page() {
                 src={steveImage}
               />
               <div className="flex flex-col items-center xl:items-start gap-1 md:gap-2 w-full">
-                <h1 className="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
+                <h2 className="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
                   Мониторинг
-                </h1>
+                </h2>
                 <div className="flex flex-col mt-2 w-full">
                   <a
                     target="_blank"
@@ -87,7 +87,17 @@ export default function Page() {
                     className="flex justify-center w-full xl:w-fit items-center button px-4 py-1"
                   >
                     <Typography className="text-nowrap text-base lg:text-xl">
-                      Проголосовать
+                      Проголосовать #1
+                    </Typography>
+                  </a>
+                  <a
+                    target="_blank"
+                    href="https://mcrating.org/minecraft-server-2159"
+                    rel="noreferrer"
+                    className="flex justify-center w-full xl:w-fit items-center button px-4 py-1"
+                  >
+                    <Typography className="text-nowrap text-base lg:text-xl">
+                      Проголосовать #2
                     </Typography>
                   </a>
                 </div>
@@ -103,9 +113,9 @@ export default function Page() {
                 alt="Share"
               />
               <div className="flex flex-col items-center xl:items-start gap-2 w-full">
-                <h1 className='text-shadow-md text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl'>
+                <h2 className='text-shadow-md text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl'>
                   Поделиться
-                </h1>
+                </h2>
                 <div
                   className="flex flex-col justify-center md:justify-start w-full gap-2 mt-2
                     *:flex *:justify-center *:w-full *:xl:w-fit *:items-center *:px-4 *:py-1

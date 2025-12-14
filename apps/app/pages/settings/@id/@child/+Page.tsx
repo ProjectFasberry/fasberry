@@ -2,6 +2,6 @@ import { SETTINGS_NODES } from "@/shared/components/app/settings/models/settings
 import { usePageContext } from "vike-react/usePageContext"
 
 export default function Page() {
-  const { routeParams } = usePageContext()
-  return SETTINGS_NODES[routeParams.id][routeParams.child]
+  const { id, child } = usePageContext().routeParams
+  return SETTINGS_NODES[id][child]
 }

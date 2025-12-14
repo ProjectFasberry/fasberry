@@ -1,4 +1,4 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { getNats } from "#/shared/nats/client";
 
 export const ACTIVITY_LOG_SUBJECT = "admin.activity.log"

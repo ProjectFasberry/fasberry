@@ -1,10 +1,10 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { metaSchema, searchQuerySchema } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
-import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
+import { definePrice, processImageUrl } from "#/utils/store/store-helpers";
 import { GAME_CURRENCIES } from "@repo/shared/schemas/payment";
-import { StoreItemsPayload } from "@repo/shared/types/entities/store";
+import type { StoreItemsPayload } from "@repo/shared/types/entities/store";
 import { sql } from "kysely";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";

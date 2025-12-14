@@ -1,6 +1,5 @@
 import { client } from "@/shared/lib/client-wrapper"
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
-import { userParamAtom } from "./player.model"
 import { isEmptyArray } from "@/shared/lib/array"
 import { IconBrandDiscord, IconBrandTelegram } from "@tabler/icons-react"
 import { ReactNode } from "react"
@@ -20,10 +19,7 @@ export async function getPlayerSocials(nickname: string, init?: RequestInit) {
   return client<PlayerSocialsPayload[]>(`server/socials/list/${nickname}`, { ...init }).exec()
 }
 
-export const playerSocialsAction = reatomAsync(async (ctx) => {
-  const nickname = ctx.get(userParamAtom)
-  if (!nickname) return;
-
+export const playerSocialsAction = reatomAsync(async (ctx, nickname: string) => {
   return await ctx.schedule(() => getPlayerSocials(nickname, { signal: ctx.controller.signal }));
 }).pipe(
   withDataAtom([], (_, data) => isEmptyArray(data) ? null : data),

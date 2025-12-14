@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import { getStaticUrl } from "#/helpers/volume";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
 import { itemPayload } from "./minecraft-items.route";
 
@@ -27,8 +27,7 @@ async function getFavoriteItem(nickname: string) {
 }
 
 export const favoriteItem = new Elysia()
-  .get("/fv-item/:nickname", async ({ params }) => {
-    const nickname = params.nickname
+  .get("/fv-item/:nickname", async ({ params: { nickname } }) => {
     const item = await getFavoriteItem(nickname)
 
     if (!item) {

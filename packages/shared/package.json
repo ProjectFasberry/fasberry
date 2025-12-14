@@ -5,13 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "general": "kysely-codegen --dialect postgres --url=env\\(GENERAL_DATABASE_URL\\) --out-file=./types/db/auth-database-types.ts",
-    "sqlite": "kysely-codegen --dialect sqlite --url=env\\(SQLITE_DATABASE_URL\\) --out-file=./types/db/sqlite-database-types.ts",
-    "payments": "kysely-codegen --dialect postgres --url=env\\(PAYMENTS_DATABASE_URL\\) --out-file=./types/db/payments-database-types.ts",
-    "skins": "kysely-codegen --dialect mysql --url=env\\(SKINS_DATABASE_URL\\) --out-file=./types/db/skins-database-types.ts",
-    "bisquite": "kysely-codegen --dialect mysql --url=env\\(BISQUITE_DATABASE_URL\\) --out-file=./types/db/bisquite-database-types.ts",
-    "lobby": "kysely-codegen --dialect mysql --url=env\\(LOBBY_DATABASE_URL\\) --out-file=./types/db/lobby-database-types.ts",
-    "luckperms": "kysely-codegen --dialect postgres --url=env\\(LUCKPERMS_DATABASE_URL\\) --out-file=./types/db/luckperms-database-types.ts"
+    "generate": "bun run ./scripts/generate-types.ts"
   },
   "dependencies": {
     "clsx": "2.1.1",

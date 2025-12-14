@@ -1,12 +1,12 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
 import Elysia from "elysia";
 import { createAdminActivityLog } from "../private.model";
 import z from "zod";
 
 export const dictionariesCreate = new Elysia()
-  .use(validatePermission(PERMISSIONS.DICTIONARIES.CREATE))
+  .use(validatePermission(Permissions.get("DICTIONARIES.CREATE")))
   .post("/create", async ({ body }) => {
     const { key, value } = body;
 

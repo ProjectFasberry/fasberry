@@ -31,4 +31,8 @@ export const tasksAction = reatomAsync(async (ctx) => {
       .pipe(withAbort(ctx.controller.signal), withQueryParams(params))
       .exec()
   )
-}, "tasksAction").pipe(withDataAtom([]), withStatusesAtom(), withErrorAtom())
+}, "tasksAction").pipe(
+  withDataAtom(null, (_, data) => data.data.length === 0 ? null : data), 
+  withStatusesAtom(), 
+  withErrorAtom()
+)

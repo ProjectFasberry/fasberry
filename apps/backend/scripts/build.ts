@@ -1,4 +1,3 @@
-import dts from 'bun-plugin-dts'
 import fs from "fs"
 
 function getBuildFilesInfo(outputs: Bun.BuildOutput["outputs"]) {
@@ -37,11 +36,9 @@ function getBuildFilesInfo(outputs: Bun.BuildOutput["outputs"]) {
 const output = await Bun.build({
   entrypoints: ['./src/index.ts'],
   outdir: './dist',
-  minify: true,
+  minify: true, 
   sourcemap: true,
-  target: "bun",
-  // todo: fix fail in prod build //
-  // plugins: [dts()]
+  target: "bun"
 })
 
 console.log(getBuildFilesInfo(output.outputs))

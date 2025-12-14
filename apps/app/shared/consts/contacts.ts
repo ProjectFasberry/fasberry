@@ -19,12 +19,5 @@ export const CONTACTS = [
     img: "https://cristalix.gg/content/icons/discord.svg",
     color: "bg-[#5865F2]",
     href: import.meta.env.VITE_SOCIAL_DISCORD_URL!,
-  },
-  {
-    title: "X",
-    value: "x",
-    img: "https://cristalix.gg/content/icons/x.svg",
-    color: "bg-black",
-    href: import.meta.env.VITE_SOCIAL_X_URL!,
-  },
+  }
 ]

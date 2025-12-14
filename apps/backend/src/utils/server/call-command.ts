@@ -1,7 +1,8 @@
 import { getNats } from "#/shared/nats/client"
-import { CONSUMERS } from "#/shared/nats/init";
-import { SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects"
+import { NATS_CONSUMERS } from "#/shared/nats/cons";
+import { SUBJECTS } from "#/shared/nats/subjects";
 import { jetstream } from "@nats-io/jetstream";
+import { safeJsonParse } from "../config/transforms";
 
 type CommandType =
   | "lp" // luckperms
@@ -30,7 +31,7 @@ export const startOrderConsumer = async (): Promise<void> => {
   const nc = getNats();
   const js = jetstream(nc);
 
-  const orderCons = CONSUMERS["order"][0]
+  const orderCons = NATS_CONSUMERS["order"][0]
   const с = await js.consumers.get(orderCons.stream_name, orderCons.name);
 
   while (true) {
@@ -55,7 +56,7 @@ export const startOrderConsumer = async (): Promise<void> => {
 
         console.log(new TextDecoder().decode(payload), m.seq, m.subject);
 
-        const r = await nc.request(SERVER_USER_EVENT_SUBJECT, payload, { timeout })
+        const r = await nc.request(SUBJECTS.SERVER.EVENTS.USER.EVENT, payload, { timeout })
         const res = r.json<ResponseMsg>();
 
         if ("error" in res) {
@@ -73,7 +74,6 @@ export const startOrderConsumer = async (): Promise<void> => {
 
 export async function callServerCommand(
   { parent, value }: CallServerCommand,
-  { signal }: AbortableCommandArgs
 ): Promise<{ result: "success" }> {
   try {
     const nc = getNats()
@@ -86,7 +86,7 @@ export async function callServerCommand(
 
     const js = jetstream(nc);
 
-    let pa = await js.publish("event.b", JSON.stringify(payload))
+    const pa = await js.publish("event.b", JSON.stringify(payload))
 
     const stream = pa.stream;
     const seq = pa.seq;
@@ -97,5 +97,45 @@ export async function callServerCommand(
     return { result: "success" }
   } catch (e) {
     throw e
+  }
+}
+
+
+type SendEmailInServer = {
+  server: string,
+  msg: string
+  nickname: string
+} & (| {
+  temp?: false,
+  time?: never
+} | {
+  temp: true,
+  time: string
+})
+
+async function sendEmailInServer({ nickname, msg, server, temp, time }: SendEmailInServer) {
+  if (server !== 'bisquite') {
+    throw new Error('unsupported server')
+  }
+
+  const nc = getNats()
+  const decoder = new TextDecoder();
+
+  let command = `send ${nickname} ${msg}`
+
+  if (temp) {
+    command = `sendtemp ${nickname} ${time} ${msg}`
+  }
+
+  const payload = {
+    event: "executeCommand",
+    command: `cmi mail ${command}`
+  }
+
+  const callCmdResult = await nc.request("event", JSON.stringify(payload))
+  const callCmdResultData = safeJsonParse<{ result: "ok" }>(decoder.decode(callCmdResult.data))
+
+  if (!callCmdResultData.ok) {
+    throw callCmdResultData.error
   }
 }

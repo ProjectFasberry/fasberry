@@ -1,6 +1,6 @@
 import Elysia, { t } from "elysia"
 import { defineUser } from "#/lib/middlewares/define"
-import { getCustomLocation, getLocation, parseWorldName, UserLocation } from "./location.model"
+import { getCustomLocation, getLocation, parseWorldName, type UserLocation } from "./location.model"
 import { withData } from "#/shared/schemas"
 
 const userLocationPayload = t.Object({
@@ -20,14 +20,14 @@ export const playerLocation = new Elysia()
       t.Nullable(userLocationPayload)
     )
   })
-  .get("/location/:nickname", async ({ params }) => {
-    const recipient = params.nickname;
-    const rawLocation = await getLocation(recipient)
-
-    if (!rawLocation) return { data: null }
+  .get("/location/:nickname", async ({ params: { nickname } }) => {
+    const rawLocation = await getLocation(nickname);
+    if (!rawLocation) {
+      return { data: null }
+    }
 
     let location: UserLocation | null = null;
-    let world: string = parseWorldName(rawLocation.world) ?? rawLocation.world
+    const world: string = parseWorldName(rawLocation.world) ?? rawLocation.world
 
     location = {
       ...rawLocation,

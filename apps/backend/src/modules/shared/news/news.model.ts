@@ -1,10 +1,10 @@
 import { normalizeIp } from "#/helpers/normalize-ip";
 import { getStaticUrl } from "#/helpers/volume";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { metaSchema, searchQuerySchema } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
-import { NewsPayload } from "@repo/shared/types/entities/news";
+import type { NewsPayload } from "@repo/shared/types/entities/news";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 
@@ -59,7 +59,7 @@ export async function getNewsList({ asc, limit, endCursor, searchQuery, content 
       'news.content',
       'news.creator'
     ])
-
+  
   if (searchQuery) {
     query = query.where("title", "like", `%${searchQuery}%`)
   }

@@ -33,13 +33,13 @@ export interface PaymentsGame {
   finished_at: Timestamp | null;
   id: Generated<number>;
   initiator: string;
-  item_id: number;
   unique_id: string;
 }
 
 export interface PaymentsGameChilds {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
+  order_id: string;
   recipient: string;
   store_item_id: number;
 }

@@ -1,21 +1,20 @@
-import { reatomComponent } from "@reatom/npm-react"
+import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
 import { IconHeart } from "@tabler/icons-react"
 import { tv } from "tailwind-variants"
-import { rateListAction, RateUser, rateUser } from "../models/rate.model"
+import { rateListAction, RateUser, rateUserAction } from "../models/rate.model"
 import { isIdentityAtom } from "../models/player.model"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@repo/ui/hover-card"
 import { Typography } from "@repo/ui/typography"
 import { createLink, Link } from "@/shared/components/config/link"
-import { onConnect } from "@reatom/framework"
 import { Avatar } from "../../avatar/components/avatar"
 import dayjs from "@/shared/lib/create-dayjs"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog"
 import { Skeleton } from "@repo/ui/skeleton"
 import { currentUserAtom } from "@/shared/models/current-user.model"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@repo/ui/sheet"
 
 const likeButtonVariants = tv({
-  base: `flex border-2 group rounded-full duration-150 *:duration-150 items-center gap-2`,
+  base: `flex border-2 group rounded-full duration-300 px-3 py-1 *:duration-300 items-center gap-2`,
   variants: {
     variant: {
       inactive: "border-neutral-700",
@@ -45,8 +44,6 @@ type RateProps = {
   count: number
 }
 
-onConnect(rateListAction.dataAtom, rateListAction)
-
 const ListCard = ({ initiator, created_at }: RateUser) => {
   return (
     <div className="flex items-center gap-2 bg-neutral-800 rounded-lg p-2">
@@ -73,6 +70,8 @@ const ListCard = ({ initiator, created_at }: RateUser) => {
 }
 
 const List = reatomComponent(({ ctx }) => {
+  useUpdate(rateListAction, []);
+
   const data = ctx.spy(rateListAction.dataAtom)?.data;
 
   if (data && data.length === 0) {
@@ -101,7 +100,7 @@ const RateList = reatomComponent<Pick<RateProps, "count">>(({ ctx, count }) => {
 
   const currentUser = ctx.get(currentUserAtom)
 
-  const isDisabled = !currentUser || ctx.spy(rateUser.statusesAtom).isPending
+  const isDisabled = !currentUser || ctx.spy(rateUserAction.statusesAtom).isPending
 
   return (
     <>
@@ -125,11 +124,11 @@ const RateList = reatomComponent<Pick<RateProps, "count">>(({ ctx, count }) => {
         </HoverCard >
       </div>
       <div className="block sm:hidden">
-        <Dialog>
-          <DialogTrigger asChild>
+        <Sheet>
+          <SheetTrigger asChild>
             <Button
               data-state="filled"
-              disabled={ctx.spy(rateUser.statusesAtom).isPending}
+              disabled={ctx.spy(rateUserAction.statusesAtom).isPending}
               className={likeButtonVariants({ variant: "filled" })}
             >
               <IconHeart className={rateButtonChildVariants({ variant: "filled" })} />
@@ -137,12 +136,12 @@ const RateList = reatomComponent<Pick<RateProps, "count">>(({ ctx, count }) => {
                 {count}
               </span>
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>Игроки, оценившие вас</DialogTitle>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="flex flex-col gap-4">
+            <SheetTitle className="text-2xl text-left">Игроки, оценившие вас</SheetTitle>
             <List />
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       </div>
     </>
   )
@@ -156,14 +155,12 @@ export const Rate = reatomComponent<RateProps>(({
 
   const parentVariant = isRated ? "active" : "inactive"
   const childVariant = isRated ? "rated" : "default"
-
-  const isDisabled = ctx.spy(rateUser.statusesAtom).isPending
   
   return (
     <Button
       data-state={isRated ? "rated" : "unrated"}
-      disabled={isDisabled}
-      onClick={() => rateUser(ctx, nickname)}
+      disabled={ctx.spy(rateUserAction.statusesAtom).isPending}
+      onClick={() => rateUserAction(ctx, nickname)}
       className={likeButtonVariants({ variant: parentVariant })}
     >
       <IconHeart className={rateButtonChildVariants({ variant: childVariant })} />

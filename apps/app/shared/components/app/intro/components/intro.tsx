@@ -7,6 +7,7 @@ import { Typography } from "@repo/ui/typography";
 import { serverStatusAction } from "../models/intro.model";
 import { LANDING_ENDPOINT } from "@/shared/env";
 import { expImage } from "@/shared/consts/images";
+import { isClientAtom } from "@/shared/models/page-context.model";
 
 onConnect(serverStatusAction.dataAtom, serverStatusAction)
 
@@ -18,11 +19,11 @@ onConnect(serverStatusAction.dataAtom, async (ctx) => {
 })
 
 const IntroStatus = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(serverStatusAction.dataAtom);
-
-  if (ctx.spy(serverStatusAction.statusesAtom).isPending) {
+  if (!ctx.spy(isClientAtom)) {
     return <Skeleton className="w-4 h-4 inline-flex rounded-sm" />
   }
+
+  const data = ctx.spy(serverStatusAction.dataAtom);
 
   return (
     <Typography className="text-lg">
@@ -31,22 +32,23 @@ const IntroStatus = reatomComponent(({ ctx }) => {
   )
 }, "IntroStatus")
 
-const introImage = getStaticImage("arts/general-preview.jpg");
+const introImage = getStaticImage("images/village_pillage.webp");
 
 export const Intro = () => {
   return (
     <div
       id="intro"
-      className="flex flex-col items-center relative rounded-xl overflow-hidden w-full md:h-96 min-h-72 max-h-80"
+      className="flex flex-col items-center relative rounded-lg overflow-hidden w-full md:h-96 min-h-72 max-h-80"
     >
+      <div className="absolute bg-gradient-to-r inset-0 w-full h-full from-black/80 via-black/40 to-transparent z-5" />
       <img
         src={introImage}
         fetchPriority="high"
         draggable={false}
-        alt="Start"
-        className="absolute select-none w-full h-full object-cover z-[1]"
+        alt=""
+        className="absolute select-none w-full h-full object-cover z-4"
       />
-      <div className="flex flex-col z-[2] justify-between p-3 md:p-4 grow lg:p-6 h-full w-full relative">
+      <div className="flex flex-col z-6 justify-between p-3 md:p-4 grow lg:p-6 h-full w-full relative">
         <div className="flex flex-col items-start gap-4 w-full">
           <Typography className="text-xl font-semibold">
             Добро пожаловать!
@@ -68,8 +70,8 @@ export const Intro = () => {
           </div>
           <div className="flex gap-4 w-full items-center">
             <a href={`${LANDING_ENDPOINT}/start`} target="_blank">
-              <Button className="bg-neutral-50 rounded-xl">
-                <Typography className="truncate text-nowrap text-lg text-neutral-950 font-semibold">
+              <Button background="white">
+                <Typography className="truncate text-nowrap text-lg font-semibold">
                   Начать играть
                 </Typography>
               </Button>

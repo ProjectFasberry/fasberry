@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { sql } from "kysely";
 import { getStaticUrl } from "#/helpers/volume";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
 
 async function getMinecraftItems() {

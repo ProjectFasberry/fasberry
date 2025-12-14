@@ -1,36 +1,19 @@
-import { Subscription } from "@nats-io/nats-core"
 import { getNats, initNats, natsLogger } from "./client"
-import { subscribeGiveBalance } from "#/lib/subscribers/sub-give-balance"
-import { subscribePlayerJoin } from "#/lib/subscribers/sub-player-join"
-import { subscribePlayerStats } from "#/lib/subscribers/sub-player-stats"
-import { subscribeRefferalCheck } from "#/lib/subscribers/sub-referal-check"
-import { subscribeReferalReward } from "#/lib/subscribers/sub-referal-reward"
-import { ConsumerInfo, jetstream, jetstreamManager } from "@nats-io/jetstream"
-
-const SUBCRIBERS: Record<string, () => Subscription> = {
-  "subscribeRefferalCheck": subscribeRefferalCheck,
-  "subscribePlayerJoin": subscribePlayerJoin,
-  "subscribeReferalReward": subscribeReferalReward,
-  "subscribeGiveBalance": subscribeGiveBalance,
-  "subscribePlayerStats": subscribePlayerStats
-}
-
-export const CONSUMERS: Record<string, Pick<ConsumerInfo, "name" | "stream_name">[]> = {
-  "order": [
-    { stream_name: "events", name: "a" }
-  ]
-}
-
-const STREAMS = [
-  { name: "events", subjects: ["order"] }
-]
+import { jetstream, jetstreamManager } from "@nats-io/jetstream"
+import { startOrderConsumer } from "#/utils/server/call-command"
+import { NATS_SUBCRIBERS } from "./subscribers"
+import { NATS_CONSUMERS, NATS_JS_STREAMS } from "./cons"
 
 export async function startNats() {
   await initNats()
 
-  for (const [name, fn] of Object.entries(SUBCRIBERS)) {
-    fn()
-    natsLogger.log(`Subscribed to ${name}`)
+  try {
+    for (const { fn, name, subject } of NATS_SUBCRIBERS) {
+      fn(subject)
+      natsLogger.success(`${name} subscribed to ${subject}`)
+    }
+  } catch (e) {
+    natsLogger.log(e)
   }
 
   const nc = getNats();
@@ -38,7 +21,7 @@ export async function startNats() {
   const js = jetstream(nc);
   const jsm = await jetstreamManager(nc);
 
-  for (const { name, subjects } of STREAMS) {
+  for (const { name, subjects } of NATS_JS_STREAMS) {
     try {
       await jsm.streams.add({ name, subjects });
       natsLogger.log(`Stream ${name} with ${subjects.map((d => d)).join(',')} added`)
@@ -47,7 +30,7 @@ export async function startNats() {
     }
   }
 
-  for (const { name, stream_name } of Object.entries(CONSUMERS).flatMap(([_, arr]) => arr)) {
+  for (const { name, stream_name } of Object.entries(NATS_CONSUMERS).flatMap(([_, arr]) => arr)) {
     try {
       const ec = await js.consumers.get(stream_name, name)
       natsLogger.log(`Consumer ${name} exists `)
@@ -56,4 +39,6 @@ export async function startNats() {
       natsLogger.log(`Consumer ${name} added`)
     }
   }
+
+  startOrderConsumer();
 }

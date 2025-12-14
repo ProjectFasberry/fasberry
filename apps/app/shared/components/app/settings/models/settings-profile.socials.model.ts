@@ -4,6 +4,7 @@ import { isEmptyArray } from "@/shared/lib/array";
 import { client } from "@/shared/lib/client-wrapper";
 import { toast } from "sonner";
 import { getPlayerSocials, PlayerSocialsPayload } from "../../player/models/socials.model";
+import { logError } from "@/shared/lib/log";
 
 export const profileSocialsAction = reatomAsync(async (ctx) => {
   const nickname = ctx.get(currentUserAtom)!.nickname;
@@ -83,3 +84,21 @@ export const socialAdd = atom(null, "socialAdd").pipe(
     }, `${name}.socialAdd`)
   }))
 )
+
+export const socialAddAction = reatomAsync(async (ctx) => {
+  const social = ctx.get(socialAddSelectedAtom);
+
+  return await ctx.schedule(() =>
+    client.post<"started">("server/socials/add", { json: { social } }).exec()
+  )
+}, {
+  name: "socialAddAction",
+  onFulfill: (ctx, res) => {
+    if (!res) return;
+
+    
+  },
+  onReject: (ctx, e) => {
+    logError({ type: "combined" })
+  }
+}).pipe(withStatusesAtom())

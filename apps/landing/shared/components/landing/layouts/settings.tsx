@@ -1,6 +1,6 @@
 import { getStaticObject } from "@/shared/lib/volume";
 import { localeAtom } from "@/shared/models/global.model";
-import { action, atom } from "@reatom/core";
+import { action, atom, AtomState } from "@reatom/core";
 import { sleep, withAssign, withConcurrency, withReset } from "@reatom/framework";
 import { reatomComponent } from "@reatom/npm-react";
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
@@ -35,13 +35,15 @@ const LayoutSettingsTrigger = reatomComponent(({ ctx }) => {
 
   return (
     <button
+      aria-label="Открыть настройки сайта"
+      name="open-settings"
       onClick={() => layoutSettingsIsOpenAtom.open(ctx)}
       className={`top-2/3 group -translate-y-1/4 focus:scale-[1.1] cursor-pointer absolute right-4 w-12 h-12 z-[100] duration-500 ease-in-out
         ${isTriggered ? "-translate-y-[9999px]" : "translate-y-0"} 
         ${isOpen ? "hidden" : "block"}
       `}
     >
-      <img src={spyglassImage} alt="" width={46} height={46} />
+      <img src={spyglassImage} alt="" draggable={false} width={46} height={46} />
     </button>
   )
 }, "LayoutSettingsTrigger")
@@ -78,14 +80,18 @@ const Language = reatomComponent(({ ctx }) => {
       <Typography>
         Язык
       </Typography>
-      <Select onValueChange={v => layoutSettingsIsOpenAtom.middleware(ctx, () => localeAtom(ctx, v))}>
+      <Select onValueChange={v => layoutSettingsIsOpenAtom.middleware(ctx, () => localeAtom(ctx, v as AtomState<typeof localeAtom>))}>
         <SelectTrigger>
           {ctx.spy(selectedLangAtom).title}
         </SelectTrigger>
         <SelectContent>
           <div className="flex flex-col gap-1 w-full h-full">
             {LANGUAGES.map((item) => (
-              <SelectItem key={item.value} value={item.value} className="flex items-center justify-between gap-1 w-full">
+              <SelectItem
+                key={item.value}
+                value={item.value}
+                className="flex items-center justify-between gap-1 w-full"
+              >
                 <Typography>
                   {item.title}
                 </Typography>
@@ -96,7 +102,7 @@ const Language = reatomComponent(({ ctx }) => {
       </Select>
     </div>
   )
-})
+}, "Language")
 
 const Weather = reatomComponent(({ ctx }) => {
   return (
@@ -104,7 +110,7 @@ const Weather = reatomComponent(({ ctx }) => {
       <Typography>
         Погода
       </Typography>
-      <Select onValueChange={v => layoutSettingsIsOpenAtom.middleware(ctx, () => weatherAtom(ctx, v))}>
+      <Select onValueChange={v => layoutSettingsIsOpenAtom.middleware(ctx, () => weatherAtom(ctx, v as AtomState<typeof weatherAtom>))}>
         <SelectTrigger>
           {ctx.spy(selectedWeatherAtom).title}
         </SelectTrigger>
@@ -122,7 +128,7 @@ const Weather = reatomComponent(({ ctx }) => {
       </Select>
     </div>
   )
-})
+}, "Weather")
 
 const LayoutSettingsContent = reatomComponent(({ ctx }) => {
   return (
@@ -136,13 +142,13 @@ const LayoutSettingsContent = reatomComponent(({ ctx }) => {
       </DialogContent>
     </Dialog>
   )
-})
+}, "LayoutSettingsContent")
 
-export const LayoutSettings = reatomComponent(({ ctx }) => {
+export const LayoutSettings = () => {
   return (
     <>
       <LayoutSettingsTrigger />
       <LayoutSettingsContent />
     </>
   )
-})
+}

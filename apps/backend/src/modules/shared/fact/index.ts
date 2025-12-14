@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { sql } from "kysely";
 import { withData } from "#/shared/schemas";

@@ -1,23 +1,40 @@
 import { useUpdate } from "@reatom/npm-react";
 import { clientOnly } from "vike-react/clientOnly";
-import { playerAtom, userParamAtom } from "../models/player.model";
+import { playerParamAtom } from "../models/player.model";
 import { action, atom } from "@reatom/core";
-import { withInit } from "@reatom/framework";
+import { spawn, withInit } from "@reatom/framework";
 import { tv } from "tailwind-variants";
-import { skinAction } from "../../player/models/skin.model";
 import { skinViewerAtom } from "../../player/models/skin-animation.model";
 import { reatomComponent } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Typography } from "@repo/ui/typography";
-import { HTMLAttributes } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { skinRotatingAtom, skinAnimationAtom, SKIN_ANIMATIONS } from "../../player/models/skin-animation.model";
-import { VariantProps } from "tailwind-variants";
 import { IconRotate } from "@tabler/icons-react";
-import { useState } from "react";
-import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@repo/ui/dialog';
-import { Button } from "@repo/ui/button";
-import { API_PREFIX_URL } from "@/shared/env";
 import { isClientAtom } from "@/shared/models/page-context.model";
+import { PlusIcon, Upload, X } from "lucide-react";
+import { Button } from "@repo/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog";
+import {
+  changeSkinAction,
+  getIsSelectSkinAtom,
+  getIsUploadAvailableAtom,
+  getSkinVariantIsActiveAtom,
+  hardwareAccelerationIsActive,
+  skinsSelectedAtom,
+  setSkinAction,
+  setupSkinFileDataAction,
+  skinControlDialogIsOpenAtom,
+  skinFileAtom,
+  skinFileDataAtom,
+  skinsHistoryAction,
+  skinSubmitIsDisabledAtom,
+  SkinVariant,
+  skinVariantAtom,
+  variants
+} from "../models/skin.model";
+import { SkinsHistory } from "@repo/shared/types/entities/other";
+import { getStaticImage } from "@/shared/lib/volume-helpers";
 
 const ReactSkinview3d = clientOnly(() => import("react-skinview3d").then(m => m.ReactSkinview3d))
 
@@ -30,19 +47,18 @@ const SkinRenderSkeleton = () => {
 }
 
 const SkinRender = reatomComponent(({ ctx }) => {
-  const skin = ctx.spy(skinAction.dataAtom)
-
-  if (!ctx.spy(isClientAtom) || ctx.spy(skinAction.statusesAtom).isPending) {
+  if (!ctx.spy(isClientAtom) || ctx.spy(skinsHistoryAction.statusesAtom).isPending) {
     return <SkinRenderSkeleton />;
   }
 
+  const skin = ctx.spy(skinsSelectedAtom)
   if (!skin) return null;
 
   return (
     <div className="flex items-center h-[390px] justify-center overflow-hidden w-full">
       {ctx.spy(hardwareAccIsEnabledAtom) ? (
         <ReactSkinview3d
-          skinUrl={skin}
+          skinUrl={skin.skin_url!}
           height="390"
           width="300"
           options={{ zoom: 0.8 }}
@@ -61,126 +77,164 @@ const SkinRender = reatomComponent(({ ctx }) => {
   );
 }, "SkinRender")
 
-function hardwareAccelerationIsActive(): boolean {
-  let gl: WebGLRenderingContext | null = null;
-
-  const canvas = document.createElement('canvas');
-
-  try {
-    gl = (
-      canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true })
-      || canvas.getContext('experimental-webgl', { failIfMajorPerformanceCaveat: true })) as WebGLRenderingContext | null;
-  } catch (e) {
-    return false;
-  }
-
-  if (!gl) {
-    try {
-      gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
-    } catch (e) {
-      return false;
-    }
-
-    if (!gl) return false;
-  }
-
-  const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-  let rendererName = '';
-
-  if (debugInfo) {
-    rendererName = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || gl.getParameter(gl.RENDERER);
-  } else {
-    rendererName = gl.getParameter(gl.RENDERER);
-  }
-
-  rendererName = rendererName.toLowerCase();
-
-  const softwareRenderers = [
-    'swiftshader',
-    'llvmpipe',
-    'software rasterizer',
-    'microsoft basic render driver',
-    'vmware svga ii',
-    'virtualbox graphics adapter'
-  ];
-
-  for (const softwareKeyword of softwareRenderers) {
-    if (rendererName.includes(softwareKeyword)) {
-      console.warn(`Potential software WebGL renderer detected: ${rendererName}`);
-      return false;
-    }
-  }
-
-  return true;
-}
-
 export const hardwareAccIsEnabledAtom = atom(false, "hardwareAccIsEnabled").pipe(
   withInit(() => hardwareAccelerationIsActive())
 )
 
-export const initSkinAction = action((ctx) => {
+export const initSkinAction = action((ctx, nickname: string) => {
   const isHardwareAccEnabled = ctx.get(hardwareAccIsEnabledAtom)
-  if (!isHardwareAccEnabled) return;
+  if (!isHardwareAccEnabled || !nickname) return;
+  
+  skinsHistoryAction.cacheAtom.reset(ctx);
+  skinsHistoryAction.dataAtom.reset(ctx);
+  skinsSelectedAtom.reset(ctx);
 
-  const nickname = ctx.get(userParamAtom)
-  if (!nickname) return;
-
-  skinAction(ctx, nickname)
+  skinsHistoryAction(ctx, nickname)
 }, "initSkinAction")
 
 const skinHeadVariant = tv({
-  base: `self-center *:rounded-lg p-0.5 aspect-square rounded-lg overflow-hidden cursor-pointer border-2 border-green-600`,
+  base: `flex items-center select-none justify-center *:rounded-lg p-0.5 aspect-square rounded-lg overflow-hidden cursor-pointer border-2`,
   variants: {
+    status: {
+      active: "border-green-600",
+      inactive: "border-neutral-600"
+    },
     variant: {
-      desktop: "h-12 w-12",
-      mobile: "w-32 h-32"
+      default: "border-2",
+      unbordered: "border-none"
+    },
+    size: {
+      small: "w-12 h-12",
+      medium: "w-32 h-32"
     }
+  },
+  defaultVariants: {
+    status: "inactive",
+    size: "small",
+    variant: "default"
   }
 })
 
-const SkinRenderWrapper = reatomComponent(({ ctx }) => {
-  const player = ctx.spy(playerAtom)
-  if (!player) return null;
+const SkinsHistoryItem = reatomComponent<SkinsHistory & { variant: "mobile" | "desktop" }>(({
+  ctx, variant, skin_head_url, skin_url, skin_identifier: identifier, skin_variant
+}) => {
+  const selectedSkin = ctx.spy(skinsSelectedAtom);
 
-  const { avatar, nickname } = player;
+  const status = selectedSkin?.identifier === identifier
+    ? "active"
+    : "inactive"
+
+  const handle = () => {
+    skinsSelectedAtom(ctx, {
+      identifier,
+      skin_url: skin_url ?? null,
+      skin_head_url: skin_head_url ?? null
+    })
+  }
 
   return (
+    <div
+      className={skinHeadVariant({ status, size: "small" })}
+      onClick={handle}
+    >
+      <Avatar
+        src={skin_head_url!}
+        width={variant === 'mobile' ? 128 : 36}
+        height={variant === 'mobile' ? 128 : 36}
+      />
+    </div>
+  )
+}, "SkinsHistoryItem")
+
+const SkinsHistoryListSkeleton = () => {
+  return (
+    <>
+      <div className={skinHeadVariant({ status: "active" })}>
+        <Skeleton className="h-full w-full" />
+      </div>
+      <div className={skinHeadVariant({ status: "inactive" })}>
+        <Skeleton className="h-full w-full" />
+      </div>
+      <div className={skinHeadVariant({ status: "inactive" })}>
+        <Skeleton className="h-full w-full" />
+      </div>
+    </>
+  )
+}
+
+const SkinsHistoryList = reatomComponent<{ variant: "mobile" | "desktop" }>(({ ctx, variant }) => {
+  if (!ctx.spy(isClientAtom) || ctx.spy(skinsHistoryAction.statusesAtom).isPending) {
+    return <SkinsHistoryListSkeleton />
+  }
+
+  const data = ctx.spy(skinsHistoryAction.dataAtom)
+  if (!data) return null;
+
+  return data.map(d => <SkinsHistoryItem key={d.skin_identifier} variant={variant} {...d} />)
+}, "SkinsHistoryList")
+
+const SkinMainHeadSkeleton = () => {
+  return (
+    <div className={skinHeadVariant({ status: "active", size: "medium", variant: "unbordered" })}>
+      <Skeleton className="h-full w-full" />
+    </div>
+  )
+}
+
+const Avatar = reatomComponent<{ width: number, height: number, src: string }>(({ ctx, src, ...props }) => {
+  const [avatar, setAvatar] = useState<string | null>(src);
+
+  useEffect(() => {
+    src !== null && setAvatar(src)
+  }, [src])
+
+  return (
+    <img
+      src={avatar!}
+      alt=""
+      draggable={false}
+      onError={() => setAvatar(getStaticImage("fallback/steve_head.png"))}
+      {...props}
+    />
+  )
+}, "Avatar")
+
+const SkinMainHead = reatomComponent(({ ctx }) => {
+  if (!ctx.spy(isClientAtom) || ctx.spy(skinsHistoryAction.statusesAtom).isPending) {
+    return <SkinMainHeadSkeleton />
+  }
+
+  const data = ctx.spy(skinsSelectedAtom)
+  if (!data) return null;
+
+  return (
+    <div className={skinHeadVariant({ status: "active", size: "medium", variant: "unbordered" })}>
+      <Avatar src={data.skin_head_url!} width={128} height={128} />
+    </div>
+  )
+}, "SkinMainHead")
+
+const SkinRenderWrapper = () => {
+  return (
     <div className="flex flex-col justify-between w-full lg:min-h-[450px] lg:border lg:border-neutral-700 rounded-lg">
-      <div className="hidden lg:flex flex-col py-4 items-center gap-2 w-full h-full">
-        <SkinRender />
-        <div className="flex items-center justify-center w-full h-full">
-          <div className={skinHeadVariant()}>
-            <img
-              src={avatar}
-              width={36}
-              alt={nickname}
-              fetchPriority="high"
-              loading="eager"
-              height={36}
-              draggable={false}
-            />
-          </div>
+      <div className="flex flex-col order-last lg:order-first py-4 items-center gap-2 w-full h-full">
+        <div className="hidden lg:flex">
+          <SkinRender />
+        </div>
+        <div className="flex items-center justify-center gap-2 w-full h-full">
+          <SkinsHistoryList variant="desktop" />
         </div>
       </div>
-      <div className="flex lg:hidden flex-col justify-center items-center gap-2 p-6 w-full text-neutral-400">
-        <div className={skinHeadVariant({ variant: "mobile" })}>
-          <img
-            src={avatar}
-            width={128}
-            height={128}
-            fetchPriority="high"
-            loading="eager"
-            alt={nickname}
-            draggable={false}
-          />
-        </div>
+      <div className="flex lg:hidden lg:order-last justify-center items-center w-full">
+        <SkinMainHead />
       </div>
     </div>
   )
-}, "SkinRenderWrapper")
+}
 
 const skinControlVariants = tv({
-  base: `flex items-center justify-center cursor-pointer border border-neutral-800 rounded-xl h-10 w-10`,
+  base: `flex items-center justify-center cursor-pointer
+    border border-neutral-800 rounded-xl min-w-10 min-h-10 h-10 w-10`,
   variants: {
     variant: {
       default: "bg-transparent",
@@ -192,12 +246,198 @@ const skinControlVariants = tv({
   }
 })
 
-type SkinControlProps = HTMLAttributes<HTMLDivElement>
-  & VariantProps<typeof skinControlVariants>
+const SkinVariantItem = reatomComponent<{ variant: SkinVariant }>(({ ctx, variant }) => {
+  return (
+    <Button
+      onClick={() => skinVariantAtom(ctx, variant)}
+      background={ctx.spy(getSkinVariantIsActiveAtom(variant)) ? "white" : "default"}
+      className="flex items-center justify-center w-full"
+    >
+      <Typography className="font-semibold capitalize tracking-6">
+        {variant}
+      </Typography>
+    </Button>
+  )
+}, "SkinVariantItem")
 
-const SkinControl = ({ variant, className, ...props }: SkinControlProps) => {
-  return <div className={skinControlVariants({ variant, className })} {...props} />
-}
+const va = tv({
+  base: `flex items-center flex-col py-6 px-4 duration-300 hover:bg-neutral-800/60 cursor-pointer gap-2
+    border-2 border-dashed border-neutral-800 w-full rounded-lg`
+})
+
+const SelectedSkinData = reatomComponent(({ ctx }) => {
+  if (ctx.spy(setupSkinFileDataAction.statusesAtom).isPending) {
+    return (
+      <div className={va()}>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-9" />
+            <div className='flex flex-col gap-1'>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-2 w-16" />
+            </div>
+          </div>
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </div>
+    )
+  }
+
+  const data = ctx.spy(skinFileDataAtom)
+  if (!data) return null;
+
+  return (
+    <div className={va()}>
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          <div className="h-9 w-9">
+            <img src={data.url} draggable={false} width={36} height={36} alt="" />
+          </div>
+          <div className='flex flex-col gap-1 min-w-0'>
+            <Typography className='leading-3 truncate font-semibold text-sm'>
+              {data.name}
+            </Typography>
+            <Typography className="text-neutral-400 text-sm">
+              {data.size}
+            </Typography>
+          </div>
+        </div>
+        <X
+          size={20}
+          className="text-neutral-400"
+          onClick={() => skinFileAtom.reset(ctx)}
+        />
+      </div>
+    </div>
+  )
+}, "SelectedSkinData")
+
+const SkinControlInput = reatomComponent(({ ctx }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [drag, setDrag] = useState(false);
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDrag(true);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDrag(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    void spawn(ctx, (spawnCtx) => skinFileAtom(spawnCtx, file))
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target || !e.target.files) return;
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    void spawn(ctx, (spawnCtx) => skinFileAtom(spawnCtx, file))
+  }
+
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={onDragOver}
+      onDragLeave={() => setDrag(false)}
+      onDrop={onDrop}
+      className={va({ className: `${drag && "bg-neutral-800"}` })}
+    >
+      <input ref={inputRef} onChange={onChange} type="file" className="hidden" />
+      <div className='flex items-center justify-center rounded-lg h-10 w-10 border border-neutral-800'>
+        <Upload size={24} className="text-neutral-400" />
+      </div>
+      <Typography className="font-semibold tracking-6">
+        Перетяните или выберите файл
+      </Typography>
+    </div>
+  )
+}, 'SkinControlInput')
+
+const SkinControlContent = reatomComponent(
+  ({ ctx }) => ctx.spy(skinFileAtom) ? <SelectedSkinData /> : <SkinControlInput />,
+  "SkinControlContent"
+)
+
+const SkinControlChangeSubmit = reatomComponent(({ ctx }) => {
+  return (
+    <Button
+      disabled={ctx.spy(skinSubmitIsDisabledAtom)}
+      onClick={() => void spawn(ctx, (spawnCtx) => changeSkinAction(spawnCtx))}
+      background="default"
+      withSpinner={true}
+      isLoading={ctx.spy(changeSkinAction.statusesAtom).isPending}
+    >
+      <Typography className="font-semibold text-base">
+        Загрузить
+      </Typography>
+    </Button>
+  )
+}, "SkinControlChangeSubmit")
+
+const SkinControlChangeSkin = reatomComponent(({ ctx }) => {
+  const isVisible = ctx.spy(getIsUploadAvailableAtom)
+  if (!isVisible) return null;
+
+  return (
+    <Dialog
+      open={ctx.spy(skinControlDialogIsOpenAtom)}
+      onOpenChange={v => skinControlDialogIsOpenAtom(ctx, v)}
+    >
+      <DialogTrigger asChild>
+        <Button
+          className={skinControlVariants({ variant: "default", className: "p-0 hover:bg-neutral-800" })}
+        >
+          <Upload size={18} />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogTitle className="text-2xl text-center">Загрузка скина</DialogTitle>
+        <div className="flex flex-col gap-6 w-full">
+          <div className='flex flex-col items-start gap-2 w-full'>
+            <div className="flex flex-col">
+              <Typography className="font-bold leading-4 tracking-6">
+                Загрузи файл скина (в формате .png)
+              </Typography>
+              <Typography className="text-neutral-400 text-sm">
+                Размер должен быть не больше 1 МБ
+              </Typography>
+            </div>
+            <SkinControlContent />
+          </div>
+          <div className="flex flex-col items-start gap-2 w-full">
+            <Typography className="font-bold tracking-6">
+              Выбери тип скина
+            </Typography>
+            <div className="flex bg-neutral-800 rounded-lg *:h-10 items-center *:rounded-lg justify-between p-1 w-full">
+              {variants.map((d) => <SkinVariantItem key={d} variant={d} />)}
+            </div>
+          </div>
+          <SkinControlChangeSubmit />
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}, 'SkinControlChangeSkin')
+
+const SkinSetButton = reatomComponent(({ ctx }) => {
+  const isVisible = ctx.spy(getIsSelectSkinAtom)
+  if (!isVisible) return null;
+
+  return (
+    <Button
+      className={skinControlVariants({ variant: "default", className: "p-0 hover:bg-neutral-800" })}
+      onClick={() => setSkinAction(ctx)}
+    >
+      <PlusIcon size={18} />
+    </Button>
+  )
+}, "SkinSetButton")
 
 const SkinControlRotate = reatomComponent(({ ctx }) => {
   const variant = ctx.spy(skinRotatingAtom) ? "active" : "default"
@@ -214,18 +454,18 @@ const SkinControlRotate = reatomComponent(({ ctx }) => {
 }, "SkinControlRotate")
 
 const SkinControlsList = reatomComponent(({ ctx }) => {
-  const variant = (c: typeof SKIN_ANIMATIONS[number]) => ctx.spy(skinAnimationAtom) === c.animation 
+  const variant = (c: typeof SKIN_ANIMATIONS[number]) => ctx.spy(skinAnimationAtom) === c.animation
     ? "active" : "default"
 
   return (
     SKIN_ANIMATIONS.map((control, i) => (
-      <SkinControl
+      <div
         key={i}
         onClick={() => skinAnimationAtom(ctx, control.animation)}
         className={skinControlVariants({ variant: variant(control) })}
       >
         <control.icon size={18} />
-      </SkinControl>
+      </div>
     ))
   )
 }, "SkinControlsList")
@@ -233,64 +473,24 @@ const SkinControlsList = reatomComponent(({ ctx }) => {
 const SkinControls = () => {
   return (
     <div className="hidden lg:flex flex-col items-center w-full justify-center gap-4">
-      <div className="flex items-center justify-center gap-1 w-full">
-        <SkinControlsList />
-        <SkinControlRotate />
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center gap-1 w-full">
+          <SkinControlsList />
+          <SkinControlRotate />
+        </div>
+        <div className='flex items-center gap-1'>
+          <SkinControlChangeSkin />
+          <SkinSetButton />
+        </div>
       </div>
     </div >
   );
 }
 
-const getSkinDownloadUrl = (nickname: string) => `${API_PREFIX_URL}/server/skin/download/${nickname}`
-
-const SkinDownloadLink = reatomComponent(({ ctx }) => {
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-
-  const nickname = ctx.spy(userParamAtom)
-  if (!nickname) return null;
-
-  const downloadUrl = getSkinDownloadUrl(nickname)
-
-  return (
-    <Dialog open={dialogOpen} onOpenChange={v => setDialogOpen(v)}>
-      <DialogTrigger asChild className="w-full">
-        <Button className="bg-neutral-50 items-center justify-center h-12">
-          <Typography className="text-lg font-semibold text-neutral-900">
-            Скачать скин
-          </Typography>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-neutral-900 border-none">
-        <DialogTitle>Скачать скин?</DialogTitle>
-        <div className="flex items-center justify-end gap-2 w-full">
-          <DialogClose asChild>
-            <Button className="font-semibold text-lg bg-red-700">
-              Отмена
-            </Button>
-          </DialogClose>
-          <a
-            href={downloadUrl}
-            onClick={() => setDialogOpen(false)}
-            target="_blank"
-            rel="noopener noreferrer"
-            download
-          >
-            <Button className="flex bg-neutral-50 items-center justify-center">
-              <Typography className="text-neutral-950 font-semibold">
-                Скачать
-              </Typography>
-            </Button>
-          </a>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}, "SkinDownloadLink")
-
 export const PlayerSkin = reatomComponent(({ ctx }) => {
-  const player = ctx.spy(playerAtom)
+  const nickname = ctx.spy(playerParamAtom);
 
-  useUpdate((ctx) => player && initSkinAction(ctx), [player])
+  useUpdate((ctx) => initSkinAction(ctx, nickname!), [nickname])
 
   return (
     <div className="flex flex-col h-full gap-4 w-full">

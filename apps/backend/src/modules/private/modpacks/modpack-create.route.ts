@@ -1,5 +1,5 @@
 import { validatePermission } from "#/lib/middlewares/validators"
-import { PERMISSIONS } from "#/shared/constants/permissions"
+import { Permissions } from "#/shared/constants/permissions"
 import Elysia from "elysia"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 import z from "zod"
@@ -14,7 +14,7 @@ const modpackCreateSchema = z.object({
 })
 
 export const modpackCreate = new Elysia()
-  .use(validatePermission(PERMISSIONS.MODPACKS.CREATE))
+  .use(validatePermission(Permissions.get("MODPACKS.CREATE")))
   .post('/create', async ({ status, body }) => {
     const data = await createModpack(body)
     return status(HttpStatusEnum.HTTP_200_OK, { data })

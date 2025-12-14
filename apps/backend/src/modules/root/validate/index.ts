@@ -1,5 +1,5 @@
 import { defineUser } from "#/lib/middlewares/define";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
 import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
@@ -13,9 +13,7 @@ const validateNickname = new Elysia()
       )
     )
   })
-  .get("/nickname/:nickname", async ({ status, params }) => {
-    const nickname = params.nickname;
-
+  .get("/nickname/:nickname", async ({ status, params: { nickname } }) => {
     const query = await general
       .selectFrom("players")
       .select("nickname")

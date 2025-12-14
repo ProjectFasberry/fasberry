@@ -1,6 +1,10 @@
-import { bot } from "#/shared/bot/logger";
+import { getLoggerBot } from "#/shared/bot/logger";
+import { getChats } from "#/shared/constants/chats";
+import { isProduction } from "#/shared/env";
 
 export async function handleFatalError(error: Error | unknown) {
+  if (!isProduction) return;
+
   let message: string = ""
   
   if (error instanceof Error) {
@@ -11,12 +15,12 @@ export async function handleFatalError(error: Error | unknown) {
 
   console.error('Unhandled Rejection:', error);
 
-  const text = `Сервис Fasberry Backend упал. \n${message}`
-
   try {
-    await bot.api.sendMessage({ chat_id: 1114061179, text })
+    getLoggerBot()
+      .api
+      .sendMessage({ chat_id: getChats()[0], text: message })
   } catch (e) {
-    console.error('Failed to send Telegram message:', e);
+    console.error(e);
   }
 
   process.exit(1);

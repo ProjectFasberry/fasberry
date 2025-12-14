@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import { defineOptionalUser, defineSession, defineUserRole, validateLogger } from "./define";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getUserNickname } from "#/modules/auth/auth.model";
 import { getPermissions } from "#/modules/user/me.model";
@@ -9,8 +9,9 @@ import { ipPlugin } from "../plugins/ip";
 import { client } from "#/shared/api/client";
 import { HTTPError } from "ky";
 import { CAP_INSTANCE_URL, CAP_SECRET, CAP_SITE_KEY } from "#/shared/env";
-import { logError } from "#/utils/config/logger";
+import { logErrorMsg } from "#/utils/config/log-utils";
 import { safeJsonParse } from "#/utils/config/transforms";
+import { libertybans } from "#/shared/database/libertybans-db";
 
 export const validatePermission = (permission: string) => new Elysia()
   .use(defineUserRole())
@@ -40,8 +41,7 @@ export const validateAuthStatus = () => new Elysia()
       }
 
       const nickname = await getUserNickname(session);
-      console.log(nickname);
-      
+
       if (nickname) {
         throw status(HttpStatusEnum.HTTP_406_NOT_ACCEPTABLE, "authorized")
       }
@@ -57,15 +57,28 @@ export const validateBannedStatus = () => new Elysia()
         validateLogger.log("validateBannedStatus");
       }
 
-      const isExist = await general
-        .selectFrom("banned_users")
-        .innerJoin("players", "players.nickname", "banned_users.nickname")
-        .where("banned_users.nickname", "=", nickname)
-        .where("players.role_id", "=", 1) // where role_id=1 -> default role
-        .select("banned_users.id")
+      const target = await general
+        .selectFrom("players")
+        .select("role_id")
+        .where("players.nickname", "=", nickname)
         .executeTakeFirst()
 
-      if (isExist && isExist.id) {
+      if (target) {
+        if (target?.role_id === 3) {
+          console.log("is admin. skipping check ban")
+          return;
+        }
+      }
+
+      const ban = await libertybans
+        .selectFrom("libertybans_victims")
+        .innerJoin("libertybans_names", "libertybans_names.uuid", "libertybans_victims.uuid")
+        .innerJoin("libertybans_bans", "libertybans_bans.victim", "libertybans_victims.id")
+        .select("libertybans_victims.id")
+        .where("libertybans_names.lower_name", "=", nickname.toLowerCase())
+        .executeTakeFirst()
+
+      if (ban && ban.id) {
         throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "banned")
       }
     }
@@ -130,7 +143,7 @@ export const botValidator = () => new Elysia()
       const result = await verifyRequest(token);
       if (!result.ok) throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, result.error)
     } catch (e) {
-      logError(e);
+      logErrorMsg(e);
 
       if (e instanceof Error) {
         throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, e.message)

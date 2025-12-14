@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { getChartData, registrationsSchema } from "./analytics.model";
 
 export const analyticsRegistrations = new Elysia()

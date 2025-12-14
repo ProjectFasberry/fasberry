@@ -4,30 +4,28 @@ import { logError } from "@/shared/lib/log"
 import { withSsr } from "@/shared/lib/ssr"
 import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
-import { userParamAtom } from "./player.model"
-import { client, withLogging } from "@/shared/lib/client-wrapper"
+import { playerParamAtom } from "./player.model"
+import { client } from "@/shared/lib/client-wrapper"
 import { isEmptyArray } from "@/shared/lib/array"
 
 export async function getLands(nickname: string, init?: RequestInit) {
-  return client<PlayerLandsPayload>(`server/lands/list/${nickname}`, init)
-    .pipe(withLogging())
-    .exec()
+  return client<PlayerLandsPayload>(`server/lands/list/${nickname}`, init).exec()
 }
 
-export const playerLandsAtom = atom<PlayerLandsPayload | null>(null).pipe(withSsr("lands"), withReset())
+export const playerLandsAtom = atom<PlayerLandsPayload | null>(null).pipe(
+  withSsr("lands"), withReset()
+)
 
-userParamAtom.onChange((ctx, state) => {
+// on client
+playerParamAtom.onChange((ctx, state) => {
   if (!state) return;
-
-  const history = ctx.get(userParamAtom.history)
-
-  if (history.length > 1) {
-    playerLandsAction(ctx, state)
-  }
+  playerLandsAction(ctx, state)
 })
 
 export const playerLandsAction = reatomAsync(async (ctx, nickname: string) => {
-  return await ctx.schedule(() => getLands(nickname, { signal: ctx.controller.signal }))
+  return await ctx.schedule(() => 
+    getLands(nickname, { signal: ctx.controller.signal })
+  )
 }, {
   name: "playerLandsAction",
   onFulfill: (ctx, res) => {

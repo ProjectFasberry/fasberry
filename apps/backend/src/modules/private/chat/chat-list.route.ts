@@ -1,17 +1,17 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
 import { getDirection } from "#/utils/config/paginate";
 import Elysia from "elysia";
 import { executeWithCursorPagination } from "kysely-paginate";
-import { ChatItem } from "./chat.model";
+import type { ChatItem } from "./chat.model";
 import { wrapMeta } from "#/utils/config/transforms";
 import { metaSchema } from "#/shared/schemas";
 
 const chatDataSchema = metaSchema.pick({ asc: true, endCursor: true })
 
 export const chatData = new Elysia()
-  .use(validatePermission(PERMISSIONS.PRIVATE.CHAT.READ))
+  .use(validatePermission(Permissions.get("PRIVATE.CHAT.READ")))
   .get("/list", async ({ query, nickname }) => {
     const baseQuery = general
       .selectFrom("privated_chat")

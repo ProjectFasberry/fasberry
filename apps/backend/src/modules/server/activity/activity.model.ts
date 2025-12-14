@@ -1,10 +1,11 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { getNats } from "#/shared/nats/client";
-import { SERVER_EVENT_CHECK_PLAYER_STATUS, SERVER_USER_EVENT_SUBJECT } from "#/shared/nats/subjects";
+import { SUBJECTS } from "#/shared/nats/subjects";
 import dayjs from "dayjs";
 import { sql } from "kysely";
 import { getPlayerStatusGlobal } from "../status/status.model";
-import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
+import type { PlayerActivityPayload } from "@repo/shared/types/entities/user";
+import { invariant } from "#/helpers/invariant";
 
 type PlayerStatus = {
   nickname: string;
@@ -52,15 +53,15 @@ export async function getPlayerStatus(nickname: string): Promise<PlayerActivityP
       return { type: "online", nickname, server: currentServer, issued_date: dayjs().toDate() }
     } else {
       const payload = {
-        event: SERVER_EVENT_CHECK_PLAYER_STATUS,
+        event: SUBJECTS.SERVER.EVENTS.USER.CHECK_ONLINE,
         nickname
       }
 
-      const res = await nc.request(SERVER_USER_EVENT_SUBJECT, JSON.stringify(payload), { timeout: 1000 })
+      const res = await nc.request(SUBJECTS.SERVER.EVENTS.USER.EVENT, JSON.stringify(payload), { timeout: 1000 })
 
       if (res) {
         const { type } = res.json<PlayerStatus>();
-        if (!type) throw new Error();
+        invariant(type, `Type "${type}" is not defined`)
 
         const lastVisitTime = await getUserLastVisitTime(nickname);
 
@@ -70,7 +71,6 @@ export async function getPlayerStatus(nickname: string): Promise<PlayerActivityP
       }
     }
   } catch (e) {
-    console.error(e)
     return { nickname, type: "offline", issued_date: null }
   }
 }

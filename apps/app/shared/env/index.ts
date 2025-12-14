@@ -14,3 +14,5 @@ export const VOLUME_PREFIX = import.meta.env.VITE_VOLUME_PREFIX
 
 export const CAP_INSTANCE_URL = import.meta.env.VITE_CAP_INSTANCE_URL
 export const CAP_SITEKEY = import.meta.env.VITE_CAP_SITE_KEY
+
+export const APAY_TAG = import.meta.env.VITE_APAY_TAG

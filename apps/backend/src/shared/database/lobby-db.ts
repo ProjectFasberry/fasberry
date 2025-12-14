@@ -12,12 +12,16 @@ export const poolOptsHooks = (name: string) => ({
   }
 })
 
-const config: PoolOptions = {
+export const inherit = {
   host: LOBBY_MYSQL_HOST,
   user: LOBBY_MYSQL_USER,
   password: LOBBY_MYSQL_PASSWORD,
   port: Number(LOBBY_MYSQL_PORT),
   database: LOBBY_MYSQL_DB,
+}
+
+const config: PoolOptions = {
+  ...inherit,
   connectionLimit: 10
 }
 

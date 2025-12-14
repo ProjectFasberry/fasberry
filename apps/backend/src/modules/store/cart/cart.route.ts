@@ -1,12 +1,12 @@
 import Elysia, { t } from "elysia";
 import z from "zod";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { defineGlobalPrice } from "#/utils/store/store-transforms";
-import { defineInitiator } from "#/lib/middlewares/define";
-import { CartPayload } from "@repo/shared/types/entities/store";
+import { defineGlobalPrice } from "#/utils/store/store-helpers";
+import type { CartPayload } from "@repo/shared/types/entities/store";
 import { addItemToBasket, editItemInCart, editItemToBasketSchema, getBasketData, removeItemFromCart, validateInitiatorExists } from "./cart.model";
 import { wrapError } from "#/helpers/wrap-error";
 import { withData } from "#/shared/schemas";
+import { defineUser } from "#/lib/middlewares/define";
 
 const itemBasketBaseSchema = z.object({
   id: z.coerce.number(),
@@ -20,8 +20,8 @@ const itemBasketAddSchema = z.intersection(
 )
 
 const basketAddItem = new Elysia()
-  .use(defineInitiator())
-  .post("/add", async ({ status, initiator, body }) => {
+  .use(defineUser())
+  .post("/add", async ({ status, nickname: initiator, body }) => {
     const { id, recipient } = body;
     const validateResult = await validateInitiatorExists(recipient)
 
@@ -36,8 +36,8 @@ const basketAddItem = new Elysia()
   })
 
 const basketRemoveItem = new Elysia()
-  .use(defineInitiator())
-  .delete("/remove", async ({ initiator, body }) => {
+  .use(defineUser())
+  .delete("/remove", async ({ nickname: initiator, body }) => {
     const { id } = body;
     const data = await removeItemFromCart(id, initiator)
     return { data }
@@ -46,8 +46,8 @@ const basketRemoveItem = new Elysia()
   })
 
 const basketEditItem = new Elysia()
-  .use(defineInitiator())
-  .post("/edit", async ({ initiator, body }) => {
+  .use(defineUser())
+  .post("/edit", async ({ nickname: initiator, body }) => {
     const data = await editItemInCart(body, initiator)
     return { data }
   }, {
@@ -75,7 +75,7 @@ const cartPricePayload = t.Object({
 })
 
 const basketList = new Elysia()
-  .use(defineInitiator())
+  .use(defineUser())
   .model({
     "cart-list": withData(
       t.Object({
@@ -84,7 +84,7 @@ const basketList = new Elysia()
       })
     )
   })
-  .get("/list", async ({ initiator }) => {
+  .get("/list", async ({ nickname: initiator }) => {
     const [products, price] = await Promise.all([
       getBasketData(initiator),
       defineGlobalPrice(initiator)

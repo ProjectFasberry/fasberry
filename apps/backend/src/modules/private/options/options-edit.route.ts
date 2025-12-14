@@ -1,8 +1,8 @@
 import Elysia from "elysia";
 import z from "zod";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
 
 const updateOptionsSchema = z.object({
@@ -21,9 +21,8 @@ async function updateOptions(name: string, { value }: z.infer<typeof updateOptio
 }
 
 export const optionsUpdate = new Elysia()
-  .use(validatePermission(PERMISSIONS.OPTIONS.UPDATE))
-  .post("/:name/edit", async ({ params, body }) => {
-    const name = params.name;
+  .use(validatePermission(Permissions.get("OPTIONS.UPDATE")))
+  .post("/:name/edit", async ({ params: { name }, body }) => {
     const data = await updateOptions(name, body);
     return { data }
   }, {

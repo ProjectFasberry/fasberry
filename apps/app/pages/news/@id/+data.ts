@@ -26,21 +26,24 @@ function metadata(
   }
 }
 
-export async function data(pageContext: PageContextServer) {
-  logRouting(pageContext.urlPathname, "data");
+async function loadNews(id: string, headers?: Record<string, string>): Promise<News | null> {
+  try {
+    const news = await getNewsById(id, { headers })
+    return news
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function data(pageCtx: PageContextServer) {
+  logRouting(pageCtx.urlPathname, "data");
 
   const config = useConfig()
-  const headers = pageContext.headers ?? undefined;
-  
-  let news: News | null = null;
+  const headers = pageCtx.headers ?? undefined;
+  const id = pageCtx.routeParams.id
 
-  try {
-    news = await getNewsById(pageContext.routeParams.id, { headers })
-  } catch {}
-
-  if (!news) {
-    throw render("/not-exist")
-  }
+  const news = await loadNews(id, headers)
+  if (!news) throw render("/not-exist")
 
   config(metadata(news))
 
@@ -48,9 +51,5 @@ export async function data(pageContext: PageContextServer) {
 
   newsItemAtom(ctx, news)
 
-  pageContext.snapshot = mergeSnapshot(ctx, pageContext)
-
-  return {
-    id: pageContext.routeParams.id
-  }
+  pageCtx.snapshot = mergeSnapshot(ctx, pageCtx)
 }

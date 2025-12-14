@@ -1,11 +1,11 @@
-import { general } from "#/shared/database/main-db"
+import { general } from "#/shared/database/general-db"
 import { metaSchema, withData, withMeta } from "#/shared/schemas"
 import { getDirection } from "#/utils/config/paginate"
 import { wrapMeta } from "#/utils/config/transforms"
-import { TasksPayload } from "@repo/shared/types/entities/other"
+import type { TasksPayload } from "@repo/shared/types/entities/other"
 import Elysia, { t } from "elysia"
 import { executeWithCursorPagination } from "kysely-paginate"
-import z from "zod"
+import type z from "zod"
 import { taskPayload } from "./tasks.model"
 
 const tasksListSchema = metaSchema.pick({ asc: true, endCursor: true })

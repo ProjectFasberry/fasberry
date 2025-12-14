@@ -1,12 +1,12 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
 import Elysia from "elysia";
 import { createAdminActivityLog } from "../private.model";
 import z from "zod";
 
 export const dictionariesDelete = new Elysia()
-  .use(validatePermission(PERMISSIONS.DICTIONARIES.DELETE))
+  .use(validatePermission(Permissions.get("DICTIONARIES.DELETE")))
   .delete("/:id/remove", async ({ params }) => {
     const id = params.id;
 

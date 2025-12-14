@@ -10,7 +10,7 @@ export const DONATE_GROUPS = {
 
 export const DONATE_COLORS: Record<keyof typeof DONATE_GROUPS, string> = {
   "arkhont": "#30ff5d",
-  "authentic": "e342cd",
+  "authentic": "#e342cd",
   "loyal": "#40c983",
   "default": "#FFFFFF",
   "helper": "#3D3D3D",

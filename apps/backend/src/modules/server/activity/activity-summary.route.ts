@@ -1,7 +1,7 @@
 import Elysia, { t } from 'elysia';
-import { general } from '#/shared/database/main-db';
+import { general } from '#/shared/database/general-db';
 import dayjs from 'dayjs';
-import { PlayerActivitySummaryPayload } from '@repo/shared/types/entities/user';
+import type { PlayerActivitySummaryPayload } from '@repo/shared/types/entities/user';
 import { withData } from '#/shared/schemas';
 
 type Heatmap = Map<string, Map<number, number>>;
@@ -48,7 +48,7 @@ async function getPlayerHeatmap(
       continue;
     }
 
-    let cursor = new Date(start);
+    const cursor = new Date(start);
 
     while (cursor < end) {
       const dateKey = cursor.toISOString().split('T')[0];
@@ -85,8 +85,7 @@ export const activitySummary = new Elysia()
       t.Nullable(activitySummaryPayload)
     )
   })
-  .get("/summary/:nickname", async ({ params }) => {
-    const nickname = params.nickname;
+  .get("/summary/:nickname", async ({ params: { nickname } }) => {
     const payload = await getPlayerHeatmap(nickname);
 
     let data: PlayerActivitySummaryPayload | null = Object.fromEntries(

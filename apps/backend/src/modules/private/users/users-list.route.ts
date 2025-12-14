@@ -1,14 +1,14 @@
 import Elysia from "elysia";
-import { PrivatedUsersPayload } from "@repo/shared/types/entities/other";
+import type { PrivatedUsersPayload } from "@repo/shared/types/entities/other";
 import { getDirection } from "#/utils/config/paginate";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { sql } from "kysely";
 import { executeWithCursorPagination } from "kysely-paginate";
 import { wrapMeta } from "#/utils/config/transforms";
 import z from "zod";
 import { metaSchema, searchQuerySchema } from "#/shared/schemas";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 
 const USER_SORT = ["abc", "created_at", "role"]
 
@@ -94,7 +94,7 @@ async function getPlayersList({ asc, startCursor, searchQuery, endCursor, limit,
 }
 
 export const playersList = new Elysia()
-  .use(validatePermission(PERMISSIONS.PLAYERS.READ))
+  .use(validatePermission(Permissions.get("PLAYERS.READ")))
   .get("/list", async ({ query }) => {
     const data: PrivatedUsersPayload = await getPlayersList(query);
     return { data }

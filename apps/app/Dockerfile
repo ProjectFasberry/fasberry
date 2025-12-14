@@ -17,7 +17,7 @@ WORKDIR /apps/app
 ENV NODE_ENV=production
 RUN bun run build
 
-FROM oven/bun:1 AS runtime
+FROM node:24-alpine3.22 AS runtime
 
 WORKDIR /
 

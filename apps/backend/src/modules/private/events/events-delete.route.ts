@@ -1,10 +1,11 @@
 import Elysia from "elysia";
 import { getRedis } from "#/shared/redis/init";
-import { EventPayload } from "@repo/shared/types/entities/other";
+import type { EventPayload } from "@repo/shared/types/entities/other";
 import { EVENTS_ALL_KEY, EVENTS_TARGET_KEY, EVENTS_TYPE_KEY } from "../../server/events/events.model";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
+import { invariant } from "#/helpers/invariant";
 
 async function deleteEvent(id: string) {
   const redis = getRedis();
@@ -22,7 +23,7 @@ async function deleteEvent(id: string) {
     .srem(EVENTS_TYPE_KEY(type), id)
     .exec();
 
-  if (!results) throw new Error('Transaction failed');
+  invariant(results, 'Transaction failed')
 
   const [delRes, lremRes, sremRes]: [number, number, number] = results.map(([err, val]) => {
     if (err) throw err;
@@ -30,13 +31,13 @@ async function deleteEvent(id: string) {
   }) as [number, number, number];
 
   const success = delRes >= 0 && lremRes >= 0 && sremRes >= 0;
-  if (!success) throw new Error("Event is not deleted")
+  invariant(success, "Event is not deleted")
 
   return id
 }
 
 export const eventsDelete = new Elysia()
-  .use(validatePermission(PERMISSIONS.EVENTS.DELETE))
+  .use(validatePermission(Permissions.get("EVENTS.DELETE")))
   .delete("/:id", async ({ params }) => {
     const id = params.id;
     const data = await deleteEvent(id)

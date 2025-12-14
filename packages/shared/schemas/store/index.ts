@@ -52,3 +52,8 @@ export const storeItemCreateSchema = z.object({
   command: z.string().nullable(),
   content: z.object({}).loose().transform((v) => v as JsonValue)
 })
+
+export const ordersRouteSchema = z.object({
+  status: z.enum(["succeeded", "all", "pending"]).optional().default("all"),
+  type: z.enum(["default", "game", "all"]).optional().default("all"),
+});

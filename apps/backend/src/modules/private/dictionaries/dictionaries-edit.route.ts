@@ -1,12 +1,12 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import Elysia from "elysia";
 import { createAdminActivityLog } from "../private.model";
 import z from "zod";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 
 export const dictionariesEdit = new Elysia()
-  .use(validatePermission(PERMISSIONS.DICTIONARIES.UPDATE))
+  .use(validatePermission(Permissions.get("DICTIONARIES.UPDATE")))
   .post("/:id/edit", async ({ params, body }) => {
     const id = params.id;
     const { key, value } = body;

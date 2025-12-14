@@ -1,40 +1,30 @@
 import { logError } from "@/shared/lib/log";
-import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { userParamAtom } from "./player.model";
-import { take } from "@reatom/framework";
+import { reatomAsync, withCache, withDataAtom, withRetry, withStatusesAtom } from "@reatom/async";
 import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
 import { client } from "@/shared/lib/client-wrapper";
+import { playerParamAtom } from "./player.model";
 
-export const playerActivityAction = reatomAsync(async (ctx) => {
-  let nickname = ctx.get(userParamAtom)
-
-  if (!nickname) {
-    nickname = await take(ctx, userParamAtom)
-  }
-
-  if (!nickname) return null;
-
-  const result = await ctx.schedule(() =>
-    client<PlayerActivityPayload>(`server/activity/now/${nickname}`, { retry: 1 }).exec()
+export const playerActivityAction = reatomAsync(async (ctx, nickname: string) => {
+  return await ctx.schedule(() =>
+    client<PlayerActivityPayload>(`server/activity/now/${nickname}`, { 
+      signal: ctx.controller.signal, retry: 1 
+    }).exec()
   )
-
-  return { nickname, result }
 }, {
   name: "playerActivityAction",
-  onFulfill: (ctx, res) => {
-    if (!res) return;
-
-    const { result, nickname } = res;
-    if (!result) return;
-
-    if (result.type === 'online') {
-      playerLocationAction(ctx, nickname)
-    }
-  },
   onReject: (ctx, e) => {
     logError(e)
   }
-}).pipe(withDataAtom(), withStatusesAtom())
+}).pipe(
+  withDataAtom(null), 
+  withStatusesAtom(), 
+  withRetry()
+)
+
+playerParamAtom.onChange((ctx, state) => {
+  if (!state) return;
+  playerActivityAction(ctx, state)
+})
 
 type PlayerLocation = {
   world: string,
@@ -55,15 +45,3 @@ export const playerLocationAction = reatomAsync(async (ctx, nickname: string) =>
   withStatusesAtom(),
   withCache({ swr: false })
 )
-
-playerLocationAction.onReject.onCall((ctx) => {
-  playerLocationAction.dataAtom(ctx, {
-    world: "asdsad",
-    x: 5,
-    y: 5,
-    z: 5,
-    pitch: 5,
-    yaw: 5,
-    customLocation: "asd"
-  })
-})

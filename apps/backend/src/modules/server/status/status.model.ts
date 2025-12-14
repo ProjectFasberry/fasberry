@@ -1,9 +1,11 @@
+import { invariant } from "#/helpers/invariant";
 import { getRedisKey } from "#/helpers/redis";
 import { client } from "#/shared/api/client";
-import { PANEL_PASSWORD, PANEL_PREFIX_URL, PANEL_USER } from "#/shared/env";
+import { getUrls } from "#/shared/constants/urls";
+import { PANEL_PASSWORD, PANEL_USER } from "#/shared/env";
 import { getRedis } from "#/shared/redis/init";
 import { safeJsonParse } from "#/utils/config/transforms";
-import { StatusPayload } from "@repo/shared/types/entities/other";
+import type { StatusPayload } from "@repo/shared/types/entities/other";
 
 type CountPayload = { count: number }
 
@@ -34,31 +36,47 @@ const initial = {
   players: []
 }
 
-const panel = client.extend((opts) => ({ prefixUrl: PANEL_PREFIX_URL, ...opts }));
-const authHeaders = { 
-  "authorization": `Basic ${btoa(PANEL_USER + ":" + PANEL_PASSWORD)}` 
+function getClient() {
+  const urls = getUrls();
+  const panelUrl = urls.get("panel")
+
+  invariant(panelUrl, "Panel url is not defined")
+
+  return client.extend((opts) => ({ 
+    ...opts,
+    prefixUrl: `https://${panelUrl}`
+  }));
+}
+
+const authHeaders = {
+  "authorization": `Basic ${btoa(PANEL_USER + ":" + PANEL_PASSWORD)}`
 }
 
 async function getCount(): Promise<CountPayload> {
-  return panel("count", { headers: { ...authHeaders } }).json()
+  const client = getClient();
+  return client("count", { headers: { ...authHeaders } }).json()
 }
 
 async function getPlayerList(): Promise<PlayerListPayload> {
-  return panel("playerlist", { headers: { ...authHeaders } }).json()
+  const client = getClient();
+  return client("playerlist", { headers: { ...authHeaders } }).json()
 }
 
 async function getServers(): Promise<ServersPayload> {
-  return panel("servers", { headers: { ...authHeaders } }).json()
+  const client = getClient();
+  return client("servers", { headers: { ...authHeaders } }).json()
 }
 
 async function getHealth(): Promise<HealthPayload> {
-  return panel("health", { headers: { ...authHeaders } }).json()
+  const client = getClient();
+  return client("health", { headers: { ...authHeaders } }).json()
 }
 
 export async function getPlayerStatusGlobal(username: string): Promise<PlayerPayload | null> {
+  const client = getClient();
+
   try {
-    const result = await panel(`player/${username}`, { headers: { ...authHeaders }, timeout: 1000, retry: 1 })
-    return await result.json()
+    return await client(`player/${username}`, { headers: { ...authHeaders }, timeout: 1000, retry: 1 }).json()
   } catch (e) {
     return null;
   }
@@ -78,45 +96,51 @@ async function getProxyStats() {
 }
 
 async function getData() {
-  const proxy = await getProxyStats()
-  
-  if (proxy.status !== 'ok') {
-    const data = {
-      proxy: initial,
-      servers: { }
+  try {
+    const proxy = await getProxyStats()
+
+    if (proxy.status !== 'ok') {
+      const data = {
+        proxy: initial,
+        servers: {}
+      }
+
+      return data;
+    }
+
+    const servers: StatusPayload["servers"] = Object.entries(proxy.servers)
+      .reduce((acc, [key, _]) => {
+        const online = proxy.servers[key];
+        const list = proxy.playersList.players
+          .filter(d => d.currentServer === key)
+          .map(d => d.username);
+
+        acc[key.toLowerCase()] = {
+          online,
+          players: list,
+          status: "online",
+          max: 200
+        };
+
+        return acc;
+      }, {} as StatusPayload["servers"]);
+
+    const data: StatusPayload = {
+      proxy: {
+        status: "online",
+        online: proxy.playersList.count,
+        max: 200,
+        players: proxy.playersList.players.map(d => d.username)
+      },
+      servers
     }
 
     return data;
+  } catch (e) {
+    if (e instanceof Error) {
+      console.error("Failed to update server status", e.message);
+    }
   }
-
-  const servers: StatusPayload["servers"] = Object.entries(proxy.servers)
-    .reduce((acc, [key, _]) => {
-      const online = proxy.servers[key];
-      const list = proxy.playersList.players
-        .filter(d => d.currentServer === key)
-        .map(d => d.username);
-
-      acc[key.toLowerCase()] = {
-        online,
-        players: list,
-        status: "online",
-        max: 200
-      };
-
-      return acc;
-    }, {} as StatusPayload["servers"]);
-
-  const data: StatusPayload = {
-    proxy: {
-      status: "online",
-      online: proxy.playersList.count,
-      max: 200,
-      players: proxy.playersList.players.map(d => d.username)
-    },
-    servers
-  }
-
-  return data;
 }
 
 export async function updateServerStatus() {

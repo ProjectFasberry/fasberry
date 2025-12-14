@@ -1,4 +1,4 @@
-import { general } from "#/shared/database/main-db"
+import { general } from "#/shared/database/general-db"
 import Elysia from "elysia"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 

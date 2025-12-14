@@ -1,10 +1,10 @@
 import Elysia from "elysia";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import z from "zod";
-import { PrivatedMethodsPayload } from "@repo/shared/types/entities/other";
+import type { PrivatedMethodsPayload } from "@repo/shared/types/entities/other";
 import { getStaticUrl } from "#/helpers/volume";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
 
 async function getMethods() {
@@ -22,17 +22,15 @@ async function getMethods() {
 }
 
 export const storeMethodsList = new Elysia()
-  .use(validatePermission(PERMISSIONS.STORE.METHODS.READ))
+  .use(validatePermission(Permissions.get("STORE.METHODS.READ")))
   .get("/list", async () => {
     const data: PrivatedMethodsPayload = await getMethods()
     return { data }
   })
 
 export const storeMethodsEdit = new Elysia()
-  .use(validatePermission(PERMISSIONS.STORE.METHODS.UPDATE))
-  .post("/edit/:method", async ({ params, body }) => {
-    const method = params.method;
-
+  .use(validatePermission(Permissions.get("STORE.METHODS.UPDATE")))
+  .post("/edit/:method", async ({ params: { method }, body }) => {
     const { key, value } = body;
 
     const data = await general

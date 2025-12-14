@@ -1,8 +1,8 @@
 import { logger } from "#/utils/config/logger";
-import { ConnectionOptions, type NatsConnection } from "@nats-io/nats-core";
+import type { ConnectionOptions, NatsConnection } from "@nats-io/nats-core";
 import { connect } from "@nats-io/transport-node";
-import { exit } from "node:process";
-import { NATS_HOST as host, NATS_TOKEN as token } from "#/shared/env"
+import { NATS_HOST as host, NATS_PASSWORD, NATS_USER } from "#/shared/env"
+import { invariant } from "#/helpers/invariant";
 
 export const natsLogger = logger.withTag("Nats")
 
@@ -10,7 +10,8 @@ const config: ConnectionOptions = {
   servers: [
     `nats://${host}`
   ],
-  token,
+  user: NATS_USER,
+  pass: NATS_PASSWORD,
   reconnect: true,
   maxReconnectAttempts: -1,
   reconnectTimeWait: 2000,
@@ -24,12 +25,12 @@ export async function initNats(): Promise<void> {
     natsLogger.success(`Connected to ${config.servers}`)
   } catch (e) {
     natsLogger.error(e)
-    exit(1)
+    process.exit(1)
   }
 }
 
 export function getNats(): NatsConnection {
-  if (!nats) throw new Error('NATS client is not initialized');
+  invariant(nats, 'NATS client is not initialized' )
   return nats;
 }
 
@@ -39,8 +40,8 @@ export async function closeNats(): Promise<void> {
   try {
     await nats.drain();
     natsLogger.log('NATS connection closed.')
-  } catch (err) {
-    natsLogger.error('Error closing NATS connection:', err)
-    exit(1)
+  } catch (e) {
+    natsLogger.error('Error closing NATS connection:', e)
+    process.exit(1)
   }
 }

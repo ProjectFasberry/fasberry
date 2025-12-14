@@ -1,7 +1,7 @@
 import Elysia from "elysia";
-import { general } from "#/shared/database/main-db";
-import { StoreItem } from "@repo/shared/types/entities/store";
-import { definePrice, processImageUrl } from "#/utils/store/store-transforms";
+import { general } from "#/shared/database/general-db";
+import type { StoreItem } from "@repo/shared/types/entities/store";
+import { definePrice, processImageUrl } from "#/utils/store/store-helpers";
 import z from "zod";
 
 async function getItem(id: number): Promise<StoreItem | null> {
@@ -34,8 +34,7 @@ async function getItem(id: number): Promise<StoreItem | null> {
 }
 
 export const storeItem = new Elysia()
-  .get("/item/:id", async ({ params }) => {
-    const id = params.id
+  .get("/item/:id", async ({ params: { id } }) => {
     const data: StoreItem | null = await getItem(id)
     return { data }
   }, {

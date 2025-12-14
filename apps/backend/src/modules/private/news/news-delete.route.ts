@@ -1,6 +1,6 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import z from "zod";
@@ -17,9 +17,8 @@ async function deleteNews(id: number) {
 }
 
 export const newsDeleteRoute = new Elysia()
-  .use(validatePermission(PERMISSIONS.NEWS.DELETE))
-  .delete("/:id", async ({ status, params }) => {
-    const id = params.id;
+  .use(validatePermission(Permissions.get("NEWS.DELETE")))
+  .delete("/:id", async ({ status, params: { id } }) => {
     const data = await deleteNews(id);
     return status(HttpStatusEnum.HTTP_200_OK, { data })
   }, {

@@ -4,6 +4,7 @@ import { getNats } from "#/shared/nats/client";
 import { logger } from "#/utils/config/logger";
 import { orderEventPayloadSchema } from "@repo/shared/schemas/payment";
 import { getOrder } from "./order.model";
+import type { OrderSingleDefault } from "@repo/shared/types/entities/store";
 
 const getPaymentEventsSubject = (uniqueId: string) => `payment.events.${uniqueId}`
 
@@ -12,7 +13,7 @@ export const sseLogger = logger.withTag("SSE")
 export const orderEvents = new Elysia()
   .get("/:id/events", async function* (ctx) {
     const uniqueId = ctx.params.id;
-    const data = await getOrder(uniqueId);
+    const data = await getOrder(uniqueId, "default") as OrderSingleDefault | null;
 
     if (!data) {
       sseLogger.log("Disconnect. Order not found");

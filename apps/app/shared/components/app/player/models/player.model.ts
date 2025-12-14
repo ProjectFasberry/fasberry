@@ -4,14 +4,25 @@ import { atom } from "@reatom/core"
 import { withReset } from "@reatom/framework"
 import { Player } from "@repo/shared/types/entities/user"
 import { withSsr } from "@/shared/lib/ssr"
-import { pageContextAtom } from "@/shared/models/page-context.model"
 import { client } from "@/shared/lib/client-wrapper"
 
-export const playerAtom = atom<Player | null>(null, "player").pipe(withSsr("player"))
+export type PlayerOmitted = Omit<Player, "rate">
 
-export const userParamAtom = atom<string | null>(
-  (ctx) => ctx.spy(pageContextAtom)?.routeParams.nickname ?? null, "userParam"
-).pipe(withHistory(), withReset())
+export const playerAtom = atom<PlayerOmitted | null>(null, "player").pipe(
+  withSsr("player")
+)
+
+export const playerParamAtom = atom<string | null>(null, "playerParam").pipe(
+  withHistory(), withReset(), withSsr("playerParam")
+)
+
+playerAtom.onChange((ctx, state) => {
+  if (!state) return;
+
+  if (!ctx.get(playerParamAtom)) {
+    playerParamAtom(ctx, state.nickname)
+  }
+})
 
 export const isIdentityAtom = atom<boolean>((ctx) => {
   const currentUser = ctx.spy(currentUserAtom)

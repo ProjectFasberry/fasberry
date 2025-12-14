@@ -1,16 +1,18 @@
 import { reatomAsync, withDataAtom, withStatusesAtom } from "@reatom/async";
 import { SeemsLikePlayersPayload } from "@repo/shared/types/entities/other";
-import { userParamAtom } from "./player.model";
-import { action, atom, take } from "@reatom/framework";
+import { playerParamAtom } from "./player.model";
+import { action, atom, Ctx, take } from "@reatom/framework";
 import { withSsr } from "@/shared/lib/ssr";
 import { toast } from "sonner";
 import { setCookie } from "@/shared/lib/cookie";
 import dayjs from "@/shared/lib/create-dayjs";
-import { client, withQueryParams } from "@/shared/lib/client-wrapper";
+import { client } from "@/shared/lib/client-wrapper";
 
 export const playerSeemsLikePlayersIsShowKey = "playerSeemsLikeShow"
 
-export const playerSeemsLikePlayersIsShowAtom = atom(true, 'playerSeemsLikePlayersIsShow').pipe(withSsr(playerSeemsLikePlayersIsShowKey))
+export const playerSeemsLikePlayersIsShowAtom = atom(true, 'playerSeemsLikePlayersIsShow').pipe(
+  withSsr(playerSeemsLikePlayersIsShowKey)
+)
 
 export const toggleShowAction = action((ctx, inputValue?: boolean) => {
   const isInputed = typeof inputValue !== 'undefined'
@@ -30,29 +32,32 @@ export const toggleShowAction = action((ctx, inputValue?: boolean) => {
   }
 }, "toggleShowAction")
 
-userParamAtom.onChange((ctx, state) => {
+playerParamAtom.onChange((ctx, state) => {
   if (!state) return;
-
-  const history = ctx.get(userParamAtom.history)
-
-  if (history.length > 1) {
-    playerSeemsLikeAction.dataAtom.reset(ctx)
-    playerSeemsLikeAction(ctx)
-  }
+  
+  playerSeemsLikeAction.dataAtom.reset(ctx)
+  playerSeemsLikeAction(ctx)
 })
 
 export const playerSeemsLikeAction = reatomAsync(async (ctx) => {
-  let nickname = ctx.get(userParamAtom)
+  let nickname = ctx.get(playerParamAtom)
 
   if (!nickname) {
-    nickname = await take(ctx, userParamAtom)
+    nickname = await take(ctx, playerParamAtom)
   }
 
   if (!nickname) return null;
 
-  return await ctx.schedule(() =>
-    client<SeemsLikePlayersPayload>(`server/seems-like/${nickname}`)
-      .pipe(withQueryParams({ limit: 8 }))
-      .exec()
+  const result = await ctx.schedule(
+    () => client<SeemsLikePlayersPayload>(`server/seems-like/${nickname}`, {
+      signal: ctx.controller.signal,
+      searchParams: { limit: 8 }
+    })
+    .exec()
   )
-}, "playerSeemsLikeAction").pipe(withDataAtom(), withStatusesAtom())
+
+  return result
+}, "playerSeemsLikeAction").pipe(
+  withDataAtom(null), 
+  withStatusesAtom()
+)

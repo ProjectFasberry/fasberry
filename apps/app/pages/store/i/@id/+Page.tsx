@@ -1,23 +1,24 @@
-import { useUpdate } from "@reatom/npm-react";
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Data } from "./+data";
 import { ItemPrice, ItemSelectToCart } from "@/shared/components/app/shop/components/items/store-list";
-import { action } from "@reatom/core";
-import { pageContextAtom } from "@/shared/models/page-context.model";
-import { startPageEvents } from "@/shared/lib/events";
+import { atom } from "@reatom/core";
 import { useData } from "vike-react/useData"
 import { renderToHTMLString } from "@tiptap/static-renderer";
 import { editorExtensions } from "@/shared/components/config/editor";
 import type { JSONContent } from "@tiptap/react";
+import { StoreItem } from "@repo/shared/types/entities/store";
 
-const events = action((ctx) => {
-  const pageContext = ctx.get(pageContextAtom);
-  if (!pageContext) return;
-}, "events")
+const selectedItemAtom = atom<StoreItem | null>(null, "selectedItem")
 
-const SelectedDonate = () => {
-  const data = useData<Data>().data
-  const html = renderToHTMLString({ extensions: editorExtensions, content: data.content as JSONContent })
+const SelectedDonate = reatomComponent(({ ctx }) => {
+  const data = ctx.spy(selectedItemAtom)
+  if (!data) return null;
+
+  const html = renderToHTMLString({ 
+    extensions: editorExtensions, 
+    content: data.content as JSONContent 
+  })
 
   return (
     <div className="flex flex-col sm:flex-row items-start gap-8 w-full justify-center h-full">
@@ -50,12 +51,12 @@ const SelectedDonate = () => {
       </div>
     </div>
   )
-}
+}, "SelectedDonate")
 
 export default function Page() {
-  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "i" }), [pageContextAtom]);
+  const { data } = useData<Data>();
 
-  return (
-    <SelectedDonate />
-  )
+  useUpdate((ctx) => selectedItemAtom(ctx, data), [data]);
+
+  return <SelectedDonate />
 }

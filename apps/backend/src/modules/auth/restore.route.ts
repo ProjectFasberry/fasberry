@@ -8,16 +8,12 @@ export const restore = new Elysia()
   .use(botValidator())
   .use(defineUser())
   .model({
-    "login": withData(
-      t.Object({
-        code: t.String()
-      })
-    )
+    "login": withData(t.Object({ code: t.String() }))
   })
   .resolve(({ headers }) => ({ userAgent: headers["user-agent"] }))
   .post("/restore", async ({ status, userAgent }) => {
 
-
-
+      
+    
     return status(HttpStatusEnum.HTTP_200_OK)
   })

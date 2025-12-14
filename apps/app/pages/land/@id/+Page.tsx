@@ -1,22 +1,13 @@
-import { pageContextAtom } from "@/shared/models/page-context.model"
 import { Land } from "@/shared/components/app/land/components/land"
 import { landAtom } from "@/shared/components/app/land/models/land.model"
 import { Data } from "./+data"
-import { action } from "@reatom/core";
 import { useUpdate } from "@reatom/npm-react";
-import { startPageEvents } from "@/shared/lib/events";
-
-const events = action((ctx) => {
-  const pageContext = ctx.get(pageContextAtom)
-  if (!pageContext) return;
-
-  const { data } = pageContext.data as Data
-
-  landAtom(ctx, data)
-}, "events")
+import { useData } from "vike-react/useData";
 
 export default function Page() {
-  useUpdate((ctx) => startPageEvents(ctx, events, { urlTarget: "land" }), [pageContextAtom]);
+  const { data } = useData<Data>();
+
+  useUpdate((ctx) => landAtom(ctx, data), [data]);
 
   return <Land />
 }

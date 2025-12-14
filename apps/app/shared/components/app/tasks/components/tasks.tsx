@@ -133,10 +133,12 @@ const TasksFilterSearch = reatomComponent(({ ctx }) => {
 const TasksFilterType = reatomComponent(({ ctx }) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="bg-neutral-800 w-full min-w-0 px-4 py-2 rounded-md">
-        <Typography className="font-semibold text-nowrap truncate">
-          Сортировать по: <span className="text-neutral-400">Дате создания</span>
-        </Typography>
+      <DropdownMenuTrigger asChild>
+        <Button background="default" className="w-full min-w-0">
+          <Typography className="font-semibold text-nowrap truncate">
+            Сортировать по: <span className="text-neutral-400">Дате создания</span>
+          </Typography>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" className="w-full min-w-56 bg-neutral-800">
         <DropdownMenuItem className="font-semibold w-full">
@@ -154,7 +156,8 @@ const TasksFilterAsc = reatomComponent(({ ctx }) => {
 
   return (
     <Button
-      className="bg-neutral-800 text-neutral-300 flex aspect-square h-10 w-10 p-0 items-center justify-center"
+      background="default"
+      className="text-neutral-50 flex aspect-square h-10 w-10 p-0 items-center justify-center"
       onClick={handle}
       disabled={ctx.spy(tasksAction.statusesAtom).isPending}
     >
@@ -189,11 +192,11 @@ const TasksSkeleton = () => {
 export const Tasks = reatomComponent(({ ctx }) => {
   useUpdate(tasksAction, [])
 
-  const data = ctx.spy(tasksAction.dataAtom)?.data;
-
   if (ctx.spy(tasksAction.statusesAtom).isPending) {
     return <TasksSkeleton />
   }
+
+  const data = ctx.spy(tasksAction.dataAtom)?.data;
 
   const error = ctx.spy(tasksAction.errorAtom)
 

@@ -1,6 +1,6 @@
 import { getNats } from "#/shared/nats/client"
-import { PAYMENT_FIAT_START_SUBJECT } from "#/shared/nats/subjects"
-import { paymentFiatMethodSchema } from "@repo/shared/schemas/payment"
+import { SUBJECTS } from "#/shared/nats/subjects"
+import type { paymentFiatMethodSchema } from "@repo/shared/schemas/payment"
 import type { z } from "zod"
 
 type CreateFiatOrder = { 
@@ -27,7 +27,7 @@ export async function createFiatOrder({
   }
 
   const res = await nc.request(
-    PAYMENT_FIAT_START_SUBJECT, JSON.stringify(payload), { timeout: 10000 }
+    SUBJECTS.PAYMENT.FIAT, JSON.stringify(payload), { timeout: 10000 }
   )
 
   const { IsSuccess, ErrorCode, Data, ErrorMessage } = res.json<CreateFiatOrderResponse>()

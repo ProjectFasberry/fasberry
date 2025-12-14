@@ -3,7 +3,7 @@ import { sql } from "kysely";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bisquite } from "#/shared/database/bisquite-db";
 import { publishVoteNotify } from "#/lib/publishers/pub-vote-notify";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 
 async function postVoted(nickname: string) {
   const result = await general
@@ -23,7 +23,7 @@ async function postVoted(nickname: string) {
     .executeTakeFirstOrThrow()
 
   const addCharism = await bisquite
-    .updateTable("CMI_users")
+    .updateTable("cmi_users")
     .set({
       Balance: sql`Balance + ${Number(reward)}`
     })

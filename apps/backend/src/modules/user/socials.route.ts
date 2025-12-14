@@ -1,8 +1,12 @@
 import Elysia from "elysia";
-import { general } from "#/shared/database/main-db";
-import { JsonValue } from "@repo/shared/types/db/auth-database-types";
+import { general } from "#/shared/database/general-db";
+import type { JsonValue } from "@repo/shared/types/db/auth-database-types";
 import { defineUser } from "#/lib/middlewares/define";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
+import z from "zod";
+import { getRedis } from "#/shared/redis/init";
+import { getRedisKey } from "#/helpers/redis";
+import { nanoid } from "nanoid";
 
 type PlayerSocialsValuePayload = {
   id: string | number,
@@ -39,11 +43,80 @@ const playerSocialsAvailable = new Elysia()
     return { data }
   })
 
+const playerSocialsAddEvents = new Elysia()
+  .get("/add/events", async (ctx) => {
+    // const existsRequest = safeJsonParse<unknown>(existsRequestStr)
+
+  })
+
+const getSocialsAddCacheKey = (nickname: string, social: string) =>
+  getRedisKey("internal", `socials:${nickname}:${social}:connect`)
+
+const playerSocialsAddList = new Elysia()
+  .use(defineUser())
+  .get("/add/list", async ({ nickname }) => {
+    const redis = getRedis()
+
+    const data: { social: string, code: string }[] = []
+
+    return { data }
+  })
+
+const playerSocialsAdd = new Elysia()
+  .use(defineUser())
+  .post("/add", async ({ status, nickname, body: { social } }) => {
+    const socialIsExist = await general
+      .selectFrom("players_socials_available")
+      .select("value")
+      .where("value", "=", social)
+      .executeTakeFirst()
+
+    if (!socialIsExist || !socialIsExist.value) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "not-exist-social")
+    }
+
+    const query = await general
+      .selectFrom("players_socials")
+      .select("social")
+      .where("social", "=", social)
+      .where("nickname", "=", nickname)
+      .executeTakeFirst()
+
+    if (query && query.social) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "exist-target-social")
+    }
+
+    const redis = getRedis()
+    const socialRedisKey = getSocialsAddCacheKey(nickname, social);
+
+    const existsRequestStr = await redis.get(socialRedisKey)
+
+    if (existsRequestStr) {
+      throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, "exist-request")
+    }
+
+    const code = nanoid(4);
+
+    const reqPayload = {
+      created_at: new Date().toISOString(), code
+    }
+
+    await redis.set(socialRedisKey, JSON.stringify(reqPayload), "EX", 5 * 60)
+
+    const data = { 
+      code, target: social 
+    }
+    
+    return { data }
+  }, {
+    body: z.object({
+      social: z.string().min(2)
+    })
+  })
+
 const playerSocialsDelete = new Elysia()
   .use(defineUser())
-  .delete("/:social", async ({ status, nickname, params }) => {
-    const { social } = params;
-
+  .delete("/:social", async ({ status, nickname, params: { social } }) => {
     const query = await general
       .deleteFrom("players_socials")
       .where("social", '=', social)
@@ -55,12 +128,14 @@ const playerSocialsDelete = new Elysia()
     }
 
     return { data: { social } }
+  }, {
+    params: z.object({
+      social: z.string().min(2)
+    })
   })
 
 const playerSocialsList = new Elysia()
-  .get("/list/:nickname", async ({ status, params }) => {
-    const { nickname } = params;
-
+  .get("/list/:nickname", async ({ status, params: { nickname } }) => {
     const query = await general
       .selectFrom("players_socials")
       .select([
@@ -88,6 +163,9 @@ const playerSocialsList = new Elysia()
 
 export const playerSocials = new Elysia()
   .group("/socials", app => app
+    .use(playerSocialsAdd)
+    .use(playerSocialsAddList)
+    .use(playerSocialsAddEvents)
     .use(playerSocialsDelete)
     .use(playerSocialsAvailable)
     .use(playerSocialsList)

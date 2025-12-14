@@ -2,8 +2,8 @@ import { client, withJsonBody, withLogging } from "@/shared/lib/client-wrapper"
 import { logError } from "@/shared/lib/log"
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { atom, AtomState, Ctx } from "@reatom/core"
-import { reatomRecord, sleep, withReset } from "@reatom/framework"
-import { currencyCryptoSchema, currencyFiatSchema } from "@repo/shared/constants/currencies"
+import { reatomRecord, withReset } from "@reatom/framework"
+import { currencyCryptoSchema } from "@repo/shared/constants/currencies"
 import { createOrderTopUpSchema, OutputPayload, StoreExchangeRatesPayload } from "@repo/shared/schemas/payment"
 import { navigate } from "vike/client/router"
 import z, { ZodError } from "zod"
@@ -22,8 +22,6 @@ export const topUpResultErrorAtom = atom<Error | null>(null, "topUpResultError")
 export const topUpSearchAtom = reatomRecord<Partial<Record<TopUpSearch, string>>>({}, "topUpSearch")
 
 export const topUpMethodsAction = reatomAsync(async (ctx) => {
-  await sleep(160);
-
   return await ctx.schedule(() =>
     client<{
       value: string;
@@ -67,7 +65,7 @@ export const topUpAvailableCurrenciesAtom = atom((ctx) => {
   }
 
   if (type === 'sbp') {
-    return currencyFiatSchema.options
+    return z.enum(['RUB']).options
   }
 }, "topUpAvailableCurrencies")
 

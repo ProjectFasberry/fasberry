@@ -2,12 +2,12 @@ import { PageContextServer } from "vike/types";
 import { useConfig } from 'vike-react/useConfig'
 import { logRouting } from "@/shared/lib/log";
 import { getOrder } from "@/shared/components/app/shop/models/store-order.model";
-import { Payment } from "@/shared/components/app/shop/models/store.model";
 import { render } from "vike/abort";
+import { OrderSingle, OrderSinglePayload } from "@repo/shared/types/entities/store";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-function metadata(order: Payment) {
+function metadata(order: OrderSingle) {
   return {
     title: `Заказ ${order.unique_id}`
   }
@@ -18,11 +18,12 @@ export async function data(pageContext: PageContextServer) {
   
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
+  const type = pageContext.urlParsed.search["type"];
 
-  let order: Payment | null = null;
+  let order: OrderSinglePayload | null = null;
 
   try {
-    order = await getOrder(pageContext.routeParams.id, { headers })
+    order = await getOrder(pageContext.routeParams.id, { headers }, type)
   } catch {}
 
   if (!order) {
@@ -32,7 +33,6 @@ export async function data(pageContext: PageContextServer) {
   config(metadata(order))
 
   return {
-    id: pageContext.routeParams.id,
     data: order
   }
 }

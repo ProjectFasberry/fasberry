@@ -1,11 +1,12 @@
-import { defineInitiator } from "#/lib/middlewares/define"
 import Elysia from "elysia"
-import { getOrders, ordersRouteSchema } from "./order.model"
+import { getOrders } from "./order.model"
+import { ordersRouteSchema } from "@repo/shared/schemas/store"
+import { defineUser } from "#/lib/middlewares/define"
 
 export const ordersList = new Elysia()
-  .use(defineInitiator())
-  .get("/list", async ({ initiator, query }) => {
-    const data = await getOrders(query, initiator)
+  .use(defineUser())
+  .get("/list", async ({ nickname: initiator, query }) => {
+    const data = await getOrders(initiator, query)
     return { data }
   }, {
     query: ordersRouteSchema

@@ -8,30 +8,56 @@ import {
   usersControlRolesSchema,
 } from "./users-control.model";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
+import z from "zod";
+import { getNats } from "#/shared/nats/client";
+
+function publish(event: string, data: { initiator: string, payload: string }) {
+  const nc = getNats()
+  nc.publish("events.control.*", JSON.stringify({ event, data }))
+}
 
 const playersControlRestrictCreate = new Elysia()
-  .use(validatePermission(PERMISSIONS.PLAYERS.RESTRICT.CREATE))
-  .post("/create", async ({ body, nickname }) => {
-    const data = await controlRestrictUsers(nickname, body)
+  .use(validatePermission(Permissions.get("PLAYERS.RESTRICT.CREATE")))
+  .post("/create", async ({ body: { args, ...rest } }) => {
+    console.log(args, rest)
+    const data = await controlRestrictUsers({ args, ...rest })
     return { data }
   }, {
-    body: usersControlRestrictSchema,
-    afterResponse: ({ nickname: initiator, permission }) => {
+    body: z.intersection(
+      usersControlRestrictSchema,
+      z.object({
+        args: z.object({
+          reason: z.string().optional(),
+          time: z.string().optional()
+        }).optional()
+      })
+    ),
+    afterResponse: ({ nickname: initiator, permission, responseValue }) => {
       createAdminActivityLog({ initiator, event: permission })
+      publish(permission, { initiator, payload: JSON.stringify(responseValue) })
     }
   })
 
 const playersControlRestrictDelete = new Elysia()
-  .use(validatePermission(PERMISSIONS.PLAYERS.RESTRICT.DELETE))
-  .delete("/remove", async ({ body, nickname }) => {
-    const data = await controlRestrictUsers(nickname, body)
+  .use(validatePermission(Permissions.get("PLAYERS.RESTRICT.DELETE")))
+  .delete("/remove", async ({ body: { args, ...rest } }) => {
+    const data = await controlRestrictUsers({ args, ...rest })
     return { data }
   }, {
-    body: usersControlRestrictSchema,
-    afterResponse: ({ nickname: initiator, permission }) => {
+    body: z.intersection(
+      usersControlRestrictSchema,
+      z.object({
+        args: z.object({
+          reason: z.string().optional(),
+          time: z.string().optional()
+        }).optional()
+      })
+    ),
+    afterResponse: ({ nickname: initiator, permission, responseValue }) => {
       createAdminActivityLog({ initiator, event: permission })
+      publish(permission, { initiator, payload: JSON.stringify(responseValue) })
     }
   })
 
@@ -42,28 +68,30 @@ const playersControlRestrict = new Elysia()
   )
 
 const playersControlRoles = new Elysia()
-  .use(validatePermission(PERMISSIONS.PLAYERS.ROLE.UPDATE))
+  .use(validatePermission(Permissions.get("PLAYERS.ROLE.UPDATE")))
   .post("/roles", async ({ body }) => {
-    const { targets, ...base } = body;
-    const data = await changeRoleUsers(targets, base)
+    const { nicknames, ...base } = body;
+    const data = await changeRoleUsers(nicknames, base)
     return { data }
   }, {
     body: usersControlRolesSchema,
-    afterResponse: ({ nickname: initiator, permission }) => {
+    afterResponse: ({ nickname: initiator, permission, responseValue }) => {
       createAdminActivityLog({ initiator, event: permission })
+      publish(permission, { initiator, payload: JSON.stringify(responseValue) })
     }
   })
 
 const playersControlPermissions = new Elysia()
-  .use(validatePermission(PERMISSIONS.PLAYERS.PERMISSION.UPDATE))
-  .post("/permission", async ({ nickname, body }) => {
-    const { targets, ...base } = body;
-    const data = await editPlayerRole(nickname, targets, base)
+  .use(validatePermission(Permissions.get("PLAYERS.PERMISSION.UPDATE")))
+  .post("/permission", async ({ body }) => {
+    const { nicknames, ...base } = body;
+    const data = await editPlayerRole(nicknames, base)
     return { data }
   }, {
     body: playersControlPermissionsSchema,
-    afterResponse: ({ nickname: initiator, permission }) => {
+    afterResponse: ({ nickname: initiator, permission, responseValue }) => {
       createAdminActivityLog({ initiator, event: permission })
+      publish(permission, { initiator, payload: JSON.stringify(responseValue) })
     }
   })
 

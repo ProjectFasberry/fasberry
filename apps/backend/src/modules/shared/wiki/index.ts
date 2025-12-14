@@ -1,4 +1,4 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import Elysia from "elysia";
 import z from "zod";
 
@@ -48,9 +48,7 @@ const wikiCategories = new Elysia()
   })
 
 const wikiCategory = new Elysia()
-  .get("/category/:name", async ({ params }) => {
-    const category = params.name
-
+  .get("/category/:name", async ({ params: { name: category } }) => {
     const data = await general
       .selectFrom("wiki")
       .select(["id", "category", "content", "category_title as title", "updated_at"])

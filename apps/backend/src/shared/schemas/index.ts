@@ -1,4 +1,4 @@
-import { t, TSchema } from "elysia";
+import { t, type TSchema } from "elysia";
 import z from "zod";
 
 export const metaSchema = z.object({

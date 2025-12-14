@@ -1,30 +1,13 @@
-import Elysia, { t } from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { general } from "#/shared/database/main-db";
-import { withData } from "#/shared/schemas";
-
-async function getServerIp() {
-  const query = await general
-    .selectFrom("ip_list")
-    .select("ip")
-    .where("name", "=", "server_proxy")
-    .executeTakeFirst()
-
-  return query ?? null;
-}
+import { getUrls } from "#/shared/constants/urls";
+import Elysia from "elysia";
 
 export const serverip = new Elysia()
-  .get("/server-ip", async ({ status, set }) => {
-    const data = await getServerIp()
+  .get("/server-ip", async ({ set }) => {
+    const urls = getUrls();
+    const data = urls["server-proxy"]
 
     set.headers["Cache-Control"] = "public, max-age=600, s-maxage=600"
     set.headers["vary"] = "Origin";
     
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
-  }, {
-    response: {
-      200: withData(
-        t.Nullable(t.Object({ ip: t.String() }))
-      )
-    }
+    return { data }
   })

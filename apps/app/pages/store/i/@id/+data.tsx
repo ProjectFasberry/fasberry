@@ -35,28 +35,28 @@ function metadata(
   }
 }
 
+async function loadItem(id: string, headers?: Record<string, string>): Promise<StoreItem | null> {
+  try {
+    const item = await getStoreItem(id, { headers })
+    return item
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function data(pageContext: PageContextServer) {
   logRouting(pageContext.urlPathname, "data")
 
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
+  const id = pageContext.routeParams.id;
 
-  let item: StoreItem | null =null
-
-  try {
-    item = await getStoreItem(pageContext.routeParams.id, { headers })
-  } catch {}
-
-  if (!item) {
-    throw render("/not-exist?type=store-item")
-  }
+  const item = await loadItem(id, headers)
+  if (!item) throw render("/not-exist?type=store-item")
 
   config(metadata(item, pageContext))
 
   await defineCartData(pageContext)
 
-  return {
-    id: pageContext.routeParams.id,
-    data: item
-  }
+  return { data: item }
 }

@@ -98,13 +98,13 @@ export interface ChatControlMail {
   UUID: string;
 }
 
-export interface CMIInventories {
-  id: Generated<number>;
+export interface CmiInventories {
+  id: number;
   inventories: Generated<string | null>;
   player_id: Generated<number | null>;
 }
 
-export interface CMIPlaytime {
+export interface CmiPlaytime {
   date: Generated<number | null>;
   h0: Generated<number | null>;
   h1: Generated<number | null>;
@@ -130,18 +130,18 @@ export interface CMIPlaytime {
   h7: Generated<number | null>;
   h8: Generated<number | null>;
   h9: Generated<number | null>;
-  id: Generated<number>;
+  id: number;
   player_id: Generated<number | null>;
 }
 
-export interface CMIPlaytimereward {
-  id: Generated<number>;
+export interface CmiPlaytimereward {
+  id: number;
   onetime: Generated<string | null>;
   player_id: Generated<number | null>;
   repeatable: Generated<string | null>;
 }
 
-export interface CMIUsers {
+export interface CmiUsers {
   AFRecharge: Generated<string | null>;
   AlertReason: Generated<string | null>;
   AlertUntil: Generated<number | null>;
@@ -164,7 +164,7 @@ export interface CMIUsers {
   Flying: Generated<number | null>;
   Glow: Generated<string | null>;
   Homes: Generated<string | null>;
-  id: Generated<number>;
+  id: number;
   Ignores: Generated<string | null>;
   Ips: Generated<string | null>;
   Jail: Generated<string | null>;
@@ -300,6 +300,19 @@ export interface JobsUsers {
 export interface JobsWorlds {
   id: Generated<number>;
   name: Generated<string | null>;
+}
+
+export interface LandsBanners {
+  banner_url: string;
+  created_at: Generated<Date>;
+  id: Generated<number>;
+  ulid: string;
+}
+
+export interface LandsGallery {
+  id: Generated<number>;
+  ulid: string;
+  url: string;
 }
 
 export interface LandsLands {
@@ -500,10 +513,10 @@ export interface DB {
   ChatControl: ChatControl;
   ChatControl_Log: ChatControlLog;
   ChatControl_Mail: ChatControlMail;
-  CMI_inventories: CMIInventories;
-  CMI_playtime: CMIPlaytime;
-  CMI_playtimereward: CMIPlaytimereward;
-  CMI_users: CMIUsers;
+  cmi_inventories: CmiInventories;
+  cmi_playtime: CmiPlaytime;
+  cmi_playtimereward: CmiPlaytimereward;
+  cmi_users: CmiUsers;
   commands: Commands;
   favorites: Favorites;
   index_mapping: IndexMapping;
@@ -517,6 +530,8 @@ export interface DB {
   jobs_points: JobsPoints;
   jobs_users: JobsUsers;
   jobs_worlds: JobsWorlds;
+  lands_banners: LandsBanners;
+  lands_gallery: LandsGallery;
   lands_lands: LandsLands;
   lands_lands_claims: LandsLandsClaims;
   lands_players: LandsPlayers;

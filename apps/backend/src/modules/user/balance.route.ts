@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { defineUser } from "#/lib/middlewares/define";
 import { withData } from "#/shared/schemas";
-import { getBalance } from "./balance.model";
+import { balanceSchema, getBalance } from "./balance.model";
 
 const balancePayload = t.Object({
   CHARISM: t.Number(),
@@ -13,11 +13,12 @@ export const balance = new Elysia()
   .model({
     "balance": withData(balancePayload)
   })
-  .get("/balance", async ({ nickname }) => {
-    const data = await getBalance(nickname)
+  .get("/balance", async ({ nickname, query }) => {
+    const data = await getBalance(nickname, query)
     return { data }
   }, {
     response: {
       200: "balance"
-    }
+    },
+    query: balanceSchema
   })

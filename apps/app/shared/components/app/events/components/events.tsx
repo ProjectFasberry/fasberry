@@ -26,7 +26,7 @@ type EventCardProps = NonNullable<AtomState<typeof eventsAction.dataAtom>>[numbe
 const eventCardVariant = tv({
   base: `
     flex flex-col md:flex-[0_0_calc((100%/3)-0.666rem)] flex-shrink-0 w-full
-    h-48 p-2 sm:p-4 border border-neutral-800 rounded-xl overflow-hidden justify-between
+    h-48 p-2 sm:p-4 border border-neutral-800 rounded-lg overflow-hidden justify-between
   `,
   slots: {
     firstGroup: "flex items-center justify-start bg-neutral-50 rounded-lg p-2 w-full truncate",
@@ -82,16 +82,11 @@ const EventCard = ({ content, id, title }: EventCardProps) => {
 }
 
 const EventsList = reatomComponent(({ ctx }) => {
-  if (!ctx.spy(isClientAtom)) {
+  if (!ctx.spy(isClientAtom)  || ctx.spy(eventsAction.statusesAtom).isPending) {
     return <EventsSkeleton />
   }
-
+  
   const data = ctx.spy(eventsAction.dataAtom)
-
-  if (ctx.spy(eventsAction.statusesAtom).isPending) {
-    return <EventsSkeleton />
-  }
-
   if (!data) return <NotFound title="Ивентов нет" />
 
   return data.map(event => <EventCard key={event.id} {...event}/>)
@@ -103,7 +98,7 @@ export const Events = () => {
       <Typography className="text-3xl font-bold">
         Последние события
       </Typography>
-      <div className={scrollableVariant({ className: "flex rounded-xl scrollbar-h-2 overflow-x-auto gap-4 pb-2" })}>
+      <div className={scrollableVariant({ className: "flex rounded-lg scrollbar-h-2 overflow-x-auto gap-4 pb-2" })}>
         <EventsList />
       </div>
     </div>

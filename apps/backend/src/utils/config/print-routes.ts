@@ -1,12 +1,10 @@
-import { App } from "#/index";
-import { logger } from "./logger";
+import type { App } from "#/app";
+import { appLogger } from "./logger";
 
-export function showRoutes(app: App) {
-  for (const { path, method } of app.routes) {
-    logger
-      .withTag("App")
-      .log(`${path} - ${method}`)
+export function showRoutes({ routes }: App) {
+  for (const { path, method } of routes) {
+    appLogger.log(`${path} - ${method}`)
   }
 
-  logger.withTag("App").log(`Total ${app.routes.length} a routes`)
+  appLogger.log(`Total ${routes.length} a routes`)
 }

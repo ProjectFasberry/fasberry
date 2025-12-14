@@ -1,11 +1,10 @@
 import { WikiContentItem } from "@/shared/components/landing/wiki/components/wiki-content";
 import { useUpdate } from "@reatom/npm-react";
-import { useData } from "vike-react/useData";
-import { Data } from "./+data";
 import { wikiParamAtom } from "@/shared/components/landing/wiki/models/wiki.model";
+import { usePageContext } from "vike-react/usePageContext";
 
 export default function Page() {
-  const { param } = useData<Data>();
+  const param = usePageContext().routeParams.category
 
   useUpdate((ctx) => wikiParamAtom(ctx, param), [param])
 

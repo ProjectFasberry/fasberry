@@ -23,6 +23,8 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
+export type PaymentStatus = "canceled" | "pending" | "succeeded" | "waitingForCapture";
+
 export type PlayerActivityEvent = "join" | "quit";
 
 export type StoreCurrency = "BELKOIN" | "CHARISM";
@@ -49,6 +51,13 @@ export interface AdminActivityLog {
   initiator: string;
 }
 
+export interface ApiKeys {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  key: string;
+  nickname: string;
+}
+
 export interface AUTH {
   HASH: string;
   IP: string | null;
@@ -61,14 +70,6 @@ export interface AUTH {
   REGDATE: Int8 | null;
   TOTPTOKEN: string | null;
   UUID: string | null;
-}
-
-export interface BannedUsers {
-  created_at: Generated<Timestamp>;
-  id: Generated<number>;
-  initiator: string;
-  nickname: string;
-  reason: string | null;
 }
 
 export interface Banners {
@@ -210,6 +211,37 @@ export interface PaymentMethods {
   value: string;
 }
 
+export interface Payments {
+  asset: string;
+  comment: string | null;
+  created_at: Generated<Timestamp>;
+  id: number;
+  initiator: string;
+  invoice_id: number;
+  order_id: string;
+  pay_url: string;
+  payload: string;
+  price: string;
+  status: PaymentStatus;
+  unique_id: string;
+}
+
+export interface PaymentsGame {
+  created_at: Generated<Timestamp>;
+  finished_at: Timestamp | null;
+  id: Generated<number>;
+  initiator: string;
+  unique_id: string;
+}
+
+export interface PaymentsGameChilds {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  order_id: string;
+  recipient: string;
+  store_item_id: number;
+}
+
 export interface Permissions {
   id: Generated<number>;
   name: string;
@@ -237,6 +269,12 @@ export interface PlayersSocials {
   nickname: string;
   social: string;
   value: Json;
+}
+
+export interface PlayersSocialsAvailable {
+  id: Generated<number>;
+  isAvailable: Generated<boolean | null>;
+  value: string;
 }
 
 export interface PrivatedChat {
@@ -347,6 +385,11 @@ export interface Tasks {
   title: string;
 }
 
+export interface TgLogsChats {
+  chat_id: string;
+  id: Generated<number>;
+}
+
 export interface VotedUsers {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -373,8 +416,8 @@ export interface DB {
   activity_heatmap: ActivityHeatmap;
   activity_users: ActivityUsers;
   admin_activity_log: AdminActivityLog;
+  api_keys: ApiKeys;
   AUTH: AUTH;
-  banned_users: BannedUsers;
   banners: Banners;
   banners_views: BannersViews;
   chat_views: ChatViews;
@@ -394,10 +437,14 @@ export interface DB {
   news_views: NewsViews;
   options: Options;
   payment_methods: PaymentMethods;
+  payments: Payments;
+  payments_game: PaymentsGame;
+  payments_game_childs: PaymentsGameChilds;
   permissions: Permissions;
   players: Players;
   players_permissions: PlayersPermissions;
   players_socials: PlayersSocials;
+  players_socials_available: PlayersSocialsAvailable;
   privated_chat: PrivatedChat;
   referrals: Referrals;
   role_permissions: RolePermissions;
@@ -410,6 +457,7 @@ export interface DB {
   store_promotion_styles: StorePromotionStyles;
   store_promotions: StorePromotions;
   tasks: Tasks;
+  tg_logs_chats: TgLogsChats;
   voted_users: VotedUsers;
   wiki: Wiki;
   wiki_groups: WikiGroups;

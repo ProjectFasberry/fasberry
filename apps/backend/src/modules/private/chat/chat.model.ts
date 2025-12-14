@@ -1,4 +1,5 @@
-import { general } from "#/shared/database/main-db"
+import { invariant } from "#/helpers/invariant";
+import { general } from "#/shared/database/general-db"
 import z from "zod"
 
 export type ChatItem = {
@@ -38,10 +39,8 @@ export async function deleteMessage(nickname: string, id: number) {
     .where("nickname", "=", nickname)
     .executeTakeFirstOrThrow()
 
-  if (!query.numDeletedRows) {
-    throw new Error('Not deleted')
-  }
-
+  invariant(query.numDeletedRows, 'Not deleted')
+  
   return query;
 }
 

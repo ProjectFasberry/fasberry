@@ -1,6 +1,6 @@
-import { general } from "#/shared/database/main-db"
-import { definePrice, processImageUrl } from "#/utils/store/store-transforms"
-import { CartItem } from "@repo/shared/types/entities/store"
+import { general } from "#/shared/database/general-db"
+import { definePrice, processImageUrl } from "#/utils/store/store-helpers"
+import type { CartItem } from "@repo/shared/types/entities/store"
 import z from "zod"
 
 export async function getBasketData(initiator: string): Promise<CartItem[]> {

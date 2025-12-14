@@ -94,3 +94,11 @@ export type PrivatedUsersPayload = {
   data: PrivatedUser[],
   meta: PaginatedMeta
 }
+
+export type SkinsHistory = {
+  skin_identifier: string,
+  skin_variant: string | null,
+  timestamp: number,
+  skin_url: string | null,
+  skin_head_url: string | null
+}

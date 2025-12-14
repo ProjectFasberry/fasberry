@@ -1,22 +1,12 @@
 import Elysia, { t } from "elysia";
-import { createUser, getExistsUser, getUserUUID, validatePasswordSafe } from "./auth.model";
+import { createUser, getExistsUser, validateIpRestricts, validatePasswordSafe } from "./auth.model";
 import { wrapError } from "#/helpers/wrap-error";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { general } from "#/shared/database/main-db";
-import { createEvent } from "../server/events/events.model";
+import { general } from "#/shared/database/general-db";
 import { botValidator, validateAuthStatus } from "#/lib/middlewares/validators";
 import { withData, withError } from "#/shared/schemas";
 import { registerSchema } from "@repo/shared/schemas/auth"
 import { ipPlugin } from "#/lib/plugins/ip";
-
-function afterRegistrationEvents({ nickname }: { nickname: string }) {
-  createEvent({
-    description: `Игрок ${nickname} был зарегистрирован`,
-    type: "log",
-    initiator: "system",
-    title: "Регистрация"
-  })
-}
 
 const registerValidator = () => new Elysia()
   .onBeforeHandle(async ({ status }) => {
@@ -33,21 +23,6 @@ const registerValidator = () => new Elysia()
     }
   })
   .as("scoped")
-
-const MAX_USERS_PER_IP = 3;
-
-async function validateIpRestricts(ip: string): Promise<boolean> {
-  const result = await general
-    .selectFrom("AUTH")
-    .select(general.fn.countAll().as("count"))
-    .where("IP", "=", ip)
-    .$castTo<{ count: number }>()
-    .executeTakeFirst();
-
-  if (!result) return false;
-
-  return result.count > MAX_USERS_PER_IP;
-}
 
 const ipValidator = () => new Elysia()
   .use(ipPlugin())
@@ -66,38 +41,29 @@ export const register = new Elysia()
   .use(validateAuthStatus())
   .use(ipValidator())
   .model({
-    "register": withData(
-      t.Object({
-        nickname: t.String()
-      })
-    )
+    "register": withData(t.Object({ nickname: t.String() }))
   })
-  .post("/register", async ({ status, body, ip }) => {
-    const { findout, nickname, password, findoutType } = body
-
+  .post("/register", async ({ status, body: { findout, nickname, password: inputPass, findoutType }, ip }) => {
     const existsUser = await getExistsUser(nickname)
 
     if (existsUser.result) {
       throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("exists"))
     }
 
-    const isPasswordSafe = validatePasswordSafe(password)
+    const isPasswordSafe = validatePasswordSafe(inputPass)
 
     if (!isPasswordSafe) {
       throw status(HttpStatusEnum.HTTP_400_BAD_REQUEST, wrapError("unsafe"))
     }
 
-    const uuid = await getUserUUID(nickname)
-
-    const hash = Bun.password.hashSync(password, {
+    const hash = Bun.password.hashSync(inputPass, {
       algorithm: "bcrypt", cost: 10
     })
 
-    await createUser({
-      nickname, findout, uuid, findoutType, password: hash, ip
+    const data = await createUser({
+      nickname, findout, findoutType, password: hash, ip
     })
 
-    const data = { nickname }
     return { data }
   }, {
     body: registerSchema,
@@ -105,8 +71,5 @@ export const register = new Elysia()
       200: "register",
       409: withError,
       400: withError,
-    },
-    afterResponse: ({ body: { nickname } }) => {
-      afterRegistrationEvents({ nickname })
     }
   })

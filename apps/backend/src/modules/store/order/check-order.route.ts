@@ -1,14 +1,16 @@
 import Elysia from "elysia";
 import { wrapError } from "#/helpers/wrap-error";
-import { payments } from "#/shared/database/payments-db";
-import { InvoiceType } from "#/shared/types/payment/payment-types";
+import type { InvoiceType } from "#/shared/types/payment/payment-types";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { createHmac, createHash } from 'node:crypto';
 import { getRedis } from "#/shared/redis/init";
-import { getOrderKey, PaymentCacheData } from "./create-crypto-order";
+import { getOrderKey } from "./create-crypto-order";
 import { logger } from "#/utils/config/logger";
 import { CRYPTO_PAY_TESTNET_TOKEN } from "#/shared/env";
 import { safeJsonParse } from "#/utils/config/transforms";
+import type { OrderSingleDefault } from "@repo/shared/types/entities/store";
+import { general } from "#/shared/database/general-db";
+import { invariant } from "#/helpers/invariant";
 
 type CheckOrderBody = {
   update_id: number,
@@ -60,11 +62,9 @@ export const checkOrderRoute = new Elysia()
 
     const { update_type, payload } = bodyResult.value;
 
-    if (!payload.payload) {
-      throw new Error("Payload is not found")
-    }
+    invariant(payload.payload, "Payload is not found")
 
-    const payloadResult = safeJsonParse<PaymentCacheData>(payload.payload);
+    const payloadResult = safeJsonParse<OrderSingleDefault>(payload.payload);
 
     if (!payloadResult.ok) {
       status(HttpStatusEnum.HTTP_400_BAD_REQUEST);
@@ -91,7 +91,7 @@ export const checkOrderRoute = new Elysia()
         throw new Error("Cached payment is not found")
       }
 
-      const cachedOrderResult = safeJsonParse<PaymentCacheData>(cached);
+      const cachedOrderResult = safeJsonParse<OrderSingleDefault>(cached);
       
       if (!cachedOrderResult.ok) {
         status(HttpStatusEnum.HTTP_400_BAD_REQUEST)
@@ -100,7 +100,7 @@ export const checkOrderRoute = new Elysia()
 
       const order = cachedOrderResult.value
 
-      await payments.transaction().execute(async (trx) => {
+      await general.transaction().execute(async (trx) => {
         const query = await trx
           .insertInto("payments")
           .values({

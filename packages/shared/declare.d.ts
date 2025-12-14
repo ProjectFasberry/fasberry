@@ -12,6 +12,8 @@ declare global {
       BISQUITE_DATABASE_URL: string;
       LOBBY_DATABASE_URL: string;
       SQLITE_DATABASE_URL: string;
+      LIBERTYBANS_DATABASE_URL: string;
+      GENERAL_DATABASE_URL: string
     }
   }
 

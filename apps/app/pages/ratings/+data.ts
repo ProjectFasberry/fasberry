@@ -4,13 +4,13 @@ import { getStaticImage } from '@/shared/lib/volume-helpers'
 import { PageContextServer } from 'vike/types'
 import { logRouting } from '@/shared/lib/log'
 
-const title = wrapTitle(`Рейтинг игроков`)
+const title = wrapTitle(`Рейтинги игроков`)
 const previewImage = getStaticImage("arts/adventure-in-blossom.jpg")
 
 function metadata() {
   return {
     title,
-    description: "Актуальный рейтинг игроков в разных категориях",
+    description: "Актуальные рейтинги игроков в разных категориях",
     image: previewImage,
   }
 }

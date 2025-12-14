@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { metaSchema } from "#/shared/schemas";
 import { wrapMeta } from "#/utils/config/transforms";
 import { executeWithCursorPagination } from "kysely-paginate";

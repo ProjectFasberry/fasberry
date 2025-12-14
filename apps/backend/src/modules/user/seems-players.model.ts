@@ -1,9 +1,9 @@
 import { getRedisKey } from "#/helpers/redis";
 import { bisquite } from "#/shared/database/bisquite-db";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { getRedis } from "#/shared/redis/init";
 import { safeJsonParse } from "#/utils/config/transforms";
-import { SeemsLikePlayer, SeemsLikePlayersPayload } from "@repo/shared/types/entities/other";
+import type { SeemsLikePlayer, SeemsLikePlayersPayload } from "@repo/shared/types/entities/other";
 import { isProduction } from "elysia/error";
 import { sql } from "kysely";
 import pLimit from "p-limit";
@@ -29,7 +29,7 @@ export async function updateSeemsLikeList() {
     .execute();
 
   if (players.length === 0) {
-    console.log("Not found players for updating");
+    console.warn("Not found players for updating");
     return;
   }
 
@@ -138,22 +138,26 @@ export async function processSeemsLikePlayersBatch(
     .where("lands_players.name", "in", batchNicknames)
     .orderBy("lands_lands.created_at", "asc")
     .execute();
-
+  
   const playerToMembersMap: Record<string, Set<string>> = {};
 
-  for (const { player_name, members } of lands) {
-    if (!playerToMembersMap[player_name]) {
-      playerToMembersMap[player_name] = new Set();
-    }
-    
-    const parsed = safeJsonParse<string[]>(members);
+  for (const { ulid, members } of lands) {
+    type Members = Record<string, { chunks: number }>
 
-    if (parsed.ok) {
-      for (const m of parsed.value) {
-        if (m && m !== player_name) {
-          playerToMembersMap[player_name].add(m);
+    if (!playerToMembersMap[ulid]) {
+      playerToMembersMap[ulid] = new Set()
+    }
+
+    const parsedMembers = safeJsonParse<Members>(members);
+
+    if (parsedMembers.ok) {
+      for (const [memberUUID, _] of Object.entries(parsedMembers.value)) {
+        if (memberUUID !== ulid) {
+          playerToMembersMap[ulid].add(memberUUID);
         }
       }
+    } else {
+      console.error(new Error(parsedMembers.error.message))
     }
   }
 
@@ -173,7 +177,7 @@ export async function processSeemsLikePlayersBatch(
     const fullPlayers = await general
       .selectFrom("players")
       .select(["nickname", "uuid", "role_id"])
-      .where("nickname", "in", allMembers)
+      .where("uuid", "in", allMembers)
       .orderBy("role_id", "desc")
       .execute();
 
@@ -242,7 +246,7 @@ export async function getSeemsLikePlayersByPlayer(
   const result = safeJsonParse<SeemsLikePlayer[]>(dataStr)
 
   if (!result.ok) {
-    console.error(result.error)
+    console.error(result.error.message)
 
     return {
       data: [],

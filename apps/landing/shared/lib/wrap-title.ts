@@ -1,1 +1,1 @@
-export const wrapTitle = (i: string) => `${i} > Fasberry` 
+export const wrapTitle = (i: string) => `Fasberry › ${i}` 

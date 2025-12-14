@@ -1,8 +1,8 @@
 import Elysia from "elysia";
-import { z } from "zod"
-import { general } from "#/shared/database/main-db";
+import type { z } from "zod"
+import { general } from "#/shared/database/general-db";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
 import { storeItemCreateSchema } from "@repo/shared/schemas/store";
 
@@ -17,7 +17,7 @@ async function createStoreItem(values: z.infer<typeof storeItemCreateSchema>) {
 }
 
 export const storeItemCreate = new Elysia()
-  .use(validatePermission(PERMISSIONS.STORE.ITEM.CREATE))
+  .use(validatePermission(Permissions.get("STORE.ITEM.CREATE")))
   .post("/create", async ({ body }) => {
     const data = await createStoreItem(body)
     return { data }

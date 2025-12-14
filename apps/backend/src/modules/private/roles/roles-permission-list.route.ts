@@ -1,15 +1,13 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
-import { RolesRolePermissionListPayload } from "@repo/shared/types/entities/role";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
+import type { RolesRolePermissionListPayload } from "@repo/shared/types/entities/role";
 import Elysia from "elysia";
 import z from "zod";
 
 export const rolesRolePermissionList = new Elysia()
-  .use(validatePermission(PERMISSIONS.ROLES.READ))
-  .get("/:id/permission/list", async ({ params }) => {
-    const roleId = params.id;
-
+  .use(validatePermission(Permissions.get("ROLES.READ")))
+  .get("/:id/permission/list", async ({ params: { id } }) => {
     const query = await general
       .selectFrom("role_permissions")
       .innerJoin("permissions", "permissions.id", "role_permissions.permission_id")
@@ -17,11 +15,11 @@ export const rolesRolePermissionList = new Elysia()
         "role_permissions.permission_id as permission_id",
         "permissions.name as permission_name"
       ])
-      .where("role_permissions.role_id", "=", roleId)
+      .where("role_permissions.role_id", "=", id)
       .execute();
 
     const data: RolesRolePermissionListPayload = {
-      role_id: roleId,
+      role_id: id,
       permissions: query.map(r => ({
         id: r.permission_id,
         name: r.permission_name

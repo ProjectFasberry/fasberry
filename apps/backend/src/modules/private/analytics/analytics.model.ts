@@ -1,3 +1,4 @@
+import { invariant } from "#/helpers/invariant";
 import dayjs from "dayjs";
 import z from "zod";
 
@@ -76,9 +77,7 @@ export function getChartData(
       start = start.add(1, 'month');
     }
   } else { 
-    if (!targetDay) {
-      throw new Error('For period === hour must be required the specificDay');
-    }
+    invariant(targetDay, 'For period === hour must be required the specific day')
 
     let start = dayjs(targetDay).startOf('day');
     

@@ -6,9 +6,12 @@ import { isClientAtom } from "@/shared/models/page-context.model";
 import { expImage } from "@/shared/consts/images";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog";
 import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
-import { useState } from "react";
+import { onConnect, sleep } from "@reatom/framework";
+import { playerParamAtom } from "../models/player.model";
 
-const PlayerLocation = reatomComponent(({ ctx }) => {
+const PlayerLocation = reatomComponent<{ nickname: string }>(({ ctx, nickname }) => {
+  useUpdate((ctx) => playerLocationAction(ctx, nickname), [nickname]);
+
   const data = ctx.spy(playerLocationAction.dataAtom);
 
   if (ctx.spy(playerLocationAction.statusesAtom).isPending) {
@@ -32,39 +35,49 @@ const PlayerLocation = reatomComponent(({ ctx }) => {
       </Typography>
     </div>
   )
-})
+}, "PlayerLocation")
 
 const PlayerServer = reatomComponent(({ ctx }) => {
-  const [open, setOpen] = useState<boolean>(false);
-
-  const { result: { server } } = ctx.get(playerActivityAction.dataAtom) as { result: Extract<PlayerActivityPayload, { type: "online" }> }
-
-  const handle = (v: boolean) => {
-    if (server === 'Lobby') {
-      return;
-    }
-
-    setOpen(v)
-  }
+  const { server, nickname } = ctx.get(playerActivityAction.dataAtom) as Extract<PlayerActivityPayload, { type: "online" }>
 
   return (
-    <Dialog open={open} onOpenChange={handle}>
-      <DialogTrigger className="flex justify-start cursor-pointer items-center overflow-x-auto gap-2 w-full">
-        <Typography className="text-neutral-400 font-semibold text-sm">
-          на сервере <span className="text-neutral-50">{server}</span>
-        </Typography>
-      </DialogTrigger>
+    <Dialog>
+      {server === 'Lobby' ? (
+        <div className="flex justify-start cursor-pointer items-center overflow-x-auto gap-2 w-full">
+          <Typography className="text-neutral-400 font-semibold text-sm">
+            на сервере <span className="text-neutral-50">{server}</span>
+          </Typography>
+        </div>
+      ) : (
+        <DialogTrigger>
+          <div className="flex justify-start cursor-pointer items-center overflow-x-auto gap-2 w-full">
+            <Typography className="text-neutral-400 font-semibold text-sm">
+              на сервере <span className="text-neutral-50">{server}</span>
+            </Typography>
+          </div>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogTitle className="text-center text-xl">Локация игрока</DialogTitle>
-        <PlayerLocation />
+        <PlayerLocation nickname={nickname} />
       </DialogContent>
     </Dialog>
   )
 }, "PlayerLocation")
 
-export const PlayerActivity = reatomComponent(({ ctx }) => {
-  useUpdate(playerActivityAction, []);
+onConnect(playerActivityAction.dataAtom, (ctx) => {
+  const nickname = ctx.get(playerParamAtom)
+  playerActivityAction(ctx, nickname!)
+})
 
+onConnect(playerActivityAction.dataAtom, async (ctx) => {
+  while (ctx.isConnected()) {
+    await playerActivityAction.retry(ctx).catch(() => { })
+    await ctx.schedule(() => sleep(60000))
+  }
+})
+
+export const PlayerActivity = reatomComponent(({ ctx }) => {
   if (!ctx.spy(isClientAtom)) {
     return (
       <div className="flex flex-col gap-1 items-start justify-start w-full border border-neutral-800 rounded-lg p-4">
@@ -74,7 +87,7 @@ export const PlayerActivity = reatomComponent(({ ctx }) => {
     )
   }
 
-  const data = ctx.spy(playerActivityAction.dataAtom)?.result;
+  const data = ctx.spy(playerActivityAction.dataAtom);
 
   if (ctx.spy(playerActivityAction.statusesAtom).isPending) {
     return (

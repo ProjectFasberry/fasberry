@@ -12,83 +12,91 @@ import { mergeSnapshot } from "@/shared/lib/snapshot";
 import dayjs from "@/shared/lib/create-dayjs"
 import { PlayerLandsPayload } from "@repo/shared/types/entities/land";
 import { isEmptyArray } from "@/shared/lib/array";
+import { playerRateAtom } from "@/shared/components/app/player/models/rate.model";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
-function metadata(
-  user: Player,
-  pageContext: PageContextServer
-) {
-  const { nickname } = user
-
-  const description = `Профиль игрока ${nickname}. 
-  Привилегия: ${DONATE_TITLE[user.group]}. 
-  Играет с ${dayjs(user.meta.reg_date).format("DD MMM YYYY")}. 
-  Последний вход: ${dayjs(user.meta.login_date).format("DD MMM YYYY")}`
-
-  const title = wrapTitle(user.nickname)
-  const image = user?.avatar
-  
-  return {
-    title,
-    image,
-    description,
-    Head: (
-      <>
-        <meta property="og:url" content={pageContext.urlPathname} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <link rel="preload" as="image" href={image} imageSrcSet={`${image} 1x`}  imageSizes="128px" fetchPriority="high" />
-        <meta name="keywords" content={`${nickname}, fasberry, fasberry page, профиль ${nickname}`} />
-      </>
-    ),
-  }
-}
-
-async function processPlayer(
-  ctx: Ctx, player: Player, headers: Record<string, string> | undefined
-) {
-  playerAtom(ctx, player);
-
-  let lands: PlayerLandsPayload | null = null
-
+async function loadPlayer(nickname: string, headers?: Record<string, string>): Promise<Player | null> {
   try {
-    const data = await getLands(player.nickname, { headers })
-    lands = data
+    const player = await getPlayer(nickname, { headers });
+    return player;
   } catch (e) {
-    console.error(e)
+    return null;
   }
-
-  playerLandsAtom(ctx, isEmptyArray(lands?.data) ? null : lands);
 }
 
-export async function data(pageContext: PageContextServer) {
-  logRouting(pageContext.urlPathname, "data");
-
-  const config = useConfig()
-  const headers = pageContext.headers ?? undefined
-
-  let player: Player | null = null;
-
+async function loadLands(nickname: string, headers?: Record<string, string>) {
   try {
-    player = await getPlayer(pageContext.routeParams.nickname, { headers })
-  } catch {}
-
-  if (!player) {
-    throw redirect("/not-exist?type=player")
+    const lands = await getLands(nickname, { headers });
+    return isEmptyArray(lands?.data) ? null : lands;
+  } catch {
+    return null;
   }
+}
 
-  config(metadata(player, pageContext))
+function buildMetadataValues(user: Player, pageCtx: PageContextServer) {
+  const nickname = user.nickname;
+  const reg = dayjs(user.meta.reg_date).format("DD MMM YYYY");
+  const login = dayjs(user.meta.login_date).format("DD MMM YYYY");
+
+  return {
+    title: wrapTitle(nickname),
+    image: user.avatar ?? "",
+    description: `Профиль игрока ${nickname}. Привилегия: ${DONATE_TITLE[user.group]}. Играет с ${reg}. Последний вход: ${login}.`,
+    url: pageCtx.urlPathname,
+    nickname
+  };
+}
+
+function buildMetadataHead({ title, nickname, description, image, url }: ReturnType<typeof buildMetadataValues>) {
+  const keywords = `${nickname}, fasberry, fasberry page, профиль ${nickname}`
+
+  return (
+    <>
+      <meta property="og:url" content={url} />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      {image && (
+        <>
+          <link rel="preload" as="image" href={image} fetchPriority="high" />
+        </>
+      )}
+      <meta name="keywords" content={keywords} />
+    </>
+  );
+}
+
+async function fillSnapshot(ctx: Ctx, player: Player, lands: PlayerLandsPayload | null) {
+  const { rate, ...base } = player;
+
+  playerAtom(ctx, base);
+  playerRateAtom(ctx, rate);
+  playerLandsAtom(ctx, lands);
+}
+
+export async function data(pageCtx: PageContextServer) {
+  logRouting(pageCtx.urlPathname, "data");
+
+  const config = useConfig();
+  const headers = pageCtx.headers ?? undefined
+  const nickname = pageCtx.routeParams.nickname;
+
+  const player = await loadPlayer(nickname, headers);
+  if (!player) throw redirect("/not-exist?type=player");
+
+  const lands = await loadLands(nickname, headers);
+
+  const metaValues = buildMetadataValues(player, pageCtx);
+  config({
+    title: metaValues.title,
+    image: metaValues.image,
+    description: metaValues.description,
+    Head: buildMetadataHead(metaValues)
+  });
 
   const ctx = createCtx()
+  await fillSnapshot(ctx, player, lands);
 
-  await processPlayer(ctx, player, headers)
-
-  pageContext.snapshot = mergeSnapshot(ctx, pageContext)
-
-  return {
-    nickname: pageContext.routeParams.nickname,
-    data: player
-  }
+  pageCtx.snapshot = mergeSnapshot(ctx, pageCtx)
 }

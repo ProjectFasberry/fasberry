@@ -1,6 +1,6 @@
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
 import Elysia from "elysia";
 import z from "zod";
 
@@ -39,9 +39,8 @@ async function getPermissionsByRole(
 }
 
 export const permissionsListByRole = new Elysia()
-  .use(validatePermission(PERMISSIONS.PERMISSIONS.READ))
-  .get("/list/:id", async ({ params, query }) => {
-    const id = params.id;
+  .use(validatePermission(Permissions.get("PERMISSIONS.READ")))
+  .get("/list/:id", async ({ params: { id }, query }) => {
     const data = await getPermissionsByRole(id, query);
     return { data }
   }, {

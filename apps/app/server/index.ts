@@ -7,6 +7,12 @@ function startServer() {
 
   apply(app)
 
+  if (typeof Bun !== "undefined") {
+    console.log("Bun runtime")
+  } else {
+    console.log("Node runtime")
+  }
+
   const appConfig: Parameters<typeof serve>[1] = {
     port: Number(PORT),
     hostname: HOST

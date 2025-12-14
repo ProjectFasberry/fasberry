@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
-import { general } from "#/shared/database/main-db";
+import { Permissions } from "#/shared/constants/permissions";
+import { general } from "#/shared/database/general-db";
 
 async function getUser(nickname: string) {
   const query = await general
@@ -14,9 +14,8 @@ async function getUser(nickname: string) {
 }
 
 export const playersSingle = new Elysia()
-  .use(validatePermission(PERMISSIONS.PLAYERS.READ))
-  .get("/:nickname", async ({ params }) => {
-    const nickname = params.nickname;
+  .use(validatePermission(Permissions.get("PLAYERS.READ")))
+  .get("/:nickname", async ({ params: { nickname } }) => {
     const data = await getUser(nickname);
     return { data }
   })

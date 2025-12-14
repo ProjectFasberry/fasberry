@@ -1,5 +1,5 @@
 import { withData } from "#/shared/schemas";
-import { PlayerActivityPayload } from "@repo/shared/types/entities/user";
+import type { PlayerActivityPayload } from "@repo/shared/types/entities/user";
 import Elysia, { t } from "elysia";
 import { getPlayerStatus } from "./activity.model";
 
@@ -13,10 +13,8 @@ export const activityNow = new Elysia()
   //     })
   //   )
   // })
-  .get("/now/:nickname", async ({ params }) => {
-    const nickname = params.nickname;
+  .get("/now/:nickname", async ({ params: { nickname } }) => {
     const data: PlayerActivityPayload = await getPlayerStatus(nickname);
-    console.log(data)
     return { data }
   }, {
     // response: {

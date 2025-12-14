@@ -3,7 +3,7 @@ import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Separator } from "@repo/ui/separator"
 import { Skeleton } from "@repo/ui/skeleton"
 import { playerSocialsAction, PlayerSocialsPayload, PlayerSocialsValuePayload, SOCIAL_EVENTS, SOCIAL_ICONS } from "../models/socials.model"
-import { userParamAtom } from "../models/player.model"
+import { playerParamAtom } from "../models/player.model"
 
 const SocialCard = ({ type, value }: { type: PlayerSocialsPayload["type"], value: PlayerSocialsValuePayload }) => {
   const icon = SOCIAL_ICONS[type]()
@@ -24,28 +24,33 @@ const SocialCard = ({ type, value }: { type: PlayerSocialsPayload["type"], value
   )
 }
 
-export const PlayerSocials = reatomComponent(({ ctx }) => {
-  useUpdate(playerSocialsAction, [userParamAtom]);
+const PlayerSocialsSkeleton = () => {
+  return (
+    <div className="flex flex-col w-full gap-4">
+      <Separator />
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-5 h-5 rounded-md" />
+        <Skeleton className="w-32 h-5 rounded-md" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-5 h-5 rounded-md" />
+        <Skeleton className="w-32 h-5 rounded-md" />
+      </div>
+      <Separator />
+    </div>
+  )
+}
 
-  const data = ctx.spy(playerSocialsAction.dataAtom);
+export const PlayerSocials = reatomComponent(({ ctx }) => {
+  const nickname = ctx.spy(playerParamAtom)
+
+  useUpdate((ctx) => playerSocialsAction(ctx, nickname!), [nickname]);
 
   if (!ctx.spy(isClientAtom) || ctx.spy(playerSocialsAction.statusesAtom).isPending) {
-    return (
-      <div className="flex flex-col w-full gap-4">
-        <Separator />
-        <div className="flex items-center gap-2">
-          <Skeleton className="w-5 h-5 rounded-md" />
-          <Skeleton className="w-32 h-5 rounded-md" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Skeleton className="w-5 h-5 rounded-md" />
-          <Skeleton className="w-32 h-5 rounded-md" />
-        </div>
-        <Separator />
-      </div>
-    )
+    return <PlayerSocialsSkeleton/>
   }
 
+  const data = ctx.spy(playerSocialsAction.dataAtom);
   if (!data) return null;
 
   return (

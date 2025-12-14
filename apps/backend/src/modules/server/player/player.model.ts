@@ -135,18 +135,18 @@ export async function getSkills(nickname: string): Promise<SkillsData | null> {
 
 export async function getPlayerGameInfo(nickname: string): Promise<PlayerGameInfo> {
   const main = await bisquite
-    .selectFrom("CMI_users")
-    .leftJoin("playerpoints_username_cache", "CMI_users.username", "playerpoints_username_cache.username")
+    .selectFrom("cmi_users")
+    .leftJoin("playerpoints_username_cache", "cmi_users.username", "playerpoints_username_cache.username")
     .leftJoin("playerpoints_points", "playerpoints_points.uuid", "playerpoints_username_cache.uuid")
     .select([
-      "CMI_users.Balance",
-      "CMI_users.UserMeta",
+      "cmi_users.Balance",
+      "cmi_users.UserMeta",
       "playerpoints_points.points",
-      "CMI_users.player_uuid",
-      "CMI_users.TotalPlayTime",
-      "CMI_users.DisplayName"
+      "cmi_users.player_uuid",
+      "cmi_users.TotalPlayTime",
+      "cmi_users.DisplayName"
     ])
-    .where("CMI_users.username", "=", nickname)
+    .where("cmi_users.username", "=", nickname)
     .executeTakeFirst()
 
   if (!main) {

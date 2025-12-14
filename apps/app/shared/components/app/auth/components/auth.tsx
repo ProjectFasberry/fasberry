@@ -165,8 +165,8 @@ export const AuthSubmit = reatomComponent(({ ctx }) => {
 
   return (
     <Button
-      variant="minecraft"
-      className="bg-neutral-800 w-full rounded-lg"
+      background="default"
+      className="w-full"
       onClick={() => authorizeAction(ctx)}
       disabled={isDisabled}
     >

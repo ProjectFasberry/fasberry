@@ -45,4 +45,6 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 
-src/drizzle
+/src/drizzle/
+
+/src/shared/nats/subjects.ts

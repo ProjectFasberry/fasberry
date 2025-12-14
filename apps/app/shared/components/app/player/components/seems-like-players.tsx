@@ -1,9 +1,8 @@
 import { Skeleton } from "@repo/ui/skeleton";
 import { tv } from "tailwind-variants";
-import { Avatar, avatarVariants } from "../../avatar/components/avatar";
+import { Avatar } from "../../avatar/components/avatar";
 import { reatomComponent } from "@reatom/npm-react";
 import { createLink, Link } from "@/shared/components/config/link";
-import { Typography } from "@repo/ui/typography";
 import { atom, onConnect } from "@reatom/framework";
 import { isClientAtom } from "@/shared/models/page-context.model";
 import { playerSeemsLikeAction, playerSeemsLikePlayersIsShowAtom, toggleShowAction } from "../models/player-seems-like.model";
@@ -11,7 +10,10 @@ import { IconX } from "@tabler/icons-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip"
 import { scrollableVariant } from "@/shared/consts/style-variants";
 
-const playerSeemsLikePlayersCountAtom = atom((ctx) => ctx.spy(playerSeemsLikeAction.dataAtom)?.meta.count ?? 0, "playerLandsCount")
+const playerSeemsLikePlayersCountAtom = atom(
+  (ctx) => ctx.spy(playerSeemsLikeAction.dataAtom)?.meta.count ?? 0, 
+  "playerLandsCount"
+)
 
 const PlayerSeemsLikeShowToggle = reatomComponent(({ ctx }) => {
   return (
@@ -79,13 +81,13 @@ const PlayerSeemsLikePlayersListSkeleton = () => {
   return (
     <div className={seemsLikeGridVariant().base()}>
       {Array.from({ length: 6 }).map((item, idx) => (
-        <div key={idx} className={seemsLikeGridVariant().card()}>
-          <div className={seemsLikeGridVariant().cardAvatar()}>
-            <Skeleton className={avatarVariants()} />
-          </div>
-          <div className="p-1">
-            <Skeleton className="h-6 w-full" />
-          </div>
+        <div
+          key={idx}
+          className={seemsLikeGridVariant().card()}
+        >
+          <Skeleton
+            className={seemsLikeGridVariant().cardAvatar({ className: "min-h-16 min-w-16" })}
+          />
         </div>
       ))}
     </div>

@@ -1,6 +1,6 @@
 import { abortablePromiseAll } from "#/helpers/abortable"
 import { callBroadcast } from "../server/call-broadcast"
-import { AbortableCommandArgs } from "../server/call-command"
+import type { AbortableCommandArgs } from "../server/call-command"
 
 type GiveBelkoin = {
   nickname: string,

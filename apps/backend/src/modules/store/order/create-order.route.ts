@@ -1,12 +1,12 @@
 import Elysia from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import type { CreateOrderRoutePayload } from "@repo/shared/types/entities/payment"
-import { defineInitiator } from "#/lib/middlewares/define";
+import { defineUser } from "#/lib/middlewares/define";
 import { wrapError } from "#/helpers/wrap-error";
 import { getCartSelectedItems } from "../cart/cart.model";
 import { createGamePaymentRecord, initialPrices, processStoreGamePurchase, updateGamePaymentRecord } from "./order.model";
-import { defineGlobalPrice } from "#/utils/store/store-transforms";
-import { GameCurrency } from "@repo/shared/schemas/payment";
+import { defineGlobalPrice } from "#/utils/store/store-helpers";
+import type { GameCurrency } from "@repo/shared/schemas/payment";
 import { withError } from "#/shared/schemas";
 import { getBalance } from "#/modules/user/balance.model";
 import { nanoid } from "nanoid";
@@ -16,10 +16,10 @@ const ERRORS_MAP: Record<string, string> = {
 }
 
 export const createOrder = new Elysia()
-  .use(defineInitiator())
-  .post('/create', async ({ initiator, status }) => {
+  .use(defineUser())
+  .post('/create', async ({ nickname: initiator, status }) => {
     const [balance, finalPrice] = await Promise.all([
-      getBalance(initiator),
+      getBalance(initiator, { server: "bisquite" }),
       defineGlobalPrice(initiator)
     ])
 

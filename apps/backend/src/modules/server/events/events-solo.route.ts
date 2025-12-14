@@ -9,8 +9,7 @@ export const eventsSolo = new Elysia()
       t.Nullable(eventPayload)
     )
   })
-  .get("/:id", async ({ params }) => {
-    const id = params.id;
+  .get("/:id", async ({ params: { id } }) => {
     const data = await getEvent(id)
     return { data }
   }, {

@@ -1,4 +1,4 @@
-import { AbortableCommandArgs, callServerCommand } from "./call-command";
+import { type AbortableCommandArgs, callServerCommand } from "./call-command";
 
 type CallBroadcast = { message: string }
 

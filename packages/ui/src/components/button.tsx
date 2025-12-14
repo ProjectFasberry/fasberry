@@ -1,25 +1,42 @@
+import { LoaderCircleIcon } from "lucide-react"
 import { ButtonHTMLAttributes } from "react"
 import { tv, VariantProps } from "tailwind-variants"
 
 const buttonVariants = tv({
-  base: `inline-flex px-4 py-2 cursor-pointer items-center justify-center
+  base: `inline-flex px-4 py-2 rounded-md active:scale-[0.99] duration-300 ease-in-out cursor-pointer items-center justify-center
     disabled:select-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 
   `,
   variants: {
     variant: {
-      default: "rounded-md active:scale-[0.98] duration-300 ease-in-out",
-      minecraft: "rounded-none button"
+      default: "border-none border-transparent",
+      danger: "border border-red-600 text-red-600",
+    },
+    background: {
+      default: "bg-neutral-800",
+      white: "bg-neutral-50 text-neutral-950"
     }
-  },
-  defaultVariants: {
-    variant: "default"
   }
 })
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof buttonVariants>
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>
+  & VariantProps<typeof buttonVariants> & (| {
+    withSpinner?: true
+    isLoading: boolean
+  } | {
+    withSpinner?: false,
+    isLoading?: never
+  })
 
-export const Button = ({ className, variant, ...props }: ButtonProps) => {
+export const Button = ({ className, isLoading, withSpinner, background, children, variant, ...props }: ButtonProps) => {
   return (
-    <button className={buttonVariants({ className, variant })} {...props} />
+    <button
+      className={buttonVariants({ className, background, variant })}
+      {...props}
+    >
+      {(withSpinner && isLoading) && (
+        <LoaderCircleIcon className="animate-spin duration-300 mr-2" size={20} />
+      )}
+      {children}
+    </button>
   )
 }

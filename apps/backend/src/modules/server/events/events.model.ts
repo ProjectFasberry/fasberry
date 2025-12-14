@@ -1,6 +1,6 @@
 import { getRedisKey } from "#/helpers/redis"
 import { getRedis } from "#/shared/redis/init"
-import { EventPayload } from "@repo/shared/types/entities/other"
+import type { EventPayload } from "@repo/shared/types/entities/other"
 import { nanoid } from "nanoid"
 import z from "zod"
 

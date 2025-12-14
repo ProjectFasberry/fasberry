@@ -1,15 +1,15 @@
 import Elysia from "elysia";
 import z from "zod";
-import { general } from "#/shared/database/main-db";
-import { StoreItems } from "@repo/shared/types/db/auth-database-types";
+import { general } from "#/shared/database/general-db";
+import type { StoreItems } from "@repo/shared/types/db/auth-database-types";
 import { validatePermission } from "#/lib/middlewares/validators";
-import { PERMISSIONS } from "#/shared/constants/permissions";
+import { Permissions } from "#/shared/constants/permissions";
 import { createAdminActivityLog } from "../private.model";
 import { EDITABLE_FIELDS, storeItemEditSchema } from "@repo/shared/schemas/store";
-import { Selectable } from "kysely";
+import type { Selectable } from "kysely";
 import { buildUpdates } from "#/utils/config/transforms";
 
-const PERMISSION = PERMISSIONS.STORE.ITEM.UPDATE
+const PERMISSION = Permissions.get("STORE.ITEM.UPDATE")
 
 async function editStoreItem(id: number, values: z.infer<typeof storeItemEditSchema>) {
   const updates = buildUpdates<Selectable<StoreItems>>(values)
@@ -28,8 +28,7 @@ async function editStoreItem(id: number, values: z.infer<typeof storeItemEditSch
 
 const storeItemEdit = new Elysia()
   .use(validatePermission(PERMISSION))
-  .post("/:id/edit", async ({ params, body }) => {
-    const id = params.id;
+  .post("/:id/edit", async ({ params: { id }, body }) => {
     const data = await editStoreItem(id, body);
     return { data }
   }, {
@@ -41,7 +40,7 @@ const storeItemEdit = new Elysia()
   })
 
 const storeItemEditFields = new Elysia()
-  .use(validatePermission(PERMISSIONS.STORE.ITEM.UPDATE))
+  .use(validatePermission(Permissions.get("STORE.ITEM.UPDATE")))
   .get("/editable-fields", async () => ({ data: EDITABLE_FIELDS }))
 
 export const storeItemEditGroup = new Elysia()

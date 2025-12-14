@@ -1,12 +1,19 @@
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { isIdentityAtom, playerAtom } from "./player.model";
+import { isIdentityAtom } from "./player.model";
 import { currentUserAtom } from "@/shared/models/current-user.model";
 import { logError } from "@/shared/lib/log";
-import { client, withAbort } from "@/shared/lib/client-wrapper";
+import { client } from "@/shared/lib/client-wrapper";
 import { isAuthAtom } from "@/shared/models/page-context.model";
 import { navigate } from "vike/client/router";
+import { atom } from "@reatom/core";
+import { Player } from "@repo/shared/types/entities/user";
+import { withSsr } from "@/shared/lib/ssr";
 
-export const rateUser = reatomAsync(async (ctx, nickname: string) => {
+type RateUserPayload = "rated" | "unrated"
+
+export const playerRateAtom = atom<Player["rate"] | null>(null, "playerRate").pipe(withSsr("playerRate"))
+
+export const rateUserAction = reatomAsync(async (ctx, nickname: string) => {
   if (ctx.get(isIdentityAtom)) return;
 
   if (!ctx.get(isAuthAtom)) {
@@ -14,28 +21,22 @@ export const rateUser = reatomAsync(async (ctx, nickname: string) => {
   }
 
   return await ctx.schedule(() =>
-    client
-      .post<"rated" | "unrated">(`rate/${nickname}`)
-      .exec()
+    client.post<RateUserPayload>(`rate/${nickname}`).exec()
   )
 }, {
-  name: "rateUser",
+  name: "rateUserAction",
   onFulfill: (ctx, res) => {
     if (!res) return null;
 
-    playerAtom(ctx, (state) => {
+    const isRated = res === 'rated'
+
+    playerRateAtom(ctx, (state) => {
       if (!state) return null;
 
-      const isRated = res === 'rated'
+      const current = state.count
+      const count = isRated ? current + 1 : current - 1
 
-      const currentCount = state.rate.count
-      const count = isRated ? currentCount + 1 : currentCount - 1
-
-      const updated = { rate: { count, isRated } }
-
-      return {
-        ...state, rate: { ...state?.rate, ...updated.rate }
-      }
+      return { count, isRated }
     })
   },
   onReject: (ctx, e) => {
@@ -61,12 +62,12 @@ export const rateListAction = reatomAsync(async (ctx) => {
   if (!currentUser) return;
 
   return await ctx.schedule(() =>
-    client<RateList>(`rate/list/${currentUser.nickname}`)
-      .pipe(withAbort(ctx.controller.signal))
-      .exec()
+    client<RateList>(`rate/list/${currentUser.nickname}`, {
+      signal: ctx.controller.signal
+    }).exec()
   )
 }, "rateListAction").pipe(
-  withStatusesAtom(), 
-  withDataAtom(null), 
+  withDataAtom(null),
+  withStatusesAtom(),
   withCache({ swr: false })
 )

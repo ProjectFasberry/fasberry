@@ -1,6 +1,6 @@
 import { abortablePromiseAll } from "#/helpers/abortable"
 import { callBroadcast } from "../server/call-broadcast"
-import { AbortableCommandArgs, callServerCommand } from "../server/call-command"
+import { type AbortableCommandArgs, callServerCommand } from "../server/call-command"
 
 type GiveCharism = { nickname: string, value: number }
 

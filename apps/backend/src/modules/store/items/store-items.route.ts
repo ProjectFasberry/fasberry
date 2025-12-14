@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import { StoreItemsPayload } from "@repo/shared/types/entities/store";
+import type { StoreItemsPayload } from "@repo/shared/types/entities/store";
 import { getStoreItems, storeListSchema } from "./store-items.model";
 
 export const storeItems = new Elysia()

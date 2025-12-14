@@ -1,11 +1,12 @@
 import dayjs from 'dayjs';
 import { getNats, natsLogger } from "#/shared/nats/client"
-import { SERVER_USER_EVENT_SUBJECT, USER_REFERAL_CHECK_SUBJECT } from "#/shared/nats/subjects"
+import { SUBJECTS } from "#/shared/nats/subjects"
 import { z } from "zod"
-import { logError, logger } from '#/utils/config/logger';
-import { general } from '#/shared/database/main-db';
+import { logErrorMsg } from "#/utils/config/log-utils";
+import { general } from '#/shared/database/general-db';
 import { safeJsonParse } from '#/utils/config/transforms';
-import { Msg } from '@nats-io/nats-core';
+import type { Msg } from '@nats-io/nats-core';
+import { logger } from '#/utils/config/logger';
 
 const userJoinSchema = z.object({
   date: z.string(),
@@ -19,7 +20,7 @@ function pushToReferral(
   const nc = getNats()
 
   const payload = new TextEncoder().encode(nickname)
-  nc.publish(USER_REFERAL_CHECK_SUBJECT, payload)
+  nc.publish(SUBJECTS.USERS.REWARD_CHECK, payload)
 }
 
 async function joinEvents(
@@ -85,16 +86,16 @@ async function handlePlayerJoin(msg: Msg) {
         break;
     }
   } catch (e) {
-    logError(e)
+    logErrorMsg(e)
   }
 }
 
-export const subscribePlayerJoin = () => {
+export const subscribePlayerJoin = (subject: string) => {
   const nc = getNats()
 
-  const subscription = nc.subscribe(SERVER_USER_EVENT_SUBJECT, {
+  const subscription = nc.subscribe(subject, {
     callback: (e, msg) => {
-      if (e) return logError(e)
+      if (e) return logErrorMsg(e)
 
       void handlePlayerJoin(msg)
     }

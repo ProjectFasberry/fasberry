@@ -2,8 +2,6 @@ import * as React from 'react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { X } from 'lucide-react';
 import {
-  AnimatePresence,
-  motion,
   type HTMLMotionProps,
   type Transition,
 } from 'motion/react';
@@ -101,69 +99,41 @@ type DialogContentProps = React.ComponentProps<typeof DialogPrimitive.Content> &
 function DialogContent({
   className,
   children,
-  from = 'top',
-  transition = { type: 'spring', stiffness: 150, damping: 25 },
+  showCloseButton = true,
   ...props
-}: DialogContentProps) {
-  const { isOpen } = useDialog();
-
-  const initialRotation =
-    from === 'top' || from === 'left' ? '20deg' : '-20deg';
-  const isVertical = from === 'top' || from === 'bottom';
-  const rotateAxis = isVertical ? 'rotateX' : 'rotateY';
-
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  showCloseButton?: boolean
+}) {
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <DialogPortal forceMount data-slot="dialog-portal">
-          <DialogOverlay asChild forceMount>
-            <motion.div
-              key="dialog-overlay"
-              initial={{ opacity: 0, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, filter: 'blur(4px)' }}
-              transition={{ duration: 0.2, ease: 'easeInOut' }}
-            />
-          </DialogOverlay>
-          <DialogPrimitive.Content asChild forceMount {...props}>
-            <motion.div
-              key="dialog-content"
-              data-slot="dialog-content"
-              initial={{
-                opacity: 0,
-                filter: 'blur(4px)',
-                transform: `perspective(500px) ${rotateAxis}(${initialRotation}) scale(0.8)`,
-              }}
-              animate={{
-                opacity: 1,
-                filter: 'blur(0px)',
-                transform: `perspective(500px) ${rotateAxis}(0deg) scale(1)`,
-              }}
-              exit={{
-                opacity: 0,
-                filter: 'blur(4px)',
-                transform: `perspective(500px) ${rotateAxis}(${initialRotation}) scale(0.8)`,
-              }}
-              transition={transition}
-              className={cn(
-                'fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-16px)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 bg-neutral-900 px-6 py-4 shadow-lg rounded-xl',
-                className,
-              )}
-              {...props}
-            >
-              {children}
-              <DialogPrimitive.Close
-                className="absolute bg-red-500 right-5 top-5 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-              >
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </DialogPrimitive.Close>
-            </motion.div>
-          </DialogPrimitive.Content>
-        </DialogPortal>
-      )}
-    </AnimatePresence>
-  );
+    <DialogPortal data-slot="dialog-portal">
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        data-slot="dialog-content"
+        className={cn(
+          `bg-neutral-900 data-[state=open]:animate-in data-[state=closed]:animate-out 
+          data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
+          data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)]
+          translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg px-6 py-4 duration-300 sm:max-w-lg`,
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            className={`ring-offset-background bg-red-500 focus:ring-ring data-[state=open]:bg-neutral-800 
+              data-[state=open]:text-neutral-400 absolute top-6 right-6 rounded-xs opacity-70 
+              transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden 
+              disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`}
+          >
+            <X />
+            <span className="sr-only">Закрыть</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  )
 }
 
 type DialogHeaderProps = React.ComponentProps<'div'>;

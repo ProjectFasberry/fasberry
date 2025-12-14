@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import type { Readable } from 'stream';
 
 export function nodeToWebStream(nodeStream: Readable): ReadableStream<Uint8Array> {
   const reader = nodeStream[Symbol.asyncIterator]();

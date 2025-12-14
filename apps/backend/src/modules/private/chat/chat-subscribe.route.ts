@@ -3,13 +3,13 @@ import { defineUser } from "#/lib/middlewares/define";
 import { getNats } from "#/shared/nats/client";
 import { logger } from "#/utils/config/logger";
 import { safeJsonParse } from "#/utils/config/transforms";
-import { Subscription } from "@nats-io/nats-core";
+import type { Subscription } from "@nats-io/nats-core";
 import {
   chatCreateMessageSchema,
   chatDeleteMessageSchema,
   chatEditMessageSchema,
-  ChatEvent, ChatEventVariant,
-  ChatItem,
+  type ChatEvent, type ChatEventVariant,
+  type ChatItem,
   createMessage,
   deleteMessage,
   editMessage

@@ -1,6 +1,6 @@
 import Elysia from "elysia"
 import z from "zod";
-import { ElysiaOpenAPIConfig, fromTypes, openapi } from "@elysiajs/openapi"
+import { type ElysiaOpenAPIConfig, fromTypes, openapi } from "@elysiajs/openapi"
 
 const swaggerConfig: ElysiaOpenAPIConfig = {
   scalar: {

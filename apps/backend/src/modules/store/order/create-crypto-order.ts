@@ -1,34 +1,20 @@
 import { CRYPTO_PAY_API } from "#/shared/api/crypto-api";
-import { payments } from "#/shared/database/payments-db";
 import { getRedis } from "#/shared/redis/init";
-import { ExchangeRate } from "#/shared/types/payment/payment-types";
+import type { ExchangeRate } from "#/shared/types/payment/payment-types";
 import { logger } from "#/utils/config/logger";
-import { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema";
+import type { currencyCryptoSchema } from "@repo/shared/schemas/entities/currencies-schema";
 import { PaymentStatus } from "@repo/shared/types/db/payments-database-types";
-import { z } from "zod";
+import type { z } from "zod";
 import { FRONTEND_PREFIX } from "#/shared/env";
 import { CreateOrderTopUpSchema } from "@repo/shared/schemas/payment";
-import { general } from "#/shared/database/main-db";
-import { CryptoPayPayload, EXCHANGE_RATES_KEY } from "./cryptobot/cryptobot.model";
+import { general } from "#/shared/database/general-db";
+import { type CryptoPayPayload, EXCHANGE_RATES_KEY } from "./cryptobot/cryptobot.model";
+import { invariant } from "#/helpers/invariant";
 
 export const getOrderLink = (uniqueId: string) => `${FRONTEND_PREFIX}/store/order/${uniqueId}`
 export const getOrderKey = (uniqueId: string) => `order:${uniqueId}`
 export const getOrderInitiatorIndexKey = (initiator: string) => `index:initiator:${initiator}`
 export const getOrderRateKey = (initiator: string) => `rate:order_limit:${initiator}`
-
-export type PaymentCacheData = {
-  unique_id: string;
-  asset: "USDT" | "TON" | "BTC" | "ETH" | "LTC" | "BNB" | "TRX" | "USDC";
-  price: string;
-  created_at: Date | string;
-  status: PaymentStatus;
-  payload: string;
-  order_id: string;
-  invoice_id: number;
-  pay_url: string,
-  initiator: string
-  comment: CreateOrderTopUpSchema["comment"]
-}
 
 const ORDER_LIMIT = 64;
 const WINDOW_SECONDS = 10 * 60;
@@ -56,7 +42,7 @@ export async function getPriceInCurrency(
   currency: z.infer<typeof currencyCryptoSchema>
 ): Promise<number> {
   const data = await getExchangeRates()
-  if (!data) throw new Error("Exchange rates cache is not defined")
+  invariant(data, "Exchange rates cache is not defined")
 
   const rates: ExchangeRate[] = JSON.parse(data)
 
@@ -64,7 +50,7 @@ export async function getPriceInCurrency(
     target => target.source === currency && target.target === "RUB"
   )
 
-  if (!target) throw new Error("Выбранная валюта некорректна")
+  invariant(target, "Selected wallet is not corrected")
 
   const outputPrice = extractDiff(inputPrice, Number(target.rate))
   return outputPrice;
@@ -75,7 +61,7 @@ export async function rollbackOrder({
 }: {
   invoiceId: number, uniqueId: string, initiator: string
 }) {
-  const deleteInvoice = await payments.transaction().execute(async (trx) => {
+  const deleteInvoice = await general.transaction().execute(async (trx) => {
     const redis = getRedis();
 
     const deleteInvoice = await CRYPTO_PAY_API

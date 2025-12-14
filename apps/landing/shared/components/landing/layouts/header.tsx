@@ -28,7 +28,7 @@ const MAIN_HEADER = [
 ];
 
 const expImage = getStaticObject("minecraft", "icons/experience_big.webp")
-const logoImage = getStaticObject("static", "fasberry_logo.webp")
+const logoImage = getStaticObject("minecraft", "static/fasberry_logo.webp")
 
 const ExperienceCircle = () => {
   return (
@@ -173,7 +173,7 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
           <Link
             onClick={() => pathDetect(href)}
             href={href}
-            className="flex items-center gap-1 mx-2"
+            className="flex items-center gap-1"
           >
             {isActive && (
               <img
@@ -181,9 +181,10 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
                 width={20}
                 alt=""
                 height={20}
+                draggable={false}
               />
             )}
-            <Typography className="text-neutral-300 text-md">
+            <Typography className="text-neutral-300 text-base">
               {name}
             </Typography>
             {childs && (
@@ -199,9 +200,9 @@ const HeaderItemMenu = ({ name, childs, href }: typeof MAIN_HEADER[0]) => {
         ) : (
           <div
             onClick={() => pathDetect(href)}
-            className="flex items-center gap-1 mx-2 cursor-pointer"
+            className="flex items-center gap-1 cursor-pointer"
           >
-            <Typography className="text-neutral-300 text-md">
+            <Typography className="text-neutral-300 text-base">
               {name}
             </Typography>
             {childs && (
@@ -246,7 +247,7 @@ export const Header = () => {
       <Link href="/" className="bg-transparent cursor-pointer relative md:-right-[40px] top-3 xl:-right-[60px]">
         <img src={logoImage} draggable={false} width={224} height={64} title="Fasberry" alt="Fasberry" />
       </Link>
-      <div className="hidden xl:flex gap-5 items-center justify-start pr-[132px]">
+      <div className="hidden xl:flex gap-8 items-center justify-start pr-[132px]">
         {MAIN_HEADER.map(item => (
           // @ts-expect-error
           <HeaderItemMenu

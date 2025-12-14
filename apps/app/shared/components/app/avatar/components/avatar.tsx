@@ -2,7 +2,8 @@ import { HTMLAttributes } from 'react';
 import { tv, VariantProps } from 'tailwind-variants';
 import { reatomComponent, useUpdate } from '@reatom/npm-react';
 import { Skeleton } from '@repo/ui/skeleton';
-import { avatarAction, getAvatar, getAvatarState } from '../models/avatar.model';
+import { avatarAction, avatarsAtom, getAvatar, getAvatarState } from '../models/avatar.model';
+import { getStaticImage } from '@/shared/lib/volume-helpers';
 
 export const avatarVariants = tv({
   base: `relative rounded-lg aspect-square border border-neutral-800/20`,
@@ -27,7 +28,7 @@ const AvatarImage = reatomComponent<AvatarProps>(({
   const url = ctx.spy(getAvatar(nickname))
   const isLoading = ctx.spy(getAvatarState(nickname))
 
-  if (isLoading) {
+  if (!url || isLoading) {
     return <Skeleton style={{ height: propHeight, width: propWidth }} />
   }
 
@@ -44,6 +45,7 @@ const AvatarImage = reatomComponent<AvatarProps>(({
         className="rounded-sm"
         loading="eager"
         alt=""
+        onError={() => avatarsAtom.set(ctx, nickname, getStaticImage("fallback/steve_head.png"))}
       />
     </div>
   );

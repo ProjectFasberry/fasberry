@@ -11,7 +11,7 @@ import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Skeleton } from "@repo/ui/skeleton";
 import { ReactNode } from "react";
 import { AtomState } from "@reatom/core";
-import { ratingAscAtom, ratingByAtom, ratingDataAtom, ratingIsViewAtom, updateRatingAction } from "../models/ratings.model";
+import { ratingAscAtom, ratingByAtom, ratingDataAtom, ratingIsViewAtom, ratingsAction, updateRatingAction } from "../models/ratings.model";
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
 import { Button } from "@repo/ui/button";
 import {
@@ -27,6 +27,8 @@ import {
 import { Avatar } from "../../avatar/components/avatar";
 import { createLink, Link } from "@/shared/components/config/link";
 import dayjs from "@/shared/lib/create-dayjs"
+import { PageLoader } from "@/shared/ui/page-loader";
+import { NotFound } from "@/shared/ui/not-found";
 
 const RatingListParkourHeaderU = () => {
   return (
@@ -141,7 +143,7 @@ const RatingTableBodyBelkoin = reatomComponent(({ ctx }) => {
         <TableCell>
           <UserHead nickname={user.nickname} />
         </TableCell>
-        <TableHead className="text-right">{formatNumber(user.points)}</TableHead>
+        <TableHead className="text-right">{formatNumber(user.balance)}</TableHead>
       </TableRow>
     ))
   )
@@ -164,8 +166,13 @@ const RatingTableBodyReputation = reatomComponent(({ ctx }) => {
   )
 })
 
-function formatNumber(n: number) {
-  return Number.isInteger(n) ? n : n.toFixed(2);
+function formatNumber(n: number): number | string | null {
+  try {
+    return Number.isInteger(n) ? n : n.toFixed(2);
+  } catch (e) {
+    console.error('formatNumber error:', e);
+    return null;
+  }
 }
 
 const RatingTableBodyCharism = reatomComponent(({ ctx }) => {
@@ -183,7 +190,7 @@ const RatingTableBodyCharism = reatomComponent(({ ctx }) => {
       </TableRow>
     ))
   )
-})
+}, "RatingTableBodyCharism")
 
 const RatingTableBodyLands = reatomComponent(({ ctx }) => {
   const data = ctx.spy(ratingDataAtom) as RatingLands[]
@@ -193,13 +200,17 @@ const RatingTableBodyLands = reatomComponent(({ ctx }) => {
     data.map((land, idx) => (
       <TableRow key={idx}>
         <TableCell className="font-medium">{idx + 1}</TableCell>
-        <TableCell>{land.name}</TableCell>
+        <TableCell>
+          <Link href={createLink("land", land.ulid)}>
+            {land.name}
+          </Link>
+        </TableCell>
         <TableCell>{land.chunks_amount}</TableCell>
         <TableHead className="text-right">{land.type}</TableHead>
       </TableRow>
     ))
   )
-})
+}, "RatingTableBodyLands")
 
 const RatingsFilter = reatomComponent(({ ctx }) => {
   const current = ctx.spy(ratingAscAtom);
@@ -222,7 +233,7 @@ const RatingsHeader = () => {
   )
 }
 
-const UserHead = ({ nickname }: {nickname: string}) => {
+const UserHead = ({ nickname }: { nickname: string }) => {
   return (
     <Link href={createLink("player", nickname)} className="flex items-center gap-2">
       <Avatar
@@ -246,7 +257,7 @@ const RatingTableBodyPlaytime = reatomComponent(({ ctx }) => {
       <TableRow key={user.nickname}>
         <TableCell className="font-medium">{idx + 1}</TableCell>
         <TableCell>
-          <UserHead nickname={user.nickname}/>
+          <UserHead nickname={user.nickname} />
         </TableCell>
         <TableHead className="text-right">
           {Math.floor(dayjs.duration(user.total ?? 0).asHours())} часа(-ов)
@@ -265,7 +276,7 @@ const HEADERS: Record<AtomState<typeof ratingByAtom>, ReactNode> = {
   "charism": <RatingListCharismHeaderU />
 }
 
-const COMPONENTS: Record<AtomState<typeof ratingByAtom>, ReactNode> = {
+export const COMPONENTS: Record<AtomState<typeof ratingByAtom>, ReactNode> = {
   "playtime": <RatingTableBodyPlaytime />,
   "lands_chunks": <RatingTableBodyLands />,
   "reputation": <RatingTableBodyReputation />,
@@ -289,7 +300,19 @@ const RatingTableBody = reatomComponent(({ ctx }) => {
   return COMPONENTS[ctx.spy(ratingByAtom)]
 }, "RatingTableBody")
 
-export const Ratings = () => {
+export const Ratings = reatomComponent(({ ctx }) => {
+  if (ctx.spy(ratingsAction.statusesAtom).isPending) {
+    return <PageLoader />
+  }
+
+  if (ctx.spy(ratingsAction.errorAtom)) {
+    return <span>Что-то пошло не так</span>
+  }
+
+  if (!ctx.spy(ratingDataAtom)) {
+    return <NotFound title="Пока ничего нет" />
+  }
+
   return (
     <Table>
       <TableCaption>Рейтинг</TableCaption>
@@ -307,4 +330,4 @@ export const Ratings = () => {
       </TableFooter> */}
     </Table>
   )
-}
+}, "Ratings")

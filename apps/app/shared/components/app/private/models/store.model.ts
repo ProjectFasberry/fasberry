@@ -147,7 +147,8 @@ export const storeWalletFilterAtom = atom<StoreItemsParams["wallet"]>("ALL");
 export const storeItemsAction = reatomAsync(async (ctx) => {
   const params: StoreItemsParams = {
     type: ctx.get(storeCategoryAtom),
-    wallet: ctx.get(storeWalletFilterAtom)
+    wallet: ctx.get(storeWalletFilterAtom),
+    searchQuery: ""
   }
 
   return await ctx.schedule(() => getStoreItems(params))

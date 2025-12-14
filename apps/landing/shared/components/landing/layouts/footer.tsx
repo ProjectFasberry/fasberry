@@ -9,7 +9,7 @@ const FOOTER_LINKS = [
   { name: 'Благодарности', href: '/credits' },
 ];
 
-const bedrockImage = getStaticObject("static", "bedrock.webp")
+const bedrockImage = getStaticObject("minecraft", "static/bedrock.webp")
 
 export const Footer = () => {
   return (
@@ -23,7 +23,7 @@ export const Footer = () => {
             width={316}
             height={128}
             alt="Fasberry"
-            src={getStaticObject("static", "fasberry_logo.webp")}
+            src={getStaticObject("minecraft", "static/fasberry_logo.webp")}
             className="relative top-4 cursor-pointer"
           />
         </Link>

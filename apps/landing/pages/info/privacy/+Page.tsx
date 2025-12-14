@@ -1,7 +1,8 @@
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { Typography } from "@repo/ui/typography";
-import { MINECRAFT_SITE_DOMAIN } from "@repo/shared/constants/origin-list";
 import { MAIL_FASBERRY_SUPPORT } from "@/shared/data/configs";
+
+const MINECRAFT_SITE_DOMAIN = "https://fasberry.su";
 
 export default function InfoPrivacyPage() {
   return (

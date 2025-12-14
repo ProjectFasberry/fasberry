@@ -1,10 +1,7 @@
 import { reatomComponent } from "@reatom/npm-react"
 import { Typography } from "@repo/ui/typography"
 import { cartPriceAtom } from "../../models/store-cart.model"
-import { getStaticImage } from "@/shared/lib/volume-helpers"
-
-export const belkoinImage = getStaticImage("donates/belkoin_wallet.png")
-export const charismImage = getStaticImage("donates/charism_wallet.png")
+import { belkoinImage, charismImage } from "@/shared/consts/images";
 
 export const TARGET_TITLE = {
   "CHARISM": "Харизма",
@@ -26,7 +23,7 @@ export const CartPrice = reatomComponent(({ ctx }) => {
 
         return (
           <Typography key={currency} className="text-lg leading-5 font-semibold flex items-center gap-1">
-            {img ? <img src={img} alt={symbol} className="w-5 h-5 inline-block" /> : symbol} {value}
+            {img ? <img src={img} draggable={false} alt={symbol} className="w-5 h-5 inline-block" /> : symbol} {value}
           </Typography>
         )
       })}

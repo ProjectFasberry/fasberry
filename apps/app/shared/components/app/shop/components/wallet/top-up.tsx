@@ -22,9 +22,10 @@ import { tv } from "tailwind-variants";
 import { Button } from "@repo/ui/button";
 import { AtomState } from "@reatom/core";
 import { Skeleton } from "@repo/ui/skeleton";
-import { belkoinImage, charismImage, TARGET_TITLE } from "../cart/cart-price";
+import { TARGET_TITLE } from "../cart/cart-price";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { IconExchange } from "@tabler/icons-react";
+import { belkoinImage, charismImage } from "@/shared/consts/images";
 
 // import { storePrivacyAtom } from '../../models/store.model';
 
@@ -252,11 +253,12 @@ const TopUpSubmit = reatomComponent(({ ctx }) => {
 
   return (
     <Button
-      className="bg-neutral-50 px-4 w-full"
+      background="white"
+      className="px-4 w-full"
       onClick={() => topUpAction(ctx)}
       disabled={isDisabled}
     >
-      <Typography className="text-lg text-neutral-950 font-semibold">
+      <Typography className="text-lg font-semibold">
         Оплатить
       </Typography>
     </Button>

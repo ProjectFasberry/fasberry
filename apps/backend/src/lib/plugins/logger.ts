@@ -1,5 +1,5 @@
 import Elysia from "elysia";
-import { logger, LoggerOptions } from "@tqman/nice-logger";
+import { logger, type LoggerOptions } from "@tqman/nice-logger";
 
 const loggerConfig: LoggerOptions = {
   enabled: true,

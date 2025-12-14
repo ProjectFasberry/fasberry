@@ -1,7 +1,7 @@
 import { getNats } from "#/shared/nats/client";
-import { LUCKPERMS_UPDATE_SUBJECT } from "#/shared/nats/subjects";
+import { SUBJECTS } from "#/shared/nats/subjects";
 import { nanoid } from "nanoid";
-import { LuckpermsLogContent } from "../subscribers/sub-player-group";
+import type { LuckpermsLogContent } from "../subscribers/sub-player-group";
 
 type PublishUpdateGroup = {
   nickname: string,
@@ -36,5 +36,5 @@ export function publishUpdateGroup({
     }
   }
 
-  return nc.publish(LUCKPERMS_UPDATE_SUBJECT, JSON.stringify(payload))
+  return nc.publish(SUBJECTS.LUCKPERMS.UPDATE, JSON.stringify(payload))
 }

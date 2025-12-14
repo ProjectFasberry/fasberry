@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import z from "zod";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
 import { taskPayload } from "./tasks.model";
 
@@ -28,8 +28,7 @@ export const tasksSolo = new Elysia()
   .model({
     "task": withData(taskPayload)
   })
-  .get("/:id", async ({ params }) => {
-    const id = params.id;
+  .get("/:id", async ({ params: { id } }) => {
     const data = await getTask(id);
     return { data }
   }, {

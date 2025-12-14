@@ -1,3 +1,5 @@
+import { APAY_TAG } from "@/shared/env";
+
 export default function HeadDefault() {
   return (
     <>
@@ -35,6 +37,7 @@ export default function HeadDefault() {
           href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap"
         />
       </noscript>
+      <meta name="apay-tag" content={APAY_TAG} />
     </>
   );
 }

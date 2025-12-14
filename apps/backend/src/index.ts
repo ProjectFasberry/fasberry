@@ -1,126 +1,63 @@
-/// <reference path="../declare.d.ts" />
-
 import "../imports"
+import "../declare.d.ts"
 
-import { Elysia, ElysiaConfig, ValidationError } from "elysia";
-import { serverTiming as serverTimingPlugin } from '@elysiajs/server-timing'
-import { me } from "#/modules/user/me.route";
-import { rateLimitPlugin } from "./lib/plugins/rate-limit";
-import { initMinio, initMinioBuckets, printBuckets } from "./shared/minio/init";
-import { bot } from "./shared/bot/logger";
+import { initLoggerBot } from "./shared/bot/logger";
 import { handleFatalError } from "./utils/config/handle-log";
-import { showRoutes } from "./utils/config/print-routes";
-import { ipPlugin } from "./lib/plugins/ip";
-import { privated } from "./modules/private";
-import { rate } from "./modules/user/like.route";
-import { initRedis } from "./shared/redis/init";
-import { startJobs } from "./utils/cron";
-import { updateSession } from "./utils/auth/session";
-import { INTERNAl_FILES, loadInternalFiles } from "./utils/minio/load-internal-files";
-import { store } from "./modules/store";
-import { auth } from "./modules/auth";
-import { serverGroup } from "./modules/server";
-import { shared } from "./modules/shared";
-import { root } from "./modules/root";
-import { startNats } from "./shared/nats/init";
-import { loggerPlugin } from "./lib/plugins/logger";
-import { openApiPlugin } from "./lib/plugins/openapi";
-import { isProduction } from "./shared/env";
-import { defineSession } from "./lib/middlewares/define";
-import { logger } from "./utils/config/logger";
 import { checkDatabasesHealth } from "./shared/database/init";
-import { corsPlugin } from "./lib/plugins/cors";
-import { prometheusPlugin } from "./lib/plugins/prometheus";
-import { safeJsonParse } from "./utils/config/transforms";
-import { startOrderConsumer } from "./utils/server/call-command";
+import { startGuardBot } from "./shared/bot/guard";
+import { initURLS } from "./shared/constants/urls";
+import { initChats } from "./shared/constants/chats";
+import { initPermissions } from "./shared/constants/permissions";
+import { appLogger } from "./utils/config/logger";
+import { startMinio } from "./shared/minio/init";
+import { initRedis } from "./shared/redis/init";
+import { startNats } from "./shared/nats/init";
+import { startJobs } from "./shared/cron/init";
+import { connectToRcon } from "./shared/rcon/init";
 
-const appConfig: ElysiaConfig<string> = {
-  serve: {
-    hostname: '0.0.0.0',
-    // idleTimeout: 3
-  },
-  aot: true,
+async function entrypoint() {
+  appLogger.log(`Starting entrypoint`);
+
+  await Promise.all([
+    initURLS(), initChats(), checkDatabasesHealth()
+  ])
+
+  appLogger.log(`Finished entrypoint`);
 }
 
-const app = new Elysia(appConfig)
-	.use(prometheusPlugin())
-  .use(openApiPlugin())
-  .use(rateLimitPlugin())
-  .use(serverTimingPlugin())
-  .use(loggerPlugin())
-  .use(ipPlugin())
-  .use(corsPlugin())
-  .use(root)
-  .use(defineSession())
-  .onBeforeHandle(async ({ cookie, session }) => updateSession(session, cookie))
-  .use(shared)
-  .use(auth)
-  .use(me)
-  .use(serverGroup)
-  .use(store)
-  .use(privated)
-  .use(rate)
-  .onError(({ code, error }) => {
-    logger.error(error, code);
-    
-    let message: string | ValidationError = 'Internal Server Error';
+async function services() {
+  appLogger.log(`Starting services`);
+  
+  await Promise.all([
+    startNats(), connectToRcon(), startMinio(), initRedis()
+  ])
 
-    if (code === 'VALIDATION') {
-      const result = safeJsonParse<ValidationError>(error.message);
-      message = result.ok ? result.value : error.message;
-      return { error: message };
-    }
+  appLogger.log(`Finished services`);
+}
 
-    if ('response' in error) {
-      const response = error.response as { error?: string } | number;
-
-      if (typeof response === 'object' && response !== null) {
-        if (response.error) message = response.error;
-      } else {
-        message = String(response);
-      }
-    }
-
-    return { error: message };
-  })
+function bots() {
+  initLoggerBot();
+  startGuardBot();
+}
 
 async function startServices() {
-  await checkDatabasesHealth();
-  await startNats();
-  startOrderConsumer();
+  await entrypoint();
+  await services();
 
-  async function startMinio() {
-    initMinio()
-    await printBuckets()
-    await initMinioBuckets()
-    await loadInternalFiles(INTERNAl_FILES);
-  }
-
-  await startMinio();
-  await initRedis()
-
-  bot.init();
-
-  if (isProduction) {
-    startJobs()
-  }
+  startJobs();
+  bots();
 }
 
 async function start() {
-  await startServices()
+  await initPermissions();
+  await startServices();
 
-  showRoutes(app)
-
-  app.listen(4104);
-
-  logger
-    .withTag("App")
-    .log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);
+  const { startApp } = await import("./app");
+  await startApp()
 }
 
 start()
 
-process.on('uncaughtException', handleFatalError);
-process.on('unhandledRejection', handleFatalError);
-
-export type App = typeof app
+process
+  .on('uncaughtException', handleFatalError)
+  .on('unhandledRejection', handleFatalError)

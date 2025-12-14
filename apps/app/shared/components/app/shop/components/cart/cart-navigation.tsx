@@ -1,44 +1,42 @@
-import { atom, CtxSpy, onDisconnect, withReset } from "@reatom/framework"
-import { reatomComponent } from "@reatom/npm-react"
+import { Link } from "@/shared/components/config/link"
+import { scrollableVariant } from "@/shared/consts/style-variants"
+import { BackButton } from "@/shared/ui/back-button"
 import { Button } from "@repo/ui/button"
 import { Typography } from "@repo/ui/typography"
-import { IconArrowLeft } from "@tabler/icons-react"
 
-export type StoreCartType = typeof STORE_BADGES[number]["value"]
-
-export const storeCartTypeAtom = atom<StoreCartType>("content", "storeCartType").pipe(withReset())
-const storeCartTypeIsActive = (ctx: CtxSpy, target: StoreCartType) => ctx.spy(storeCartTypeAtom) === target
-
-onDisconnect(storeCartTypeAtom, (ctx) => storeCartTypeAtom.reset(ctx))
-
-const makeBadge = (title: string, value: string) => ({
-  title, value, cd: (ctx: CtxSpy) => storeCartTypeIsActive(ctx, value),
-});
+const badge = (title: string, value: string) => ({ title, value });
 
 const STORE_BADGES = [
-  makeBadge("Корзина", "content"),
-  makeBadge("Заказы", "orders"),
-  makeBadge("Настройки", "prefs"),
+  badge("Корзина", ""),
+  badge("Заказы", "/orders"),
+  badge("Пополнить баланс", "/topup"),
+  badge("Настройки", "/settings"),
 ] as const;
 
-export const CartNavigation = reatomComponent(({ ctx }) => {
+export const CartNavigation = () => {
   return (
-    <div className="flex items-center gap-2 w-full">
-      <Button onClick={() => window.history.back()} className="h-10 p-0 aspect-square rounded-xl bg-neutral-800">
-        <IconArrowLeft size={22} className='text-neutral-400' />
-      </Button>
+    <div
+      className={scrollableVariant({
+        className: "flex items-center bg-neutral-900 overflow-x-auto scrollbar-h-2 p-1.5 rounded-lg gap-2 sm:w-full"
+      })}
+    >
+      <BackButton href="/store" />
       {STORE_BADGES.map((badge) => (
-        <Button
+        <Link
           key={badge.value}
-          data-state={badge.cd(ctx) ? "active" : "inactive"}
-          className="group h-10 border-2 data-[state=active]:bg-neutral-800 border-neutral-800 rounded-xl px-4 py-1"
-          onClick={() => storeCartTypeAtom(ctx, badge.value)}
+          href={`/store/cart${badge.value}`}
+          className="group"
         >
-          <Typography className="font-semibold text-neutral-200">
-            {badge.title}
-          </Typography>
-        </Button>
+          <Button
+            className="group-data-[state=active]:text-neutral-950 group-data-[state=inactive]:text-neutral-50
+             h-10 group-data-[state=active]:bg-neutral-50 group-data-[state=inactive]:bg-neutral-800 text-nowrap"
+          >
+            <Typography className="font-semibold">
+              {badge.title}
+            </Typography>
+          </Button>
+        </Link>
       ))}
     </div>
   )
-}, "CartNavigation")
+}

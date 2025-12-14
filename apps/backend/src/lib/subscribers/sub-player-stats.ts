@@ -1,8 +1,8 @@
 import { bisquite } from "#/shared/database/bisquite-db"
 import { reputation } from "#/shared/database/reputation-db"
 import { getNats } from "#/shared/nats/client"
-import { logError } from "#/utils/config/logger"
-import { Msg } from "@nats-io/nats-core"
+import { logErrorMsg } from "#/utils/config/log-utils";
+import type { Msg } from "@nats-io/nats-core"
 
 type PlayerStats = {
   charism: number
@@ -19,18 +19,18 @@ async function getPlayerStats(nickname: string): Promise<PlayerStats> {
   }
 
   const main = await bisquite
-    .selectFrom("CMI_users")
-    .leftJoin("playerpoints_username_cache", "CMI_users.username", "playerpoints_username_cache.username")
+    .selectFrom("cmi_users")
+    .leftJoin("playerpoints_username_cache", "cmi_users.username", "playerpoints_username_cache.username")
     .leftJoin("playerpoints_points", "playerpoints_points.uuid", "playerpoints_username_cache.uuid")
     .select([
       "Balance",
       "UserMeta",
       "playerpoints_points.points",
-      "CMI_users.player_uuid",
-      "CMI_users.TotalPlayTime",
-      "CMI_users.DisplayName"
+      "cmi_users.player_uuid",
+      "cmi_users.TotalPlayTime",
+      "cmi_users.DisplayName"
     ])
-    .where("CMI_users.username", "=", nickname)
+    .where("cmi_users.username", "=", nickname)
     .executeTakeFirst()
 
   if (!main) {
@@ -70,16 +70,16 @@ async function handlePlayerStats(msg: Msg) {
 
     return msg.respond(JSON.stringify(stats))
   } catch (e) {
-    logError(e)
+    logErrorMsg(e)
   }
 }
 
-export const subscribePlayerStats = () => {
+export const subscribePlayerStats = (subject: string) => {
   const nc = getNats()
 
-  const subscription = nc.subscribe("todo" + ".*", {
+  const subscription = nc.subscribe(subject, {
     callback: (e, msg) => {
-      if (e) return logError(e)
+      if (e) return logErrorMsg(e)
 
       void handlePlayerStats(msg)
     }

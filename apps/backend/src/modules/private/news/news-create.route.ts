@@ -1,11 +1,11 @@
 import { createNewsSchema } from '@repo/shared/schemas/news';
 import Elysia from "elysia"
-import z from "zod"
-import { general } from "#/shared/database/main-db"
+import type z from "zod"
+import { general } from "#/shared/database/general-db"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 import { getStaticUrl } from "#/helpers/volume"
 import { validatePermission } from '#/lib/middlewares/validators';
-import { PERMISSIONS } from '#/shared/constants/permissions';
+import { Permissions } from '#/shared/constants/permissions';
 import { createAdminActivityLog } from '../private.model';
 
 async function createNews(
@@ -25,7 +25,7 @@ async function createNews(
 }
 
 export const newsCreateRoute = new Elysia()
-  .use(validatePermission(PERMISSIONS.NEWS.CREATE))
+  .use(validatePermission(Permissions.get("NEWS.CREATE")))
   .post("/create", async ({ status, body, nickname }) => {
     const data = await createNews(body, nickname);
     return status(HttpStatusEnum.HTTP_200_OK, { data })

@@ -1,7 +1,7 @@
 import Elysia, { t } from "elysia";
 import { bannerSchema } from "./banner.model";
-import { BannerPayload } from "@repo/shared/types/entities/banner";
-import { general } from "#/shared/database/main-db";
+import type { BannerPayload } from "@repo/shared/types/entities/banner";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
 import { bannerPayload } from "./banner-list.route";
 
@@ -53,8 +53,7 @@ export const bannerSolo = new Elysia()
       t.Nullable(bannerPayload)
     )
   })
-  .get("/:id", async ({ status, params }) => {
-    const id = params.id
+  .get("/:id", async ({ status, params: { id } }) => {
     const data = await getBanner(id);
     return { data }
   }, {

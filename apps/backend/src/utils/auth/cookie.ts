@@ -1,5 +1,6 @@
-import { DOMAIN_NAME, isProduction } from "#/shared/env"
-import { Context } from "elysia"
+import { getUrls } from "#/shared/constants/urls"
+import { isProduction } from "#/shared/env"
+import type { Context } from "elysia"
 
 type Properties = {
   cookie: Context["cookie"],
@@ -11,12 +12,17 @@ type SetCookie = Properties & {
   expires: Date
 }
 
-export const DOMAIN = `.${DOMAIN_NAME}`
+export const getDomain = () => {
+  const urls = getUrls()
+  return `.${urls["domain"]}`
+}
+
 export const SESSION_KEY = "session";
-export const CROSS_SESSION_KEY = "logged_nickname"
 
 export function setCookie({ cookie, key, expires, value }: SetCookie) {
-  cookie[key].domain = isProduction ? DOMAIN : "127.0.0.1"
+  const domain = getDomain()
+  
+  cookie[key].domain = isProduction ? domain : "127.0.0.1"
   cookie[key].value = value
   cookie[key].expires = expires
   cookie[key].httpOnly = true
@@ -26,7 +32,9 @@ export function setCookie({ cookie, key, expires, value }: SetCookie) {
 }
 
 export function unsetCookie({ cookie, key }: Properties) {
-  cookie[key].domain = isProduction ? DOMAIN : "127.0.0.1"
+  const domain = getDomain()
+
+  cookie[key].domain = isProduction ? domain : "127.0.0.1"
   cookie[key].value = ""
   cookie[key].expires = new Date(0)
   cookie[key].path = "/"

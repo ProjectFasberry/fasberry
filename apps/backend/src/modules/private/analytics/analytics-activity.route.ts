@@ -1,4 +1,4 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import Elysia from "elysia";
 
 async function getActivity() {
@@ -11,7 +11,7 @@ async function getActivity() {
 }
 
 export const analyticsActivity = new Elysia()
-  .get("/activity", async (ctx) => {
+  .get("/activity", async () => {
     const data = await getActivity()
     return { data }
   })

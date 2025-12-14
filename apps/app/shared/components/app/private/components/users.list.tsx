@@ -1,5 +1,14 @@
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
-import { getIsCheckedAtom, rolesAction, selectUserAction, updateAction, usersAction, usersDataAtom, usersIsViewAtom, usersSelectedOverAtom } from "../models/users.model";
+import {
+  getIsCheckedAtom,
+  rolesAction,
+  selectUserAction,
+  updateAction,
+  usersAction,
+  usersDataArrAtom,
+  usersIsViewAtom,
+  usersSelectedOverAtom
+} from "../models/users.model";
 import { Skeleton } from "@repo/ui/skeleton";
 import { PrivatedUser } from "@repo/shared/types/entities/other";
 import { tv } from "tailwind-variants";
@@ -28,14 +37,18 @@ const userItemVariant = tv({
   }
 })
 
-const UserActions = ({ role, nickname }: UserActionsProps) => {
+const UserActions = reatomComponent<UserActionsProps>(({ ctx, role, nickname }) => {
+  const isSelectedItems = ctx.spy(usersSelectedOverAtom);
+
   return (
     <div className="flex pb-2 gap-1 items-center justify-end w-full">
       <UserActionsChangeRoleLocal nickname={nickname} role_id={role.role_id} role_name={role.role_name} />
-      <UserActionsRestrictLocal nickname={nickname} />
+      {!isSelectedItems && (
+        <UserActionsRestrictLocal nickname={nickname} />
+      )}
     </div>
   )
-}
+}, "UserActions")
 
 const isExpandedAtom = reatomMap<string, boolean>().pipe(
   withAssign((target, name) => ({
@@ -139,7 +152,7 @@ export const Users = reatomComponent(({ ctx }) => {
     rolesAction(ctx)
   }, []);
 
-  const data = ctx.spy(usersDataAtom);
+  const data = ctx.spy(usersDataArrAtom);
 
   if (ctx.spy(usersAction.statusesAtom).isPending) {
     return <UsersSkeleton />

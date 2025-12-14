@@ -5,12 +5,16 @@ import { createPool, type Pool, type PoolOptions } from "mysql2";
 import { poolOptsHooks } from "./lobby-db";
 import { REPUTATION_MYSQL_DB, REPUTATION_MYSQL_HOST, REPUTATION_MYSQL_PASSWORD, REPUTATION_MYSQL_PORT, REPUTATION_MYSQL_USER } from "../env";
 
-const config: PoolOptions = {
+export const inherit = {
   host: REPUTATION_MYSQL_HOST,
   user: REPUTATION_MYSQL_USER,
   password: REPUTATION_MYSQL_PASSWORD,
   port: Number(REPUTATION_MYSQL_PORT),
   database: REPUTATION_MYSQL_DB,
+}
+
+const config: PoolOptions = {
+  ...inherit,
   connectionLimit: 10
 }
 

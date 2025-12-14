@@ -24,6 +24,7 @@
     "release": "make build && make tag && make push"
   },
   "dependencies": {
+    "@elysiajs/bearer": "1.4.1",
     "@elysiajs/cors": "1.4.0",
     "@elysiajs/openapi": "1.4.11",
     "@elysiajs/server-timing": "1.4.0",
@@ -35,11 +36,13 @@
     "@repo/shared": "workspace:*",
     "@tqman/nice-logger": "1.1.1",
     "bcryptjs": "3.0.2",
+    "bowser": "2.13.1",
+    "canvas": "3.2.0",
     "consola": "3.4.2",
     "croner": "9.1.0",
     "dayjs": "1.11.11",
     "drizzle-orm": "0.44.2",
-    "elysia": "1.4.7",
+    "elysia": "1.4.16",
     "elysia-http-status-code": "1.0.9",
     "elysia-ip": "1.0.10",
     "elysia-prometheus": "1.0.0",
@@ -52,18 +55,17 @@
     "kysely-bun-sqlite": "0.4.0",
     "kysely-paginate": "0.3.1",
     "minio": "8.0.5",
+    "modern-rcon": "1.0.3",
     "mysql2": "3.14.1",
     "nanoid": "5.1.5",
     "p-limit": "7.1.1",
     "pg": "8.13.1",
-    "ua-parser-js": "2.0.4",
     "zod": "4.1.11"
   },
   "devDependencies": {
     "@repo/config-biome": "workspace:*",
     "@types/pg": "8.11.10",
     "bun-types": "1.2.17",
-    "bun-plugin-dts": "0.3.0",
     "drizzle-kit": "0.31.4",
     "typescript": "5.8.3"
   }

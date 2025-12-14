@@ -28,7 +28,7 @@ export function Link({ href, locale, className, ...props }: LinkProps) {
     href = '/' + locale + href
   }
 
-  const isActive = href ? href === "/" ? pathname === href : pathname.startsWith(href) : false;
+  const isActive = href ? href === "/" ? pathname === href : pathname === href : false;
   const isIdentity = href === pathname
 
   return (

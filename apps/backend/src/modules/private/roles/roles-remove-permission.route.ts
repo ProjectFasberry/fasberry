@@ -1,6 +1,6 @@
 import { validatePermission } from "#/lib/middlewares/validators"
-import { PERMISSIONS } from "#/shared/constants/permissions"
-import { general } from "#/shared/database/main-db"
+import { Permissions } from "#/shared/constants/permissions"
+import { general } from "#/shared/database/general-db"
 import Elysia from "elysia"
 import z from "zod"
 import { createAdminActivityLog } from "../private.model"
@@ -25,9 +25,8 @@ const rolesRemovePermissionForRoleSchema = z.object({
 })
 
 export const rolesRemovePermissionForRole = new Elysia()
-  .use(validatePermission(PERMISSIONS.ROLES.UPDATE))
-  .delete("/:id/permission/remove", async ({ params, body }) => {
-    const id = params.id
+  .use(validatePermission(Permissions.get("ROLES.UPDATE")))
+  .delete("/:id/permission/remove", async ({ params: { id }, body }) => {
     const data = await removePermissionForRole(id, body)
     return { data }
   }, {

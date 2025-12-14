@@ -1,8 +1,7 @@
 import Elysia, { t } from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
-import { getStaticUrl } from "#/helpers/volume";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
+import { processModpack } from "./modpack.model";
 
 async function getModpacks() {
   const query = await general
@@ -10,16 +9,7 @@ async function getModpacks() {
     .selectAll()
     .execute()
 
-  const data = query.map(modpack => {
-    const mods = JSON.parse(modpack.mods) as string[]
-    const shaders = modpack.shaders ? JSON.parse(modpack.shaders) as string[] : []
-
-    return {
-      ...modpack, mods, shaders,
-      imageUrl: getStaticUrl(modpack.imageUrl)
-    }
-  });
-
+  const data = query.map((modpack) => processModpack(modpack))
   return data
 }
 
@@ -32,6 +22,7 @@ const modpackPayload = t.Object({
   id: t.Number(),
   name: t.String(),
   version: t.String(),
+  downloadLink: t.String()
 })
 
 export const modpackList = new Elysia()

@@ -1,6 +1,6 @@
 import { validatePermission } from "#/lib/middlewares/validators"
-import { PERMISSIONS } from "#/shared/constants/permissions"
-import { general } from "#/shared/database/main-db"
+import { Permissions } from "#/shared/constants/permissions"
+import { general } from "#/shared/database/general-db"
 import Elysia from "elysia"
 
 async function getOptions() {
@@ -17,7 +17,7 @@ async function getOptions() {
 }
 
 export const optionsList = new Elysia()
-  .use(validatePermission(PERMISSIONS.OPTIONS.READ))
+  .use(validatePermission(Permissions.get("OPTIONS.READ")))
   .get("/list", async () => {
     const data = await getOptions()
     return { data }

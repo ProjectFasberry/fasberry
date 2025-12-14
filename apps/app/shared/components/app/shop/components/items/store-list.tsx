@@ -61,7 +61,13 @@ export const ItemPrice = ({ currency, price }: { currency: string, price: string
   return (
     <div className="flex items-center gap-1 text-base select-none text-nowrap font-semibold">
       {CURRENCIES[currency].img ? (
-        <img src={CURRENCIES[currency].img} alt={CURRENCIES[currency].symbol} width={24} height={24} />
+        <img
+          src={CURRENCIES[currency].img}
+          draggable={false}
+          alt={CURRENCIES[currency].symbol}
+          width={24}
+          height={24}
+        />
       ) : (
         <span>{CURRENCIES[currency].symbol}</span>
       )}
@@ -69,14 +75,6 @@ export const ItemPrice = ({ currency, price }: { currency: string, price: string
         {price}
       </Typography>
     </div>
-  )
-}
-
-const Spinner = () => {
-  return (
-    <svg viewBox="0 0 16 16" height="16" width="16" className="windows-loading-spinner">
-      <circle r="7px" cy="8px" cx="8px"></circle>
-    </svg>
   )
 }
 
@@ -97,8 +95,9 @@ export const ItemSelectToCart = reatomComponent<Pick<StoreItem, "id">>(({ ctx, i
       className={buyButtonVariants({ variant })}
       disabled={isLoading}
       onClick={() => handleItemToCart(ctx, id)}
+      withSpinner={true}
+      isLoading={isLoading}
     >
-      {isLoading && <Spinner />}
       <Typography className={buyButtonTypographyVariants({ variant })}>
         {isSelected ? "В корзине" : "Купить"}
       </Typography>
@@ -114,7 +113,13 @@ const StoreItem = ({
   return (
     <div className={storeItemVariant().base()}>
       <div className="z-[1] select-none absolute w-full h-full">
-        <img src={storeItemBgImage} draggable={false} width={600} height={600} alt="" />
+        <img
+          src={storeItemBgImage}
+          draggable={false}
+          width={600}
+          height={600}
+          alt=""
+        />
       </div>
       <a
         href={createLink("store", id)}

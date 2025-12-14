@@ -1,5 +1,5 @@
 import { withData } from "#/shared/schemas"
-import { PlayerLands } from "@repo/shared/types/entities/land"
+import type { PlayerLands } from "@repo/shared/types/entities/land"
 import Elysia, { t } from "elysia"
 import z from "zod"
 import { getLandsByNickname } from "./lands.model"
@@ -28,10 +28,7 @@ export const landsByPlayer = new Elysia()
       })
     )
   })
-  .get("/list/:nickname", async ({ query, params }) => {
-    const nickname = params.nickname
-    const exclude = query.exclude;
-
+  .get("/list/:nickname", async ({ query: { exclude }, params: { nickname } }) => {
     let lands = await getLandsByNickname(nickname)
 
     if (exclude) {
@@ -48,7 +45,7 @@ export const landsByPlayer = new Elysia()
     return { data }
   }, {
     query: z.object({
-      exclude: z.string().optional()
+      exclude: z.string().min(1).optional()
     }),
     response: {
       200: "lands-by-player"

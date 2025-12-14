@@ -1,9 +1,9 @@
-import { reatomComponent } from "@reatom/npm-react"
+import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Skeleton } from "@repo/ui/skeleton"
 import { Typography } from "@repo/ui/typography"
-import { newsAction, newsDataAtom } from "../models/news.model"
+import { newsAction } from "../models/news.model"
 import { createLink, Link } from "@/shared/components/config/link"
-import { AtomState, onConnect } from "@reatom/framework"
+import { AtomState } from "@reatom/framework"
 import { NotFound } from "@/shared/ui/not-found"
 import { isClientAtom } from "@/shared/models/page-context.model"
 import { tv } from "tailwind-variants"
@@ -34,7 +34,7 @@ const NewsSkeleton = () => {
 const newsItemVariant = tv({
   base: `
     flex flex-col flex-shrink-0 md:flex-[0_0_calc((100%/2)-0.5rem)] w-full lg:flex-1 
-    h-56 sm:h-72 border border-neutral-800 rounded-xl overflow-hidden
+    h-56 sm:h-72 border border-neutral-800 rounded-lg overflow-hidden
   `,
   slots: {
     img: `object-cover h-[148px] sm:h-[200px]`,
@@ -44,7 +44,7 @@ const newsItemVariant = tv({
 
 const NewsItem = ({
   id, description, title, imageUrl
-}: NonNullable<AtomState<typeof newsDataAtom>>[number]) => {
+}: NonNullable<AtomState<typeof newsAction.dataAtom>>[number]) => {
   return (
     <div className={newsItemVariant().base()}>
       <img
@@ -70,22 +70,20 @@ const NewsItem = ({
   )
 }
 
-onConnect(newsDataAtom, newsAction);
-
 const NewsList = reatomComponent(({ ctx }) => {
+  useUpdate(newsAction, []);
+
   if (!ctx.spy(isClientAtom)) {
     return <NewsSkeleton />
   }
-
-  const data = ctx.spy(newsDataAtom)
-
+  
   if (ctx.spy(newsAction.statusesAtom).isPending) {
     return <NewsSkeleton />
   }
+  
+  const data = ctx.spy(newsAction.dataAtom)
 
-  if (!data) {
-    return <NotFound title="Новостей нет" />
-  }
+  if (!data) return <NotFound title="Новостей нет" />
 
   return data.map(news => <NewsItem key={news.id} {...news} />)
 }, "NewsList")
@@ -96,7 +94,7 @@ export const News = () => {
       <Typography className="text-3xl font-bold">
         Новости
       </Typography>
-      <div className={scrollableVariant({ className: "flex rounded-xl scrollbar-h-2 overflow-x-auto gap-4 pb-2" })}>
+      <div className={scrollableVariant({ className: "flex rounded-lg scrollbar-h-2 overflow-x-auto gap-4 pb-2" })}>
         <NewsList />
       </div>
     </div>

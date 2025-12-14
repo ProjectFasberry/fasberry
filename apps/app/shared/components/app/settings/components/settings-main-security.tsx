@@ -7,13 +7,18 @@ import { Button } from "@repo/ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@repo/ui/dialog"
 import { Typography } from "@repo/ui/typography"
 import { SettingsSection } from "./ui"
+import { NotFound } from "@/shared/ui/not-found"
 
 const DeleteAccount = reatomComponent(({ ctx }) => {
   return (
     <>
       <AlertDialog />
-      <Button disabled={true} className="w-fit self-start bg-red-600" onClick={() => { }}>
-        <Typography className="font-semibold">
+      <Button
+        disabled={true}
+        className="w-fit self-start bg-red-600/80"
+        onClick={() => { }}
+      >
+        <Typography className="leading-5 font-semibold">
           Удалить аккаунт
         </Typography>
       </Button>
@@ -25,14 +30,17 @@ const accountSessionsAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() =>
     client<unknown[]>("auth/sessions").exec()
   )
-}).pipe(withDataAtom(null, (_, data) => isEmptyArray(data) ? null : data), withStatusesAtom(), withCache({ swr: false }))
+}, "accountSessionsAction").pipe(
+  withDataAtom(null, (_, data) => isEmptyArray(data) ? null : data),
+  withStatusesAtom(),
+  withCache({ swr: false })
+)
 
 const AccountSessionsList = reatomComponent(({ ctx }) => {
   useUpdate(accountSessionsAction, []);
 
   const data = ctx.spy(accountSessionsAction.dataAtom);
-
-  if (!data) return <Typography className="text-neutral-400">пусто</Typography>
+  if (!data) return <NotFound title="пусто" />
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -46,17 +54,15 @@ const AccountSessionsList = reatomComponent(({ ctx }) => {
 }, "AccountSessionsList")
 
 const AccountSessions = reatomComponent(({ ctx }) => {
-  return (
-    <AccountSessionsList />
-  )
+  return <AccountSessionsList />
 }, "AccountSessions")
 
 const ChangePassword = reatomComponent(({ ctx }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-neutral-50 w-fit">
-          <Typography className="text-neutral-950 font-semibold">
+        <Button background="white" className="w-fit">
+          <Typography className="leading-5 font-semibold">
             Изменить пароль
           </Typography>
         </Button>

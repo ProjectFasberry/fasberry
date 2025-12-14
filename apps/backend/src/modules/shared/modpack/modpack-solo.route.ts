@@ -1,7 +1,8 @@
 import Elysia, { t } from "elysia";
 import z from "zod";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
+import { modpackPayload, processModpack } from "./modpack.model";
 
 async function getModpack(id: number) {
   const query = await general
@@ -14,24 +15,16 @@ async function getModpack(id: number) {
       "shaders",
       "version",
       "name",
-      "imageUrl"
+      "imageUrl",
     ])
     .where("id", "=", id)
     .executeTakeFirst()
 
-  return query ?? null;
-}
+  if (!query) return null;
 
-const modpackPayload = t.Object({
-  id: t.Number(),
-  client: t.String(),
-  created_at: t.Date(),
-  imageUrl: t.String(),
-  mods: t.String(),
-  name: t.String(),
-  shaders: t.Union([t.String(), t.Null()]),
-  version: t.String(),
-})
+  const data = processModpack(query)
+  return data
+}
 
 export const modpackSingle = new Elysia()
   .model({

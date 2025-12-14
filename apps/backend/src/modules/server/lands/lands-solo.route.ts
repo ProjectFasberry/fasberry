@@ -1,54 +1,57 @@
 import Elysia, { t } from "elysia";
-import { getStaticUrl } from "#/helpers/volume";
-import { defineUser } from "#/lib/middlewares/define";
+import { defineOptionalUser } from "#/lib/middlewares/define";
 import { bisquite } from "#/shared/database/bisquite-db";
-import { VOLUME_ENDPOINT } from "#/shared/env";
-import { Land } from "@repo/shared/types/entities/land";
-import { withData } from "#/shared/schemas";
+import type { Land } from "@repo/shared/types/entities/land";
+import { landHelpers } from "#/utils/lands/lands-helpers";
 
-async function getLand({
-  id, initiator
-}: {
-  id: string, initiator: string | null
-}): Promise<Land | null> {
+const { transformBanner, transformGallery } = landHelpers
+
+async function getLand(
+  ulid: string,
+  { initiator }: { initiator: string | null }
+): Promise<Land | null> {
   let isOwner = false;
 
   const landRow = await bisquite
     .selectFrom('lands_lands')
     .select(['members', "name"])
-    .where('ulid', '=', id)
+    .where('ulid', '=', ulid)
     .executeTakeFirstOrThrow();
 
   const membersObject = JSON.parse(landRow.members ?? '{}');
   const memberUUIDs = Object.keys(membersObject);
 
-  async function getDetails() {
-    if (landRow.name === 'Kingdom') {
-      return {
-        banner: `${VOLUME_ENDPOINT}/banners/kingdom.png`,
-        gallery: [getStaticUrl("arts/1.png"), getStaticUrl("arts/2.png"), getStaticUrl("arts/3.png")]
-      }
-    }
-
-    return { banner: null, gallery: [] }
+  const [bannerResult, galleryResult] = await Promise.all([
+    bisquite
+      .selectFrom("lands_banners")
+      .select('banner_url as banner')
+      .where("ulid", "=", ulid)
+      .executeTakeFirst(),
+    bisquite
+      .selectFrom('lands_gallery')
+      .select('url')
+      .where('ulid', '=', ulid)
+      .execute()
+  ])
+  
+  const details = { 
+    banner: transformBanner(bannerResult?.banner), 
+    gallery: transformGallery(galleryResult)
   }
 
   async function getMembers() {
-    const query = bisquite
-      .selectFrom('CMI_users')
+    if (memberUUIDs.length === 0) return [];
+
+    const members = await bisquite
+      .selectFrom('cmi_users')
       .select([
         'player_uuid as uuid',
         'username as nickname'
       ])
       .where('player_uuid', 'in', memberUUIDs)
+      .execute()
 
-    let members: Awaited<ReturnType<typeof query["execute"]>> = [];
-
-    if (memberUUIDs.length > 0) {
-      members = await query.execute()
-    }
-
-    const isMember = members.some(member => member.nickname === initiator)
+    const isMember = members.some(m => m.nickname === initiator)
 
     if (initiator && isMember) {
       isOwner = true
@@ -80,6 +83,7 @@ async function getLand({
     const query = await bisquite
       .selectFrom("lands_lands")
       .leftJoin("lands_lands_claims", "lands_lands_claims.land", "lands_lands.ulid")
+      // OWNER_FIELDS
       // @ts-expect-error
       .select([
         "lands_lands.ulid",
@@ -94,7 +98,7 @@ async function getLand({
         "lands_lands.level",
         ...OWNER_FIELDS
       ])
-      .where("lands_lands.ulid", "=", id)
+      .where("lands_lands.ulid", "=", ulid)
       .groupBy([
         "lands_lands.ulid",
         "lands_lands.name",
@@ -109,18 +113,16 @@ async function getLand({
       ])
       .executeTakeFirst()
 
-    const data = query ?? null;
-
-    return data
+    return query ?? null;
   }
 
-  const [main, members, details] = await Promise.all([
-    getMain(), getMembers(), getDetails()
+  const [main, members] = await Promise.all([
+    getMain(), getMembers()
   ])
 
-  if (!main) return null;
+  if (!main || !members) return null;
 
-  return {
+  const result = {
     ...main,
     members,
     details,
@@ -132,6 +134,8 @@ async function getLand({
     balance: isOwner ? main.balance : 0,
     limits: isOwner ? main.limits ? JSON.parse(main.limits) : null : null,
   }
+
+  return result
 }
 
 const landPayload = t.Object({
@@ -187,22 +191,22 @@ const landPayload = t.Object({
 })
 
 export const landsSolo = new Elysia()
-  .use(defineUser())
-  .model({
-    "land-by-id": withData(
-      t.Nullable(landPayload)
-    )
-  })
+  .use(defineOptionalUser())
+  // .model({
+  //   "land-by-id": withData(
+  //     t.Nullable(landPayload)
+  //   )
+  // })
   .get("/:id", async ({ nickname: initiator, params, set }) => {
-    const id = params.id
-    const data = await getLand({ id, initiator })
+    const ulid = params.id
+    const data = await getLand(ulid, { initiator })
 
     set.headers["Cache-Control"] = "public, max-age=15, s-maxage=15"
     set.headers["vary"] = "Origin";
 
     return { data }
   }, {
-    response: {
-      200: "land-by-id"
-    }
+    // response: {
+    //   200: "land-by-id"
+    // }
   })

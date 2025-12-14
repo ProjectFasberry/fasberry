@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { withData } from "#/shared/schemas";
 
 async function getRules() {
@@ -41,8 +41,8 @@ export const rulesList = new Elysia()
   .get("/list", async ({ set }) => {
     const data = await getRules()
 
-    // set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
-    // set.headers["vary"] = "Origin";
+    set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+    set.headers["vary"] = "Origin";
 
     return { data }
   }, {

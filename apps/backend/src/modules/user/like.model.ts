@@ -1,4 +1,4 @@
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 
 export async function likePlayer({ recipient, initiator }: { initiator: string, recipient: string }) {
   const query = await general.transaction().execute(async (trx) => {

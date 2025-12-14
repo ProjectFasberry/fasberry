@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import { ipPlugin } from "#/lib/plugins/ip";
 import { withData, withMeta } from "#/shared/schemas";
 import { createNewsViews, getNewsList, newsSchema } from "./news.model";
-import { NewsPayload } from "@repo/shared/types/entities/news";
+import type { NewsPayload } from "@repo/shared/types/entities/news";
 
 const newsPayload = t.Object({
   id: t.Number(),
@@ -28,8 +28,8 @@ export const newsList = new Elysia()
   .get("/list", async ({ query, set }) => {
     const data = await getNewsList(query)
 
-    set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
-    set.headers["vary"] = "Origin"
+    // set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
+    // set.headers["vary"] = "Origin"
 
     return { data }
   }, {

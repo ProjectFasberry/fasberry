@@ -6,15 +6,16 @@ import { PageContextServer } from "vike/types";
 import { logError } from "@/shared/lib/log";
 import { mergeSnapshot } from "@/shared/lib/snapshot";
 import { CartFinalPrice } from "@repo/shared/types/entities/store";
-import type { CartItem, CartPayload } from "@repo/shared/types/entities/store"
+import type { CartItem, CartPayload, OrderSingleDefault } from "@repo/shared/types/entities/store"
 import { client, withAbort, withJsonBody, withLogging, withQueryParams } from "@/shared/lib/client-wrapper";
 import { isEmptyArray } from "@/shared/lib/array";
 import { isAuthAtom } from "@/shared/models/page-context.model";
 import { getRecipient } from "./store-recipient.model";
 import { simulate } from "./store-item-status.model";
 import { cartDataAtom } from "./store-cart.model.atoms";
-import { DEFAULT_SOFT_TIMEOUT } from "@/shared/consts/delays";
 import { navigate } from "vike/client/router";
+import { PaymentStatus } from "@repo/shared/types/db/payments-database-types";
+import { withSearchParamsPersist } from "@reatom/url";
 
 export async function getCartData(init?: RequestInit) {
   return client<CartPayload>("store/cart/list", init)
@@ -48,20 +49,59 @@ export const cartIsValidAtom = atom((ctx) => {
   return productsLengthValidate && productsRecipientValidate
 }, "cartIsValidAtom")
 
-type OrdersParams = {
-  type?: "all" | "succeeded" | "pending"
+export type Orders = | {
+  type: "game",
+  created_at: Date;
+  initiator: string;
+  unique_id: string;
+  finished_at: Date | null;
+  status: "succeeded";
+} | {
+  type: "default",
+  unique_id: string;
+  asset: string;
+  created_at: Date;
+  initiator: string;
+  invoice_id: number;
+  order_id: string;
+  pay_url: string;
+  payload: string;
+  price: string;
+  status: PaymentStatus;
+} | OrderSingleDefault & {
+  type: "default"
 }
 
-export async function getOrders(params: OrdersParams, init: RequestInit) {
-  return client<Payment[]>("store/order/list", { ...init, throwHttpErrors: false })
+export async function getOrders(params: Record<string, string>, init: RequestInit) {
+  return client<Orders[]>("store/order/list", { ...init, throwHttpErrors: false })
     .pipe(withQueryParams(params))
     .exec()
 }
 
-export const storeOrdersListAction = reatomAsync(async (ctx) => {
-  await ctx.schedule(() => sleep(DEFAULT_SOFT_TIMEOUT));
+export const storeOrdersStatusAtom = atom<"all" | "succeeded" | "pending">("all", "storeOrdersStatus").pipe(
+  withSearchParamsPersist("status", (d = "all") => d)
+)
 
-  return await ctx.schedule(() => getOrders({ type: "all" }, { signal: ctx.controller.signal }))
+export const storeOrdersTypeAtom = atom<"default" | "game" | "all">("all", "storeOrdersType").pipe(
+  withSearchParamsPersist("type", (d = "all") => d)
+)
+
+storeOrdersStatusAtom.onChange((ctx) => {
+  storeOrdersListAction.cacheAtom.reset(ctx)
+  storeOrdersListAction(ctx)
+})
+storeOrdersTypeAtom.onChange((ctx) => {
+  storeOrdersListAction.cacheAtom.reset(ctx)
+  storeOrdersListAction(ctx)
+})
+
+export const storeOrdersListAction = reatomAsync(async (ctx) => {
+  const params = {
+    type: ctx.get(storeOrdersTypeAtom),
+    status: ctx.get(storeOrdersStatusAtom)
+  }
+
+  return await ctx.schedule(() => getOrders(params, { signal: ctx.controller.signal }))
 }, {
   name: "storeOrdersListAction",
   onReject: (_, e) => {
@@ -78,7 +118,7 @@ export const storeCartFilterAtom = atom<"pending" | "succeeded" | "all">("all", 
 export const storeCartFilteresOrdersAtom = atom((ctx) => {
   const filter = ctx.spy(storeCartFilterAtom);
 
-  let data: Payment[] = [];
+  let data: Orders[] = [];
 
   if (filter === 'succeeded') {
     const orders = ctx.spy(storeOrdersListAction.dataAtom)
@@ -104,10 +144,14 @@ export async function defineCartData(pageContext: PageContextServer) {
   const ctx = createCtx();
 
   if (headers) {
-    const data = await getCartData({ headers })
-
-    cartPriceAtom(ctx, data.price)
-    cartDataAtom(ctx, data.products)
+    try {
+      const data = await getCartData({ headers })
+      
+      cartPriceAtom(ctx, data.price)
+      cartDataAtom(ctx, data.products)
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   const newSnapshot = mergeSnapshot(ctx, pageContext)

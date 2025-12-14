@@ -1,97 +1,83 @@
-export const PERMISSIONS = {
-  PLAYERS: {
-    READ: "players.read",
-    CREATE: "players.create",
-    UPDATE: "players.update",
-    DELETE: "players.delete",
-    ROLE: {
-      CREATE: "players.role.create",
-      READ: "players.role.read",
-      UPDATE: "players.role.update",
-      DELETE: "players.role.delete",
-    },
-    PERMISSION: {
-      CREATE: "players.permission.create",
-      READ: "players.permission.read",
-      UPDATE: "players.permission.update",
-      DELETE: "players.permission.delete",
-    },
-    RESTRICT: {
-      CREATE: "players.restrict.create",
-      READ: "players.restrict.read",
-      DELETE: "players.restrict.delete",
-    },
-  },
-  EVENTS: {
-    CREATE: "events.create",
-    READ: "events.read",
-    UPDATE: "events.update",
-    DELETE: "events.delete",
-  },
-  STORE: {
-    ITEM: {
-      CREATE: "store.item.create",
-      READ: "store.item.read",
-      UPDATE: "store.item.update",
-      DELETE: "store.item.delete",
-    },
-    METHODS: {
-      CREATE: "store.methods.create",
-      READ: "store.methods.read",
-      UPDATE: "store.methods.update",
-      DELETE: "store.methods.delete",
-    },
-  },
-  CONFIG: {
-    PANEL: {
-      READ: "config.panel.read",
-    },
-  },
-  ROLES: {
-    CREATE: "roles.create",
-    READ: "roles.read",
-    UPDATE: "roles.update",
-    DELETE: "roles.delete",
-  },
-  PERMISSIONS: {
-    READ: "permissions.read"
-  },
-  ANALYTICS: {
-    READ: "analytics.read",
-  },
-  OPTIONS: {
-    UPDATE: "options.update",
-    READ: "options.read"
-  },
-  MODPACKS: {
-    CREATE: "modpacks.create",
-    DELETE: "modpacks.delete"
-  },
-  NEWS: {
-    CREATE: "news.create",
-    DELETE: "news.delete",
-    UPDATE: "news.update"
-  },
-  BANNERS: {
-    CREATE: "banners.create",
-    DELETE: "banners.delete",
-    UPDATE: "banners.update"
-  },
-  HISTORY: {
-    READ: "history.read"
-  },
-  PRIVATE: {
-    CHAT: {
-      READ: "private.chat.read",
-      CREATE: "private.chat.create",
-      DELETE: "private.chat.delete",
-      UPDATE: "private.chat.update"
+import { appLogger } from "#/utils/config/logger";
+import { general } from "../database/general-db";
+
+export let PERMISSIONS: Record<string, any> = {}
+
+export const Permissions = {
+  get(path: string): string {
+    const result = path
+      .split(".")
+      .reduce((acc, part) => acc?.[part.toUpperCase()], PERMISSIONS);
+
+    if (!result || typeof result !== "string") {
+      throw new Error(`Permission "${path}" not found`);
     }
-  },
-  DICTIONARIES: {
-    READ: "dictionaries.read",
-    CREATE: "dictionaries.create",
-    DELETE: "dictionaries.delete",
-    UPDATE: "dictionaries.update"
+
+    return result;
   }
-} as const;
+};
+
+function buildPermissions(data: { name: string, id: number }[]): Record<string, any> {
+  const result: Record<string, any> = {};
+
+  data.forEach(({ name }) => {
+    const parts = name.split(".");
+    let current = result;
+
+    parts.forEach((part, idx) => {
+      const key = part.toUpperCase();
+
+      if (idx === parts.length - 1) {
+        current[key] = name;
+      } else {
+        if (!current[key]) current[key] = {};
+        current = current[key];
+      }
+    });
+  });
+
+  return result;
+}
+
+type PermissionStats = {
+  total: number;  
+  levels: Record<number, number>;
+}
+
+function analyzePermissions(obj: Record<string, any>): PermissionStats {
+  const stats: PermissionStats = {
+    total: 0, levels: {}
+  };
+
+  function recurse(current: Record<string, any>, level: number) {
+    stats.levels[level] = (stats.levels[level] || 0) + Object.keys(current).length;
+
+    for (const key in current) {
+      if (typeof current[key] === "string") {
+        stats.total += 1;
+      } else if (typeof current[key] === "object") {
+        recurse(current[key], level + 1);
+      }
+    }
+  }
+
+  recurse(obj, 1);
+  
+  return stats;
+}
+
+export async function initPermissions() {
+  const query = await general
+    .selectFrom("permissions")
+    .selectAll()
+    .orderBy("name", "asc")
+    .execute()
+
+  PERMISSIONS = buildPermissions(query)
+
+  const stats = analyzePermissions(PERMISSIONS);
+
+  appLogger.success(
+    `Permissions loaded: total=${stats.total}, levels=${JSON.stringify(stats.levels)}`
+  );
+}

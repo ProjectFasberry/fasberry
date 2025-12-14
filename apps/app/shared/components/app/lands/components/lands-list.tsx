@@ -1,6 +1,6 @@
 import { Skeleton } from "@repo/ui/skeleton"
 import { landsAction } from "../models/lands.model"
-import { reatomComponent } from "@reatom/npm-react"
+import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { createLink, Link } from "@/shared/components/config/link"
 import { tv } from 'tailwind-variants'
 import { Typography } from '@repo/ui/typography'
@@ -11,8 +11,9 @@ import { Avatar } from "../../avatar/components/avatar"
 import { IconCircleFilled } from "@tabler/icons-react"
 import { MasonryGrid } from "@repo/ui/masonry-grid"
 import { Lands } from "@repo/shared/types/entities/land"
-import { onConnect } from "@reatom/framework"
 import { NotFound } from "@/shared/ui/not-found"
+import { isClientAtom } from "@/shared/models/page-context.model"
+import { scrollableVariant } from "@/shared/consts/style-variants"
 
 type LandCard = Lands
 
@@ -25,7 +26,7 @@ const landCardVariants = tv({
   }
 })
 
-const LandCard = ({ level, members, name, title, ulid }: LandCard) => {
+const LandCard = ({ level, members, name, title, ulid, details: { banner } }: LandCard) => {
   return (
     <Link href={createLink("land", ulid)} className={landCardVariants().base()}>
       <div className={landCardVariants().child()}>
@@ -55,7 +56,7 @@ const LandCard = ({ level, members, name, title, ulid }: LandCard) => {
           </Typography>
         </div>
       </div>
-      <DefaultBanner banner={null} variant="small" />
+      <DefaultBanner banner={banner} variant="small" />
     </Link >
   )
 }
@@ -91,14 +92,52 @@ const LandsSkeleton = () => {
   )
 }
 
-onConnect(landsAction.dataAtom, landsAction)
+const landsListVariant = scrollableVariant({ className: "flex rounded-lg scrollbar-h-2 overflow-x-auto gap-4 pb-2" })
+
+const LandsListShortedSkeleton = () => {
+  return (
+    <div className={landsListVariant}>
+      <Skeleton className="h-44 w-full" />
+      <Skeleton className="h-44 w-full" />
+      <Skeleton className="h-44 w-full" />
+    </div>
+  )
+}
+
+export const LandsListShorted = reatomComponent(({ ctx }) => {
+  useUpdate((ctx) => landsAction(ctx, { limit: 3 }), []);
+
+  if (!ctx.spy(isClientAtom) || ctx.spy(landsAction.statusesAtom).isPending) {
+    return <LandsListShortedSkeleton />
+  }
+
+  const data = ctx.spy(landsAction.dataAtom)
+  if (!data) return <NotFound title="Пока ничего нет" />
+
+  return (
+    <div className="flex flex-col w-full gap-2">
+      <div className={landsListVariant}>
+        {data.map((land) => <LandCard key={land.ulid} {...land} />)}
+      </div>
+      {data.length > 3 && (
+        <Link href="/lands?from=index" className="flex self-end w-fit">
+          <Typography className="font-semibold text-neutral-400">
+            просмотреть список
+          </Typography>
+        </Link>
+      )}
+    </div>
+  )
+}, "LandsListShorted")
 
 export const LandsList = reatomComponent(({ ctx }) => {
-  const data = ctx.spy(landsAction.dataAtom)
+  useUpdate(landsAction, []);
 
-  if (ctx.spy(landsAction.statusesAtom).isPending) {
+  if (!ctx.spy(isClientAtom) || ctx.spy(landsAction.statusesAtom).isPending) {
     return <LandsSkeleton />
   }
+
+  const data = ctx.spy(landsAction.dataAtom)
 
   if (!data) {
     return <NotFound title="Пока ничего нет" />

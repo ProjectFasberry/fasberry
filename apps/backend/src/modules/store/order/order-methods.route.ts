@@ -1,8 +1,8 @@
 import Elysia, { t } from "elysia"
 import { getStaticUrl } from "#/helpers/volume"
-import { general } from "#/shared/database/main-db"
+import { general } from "#/shared/database/general-db"
 import { withData } from "#/shared/schemas"
-import { MethodsPayload } from "@repo/shared/types/entities/other"
+import type { MethodsPayload } from "@repo/shared/types/entities/other"
 import { HttpStatusEnum } from "elysia-http-status-code/status"
 
 const methodPayload = t.Object({

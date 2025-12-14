@@ -1,34 +1,23 @@
-import Elysia, { t } from "elysia";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
+import Elysia from "elysia";
 import { getOrder } from "./order.model";
-import { withData } from "#/shared/schemas";
-
-const orderPayload = t.Object({
-  unique_id: t.String(),
-  asset: t.UnionEnum(["USDT", "TON", "BTC", "ETH", "LTC", "BNB", "TRX", "USDC"]),
-  price: t.String(),
-  created_at: t.Union([t.Date(), t.String()]),
-  status: t.UnionEnum(["canceled", "pending", "succeeded", "waitingForCapture"]),
-  payload: t.String(),
-  order_id: t.String(),
-  invoice_id: t.Number(),
-  pay_url: t.String(),
-  initiator: t.String(),
-  comment: t.Optional(t.String())
-})
+import z from "zod";
+import type { OrderSinglePayload } from "@repo/shared/types/entities/store";
 
 export const orderRoute = new Elysia()
-  .model({
-    "order": withData(
-      t.Nullable(orderPayload)
-    )
-  })
-  .get("/:id", async ({ status, params }) => {
+  .get("/:id", async ({ params, query: { type } }) => {
     const id = params.id;
-    const data = await getOrder(id)
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
-  }, {
-    response: {
-      200: "order"
+    const query = await getOrder(id, type)
+
+    if (!query) return null;
+
+    const data: OrderSinglePayload = {
+      ...query,
+      type
     }
+    
+    return { data }
+  }, {
+    query: z.object({
+      type: z.enum(["default", "game"]).optional().default("default")
+    })
   })

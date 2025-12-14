@@ -1,15 +1,15 @@
 import { useConfig } from 'vike-react/useConfig';
 import { PageContextServer } from 'vike/types';
-import { LANDING_ENDPOINT } from '@/shared/env';
+import { getUrl } from '@/shared/lib/helpers';
 
-export const data = async (ctx: PageContextServer) => {
+export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()
 
   config({
     Head: (
       <>
-        <link rel="canonical" href={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
-        <meta property="og:url" content={`${LANDING_ENDPOINT}${ctx.urlPathname}`} />
+        <link rel="canonical" href={getUrl(pageContext)} />
+        <meta property="og:url" content={getUrl(pageContext)} />
       </>
     )
   })

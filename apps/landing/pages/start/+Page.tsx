@@ -124,9 +124,9 @@ export default function Page() {
   return (
     <MainWrapperPage>
       <div className="flex flex-col items-center w-full gap-12 h-full">
-        <Typography color="white" className="text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl">
+        <h1 className="text-white text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl">
           Как начать играть
-        </Typography>
+        </h1>
         <div className="flex flex-col gap-16 w-full h-full">
           <div className={stepVariant()}>
             <div className={stepContentVariant()}>

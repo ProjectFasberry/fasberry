@@ -1,8 +1,8 @@
 import { useConfig } from 'vike-react/useConfig';
 import { PageContextServer } from 'vike/types';
-import { LANDING_ENDPOINT } from '@/shared/env';
 import { wrapTitle } from '@/shared/lib/wrap-title';
 import { getStaticObject } from '@/shared/lib/volume';
+import { getUrl } from '@/shared/lib/helpers';
 
 const bgImage = getStaticObject("community", "dragon_dead.webp")
 
@@ -12,25 +12,24 @@ const description = `Помогите развитию проекта Fasberry, 
 export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()
 
-  const url = `${LANDING_ENDPOINT}${pageContext.urlPathname}`
+  const title = wrapTitle(`Поддержка`);
 
   config({
-    title: wrapTitle(`Поддержка`),
+    title,
     description,
     Head: (
       <>
-        <link rel="canonical" href={url} />
-        <meta property="og:url" content={url} />
-        <meta property="og:title" content="Поддержка Fasberry" />
+        <link rel="canonical" href={getUrl(pageContext)} />
+        <meta property="og:url" content={getUrl(pageContext)} />
+        <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:locale" content="ru_RU" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Официальный сайт майнкрафт сервера Fasberry." />
+        <meta property="og:site_name" content={title} />
         <meta property="og:image" content={bgImage} />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta name="twitter:title" content="Поддержка Fasberry" />
+        <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={bgImage} />
         <meta property="twitter:image:type" content="image/jpeg" />

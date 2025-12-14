@@ -18,7 +18,7 @@ const CartItemRemoveFromCart = reatomComponent<{ id: number }>(({ ctx, id }) => 
   return (
     <Button
       title="Удалить"
-      className="flex cursor-pointer items-center justify-center h-8 p-1 rounded-lg bg-neutral-700"
+      className="flex cursor-pointer items-center justify-center h-8 p-1 rounded-lg bg-neutral-800"
       onClick={() => removeItemFromCartAction(ctx, id)}
       disabled={ctx.spy(removeItemFromCartAction.statusesAtom).isPending}
     >
@@ -32,7 +32,7 @@ const CartItemUpdateSelectStatus = reatomComponent<{ id: number }>(({ ctx, id })
 
   return (
     <Button
-      className="absolute top-3 left-3 flex items-center justify-center !p-0 w-6 h-6 bg-blue-600/80"
+      className="absolute top-3 left-3 flex items-center justify-center !p-0 w-6 h-6 bg-green-600/80"
       onClick={() => updateItemSelectedStatus(ctx, id)}
       disabled={ctx.spy(updateItemSelectedStatus.statusesAtom).isPending}
     >
@@ -49,41 +49,51 @@ export const CartItem = reatomComponent<CartPayload["products"][number]>(({
   return (
     <div
       id={id.toString()}
-      className="flex items-center w-full relative gap-2 max-h-[126px] overflow-hidden rounded-lg p-4 sm:p-6 bg-neutral-800"
+      className="flex items-center w-full relative gap-2 sm:gap-4 max-h-32 overflow-hidden rounded-lg p-2 sm:p-6 
+        border border-neutral-800"
     >
       <CartItemUpdateSelectStatus id={id} />
-      <div className="flex items-center select-none min-w-[36px] min-h-[36px] h-[48px] w-[48px] justify-center overflow-hidden rounded-lg">
-        <img src={imageUrl} draggable={false} width={48} height={48} alt="" className="min-h-[48px] min-w-[48px]" />
-      </div>
-      <div className="flex flex-col justify-center w-full gap-2">
-        <a href={createLink("store", id.toString())} target="_blank" className="flex flex-col">
-          <Typography color="white" className="text-md sm:text-base font-semibold truncate">
-            {title}
-          </Typography>
-          <Typography color="gray" className="line-clamp-2 leading-tight text-sm sm:text-md w-full">
-            {description}
-          </Typography>
-        </a>
-        <div className="flex items-center gap-2">
-          <div
-            title="Получатель"
-            className="flex cursor-pointer items-center gap-1 h-8 justify-center bg-neutral-700 rounded-lg px-2 py-0.5"
-            onClick={() => changeRecipientOpenDialogAction(ctx, item)}
-          >
-            <IconGift size={20} className="text-neutral-400" />
-            <Typography className="text-nowrap text-truncate text-base">
-              {`для ${recipient}`}
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+        <div className="flex items-center select-none min-h-12 min-w-12 h-12 w-12 justify-center overflow-hidden rounded-lg">
+          <img
+            src={imageUrl}
+            draggable={false}
+            width={56}
+            height={56}
+            alt=""
+          />
+        </div>
+        <div className="flex flex-col justify-center w-full gap-2">
+          <a href={createLink("store", id.toString())} target="_blank" className="flex flex-col">
+            <Typography className="text-md sm:text-base font-semibold truncate">
+              {title}
             </Typography>
+            <Typography className="text-neutral-400 line-clamp-1 leading-tight text-sm w-full">
+              {description}
+            </Typography>
+          </a>
+          <div className="flex items-center gap-1">
+            <Button
+              className="p-0 h-8 w-8 bg-neutral-800 rounded-lg"
+              onClick={() => changeRecipientOpenDialogAction(ctx, item)}
+            >
+              <IconGift size={20} />
+            </Button>
+            <CartItemRemoveFromCart id={id} />
           </div>
-          <CartItemRemoveFromCart id={id} />
         </div>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-1">
           <Typography className="font-semibold text-nowrap">
             {price}
           </Typography>
-          <img src={CURRENCIES[currency].img} alt={CURRENCIES[currency].symbol} className="w-5 h-5 inline-block" />
+          <img
+            src={CURRENCIES[currency].img}
+            draggable={false}
+            alt={CURRENCIES[currency].symbol}
+            className="w-5 h-5 inline-block"
+          />
         </div>
       </div>
     </div>

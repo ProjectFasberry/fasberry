@@ -10,23 +10,26 @@ export const AuthWidgetActions = reatomComponent(({ ctx }) => {
     <div className="flex items-center justify-center gap-2">
       <Button
         className="bg-neutral-50 px-2"
+        background="white"
         onClick={() => {
           activeWidgetAtom.reset(ctx)
           navigate("/auth")
         }}
       >
-        <IconArrowRight size={20} className="sm:hidden inline text-neutral-950" />
-        <Typography className="hidden sm:inline text-neutral-950 font-semibold text-base sm:text-lg">
+        <IconArrowRight size={20} className="sm:hidden inline" />
+        <Typography className="hidden sm:inline font-semibold text-base sm:text-lg">
           Авторизоваться
         </Typography>
       </Button>
       <Button
-        className="bg-neutral-800 px-2"
+        background="default"
+        className="px-2"
         onClick={() => {
           activeWidgetAtom.reset(ctx)
           isShowAuthWidgetAtom(ctx, false)
-        }}>
-        <IconX size={20} className="sm:hidden inline"/>
+        }}
+      >
+        <IconX size={20} className="sm:hidden inline" />
         <Typography className="hidden text-nowrap sm:inline font-semibold text-base sm:text-lg">
           Не показывать
         </Typography>

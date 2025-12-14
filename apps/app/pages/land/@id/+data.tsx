@@ -6,14 +6,14 @@ import { PageContextServer } from "vike/types";
 import { Land } from "@repo/shared/types/entities/land";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { logRouting } from "@/shared/lib/log";
-import { client, withLogging } from "@/shared/lib/client-wrapper";
+import { client } from "@/shared/lib/client-wrapper";
 
 const previewImage = getStaticImage("arts/adventure-in-blossom.jpg")
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
 async function getLand(ulid: string, init: RequestInit) {
-  return client<Land>(`server/land/${ulid}`, init).pipe(withLogging()).exec()
+  return client<Land>(`server/lands/${ulid}`, init).exec()
 }
 
 function metadata(
@@ -41,26 +41,28 @@ function metadata(
   }
 }
 
+async function loadLand(ulid: string, headers?: Record<string, string>): Promise<Land | null> {
+  try {
+    const land = await getLand(ulid, { headers })
+    return land
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function data(pageContext: PageContextServer) {
   logRouting(pageContext.urlPathname, "data");
 
   const config = useConfig()
   const headers = pageContext.headers ?? undefined
+  const ulid = pageContext.routeParams.id;
 
-  let land: Land | null = null;
-
-  try {
-    land = await getLand(pageContext.routeParams.id, { headers })
-  } catch {}
-
-  if (!land) {
-    throw render("/not-exist?type=land")
-  }
+  const land = await loadLand(ulid, headers)
+  if (!land) throw render("/not-exist?type=land")
 
   config(metadata(land, pageContext))
 
   return {
-    id: pageContext.routeParams.id,
     data: land
   }
 }

@@ -5,10 +5,18 @@ import { reputation } from "#/shared/database/reputation-db"
 import { metaSchema } from "#/shared/schemas"
 import { getDirection } from "#/utils/config/paginate"
 import { wrapMeta } from "#/utils/config/transforms"
+import type { DB as bisquiteDB } from "@repo/shared/types/db/bisquite-database-types"
+import type { Kysely } from "kysely"
 import { executeWithCursorPagination } from "kysely-paginate"
 import z from "zod"
+import type { DB as reputationDB } from "@repo/shared/types/db/reputation-database-types"
 
-export const ratingSchema = metaSchema.pick({ asc: true, limit: true, endCursor: true })
+export const ratingSchema = z.intersection(
+  metaSchema.pick({ asc: true, limit: true, endCursor: true }),
+  z.object({
+    server: z.string().min(1).optional()
+  })
+)
 
 async function getBelkoinRating({ asc, limit, endCursor }: z.infer<typeof ratingSchema>) {
   const direction = getDirection(asc)
@@ -31,7 +39,7 @@ async function getBelkoinRating({ asc, limit, endCursor }: z.infer<typeof rating
   })
 
   return {
-    data: belkoinRes.rows,
+    data: belkoinRes.rows.map((d) => ({ nickname: d.nickname, balance: d.points })),
     meta: wrapMeta(belkoinRes)
   }
 }
@@ -66,14 +74,22 @@ async function getParkourRating({ asc, limit, endCursor }: z.infer<typeof rating
   }
 }
 
-async function getLandsRating({ asc, limit, endCursor }: z.infer<typeof ratingSchema>) {
+async function getLandsRating({ asc, limit, endCursor, server }: z.infer<typeof ratingSchema>) {
+  const dbs: Record<string, Kysely<bisquiteDB> | null> = {
+    "bisquite": bisquite,
+    "muffin": null
+  }
+
+  const { dbInstance } = getServerDBInstance<bisquiteDB>({ server, dbs })
+
   const direction = getDirection(asc)
 
-  const landsQuery = bisquite
+  const landsQuery = dbInstance
     .selectFrom("lands_lands_claims")
     .innerJoin("lands_lands", "lands_lands_claims.land", "lands_lands.ulid")
     .select([
       "lands_lands_claims.land",
+      "lands_lands.ulid",
       "lands_lands_claims.chunks_amount",
       "lands_lands_claims.blocks",
       "lands_lands.name",
@@ -81,7 +97,7 @@ async function getLandsRating({ asc, limit, endCursor }: z.infer<typeof ratingSc
       "lands_lands.type"
     ])
 
-  let landsRes = await executeWithCursorPagination(landsQuery, {
+  const landsRes = await executeWithCursorPagination(landsQuery, {
     perPage: limit,
     after: endCursor,
     fields: [
@@ -105,11 +121,18 @@ async function getLandsRating({ asc, limit, endCursor }: z.infer<typeof ratingSc
   }
 }
 
-async function getCharismRating({ asc, limit, endCursor }: z.infer<typeof ratingSchema>) {
+async function getCharismRating({ asc, limit, endCursor, server }: z.infer<typeof ratingSchema>) {
+  const dbs: Record<string, Kysely<bisquiteDB> | null> = {
+    "bisquite": bisquite,
+    "muffin": null
+  }
+
+  const { dbInstance } = getServerDBInstance<bisquiteDB>({ server, dbs })
+
   const direction = getDirection(asc)
 
-  const charismQuery = bisquite
-    .selectFrom("CMI_users")
+  const charismQuery = dbInstance
+    .selectFrom("cmi_users")
     .select([
       "Balance as balance",
       "username as nickname"
@@ -130,10 +153,17 @@ async function getCharismRating({ asc, limit, endCursor }: z.infer<typeof rating
   }
 }
 
-async function getReputationRating({ asc, limit, endCursor }: z.infer<typeof ratingSchema>) {
+async function getReputationRating({ asc, limit, endCursor, server }: z.infer<typeof ratingSchema>) {
+  const dbs: Record<string, Kysely<reputationDB> | null> = {
+    "bisquite": reputation,
+    "muffin": null
+  }
+
+  const { dbInstance } = getServerDBInstance<reputationDB>({ server, dbs })
+
   const direction = getDirection(asc)
 
-  const reputationQuery = reputation
+  const reputationQuery = dbInstance
     .selectFrom("reputation")
     .select([
       "reputation",
@@ -151,7 +181,7 @@ async function getReputationRating({ asc, limit, endCursor }: z.infer<typeof rat
 
   const result = await Promise.all(reputationRes.rows.map(async (row) => {
     const { nickname, uuid } = await bisquite
-      .selectFrom("CMI_users")
+      .selectFrom("cmi_users")
       .select([
         "username as nickname",
         "player_uuid as uuid"
@@ -172,11 +202,35 @@ async function getReputationRating({ asc, limit, endCursor }: z.infer<typeof rat
   }
 }
 
-async function getPlaytimeRating({ asc, limit, endCursor }: z.infer<typeof ratingSchema>) {
+function getServerDBInstance<T>({
+  server, dbs
+}: {
+  server?: string, dbs: Record<string, Kysely<T> | null>
+}) {
+  if (!server) {
+    throw new Error("Server is not defined")
+  };
+
+  const dbInstance = dbs[server]
+  if (!dbInstance) {
+    throw new Error("Target db instance is not defined")
+  }
+
+  return { dbInstance }
+}
+
+async function getPlaytimeRating({ asc, limit, endCursor, server }: z.infer<typeof ratingSchema>) {
+  const dbs: Record<string, Kysely<bisquiteDB> | null> = {
+    "bisquite": bisquite,
+    "muffin": null
+  }
+
+  const { dbInstance } = getServerDBInstance<bisquiteDB>({ server, dbs })
+
   const direction = getDirection(asc)
 
-  const playtimeQuery = bisquite
-    .selectFrom('CMI_users')
+  const playtimeQuery = dbInstance
+    .selectFrom('cmi_users')
     .select([
       "TotalPlayTime as total",
       "username as nickname"

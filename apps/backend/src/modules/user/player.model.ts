@@ -1,7 +1,7 @@
 import { luckperms } from "#/shared/database/luckperms-db";
-import { general } from "#/shared/database/main-db";
-import { Donate } from "@repo/shared/types/entities/donate";
-import { Player } from "@repo/shared/types/entities/user";
+import { general } from "#/shared/database/general-db";
+import type { Donate } from "@repo/shared/types/entities/donate";
+import type { Player } from "@repo/shared/types/entities/user";
 import dayjs from "dayjs";
 import { sql } from "kysely";
 

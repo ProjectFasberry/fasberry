@@ -8,6 +8,24 @@ import { initCookieOpts } from '@/shared/lib/sync';
 import { redirect } from 'vike/abort';
 import { appDictionariesAtom, appOptionsAtom, appOptionsInit, getAppDictionaries, getAppOptions } from '@/shared/models/app.model';
 import { AppOptionsPayload } from '@repo/shared/types/entities/other';
+import { setupUrlAtomSettings } from '@reatom/url';
+
+function getTopCountry(acceptLanguage?: string): string | null {
+  if (!acceptLanguage) return null;
+
+  return acceptLanguage
+    .split(',')
+    .map(s => s.split(';')[0].trim())
+    .sort((a, b) => {
+      const q = (s: string) => {
+        const match = acceptLanguage.match(new RegExp(`${s};q=([0-9.]+)`))
+        return match ? parseFloat(match[1]) : 1
+      };
+      return q(b) - q(a)
+    })
+    .map(l => l.split('-')[1])
+    .find(Boolean) || null
+}
 
 export const onCreatePageContext = async (pageContext: PageContextServer) => {
   logRouting(pageContext.urlPathname, "onCreatePageContext");
@@ -28,8 +46,10 @@ export const onCreatePageContext = async (pageContext: PageContextServer) => {
 
     const { dictionaries, options } = app
 
+    const country = getTopCountry(headers["accept-language"])
+
     const dictionaryMap = new Map(Object.entries(dictionaries));
-    const optionsExtend = { ...options, isAuth: Boolean(me), locale }
+    const optionsExtend = { ...options, isAuth: Boolean(me), locale, country }
 
     appDictionariesAtom(ctx, dictionaryMap)
     appOptionsAtom(ctx, optionsExtend);
@@ -48,6 +68,9 @@ export const onCreatePageContext = async (pageContext: PageContextServer) => {
     getAppOptions({ headers }),
     getAppDictionaries({ headers }),
   ]);
+
+  const url = new URL(pageContext.urlPathname, `http://${headers["host"]}`);
+  setupUrlAtomSettings(ctx, () => url)
 
   let me: AtomState<typeof currentUserAtom> | null = null;
 

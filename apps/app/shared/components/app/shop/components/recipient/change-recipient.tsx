@@ -48,7 +48,8 @@ const ChangeRecipientSave = reatomComponent<{ id: number }>(({ ctx, id }) => {
 
   return (
     <Button
-      className="bg-neutral-50 px-4 w-fit self-end text-neutral-950 font-semibold"
+      background="white"
+      className="px-4 w-fit self-end font-semibold"
       disabled={isDisabled}
       onClick={() => changeRecipientAction(ctx, id, updateCart)}
     >
@@ -57,9 +58,7 @@ const ChangeRecipientSave = reatomComponent<{ id: number }>(({ ctx, id }) => {
   )
 }, "ChangeRecipientSave")
 
-export const ChangeRecipientDialog = reatomComponent(({
-  ctx
-}) => {
+export const ChangeRecipientDialog = reatomComponent(({ ctx }) => {
   const id = ctx.get(changeRecipientIdAtom)!
   const title = ctx.get(changeRecipientTitleAtom)!
 

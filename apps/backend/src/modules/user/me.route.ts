@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import dayjs from 'dayjs';
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { defineOptionalUser } from "#/lib/middlewares/define";
-import { MePayload } from "@repo/shared/types/entities/user"
+import type { MePayload } from "@repo/shared/types/entities/user"
 import { validateBannedStatus } from "#/lib/middlewares/validators";
 import { getPermissions, getMe } from "./me.model";
 

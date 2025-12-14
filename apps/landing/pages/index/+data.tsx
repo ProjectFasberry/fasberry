@@ -1,17 +1,22 @@
 import { useConfig } from 'vike-react/useConfig';
 import { PageContextServer } from 'vike/types';
-import { LANDING_ENDPOINT } from '@/shared/env';
 import { wrapTitle } from '@/shared/lib/wrap-title';
+import { getUrl } from '@/shared/lib/helpers';
 
 export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()
 
+  const title = wrapTitle(`Главная`);
+
   config({
-    title: wrapTitle(`Главная`),
+    title,
     Head: (
       <>
-        <link rel="canonical" href={`${LANDING_ENDPOINT}/`} />
-        <meta property="og:url" content={LANDING_ENDPOINT} />
+        <link rel="canonical" href={getUrl(pageContext)} />
+        <meta property="og:url" content={getUrl(pageContext)} />
+        <meta property="og:title" content={title} />
+        <meta property="og:site_name" content={title} />
+        <meta name="twitter:title" content={title} />
       </>
     )
   })

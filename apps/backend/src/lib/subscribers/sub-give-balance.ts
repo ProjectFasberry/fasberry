@@ -1,8 +1,7 @@
 import { playerpoints } from "#/shared/database/playerpoints-db"
 import { getNats } from "#/shared/nats/client"
-import { SERVER_EVENT_GIVE_BALANCE } from "#/shared/nats/subjects"
-import { logError } from "#/utils/config/logger"
-import { Msg } from "@nats-io/nats-core"
+import { logErrorMsg } from "#/utils/config/log-utils";
+import type { Msg } from "@nats-io/nats-core"
 import { sql } from "kysely"
 
 async function handleGiveBalance(msg: Msg) {
@@ -26,16 +25,16 @@ async function handleGiveBalance(msg: Msg) {
 
     msg.respond(payload);
   } catch (e) {
-    logError(e);
+    logErrorMsg(e);
   }
 }
 
-export const subscribeGiveBalance = () => {
+export const subscribeGiveBalance = (subject: string) => {
   const nc = getNats()
 
-  const subscription = nc.subscribe(SERVER_EVENT_GIVE_BALANCE, {
+  const subscription = nc.subscribe(subject, {
     callback: (e, msg) => {
-      if (e) return logError(e);
+      if (e) return logErrorMsg(e);
 
       void handleGiveBalance(msg)
     }

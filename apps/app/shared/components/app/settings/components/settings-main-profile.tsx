@@ -8,13 +8,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogTitle } from "@repo/ui/dialog";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@repo/ui/skeleton";
-import { 
-  getSocialStatusAtom, 
+import {
+  getSocialStatusAtom,
   profileSocialsAction,
-  socialAdd, 
-  socialAddIsProcessingAtom, 
-  socialRemoveWrapperAction, 
-  socialsAvailableAction 
+  socialAdd,
+  socialAddAction,
+  socialAddIsProcessingAtom,
+  socialRemoveWrapperAction,
+  socialsAvailableAction
 } from "../models/settings-profile.socials.model";
 import { PlayerSocialsPayload, SOCIAL_ICONS } from "../../player/models/socials.model";
 
@@ -50,7 +51,12 @@ const ProfileSocialAdd = reatomComponent(({ ctx }) => {
             Привязка
           </DialogTitle>
           <div className="flex">
-            ...in build
+            <Button
+              disabled={ctx.spy(socialAddAction.statusesAtom).isPending}
+              onClick={() => socialAddAction(ctx)}
+            >
+              Начать
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

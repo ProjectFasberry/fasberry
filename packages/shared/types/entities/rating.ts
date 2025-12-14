@@ -28,7 +28,7 @@ export type RatingParkour = {
 
 export type RatingBelkoin = {
   nickname: string;
-  points: number
+  balance: number
 }
 
 export type RatingCharism = {
@@ -50,6 +50,7 @@ export type RatingLands = {
       chunks: number;
     }
   };
+  ulid: string,
   name: string;
   type: string;
   blocks: any

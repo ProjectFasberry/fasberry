@@ -1,9 +1,9 @@
 import Elysia, { t } from "elysia";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { metaSchema, withData, withMeta } from "#/shared/schemas";
 import { getDirection } from "#/utils/config/paginate";
 import { wrapMeta } from "#/utils/config/transforms";
-import { BannersPayload } from "@repo/shared/types/entities/banner";
+import type { BannersPayload } from "@repo/shared/types/entities/banner";
 import { executeWithCursorPagination } from "kysely-paginate";
 import z from "zod";
 

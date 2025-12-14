@@ -2,7 +2,7 @@ import Elysia, { t } from "elysia";
 import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { getPlayerAvatar } from "../server/skin/skin.model";
 import { defineOptionalUser } from "#/lib/middlewares/define";
-import { Player } from "@repo/shared/types/entities/user";
+import type { Player } from "@repo/shared/types/entities/user";
 import { withData } from "#/shared/schemas";
 import { getDonate, getMain, getRate } from "./player.model";
 
@@ -27,13 +27,13 @@ export const player = new Elysia()
   .model({
     "player": withData(PlayerPayload)
   })
-  .get("/player/:nickname", async ({ status, set, nickname: initiator, params }) => {
+  .get("/player/:nickname", async ({ status, nickname: initiator, params }) => {
     const recipient = params.nickname;
 
     const [main, group, avatar, rate] = await Promise.all([
       getMain({ recipient }),
       getDonate({ recipient }),
-      getPlayerAvatar(set, recipient),
+      getPlayerAvatar(recipient),
       getRate({ recipient, initiator }),
     ]);
 

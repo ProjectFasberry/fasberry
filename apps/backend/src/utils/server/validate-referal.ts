@@ -3,7 +3,7 @@
 // const TEST_MIN_PLAYTIME = 5 * 60 * 1000
 
 import { bisquite } from "#/shared/database/bisquite-db";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 
 // min playtime for reward //
 
@@ -28,7 +28,7 @@ export async function validateReferal(nickname: string) {
   if (!queryRefferals) return null;
 
   const queryPlaytime = await bisquite
-    .selectFrom("CMI_users")
+    .selectFrom("cmi_users")
     .select(["TotalPlayTime", "username"])
     .where(eb =>
       eb.or([

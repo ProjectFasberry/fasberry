@@ -1,6 +1,6 @@
 import { validatePermission } from "#/lib/middlewares/validators"
-import { PERMISSIONS } from "#/shared/constants/permissions"
-import { general } from "#/shared/database/main-db"
+import { Permissions } from "#/shared/constants/permissions"
+import { general } from "#/shared/database/general-db"
 import Elysia from "elysia"
 import z from "zod"
 import { createAdminActivityLog } from "../private.model"
@@ -29,9 +29,8 @@ const rolesAddPermissionForRoleSchema = z.object({
 })
 
 export const rolesAddPermissionForRole = new Elysia()
-  .use(validatePermission(PERMISSIONS.ROLES.UPDATE))
-  .post("/:id/permission/add", async ({ params, body }) => {
-    const id = params.id
+  .use(validatePermission(Permissions.get("ROLES.UPDATE")))
+  .post("/:id/permission/add", async ({ params: { id }, body }) => {
     const data = await addPermissionForRole(id, body)
     return { data }
   }, {

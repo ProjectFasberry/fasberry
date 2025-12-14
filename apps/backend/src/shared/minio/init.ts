@@ -1,11 +1,13 @@
 import * as Minio from "minio"
 import { logger } from "#/utils/config/logger"
-import { isProduction, MINIO_ACCESS_KEY, MINIO_ENDPOINT, MINIO_PORT, MINIO_SECRET_KEY } from "../env"
+import { MINIO_ACCESS_KEY, MINIO_ENDPOINT, MINIO_PORT, MINIO_SECRET_KEY } from "../env"
+import { INTERNAl_FILES, loadInternalFiles } from "#/utils/minio/load-internal-files"
+import { invariant } from "#/helpers/invariant"
 
 export const minioLogger = logger.withTag("Minio")
 
 const config: Minio.ClientOptions = {
-  endPoint: isProduction ? MINIO_ENDPOINT : "127.0.0.1",
+  endPoint: MINIO_ENDPOINT,
   port: MINIO_PORT,
   useSSL: false,
   accessKey: MINIO_ACCESS_KEY,
@@ -14,17 +16,18 @@ const config: Minio.ClientOptions = {
 
 let minio: Minio.Client | null = null;
 
-export function initMinio() {
+function initMinio() {
   try {
     minio = new Minio.Client(config)
     minioLogger.success(`Connected to ${config.endPoint}:${config.port}`)
   } catch (e) {
     minioLogger.error(e)
+    process.exit(1)
   }
 }
 
-export function getMinio() {
-  if (!minio) throw new Error("Minio is not inited")
+export function getMinio(): Minio.Client {
+  invariant(minio, "Minio is not inited")
   return minio
 }
 
@@ -35,7 +38,7 @@ export const INTERNAL_FILES_BUCKET = "internal-files"
 
 const BUCKETS = [SKINS_BUCKET, AVATARS_BUCKET]
 
-export async function initMinioBuckets() {
+async function initMinioBuckets() {
   const minio = getMinio();
 
   for (const target of BUCKETS) {
@@ -50,7 +53,7 @@ export async function initMinioBuckets() {
   }
 }
 
-export async function printBuckets() {
+async function printBuckets() {
   const minio = getMinio();
 
   try {
@@ -63,4 +66,12 @@ ${lines}
   } catch (e) {
     minioLogger.error(e)
   }
+}
+
+export async function startMinio() {
+  initMinio();
+
+  await initMinioBuckets();
+  await printBuckets();
+  await loadInternalFiles(INTERNAl_FILES);
 }

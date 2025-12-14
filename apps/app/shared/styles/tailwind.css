@@ -32,17 +32,6 @@
     letter-spacing: normal;
   }
 
-  #page-content {
-    @apply pb-20 md:p-0;
-
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  body.page-is-transitioning #page-content {
-    opacity: 0;
-  }
-
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,

@@ -1,6 +1,6 @@
 import Elysia, { t } from "elysia";
 import { defineUser } from "#/lib/middlewares/define";
-import { general } from "#/shared/database/main-db";
+import { general } from "#/shared/database/general-db";
 import { bannerSchema } from "./banner.model";
 import { withData } from "#/shared/schemas";
 
@@ -28,8 +28,7 @@ export const bannerView = new Elysia()
   .model({
     "banner-view": withData(bannerViewPayload)
   })
-  .post("/view/:id", async ({ status, nickname, params }) => {
-    const id = params.id;
+  .post("/view/:id", async ({ status, nickname, params: { id } }) => {
     const data = await viewBanner(id, nickname);
     return { data }
   }, {

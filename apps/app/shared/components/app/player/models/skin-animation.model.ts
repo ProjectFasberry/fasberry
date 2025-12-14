@@ -1,6 +1,6 @@
 import { atom } from "@reatom/core";
 import { FlyingAnimation, IdleAnimation, RunningAnimation, SkinViewer } from "skinview3d";
-import { IconButterfly } from "@tabler/icons-react";
+import { IconButterfly, TablerIcon } from "@tabler/icons-react";
 import { IconRun } from "@tabler/icons-react";
 import { IconManFilled } from "@tabler/icons-react";
 
@@ -9,22 +9,13 @@ type SkinAnimation = typeof FlyingAnimation | typeof IdleAnimation | typeof Runn
 
 type SkinControls = {
   animation: SkinAnimationType;
-  icon: any;
+  icon: TablerIcon;
 };
 
 export const SKIN_ANIMATIONS: SkinControls[] = [
-  {
-    animation: "idle",
-    icon: IconManFilled,
-  },
-  {
-    animation: "run",
-    icon: IconRun,
-  },
-  {
-    animation: "flying",
-    icon: IconButterfly,
-  },
+  { animation: "idle", icon: IconManFilled },
+  { animation: "run", icon: IconRun, },
+  { animation: "flying", icon: IconButterfly },
 ];
 
 export const skinAnimationAtom = atom<SkinAnimationType>("idle", "skinAnimation")

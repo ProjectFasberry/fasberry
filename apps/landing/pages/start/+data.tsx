@@ -1,8 +1,8 @@
 import { useConfig } from 'vike-react/useConfig';
 import { PageContextServer } from 'vike/types';
-import { LANDING_ENDPOINT } from '@/shared/env';
 import { wrapTitle } from '@/shared/lib/wrap-title';
 import { getStaticObject } from '@/shared/lib/volume';
+import { getUrl } from '@/shared/lib/helpers';
 
 const bgImage = getStaticObject("background", "rules_background.png")
 
@@ -11,25 +11,24 @@ const description = "Присоединяйтесь к сообществу Fasb
 export const data = async (pageContext: PageContextServer) => {
   const config = useConfig()
 
-  const url = `${LANDING_ENDPOINT}${pageContext.urlPathname}`
+  const title = wrapTitle(`Начать играть`);
 
   config({
-    title: wrapTitle(`Начать играть`),
+    title,
     description,
     Head: (
       <>
-        <link rel="canonical" href={url} />
-        <meta property="og:url" content={url} />
-        <meta property="og:title" content="Начать играть на Fasberry" />
+        <link rel="canonical" href={getUrl(pageContext)} />
+        <meta property="og:url" content={getUrl(pageContext)} />
+        <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:locale" content="ru_RU" />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Начать играть на Fasberry" />
+        <meta property="og:site_name" content={title} />
         <meta property="og:image" content={bgImage} />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta name="twitter:title" content="Начать играть на Fasberry" />
+        <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={bgImage} />
         <meta property="twitter:image:type" content="image/jpeg" />

@@ -89,13 +89,13 @@ function SheetOverlay({ className, ...props }: SheetOverlayProps) {
 }
 
 const sheetVariants = tv({
-  base: `fixed z-50 gap-4 bg-neutral-900 p-6 shadow-lg`,
+  base: `fixed z-50 gap-4 bg-neutral-900 px-6 py-4`,
   variants: {
     side: {
-      top: 'inset-x-0 top-0',
-      bottom: 'inset-x-0 bottom-0',
-      left: 'inset-y-0 left-0 h-full w-3/4 sm:max-w-sm',
-      right: 'inset-y-0 right-0 h-full w-3/4 sm:max-w-sm',
+      top: 'inset-x-0 top-0 rounded-b-lg',
+      bottom: 'inset-x-0 bottom-0 rounded-t-lg',
+      left: 'inset-y-0 left-0 h-full w-3/4 sm:max-w-sm rounded-r-lg',
+      right: 'inset-y-0 right-0 h-full w-3/4 sm:max-w-sm rounded-l-lg',
     },
   },
   defaultVariants: {
@@ -166,7 +166,7 @@ function SheetContent({
               {children}
               <SheetPrimitive.Close
                 data-slot="sheet-close"
-                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
+                className="absolute right-4 top-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>

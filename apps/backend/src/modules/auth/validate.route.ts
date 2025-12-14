@@ -10,6 +10,8 @@ export const validate = new Elysia()
     return { session }
   })
   .get("/validate-session", async ({ session }) => {
+    if (!session) return { data: false };
+    
     const data = await getIsExistsSession(session);
     return { data }
   }, {
