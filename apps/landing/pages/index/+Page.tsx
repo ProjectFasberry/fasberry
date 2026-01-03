@@ -75,16 +75,6 @@ const IDEAS = [
 		type: "full"
 	},
 	{
-		title: "Карта",
-		image: getStaticObject("images", "map-preview.webp"),
-		link: {
-			title: "Перейти к карте",
-			href: "https://map.fasberry.su"
-		},
-		description: "На сервере имеется кастомная генерация мира с данжами и замками, поэтому вы не соскучитесь",
-		type: "module"
-	},
-	{
 		title: "Квесты",
 		image: getStaticObject("images", "casino-barebones.webp"),
 		link: {

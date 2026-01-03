@@ -69,7 +69,7 @@ import { belkoinImage, charismImage } from "@/shared/consts/images";
 //         <label htmlFor="privacy" className="cursor-pointer w-full select-none">
 //           <Typography className="text-sm tracking-tight leading-3 lg:text-base break-words font-semibold">
 //             Я согласен с&nbsp;
-//             <a href="https://mc.fasberry/rules" target="_blank" className="text-green-500">
+//             <a href={`${LANDING_ENDPOINT}/rules`} target="_blank" className="text-green-500">
 //               правилами&nbsp;
 //             </a>
 //             проекта.

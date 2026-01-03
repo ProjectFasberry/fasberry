@@ -13,19 +13,19 @@ import {
   findoutTypeAtom,
   FINDOUT_OPTIONS,
   findoutSelectedTypeAtom,
-  showTokenVerifySectionAtom,
   submitIsDisabledAtom,
 } from "../models/auth.model";
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input"
 import { tv } from "tailwind-variants";
 import { Typography } from "@repo/ui/typography";
-import { CAP_INSTANCE_URL, CAP_SITEKEY, LANDING_ENDPOINT } from "@/shared/env";
+import { CAP_INSTANCE_URL, CAP_SITEKEY, LANDING_URL } from "@/shared/env";
 import { Eye, EyeOff } from "lucide-react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@repo/ui/select"
 import { AtomState } from "@reatom/core";
 import { ReactNode } from "react";
 import { CapWidget } from "@better-captcha/react/provider/cap-widget";
+import { pof } from "../models/pof.model";
 
 export const formVariant = tv({
   base: `rounded-lg border border-neutral-800 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-60`
@@ -224,7 +224,7 @@ const PrivacyTerms = reatomComponent(({ ctx }) => {
             &nbsp;политикой конфиденциальности&nbsp;
           </a>
           и
-          <a href={`${LANDING_ENDPOINT}/rules`} target="_blank" className="inline text-green-500">
+          <a href={`${LANDING_URL}/rules`} target="_blank" className="inline text-green-500">
             &nbsp;правилами проекта
           </a>.
         </Typography>
@@ -264,7 +264,7 @@ export const LoginForm = () => {
 }
 
 export const Verify = reatomComponent(({ ctx }) => {
-  const isVisible = ctx.spy(showTokenVerifySectionAtom)
+  const isVisible = ctx.spy(pof.showTokenVerifySectionAtom)
   if (!isVisible) return null;
 
   return (

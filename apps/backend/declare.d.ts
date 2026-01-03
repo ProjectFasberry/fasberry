@@ -84,12 +84,13 @@ declare global {
       LIBERTYBANS_POSTGRES_HOST: string;
 
       BOT_GUARD_TOKEN: string;
-      BOT_LOGGER_TOKEN: string;
 
       PORT: string;
 
       MINESKIN_API_KEY: string;
       MINESKIN_AES_SECRET_KEY: string
+
+      MAP_INSTANCE_URL: string;
     }
   }
 

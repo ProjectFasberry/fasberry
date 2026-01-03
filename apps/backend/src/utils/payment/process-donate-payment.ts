@@ -68,8 +68,8 @@ export function processDonatePayment(
 
   const giveDonateTask: TransactionalTask = {
     name: "give-donate-group",
-    execute: (signal) => updatePlayerGroup({ recipient, type, value }),
-    rollback: (signal) => {
+    execute: () => updatePlayerGroup({ recipient, type, value }),
+    rollback: () => {
       console.log(`Rolling back group for ${recipient}. Setting to default.`);
       return setPlayerGroup(recipient, `group.default`);
     }
@@ -77,17 +77,15 @@ export function processDonatePayment(
 
   const notifyTask: TransactionalTask = {
     name: "notify-player",
-    execute: (signal) => callServerCommand(
+    execute: () => callServerCommand(
       { parent: "cmi", value: `toast ${recipient} Поздравляем с покупкой!` },
-      { signal }
     ),
   };
 
   const broadcastTask: TransactionalTask = {
     name: "broadcast-to-server",
-    execute: (signal) => callBroadcast(
+    execute: () => callBroadcast(
       { message },
-      { signal }
     ),
   };
 

@@ -14,7 +14,10 @@ export const currentUserAtom = atom<MePayload | null>(null, "currentUser").pipe(
   withReset(), withSsr(CURRENT_USER_KEY)
 );
 
-export const currentUserPermsAtom = atom((ctx) => ctx.spy(currentUserAtom)?.meta.permissions ?? [], "currentUserPerms");
+export const currentUserPermsAtom = atom(
+  (ctx) => ctx.spy(currentUserAtom)?.meta.permissions ?? [], 
+  "currentUserPerms"
+);
 
 export const currentUserRoleAtom = atom((ctx) => {
   const role = ctx.spy(currentUserAtom)?.meta.role

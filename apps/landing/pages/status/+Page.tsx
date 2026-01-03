@@ -9,6 +9,7 @@ import { serverStatusAction } from "@/shared/components/landing/status/models/st
 import { tv } from "tailwind-variants";
 import { Button } from "@repo/ui/button";
 import { usePageContext } from "vike-react/usePageContext";
+import { APP_URL } from "@/shared/env";
 
 export type Player = {
   uuid: string;
@@ -161,7 +162,7 @@ const PlayerStatus = ({
           <PlayerStatusImage type="full" nickname={nickname} />
           <div className="flex flex-col gap-2 w-full">
             <Link
-              href={`https://app.fasberry.su/player/${nickname}`}
+              href={`${APP_URL}/player/${nickname}`}
               className="inline-flex items-center justify-center whitespace-nowrap
 							px-4 py-2 hover:bg-[#05b458] duration-300 ease-in-out bg-[#088d47] rounded-md w-full"
             >

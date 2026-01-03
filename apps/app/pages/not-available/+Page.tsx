@@ -1,4 +1,5 @@
 import { Link } from "@/shared/components/config/link";
+import { STATUS_URL } from "@/shared/env";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { Button } from "@repo/ui/button";
 import { Typography } from "@repo/ui/typography";
@@ -33,7 +34,7 @@ export default function Page() {
         Сервис не доступен
       </Typography>
       <div className="flex items-center justify-center gap-2">
-        <Link href="https://status.fasberry.su">
+        <Link href={STATUS_URL}>
           <Button className="gap-2 md:w-max bg-neutral-800 text-neutral-50">
             <Typography className='text-center font-semibold'>
               Статус

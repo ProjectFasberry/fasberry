@@ -26,44 +26,6 @@ services:
     networks:
       - fasberry
 
-  debezium-server:
-    image: quay.io/debezium/server
-    container_name: debezium-server
-    ports:
-      - "8080:8080"  
-    volumes:
-      - ./data/debezium:/data
-    environment:
-      DEBEZIUM_SINK_TYPE: "nats-streaming"
-      DEBEZIUM_SINK_NATS_STREAMING_URL: "nats://nats-1:4222"
-      DEBEZIUM_SINK_NATS_JETSTREAM_AUTH_USER: "${NATS_USER}"
-      DEBEZIUM_SINK_NATS_JETSTREAM_AUTH_PASSWORD: "${NATS_PASSWORD}"
-      DEBEZIUM_SINK_NATS_JETSTREAM_CREATE_STREAM: "true"
-      DEBEZIUM_SINK_NATS_JETSTREAM_SUBJECTS: "debezium,debezium.>"
-      DEBEZIUM_SINK_NATS_JETSTREAM_ASYNC_ENABLED: true
-      DEBEZIUM_SINK_NATS_JETSTREAM_ASYNC_TIMEOUT_MS: 20000
-
-      DEBEZIUM_SOURCE_CONNECTOR_CLASS: io.debezium.connector.mysql.MySqlConnector
-      DEBEZIUM_SOURCE_DATABASE_HOSTNAME: 5.83.140.3
-      DEBEZIUM_SOURCE_DATABASE_PORT: "3316"
-      DEBEZIUM_SOURCE_DATABASE_SERVER_ID: "184054"
-      DEBEZIUM_SOURCE_DATABASE_USER: ${MYSQL_USER}
-      DEBEZIUM_SOURCE_DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DEBEZIUM_SOURCE_DATABASE_SERVER_NAME: app
-
-      DEBEZIUM_SOURCE_SCHEMA_HISTORY_INTERNAL: io.debezium.storage.file.history.FileSchemaHistory
-      DEBEZIUM_SOURCE_SCHEMA_HISTORY_INTERNAL_FILE_FILENAME: /data/dbhistory.dat
-
-      DEBEZIUM_SOURCE_OFFSET_STORAGE: org.apache.kafka.connect.storage.FileOffsetBackingStore
-      DEBEZIUM_SOURCE_OFFSET_STORAGE_FILE_FILENAME: /data/offsets.dat
-      DEBEZIUM_SOURCE_OFFSET_FLUSH_INTERVAL_MS: 1000
-
-      DEBEZIUM_SOURCE_TOPIC_PREFIX: "app"
-    depends_on:
-      - nats
-    networks:
-      - fasberry
-
   # minio:
   #   image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
   #   container_name: minio

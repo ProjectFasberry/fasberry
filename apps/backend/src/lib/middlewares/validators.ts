@@ -12,6 +12,7 @@ import { CAP_INSTANCE_URL, CAP_SECRET, CAP_SITE_KEY } from "#/shared/env";
 import { logErrorMsg } from "#/utils/config/log-utils";
 import { safeJsonParse } from "#/utils/config/transforms";
 import { libertybans } from "#/shared/database/libertybans-db";
+import { getWhitelistIpList } from "#/shared/constants/urls";
 
 export const validatePermission = (permission: string) => new Elysia()
   .use(defineUserRole())
@@ -34,7 +35,7 @@ export const validatePermission = (permission: string) => new Elysia()
 
 export const validateAuthStatus = () => new Elysia()
   .use(defineSession())
-  .onBeforeHandle(async ({ session, status }) => {
+  .onBeforeHandle(async ({ session, status }) => {    
     if (session) {
       if (!isProduction) {
         validateLogger.log("validateAuthStatus");
@@ -125,7 +126,13 @@ async function verifyRequest(token: string): Promise<{ ok: boolean; error?: stri
 export const botValidator = () => new Elysia()
   .use(ipPlugin())
   .resolve(({ query }) => ({ token: query.token }))
-  .onBeforeHandle(async ({ status, token }) => {
+  .onBeforeHandle(async ({ status, token, ip }) => {
+    const whitelist = getWhitelistIpList()
+
+    if (whitelist.includes(ip)) {
+      return;
+    }
+
     const query = await general
       .selectFrom("options")
       .select("value")

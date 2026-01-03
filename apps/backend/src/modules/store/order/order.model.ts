@@ -7,10 +7,20 @@ import { getRedis } from "#/shared/redis/init";
 import type z from "zod";
 import { safeJsonParse } from "#/utils/config/transforms";
 import type { StoreCurrency } from "@repo/shared/types/db/auth-database-types";
-import type { OrderAsset, Orders, OrdersDefault, OrdersGame, OrderSingle, OrderSingleGamePayload, OrderStatus, OrderType, OrderSingleDefault } from "@repo/shared/types/entities/store";
+import type { 
+  OrderAsset, 
+  Orders, 
+  OrdersDefault, OrdersGame, 
+  OrderSingle, 
+  OrderSingleGamePayload, 
+  OrderStatus, 
+  OrderType,
+  OrderSingleDefault 
+} from "@repo/shared/types/entities/store";
 import { general } from "#/shared/database/general-db";
 import { sql } from "kysely";
 import type { ordersRouteSchema } from "@repo/shared/schemas/store";
+import { logger } from "#/utils/config/logger";
 
 async function getGameOrder(uniqueId: string) {
   const [order, orderChilds] = await Promise.all([
@@ -232,7 +242,7 @@ function createTasksForItem({ recipient, type, value }: TaskItem): Transactional
     tasks.push({
       name: "notify-player",
       execute: (signal) => callServerCommand(
-        { parent: "cmi", value: `toast ${recipient} Поздравляем с покупкой!` }, { signal }
+        { parent: "cmi", value: `toast ${recipient} Поздравляем с покупкой!` }
       )
     })
   }
@@ -311,11 +321,9 @@ export async function processStoreGamePurchase(
           name: "take-belkoin",
           execute: (signal) => callServerCommand(
             { parent: "p", value: `take ${initiator} ${BELKOIN}` },
-            { signal }
           ),
           rollback: (signal) => callServerCommand(
             { parent: "p", value: `give ${initiator} ${BELKOIN}` },
-            { signal }
           )
         };
 
@@ -327,11 +335,9 @@ export async function processStoreGamePurchase(
           name: "take-charism",
           execute: (signal) => callServerCommand(
             { parent: "cmi", value: `money take ${initiator} ${CHARISM}` },
-            { signal }
           ),
           rollback: (signal) => callServerCommand(
             { parent: "cmi", value: `money give ${initiator} ${CHARISM} ` },
-            { signal }
           )
         };
 
@@ -348,7 +354,6 @@ export async function processStoreGamePurchase(
     }
 
     const result = await execute()
-    console.log(result);
 
     if (result.status === 'error') {
       const error = `${result.error instanceof Error ? result.error.message : 'Unknown error'}`
@@ -357,6 +362,7 @@ export async function processStoreGamePurchase(
 
     return { result }
   } catch (e) {
+    logger.withTag("Order").error(e)
     throw e
   }
 }

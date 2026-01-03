@@ -1,4 +1,4 @@
-import { getGuardBot } from "#/shared/bot/guard";
+import { getGuardBot } from "#/shared/bot";
 import { getChats } from "#/shared/constants/chats";
 import { getNats, natsLogger } from "#/shared/nats/client";
 import { SUBJECTS } from "#/shared/nats/subjects";

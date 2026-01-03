@@ -4,10 +4,11 @@ import { action, atom, batch, Ctx } from "@reatom/core"
 import { reatomRecord, sleep, withAssign, withReset } from "@reatom/framework"
 import { toast } from "sonner"
 import { logError } from "@/shared/lib/log"
-import { client, withJsonBody, withQueryParams } from "@/shared/lib/client-wrapper"
+import { client, withJsonBody } from "@/shared/lib/client-wrapper"
 import z, { ZodError } from "zod"
 import { registerSchema, authSchema as loginSchema } from "@repo/shared/schemas/auth"
 import { withSearchParamsPersist } from '@reatom/url'
+import { pof } from "./pof.model"
 
 export type AuthTypeAtom = "register" | "login"
 type ErrorType = "nickname" | "password" | "findout"
@@ -30,9 +31,7 @@ export const findoutAtom = atom<Maybe<string>>(undefined, "findoutAtom").pipe(
   withReset(),
 )
 
-export const tokenAtom = atom<Nullable<string>>(null, "tokenAtom").pipe(withReset());
 export const acceptRulesAtom = atom(false, "acceptRules").pipe(withReset());
-export const showTokenVerifySectionAtom = atom(false, "showTokenVerifySection").pipe(withReset())
 
 export const authSearchParamsAtom = reatomRecord<Record<string, string>>({}, "authSearchParams")
 
@@ -62,16 +61,22 @@ authSearchParamsAtom.onChange((ctx, state) => {
 
 typeAtom.onChange((ctx) => auth.resetErrors(ctx))
 
-tokenAtom.onChange((ctx, state) => {
+pof.token.onChange((ctx, state) => {
   if (state) {
-    showTokenVerifySectionAtom.reset(ctx)
+    pof.showTokenVerifySectionAtom.reset(ctx)
   }
 })
 
-export const submitIsDisabledAtom = atom((ctx) => ctx.spy(showTokenVerifySectionAtom)
-  || ctx.spy(authorizeAction.statusesAtom).isPending || !ctx.spy(authIsValidAtom),
-  "submitIsDisabled"
-)
+export const submitIsDisabledAtom = atom((ctx) => {
+  const isPof = ctx.spy(pof.isActive)
+    ? ctx.spy(pof.showTokenVerifySectionAtom)
+    : false;
+
+  const result = isPof
+    || ctx.spy(authorizeAction.statusesAtom).isPending || !ctx.spy(authIsValidAtom)
+
+  return result;
+}, "submitIsDisabled")
 
 export const authIsValidAtom = atom<boolean>((ctx) => {
   const type = ctx.spy(typeAtom)
@@ -83,6 +88,15 @@ export const authIsValidAtom = atom<boolean>((ctx) => {
 
   return baseValid && !!ctx.spy(findoutAtom) && !!ctx.spy(acceptRulesAtom)
 }, "authIsValid")
+
+export const authIsDisabledAtom = atom((ctx) => {
+  const isPof = ctx.spy(pof.isActive)
+    ? ctx.spy(pof.showTokenVerifySectionAtom)
+    : false;
+
+  const result = ctx.spy(authIsProcessingAtom) || isPof;
+  return result
+}, "authIsDisabled")
 
 export const auth = atom(null, "auth").pipe(
   withAssign((ctx, name) => ({
@@ -99,7 +113,7 @@ export const auth = atom(null, "auth").pipe(
         nicknameAtom.reset(ctx)
         passwordAtom.reset(ctx)
         findoutAtom.reset(ctx)
-        tokenAtom.reset(ctx)
+        pof.token.reset(ctx)
         acceptRulesAtom.reset(ctx)
         globalErrorAtom.reset(ctx)
         errorsTypeAtom.reset(ctx)
@@ -119,7 +133,7 @@ export const auth = atom(null, "auth").pipe(
     }, `${name}.resetError`),
     solve: action(async (ctx, value: string) => {
       await ctx.schedule(() => sleep(1600));
-      tokenAtom(ctx, value)
+      pof.token(ctx, value)
     }, `${name}.solve`)
   }))
 )
@@ -174,10 +188,8 @@ const SCOPE_ACTIONS: Record<ScopeName, (ctx: Ctx) => void> = {
     })
   },
   captcha: (ctx) => {
-    batch(ctx, () => {
-      showTokenVerifySectionAtom(ctx, true)
-      tokenAtom.reset(ctx)
-    })
+    pof.showTokenVerifySectionAtom(ctx, true)
+    pof.token.reset(ctx)
   },
   system: () => { }
 }
@@ -192,12 +204,15 @@ export const authorizeAction = reatomAsync(async (ctx) => {
     findoutType: ctx.get(findoutTypeAtom),
   }
 
-  const token = ctx.get(tokenAtom)
+  const pofIsActive = ctx.get(pof.isActive)
+  const token = ctx.get(pof.token)
 
-  if (!token) {
-    toast.info("Пройдите проверку")
-    showTokenVerifySectionAtom(ctx, true)
-    return;
+  if (pofIsActive) {
+    if (!token) {
+      toast.info("Пройдите проверку")
+      pof.showTokenVerifySectionAtom(ctx, true)
+      return;
+    }
   }
 
   authIsProcessingAtom(ctx, true)
@@ -207,8 +222,8 @@ export const authorizeAction = reatomAsync(async (ctx) => {
 
   return await ctx.schedule(() =>
     client
-      .post(`auth/${type}`, { throwHttpErrors: false, timeout: 10000 })
-      .pipe(withQueryParams({ token }), withJsonBody(data))
+      .post(`auth/${type}`, { searchParams: { token: token ?? "" }, throwHttpErrors: false, timeout: 10000 })
+      .pipe(withJsonBody(data))
       .exec()
   )
 }, {
@@ -259,3 +274,8 @@ export const authorizeAction = reatomAsync(async (ctx) => {
     }
   }
 }).pipe(withStatusesAtom())
+
+export const authTriggerIsDisabledAtom = atom((ctx) => {
+  const r = ctx.spy(pof.isActive) ? !!ctx.spy(pof.token) : false
+  return r
+}, "authTriggerIsDisabled")

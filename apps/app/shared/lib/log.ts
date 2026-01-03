@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { createConsola } from "consola";
+import { isDevelopment } from "../env";
 
 export const logger = createConsola();
 export const routingLogger = logger.withTag('Routing');
@@ -29,4 +30,10 @@ export function logError(
 
 export function logRouting(pathname: string, hook: string) {
   routingLogger.log(`${pathname} called +${hook}`);
+}
+
+export function devLog(...args: Parameters<typeof logger.log>) {
+  if (isDevelopment) {
+    logger.withTag("dev").log(...args)
+  }
 }

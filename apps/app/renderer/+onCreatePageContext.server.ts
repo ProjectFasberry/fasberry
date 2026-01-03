@@ -1,30 +1,33 @@
 import type { PageContextServer } from 'vike/types';
-import { AtomState, createCtx } from '@reatom/core';
+import { createCtx } from '@reatom/core';
 import { currentUserAtom, getMe } from "@/shared/models/current-user.model";
 import { snapshotAtom } from '@/shared/lib/ssr';
-import { logRouting } from '@/shared/lib/log';
+import { devLog, logRouting } from '@/shared/lib/log';
 import { isBotRequest } from '@/shared/lib/bot-guard';
 import { initCookieOpts } from '@/shared/lib/sync';
 import { redirect } from 'vike/abort';
 import { appDictionariesAtom, appOptionsAtom, appOptionsInit, getAppDictionaries, getAppOptions } from '@/shared/models/app.model';
 import { AppOptionsPayload } from '@repo/shared/types/entities/other';
 import { setupUrlAtomSettings } from '@reatom/url';
+import { MePayload } from '@repo/shared/types/entities/user';
 
 function getTopCountry(acceptLanguage?: string): string | null {
-  if (!acceptLanguage) return null;
+  if (!acceptLanguage) return null
 
-  return acceptLanguage
-    .split(',')
-    .map(s => s.split(';')[0].trim())
-    .sort((a, b) => {
-      const q = (s: string) => {
-        const match = acceptLanguage.match(new RegExp(`${s};q=([0-9.]+)`))
-        return match ? parseFloat(match[1]) : 1
-      };
-      return q(b) - q(a)
-    })
-    .map(l => l.split('-')[1])
-    .find(Boolean) || null
+  let best: { country: string; q: number } | null = null
+
+  for (const part of acceptLanguage.split(',')) {
+    const [lang, qRaw] = part.trim().split(';')
+    const country = lang.split('-')[1]
+    if (!country) continue
+
+    const q = qRaw?.startsWith('q=') ? Number(qRaw.slice(2)) : 1
+    if (!best || q > best.q) {
+      best = { country, q }
+    }
+  }
+
+  return best?.country ?? null
 }
 
 export const onCreatePageContext = async (pageContext: PageContextServer) => {
@@ -34,56 +37,75 @@ export const onCreatePageContext = async (pageContext: PageContextServer) => {
   if (!headers) return;
 
   const ctx = createCtx();
-  const updateSnapshot = () => (pageContext.snapshot = ctx.get(snapshotAtom));
 
-  const setupApp = (
-    app: { options: AppOptionsPayload, dictionaries: Record<string, string> },
-    me: AtomState<typeof currentUserAtom> | null
-  ) => {
-    if (me) {
-      currentUserAtom(ctx, me);
-    }
+  function updateSnapshot() {
+    const result = ctx.get(snapshotAtom)
+    devLog("updateSnapshot.result", result)
+    pageContext.snapshot = result
+  };
 
-    const { dictionaries, options } = app
+  function setupApp(options: AppOptionsPayload, dictionaries: Record<string, string>) {
+    if (!headers) return;
+    devLog("setupApp.start")
 
     const country = getTopCountry(headers["accept-language"])
 
-    const dictionaryMap = new Map(Object.entries(dictionaries));
-    const optionsExtend = { ...options, isAuth: Boolean(me), locale, country }
+    const dictionary = new Map(Object.entries(dictionaries));
+    const optionsExtend = { ...options, locale, country }
 
-    appDictionariesAtom(ctx, dictionaryMap)
+    appDictionariesAtom(ctx, dictionary);
     appOptionsAtom(ctx, optionsExtend);
     initCookieOpts(ctx, pageContext);
-
-    updateSnapshot();
   };
 
   if (isBotRequest(headers, urlPathname)) {
-    setupApp({ options: appOptionsInit, dictionaries: {} }, null);
+    devLog("Bot request prevented")
+    setupApp(appOptionsInit, {});
+    updateSnapshot()
     return;
   }
-
-  const [meResult, optionsResult, dictResult] = await Promise.allSettled([
-    getMe({ headers }),
-    getAppOptions({ headers }),
-    getAppDictionaries({ headers }),
-  ]);
 
   const url = new URL(pageContext.urlPathname, `http://${headers["host"]}`);
   setupUrlAtomSettings(ctx, () => url)
 
-  let me: AtomState<typeof currentUserAtom> | null = null;
+  const options: AppOptionsPayload = await getAppOptions({ headers })
+    .then(r => r)
+    .catch((e) => {
+      devLog('getAppOptions.failed', e);
+      throw e
+    })
 
-  if (meResult.status === 'fulfilled') {
-    me = meResult.value;
-  } else if (meResult.reason instanceof Error && meResult.reason.message === 'banned') {
-    if (!pageContext.urlParsed.pathname.includes('/banned')) {
-      throw redirect("/banned");
-    }
+  const dictionaries: Record<string, string> = await getAppDictionaries({ headers })
+    .then(r => r)
+    .catch((e) => {
+      devLog('getAppDictionaries.failed', e)
+      return {}
+    })
+
+  setupApp(options, dictionaries)
+
+  if (!options.isAuth) {
+    updateSnapshot()
+    return
   }
 
-  const options = optionsResult.status === 'fulfilled' ? optionsResult.value : appOptionsInit;
-  const dictionaries = dictResult.status === 'fulfilled' ? dictResult.value : {};
+  const me: MePayload | null = await getMe({ headers })
+    .then(r => r)
+    .catch((reason) => {
+      console.log(reason);
 
-  setupApp({ options, dictionaries }, me);
+      if (reason instanceof Error && reason.message === 'banned') {
+        if (!pageContext.urlParsed.pathname.includes('/banned')) {
+          throw redirect("/banned");
+        }
+      }
+
+      return null;
+    })
+
+  if (me) {
+    currentUserAtom(ctx, me);
+  }
+
+  updateSnapshot();
 };

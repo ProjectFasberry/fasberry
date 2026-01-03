@@ -11,7 +11,7 @@ import { createCanvas, loadImage } from "canvas";
 import { AVATARS_BUCKET, getMinio } from "#/shared/minio/init";
 import { isProduction, MINESKIN_AES_SECRET_KEY, MINESKIN_API_KEY, VOLUME_ENDPOINT } from "#/shared/env";
 import { logger } from "#/utils/config/logger";
-import { getGuardBot } from "#/shared/bot/guard";
+import { getGuardBot } from "#/shared/bot";
 import { getChats } from "#/shared/constants/chats";
 import z, { ZodError } from "zod";
 import {

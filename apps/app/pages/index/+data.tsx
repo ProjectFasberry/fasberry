@@ -3,11 +3,12 @@ import { useConfig } from 'vike-react/useConfig'
 import { wrapTitle } from "@/shared/lib/wrap-title";
 import { getStaticImage } from "@/shared/lib/volume-helpers";
 import { logRouting } from "@/shared/lib/log";
+import { PLAY_IP } from "@/shared/env";
 
 const previewImage = getStaticImage("arts/8332de192322939.webp")
 
 const title = wrapTitle("Главная")
-const description = "Официальное приложение майнкрафт-проекта Fasberry. Жанр: RP, RPG, полу-ванила. 1.20.1+. Играть: play.fasberry.su."
+const description = `Официальное приложение майнкрафт-проекта Fasberry. Жанр: RP, RPG, полу-ванила. 1.20.1+. Играть: ${PLAY_IP}.`
 
 function metadata(pageContext: PageContextServer) {
   return {

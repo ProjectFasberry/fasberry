@@ -1,10 +1,9 @@
 import { AuthError, LoginForm, RegisterForm, AuthSubmit, Verify, formVariant } from "@/shared/components/app/auth/components/auth";
 import { 
-  authIsProcessingAtom, 
+  authIsDisabledAtom,
   authSearchParamsAtom, 
+  authTriggerIsDisabledAtom, 
   AuthTypeAtom, 
-  showTokenVerifySectionAtom, 
-  tokenAtom, 
   typeAtom 
 } from "@/shared/components/app/auth/models/auth.model";
 import { reatomComponent, useUpdate } from "@reatom/npm-react";
@@ -30,9 +29,8 @@ const ResetPassword = reatomComponent(({ ctx }) => {
 const Auth = reatomComponent(({ ctx }) => {
   const type = ctx.spy(typeAtom)
 
-  const isDisabled = ctx.spy(authIsProcessingAtom) || ctx.spy(showTokenVerifySectionAtom)
-
-  const triggerIsDisabled = !!ctx.spy(tokenAtom)
+  const isDisabled = ctx.spy(authIsDisabledAtom)
+  const triggerIsDisabled = ctx.spy(authTriggerIsDisabledAtom)
 
   return (
     <Tabs

@@ -1,8 +1,10 @@
 import { Kysely, PostgresDialect } from "kysely";
-import { Pool, type PoolConfig } from "pg";
+import pg, { type PoolConfig } from "pg";
 import type { DB as authDBType } from "@repo/shared/types/db/auth-database-types";
 import { poolOptsHooks } from "./lobby-db";
 import { GENERAL_POSTGRES_DB, GENERAL_POSTGRES_HOST, GENERAL_POSTGRES_PASSWORD, GENERAL_POSTGRES_PORT, GENERAL_POSTGRES_USER } from "../env";
+
+const { Pool } = pg;
 
 export const inherit = {
   host: GENERAL_POSTGRES_HOST,

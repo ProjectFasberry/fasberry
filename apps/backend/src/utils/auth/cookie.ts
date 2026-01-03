@@ -1,3 +1,4 @@
+import { invariant } from "#/helpers/invariant"
 import { getUrls } from "#/shared/constants/urls"
 import { isProduction } from "#/shared/env"
 import type { Context } from "elysia"
@@ -12,17 +13,24 @@ type SetCookie = Properties & {
   expires: Date
 }
 
-export const getDomain = () => {
+function getDomain() {
   const urls = getUrls()
-  return `.${urls["domain"]}`
+  const domain = urls.get("domain")
+  invariant(domain, "Domain is not defined");
+  return `.${domain}`
 }
 
 export const SESSION_KEY = "session";
+const FALLBACK_DOMAIN = "127.0.0.1";
 
 export function setCookie({ cookie, key, expires, value }: SetCookie) {
-  const domain = getDomain()
-  
-  cookie[key].domain = isProduction ? domain : "127.0.0.1"
+  let domain = getDomain()
+
+  if (!isProduction) {
+    domain = FALLBACK_DOMAIN
+  }
+
+  cookie[key].domain = domain
   cookie[key].value = value
   cookie[key].expires = expires
   cookie[key].httpOnly = true
@@ -32,9 +40,13 @@ export function setCookie({ cookie, key, expires, value }: SetCookie) {
 }
 
 export function unsetCookie({ cookie, key }: Properties) {
-  const domain = getDomain()
+  let domain = getDomain()
 
-  cookie[key].domain = isProduction ? domain : "127.0.0.1"
+  if (!isProduction) {
+    domain = FALLBACK_DOMAIN
+  }
+
+  cookie[key].domain = domain
   cookie[key].value = ""
   cookie[key].expires = new Date(0)
   cookie[key].path = "/"

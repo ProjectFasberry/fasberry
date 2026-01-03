@@ -6,7 +6,6 @@ import { Locale } from "../locales"
 import { reatomMap } from "@reatom/framework"
 
 export type AppOptionsPayloadExtend = AppOptionsPayload & {
-  isAuth: boolean,
   locale: Locale,
   country: string | null
 }
@@ -16,7 +15,8 @@ export const appOptionsInit: AppOptionsPayloadExtend = {
   isBanned: false,
   isAuth: false,
   locale: "ru",
-  country: null
+  country: null,
+  isWl: false
 }
 
 export const APP_OPTIONS_KEY = "appOptions"

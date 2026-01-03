@@ -28,7 +28,9 @@ export type EventPayload = {
 
 export type AppOptionsPayload = {
   bannerIsExists: boolean,
-  isBanned: boolean
+  isBanned: boolean,
+  isAuth: boolean,
+  isWl: boolean
 }
 
 export type SeemsLikePlayer = {

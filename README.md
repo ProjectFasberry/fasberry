@@ -68,7 +68,7 @@ Full system and API documentation:
 https://deepwiki.com/ProjectFasberry/fasberry/1-overview
 
 Direct API reference:
-https://api.fasberry.su/minecraft/openapi
+https://api.fasberry.fun/minecraft/openapi
 
 ### 6. License
 

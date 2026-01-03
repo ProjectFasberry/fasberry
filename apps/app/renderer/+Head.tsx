@@ -1,4 +1,4 @@
-import { APAY_TAG } from "@/shared/env";
+import { APAY_TAG, API_PREFIX_URL, isProduction, VOLUME_URL } from "@/shared/env";
 
 export default function HeadDefault() {
   return (
@@ -9,8 +9,12 @@ export default function HeadDefault() {
       <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       <meta name="apple-mobile-web-app-title" content="Fasberry" />
       <link rel="manifest" href="/site.webmanifest" />
-      <link rel="preconnect" href="https://api.fasberry.su"/>
-      <link rel="preconnect" href="https://volume.fasberry.su" />
+      {isProduction && (
+        <>
+          <link rel="preconnect" href={API_PREFIX_URL} />
+          <link rel="preconnect" href={VOLUME_URL} />
+        </>
+      )}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <meta name="keywords" content="fasberry, minecraft, фасберри, фесберри, фесберри проект, майнкрафт сервер,

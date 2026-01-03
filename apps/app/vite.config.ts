@@ -6,7 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { analyzer } from 'vite-bundle-analyzer';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, process.cwd()) as ImportMetaEnv;
 
   const host = env.VITE_APP_HOST
   const port = Number(env.VITE_APP_PORT)

@@ -2,6 +2,7 @@ import { IconBrandDiscordFilled, IconBrandTelegram } from "@tabler/icons-react"
 import { Link } from "../../../config/link"
 import { Typography } from "@repo/ui/typography"
 import { CONTACTS } from "../../../../consts/contacts"
+import { LANDING_URL } from "@/shared/env"
 
 const telegramHref = CONTACTS.find(t => t.value === 'tg')?.href as string
 const discordHref = CONTACTS.find(t => t.value === 'ds')?.href as string
@@ -54,10 +55,10 @@ export const Footer = () => {
                 Информация
               </Typography>
               <div className="flex flex-col gap-1 min-w-0 *:truncate">
-                <Link href="https://fasberry.su/info/contacts">
+                <Link href={`${LANDING_URL}/info/contacts`}>
                   Контакты
                 </Link>
-                <Link href="https://fasberry.su/info/privacy">
+                <Link href={`${LANDING_URL}/info/privacy`}>
                   Конфиденциальность
                 </Link>
               </div>
@@ -67,10 +68,10 @@ export const Footer = () => {
                 Ресурсы
               </Typography>
               <div className="flex flex-col gap-1 min-w-0 *:truncate">
-                <Link href="https://fasberry.su/status">
+                <Link href={`${LANDING_URL}/status`}>
                   Статус
                 </Link>
-                <Link href="https://fasberry.su/wiki">
+                <Link href={`${LANDING_URL}/wiki`}>
                   FAQ
                 </Link>
               </div>

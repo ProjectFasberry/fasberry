@@ -1,10 +1,15 @@
 import ky, { Options } from "ky";
-import { API_PREFIX_URL } from "../env";
+import { API_PREFIX_URL, isDevelopment } from "../env";
+
+const devHeaders = {
+  "x-forwarded-for": "127.0.0.1"
+}
 
 const clientConfig: Options = {
   prefixUrl: API_PREFIX_URL,
   credentials: "include",
-  timeout: 4000
+  timeout: 4000,
+  headers: isDevelopment ? devHeaders : {}
 }
 
 export const SKIP_HOOK_HEADER = "X-Skip-Error-Handling"

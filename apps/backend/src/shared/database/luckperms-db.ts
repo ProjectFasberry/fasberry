@@ -1,9 +1,11 @@
 import { Kysely } from 'kysely';
 import type { DB as lpDBType } from "@repo/shared/types/db/luckperms-database-types";
 import { PostgresDialect } from "kysely";
-import { Pool, type PoolConfig } from "pg";
+import pg, { type PoolConfig } from "pg";
 import { poolOptsHooks } from './lobby-db';
 import { LUCKPERMS_POSTGRES_DB, LUCKPERMS_POSTGRES_HOST, LUCKPERMS_POSTGRES_PASSWORD, LUCKPERMS_POSTGRES_PORT, LUCKPERMS_POSTGRES_USER } from '../env';
+
+const { Pool } = pg;
 
 export const inherit = {
   host: LUCKPERMS_POSTGRES_HOST,

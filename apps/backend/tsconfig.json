@@ -35,7 +35,8 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "./src/drizzle"
   ],
   "references": [
     { "path": "../../packages/shared" }

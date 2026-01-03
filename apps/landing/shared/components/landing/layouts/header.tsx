@@ -10,6 +10,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@r
 import { Typography } from "@repo/ui/typography";
 import { Fragment } from "react/jsx-runtime";
 import { tv } from "tailwind-variants";
+import { APP_URL } from "@/shared/env";
 
 const MAIN_HEADER = [
   { name: "Главная", href: "/", },
@@ -19,10 +20,10 @@ const MAIN_HEADER = [
   {
     name: "Игра",
     childs: [
-      { name: "Карта мира", href: "https://map.fasberry.su", },
+      { name: "Аккаунт", href: APP_URL, },
+      { name: "Карта мира", href: `${APP_URL}/map`, },
       { name: "Вики", href: "/wiki", },
       { name: "Модпак", href: "/modpack", },
-      { name: "Аккаунт", href: "https://app.fasberry.su/", },
     ],
   },
 ];

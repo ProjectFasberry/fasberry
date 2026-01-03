@@ -5,7 +5,7 @@ import { createNewsSchema } from "@repo/shared/schemas/news";
 import { toast } from "sonner";
 import { client, withAbort, withJsonBody, withLogging, withQueryParams } from "@/shared/lib/client-wrapper";
 import { News, NewsPayload } from "@repo/shared/types/entities/news";
-import { logError } from "@/shared/lib/log";
+import { devLog, logError } from "@/shared/lib/log";
 import { generateHTML, type JSONContent } from "@tiptap/react"
 import { actionsTargetAtom, collectChanges, compareChanges, notifyAboutRestrictRole } from "./actions.model";
 import { editorExtensions } from "@/shared/components/config/editor";
@@ -13,7 +13,6 @@ import { withUndo } from "@reatom/undo";
 import { newsUpdateSchema } from "@repo/shared/schemas/news";
 import { alertDialog } from "@/shared/components/config/alert-dialog.model";
 import { navigate } from "vike/client/router";
-import { isDevelopment } from "@/shared/env";
 
 export const newsListAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() =>
@@ -21,7 +20,11 @@ export const newsListAction = reatomAsync(async (ctx) => {
       .pipe(withQueryParams({ asc: false, content: true }), withAbort(ctx.controller.signal))
       .exec()
   )
-}).pipe(withDataAtom(null), withStatusesAtom(), withCache({ swr: false }))
+}, "newsListAction").pipe(
+  withDataAtom(null), 
+  withStatusesAtom(), 
+  withCache({ swr: false })
+)
 
 // 
 export const createNewsTitleAtom = atom("", "createNewsTitle").pipe(withReset());
@@ -204,11 +207,9 @@ export const editNewsAction = reatomAsync(async (ctx) => {
     editNews.getOldValues(ctx)
   )
 
-  if (isDevelopment) {
-    console.log(editNews.getValues(ctx))
-    console.log(editNews.getOldValues(ctx))
-    console.log(changes);
-  }
+  devLog(editNews.getValues(ctx))
+  devLog(editNews.getOldValues(ctx))
+  devLog(changes)
 
   const body = Object.entries(changes).map(([field, value]) => ({ field, value })) as z.infer<typeof newsUpdateSchema>
 

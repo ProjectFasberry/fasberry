@@ -10,6 +10,7 @@ const buttonVariants = tv({
     variant: {
       default: "border-none border-transparent",
       danger: "border border-red-600 text-red-600",
+      minecraft: "rounded-none button"
     },
     background: {
       default: "bg-neutral-800",

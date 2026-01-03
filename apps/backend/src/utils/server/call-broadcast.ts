@@ -4,10 +4,8 @@ type CallBroadcast = { message: string }
 
 export async function callBroadcast(
   { message }: CallBroadcast,
-  { signal }: AbortableCommandArgs
 ) {
-  const payload = { parent: "cmi", value: `broadcast ${message}` }
+  const payload = { parent: "cmi", value: `broadcast ${message}` } as const;
 
-  // @ts-expect-error
-  return callServerCommand(payload, { signal })
+  return callServerCommand(payload)
 }

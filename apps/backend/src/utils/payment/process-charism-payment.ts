@@ -6,12 +6,10 @@ type GiveCharism = { nickname: string, value: number }
 
 async function giveCharism(
   { nickname, value }: GiveCharism,
-  { signal }: AbortableCommandArgs
 ) {
-  const payload = { parent: "cmi", value: `money give ${nickname} ${value}` }
+  const payload = { parent: "cmi", value: `money give ${nickname} ${value}` } as const
 
-  // @ts-expect-error
-  return callServerCommand(payload, { signal})
+  return callServerCommand(payload)
 }
 
 export async function processCharismPayment({
@@ -20,8 +18,8 @@ export async function processCharismPayment({
   const message = `Игрок ${nickname} приобрел ${value} ед. харизмы`
 
   await abortablePromiseAll([
-    (signal) => giveCharism({ nickname, value }, { signal }),
-    (signal) => callServerCommand({ parent: "cmi", value: `toast ${nickname} Поздравляем с покупкой` }, { signal }),
-    (signal) => callBroadcast({ message }, { signal }),
+    () => giveCharism({ nickname, value }),
+    () => callServerCommand({ parent: "cmi", value: `toast ${nickname} Поздравляем с покупкой` }),
+    () => callBroadcast({ message }),
   ])
 }

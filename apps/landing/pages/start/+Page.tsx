@@ -1,14 +1,15 @@
 import { Link } from "@/shared/components/config/link";
 import { MainWrapperPage } from "@repo/ui/main-wrapper";
 import { toast } from "sonner";
-import { reatomResource, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
-import { reatomComponent } from "@reatom/npm-react";
+import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async";
+import { reatomComponent, useUpdate } from "@reatom/npm-react";
 import { Typography } from "@repo/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@repo/ui/tooltip";
 import { client } from "@/shared/api/client";
 import { Button } from "@repo/ui/button";
 import { tv } from "tailwind-variants";
 import { getStaticObject } from "@/shared/lib/volume";
+import { APP_URL } from "@/shared/env";
 
 const dirtImage = getStaticObject("minecraft/static", "dirt.webp")
 
@@ -22,30 +23,32 @@ const NumericItem = ({ index }: { index: number }) => {
   )
 }
 
-const serverIpResource = reatomResource(async (ctx) => {
+const serverIpResource = reatomAsync(async (ctx) => {
   return await ctx.schedule(async () => {
     const res = await client("shared/server-ip", {
       signal: ctx.controller.signal, throwHttpErrors: false
     })
 
-    const data = await res.json<{ data: { ip?: string } } | { error: string }>()
+    const data = await res.json<{ data: { ip: string } } | { error: string }>()
 
     if ("error" in data) return null;
 
     return data.data?.ip ?? null;
   })
-}).pipe(withDataAtom(), withCache(), withStatusesAtom())
+}).pipe(withDataAtom(null), withCache({ swr: false }), withStatusesAtom())
 
 export const actionCopyboard = async (ip: string) => navigator.clipboard.writeText(ip)
 
 const ServerIp = reatomComponent(({ ctx }) => {
-  const ip = ctx.spy(serverIpResource.dataAtom)
+  useUpdate(serverIpResource, []);
+
+  const data = ctx.spy(serverIpResource.dataAtom)
   const isLoading = ctx.spy(serverIpResource.statusesAtom).isPending
 
   const handle = async () => {
-    if (!ip) return;
+    if (!data) return;
 
-    await actionCopyboard(ip)
+    await actionCopyboard(data)
     toast.success("IP успешно скопирован!")
   }
 
@@ -55,7 +58,7 @@ const ServerIp = reatomComponent(({ ctx }) => {
         <TooltipTrigger>
           <div className="flex items-center justify-start bg-black w-full py-2 px-2 border-2 border-neutral-500">
             <Typography onClick={handle} color="white" className="text-base text-left">
-              {isLoading ? "загрузка..." : ip ? ip : "недоступно"}
+              {isLoading ? "загрузка..." : data ? data : "недоступно"}
             </Typography>
           </div>
         </TooltipTrigger>
@@ -65,7 +68,7 @@ const ServerIp = reatomComponent(({ ctx }) => {
       </Tooltip>
     </TooltipProvider>
   )
-})
+}, "ServerIp")
 
 const HowToConnectOnServer = () => {
   return (
@@ -134,7 +137,7 @@ export default function Page() {
                 <NumericItem index={1} />
                 <Typography color="white" className="text-md md:text-xl lg:text-2xl">
                   <a
-                    href="https://app.fasberry.su/auth"
+                    href={`${APP_URL}/auth`}
                     className="text-green text-shadow-lg hover:underline-offset-8 hover:underline"
                   >
                     Зарегистрироваться

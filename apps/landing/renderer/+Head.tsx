@@ -1,3 +1,4 @@
+import { API_PREFIX, MAIN_DOMAIN, VOLUME_ENDPOINT } from "@/shared/env";
 import { getStaticObject } from "@/shared/lib/volume";
 
 const bgImage = getStaticObject("backgrounds", "donate_background.png")
@@ -19,7 +20,7 @@ export default function HeadDefault() {
         survival, smp, fasberry project, minecraft fasberry, minecraft server play"/>
       <meta name="author" content="Fasberry Team" />
       <meta name="format-detection" content="email=yes, address=yes, telephone=yes" />
-      <meta name="description" content="Официальная страница майнкрафт-проекта Fasberry. Жанр: RP, RPG, полу-ванила. 1.20+. Играть: play.fasberry.su." />
+      <meta name="description" content={`Официальная страница майнкрафт-проекта Fasberry. Жанр: RP, RPG, полу-ванила. 1.20+. Играть: play.${MAIN_DOMAIN}`} />
 
       <meta property="og:title" content="Fasberry" />
       <meta property="og:description" content="Сколько топовых майнкрафт-серверов вы знаете? Теперь знаете на один больше" />
@@ -40,8 +41,12 @@ export default function HeadDefault() {
 
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow, noimageindex, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
-      <link rel="preconnect" href="https://api.fasberry.su" crossOrigin="" />
-      <link rel="preconnect" href="https://volume.fasberry.su" crossOrigin="" />
+      {import.meta.env.PROD && (
+        <>
+          <link rel="preconnect" href={API_PREFIX} crossOrigin="" />
+          <link rel="preconnect" href={VOLUME_ENDPOINT} crossOrigin="" />
+        </>
+      )}
       <link
         rel="preload"
         as="font"

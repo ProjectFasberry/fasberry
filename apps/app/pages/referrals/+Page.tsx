@@ -1,8 +1,10 @@
 import { Avatar } from "@/shared/components/app/avatar/components/avatar"
 import { createLink, Link } from "@/shared/components/config/link"
+import { APP_URL, LANDING_URL } from "@/shared/env"
 import { client } from "@/shared/lib/client-wrapper"
 import { getStaticImage } from "@/shared/lib/volume-helpers"
 import { currentUserAtom } from "@/shared/models/current-user.model"
+import { PageHeaderImage } from "@/shared/ui/header-image"
 import { reatomAsync, withCache, withDataAtom, withStatusesAtom } from "@reatom/async"
 import { reatomComponent, useUpdate } from "@reatom/npm-react"
 import { Button } from "@repo/ui/button"
@@ -11,30 +13,28 @@ import { Typography } from "@repo/ui/typography"
 import { IconBook, IconPlus } from "@tabler/icons-react"
 import { toast } from "sonner"
 
-type Referral = {
-  id: number;
-  completed: boolean;
-  created_at: Date;
-  referral: string;
-}
+type Referral = { id: number; completed: boolean; created_at: Date; referral: string }
 
 const referralsListAction = reatomAsync(async (ctx) => {
   return await ctx.schedule(() =>
     client<Referral[]>("server/referrals/list").exec()
   )
-}).pipe(
+}, "referralsListAction").pipe(
   withDataAtom(null, (_, data) => data.length === 0 ? null : data),
   withCache({ swr: false }),
   withStatusesAtom()
 )
 
+const getReferralIp = (v: string) => `${APP_URL}/auth?type=register&referrer=${v}`
+
 const ReferralsLink = reatomComponent(({ ctx }) => {
   const nickname = ctx.get(currentUserAtom)?.nickname;
-
+  if (!nickname) return null;
+  
   const handle = async () => {
-    const link = `https://app.fasberry.su/auth?type=register&referrer=${nickname}`
-    toast.success("Ссылка скопирована");
+    const link = getReferralIp(nickname)
     await navigator.clipboard.writeText(link)
+    toast.success("Ссылка скопирована");
   }
 
   return (
@@ -50,7 +50,7 @@ const ReferralsLink = reatomComponent(({ ctx }) => {
         </Typography>
       </Button>
       <a
-        href="https://fasberry.su/wiki/referals"
+        href={`${LANDING_URL}/wiki/referals`}
         target="_blank"
         className="flex min-w-0 sm:w-fit w-full"
       >
@@ -126,26 +126,10 @@ const ReferralsList = reatomComponent(({ ctx }) => {
 
 const referalsImage = getStaticImage("images/emotes-preview.webp")
 
-const ReferalsPreviewImage = () => {
-  return (
-    <div className="flex select-none flex-col items-center justify-end relative overflow-hidden h-[180px] rounded-lg w-full">
-      <img
-        src={referalsImage}
-        draggable={false}
-        alt=""
-        width={800}
-        height={800}
-        className="absolute w-full h-[300px] rounded-lg object-cover object-top"
-      />
-      <div className="absolute bottom-0 bg-gradient-to-t h-[60px] from-black/60 via-black/20 to-transparent w-full" />
-    </div>
-  )
-}
-
 export default function Page() {
   return (
     <div className="flex flex-col gap-6 w-full min-w-0 min-h-dvh h-full">
-      <ReferalsPreviewImage />
+      <PageHeaderImage img={referalsImage} />
       <div className="flex flex-col gap-4 min-w-0 w-full h-full">
         <Typography className="text-3xl font-semibold">
           Ваши рефералы

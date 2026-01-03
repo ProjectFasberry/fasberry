@@ -48,25 +48,7 @@
     @apply w-full px-2 sm:px-0;
     max-width: clamp(420px, 80vw, 1200px);
   }
-
-  .windows-loading-spinner {
-    box-sizing: border-box;
-    width: 1.5rem;
-    height: 1.5rem;
-    padding: 2px;
-    overflow: visible;
-  }
-
-  .windows-loading-spinner>circle {
-    stroke: #fff;
-    fill: none;
-    stroke-width: 2px;
-    stroke-linecap: round;
-    transform-origin: 50% 50%;
-    transition: all 0.2s ease-in-out 0s;
-    animation: 2s linear 0s infinite normal none running loading-spinner;
-  }
-
+  
   @keyframes loading-spinner {
     0% {
       stroke-dasharray: 0.01px, 43.97px;
@@ -340,10 +322,6 @@
   stroke: currentColor;
 }
 
-.MuiCircularProgress-circleStatic {
-  transition: stroke-dashoffset 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0s;
-}
-
 .loader-circle-animation {
   animation: rotate-inner08 1.4s ease-in-out infinite;
   stroke-dasharray: 80px, 200px;
@@ -374,59 +352,6 @@
   100% {
     stroke-dasharray: 100px, 200px;
     stroke-dashoffset: -125px;
-  }
-}
-
-@keyframes color-anim08 {
-  0% {
-    color: #4285f4;
-  }
-
-  25% {
-    color: #ea4335;
-  }
-
-  50% {
-    color: #f9bb2d;
-  }
-
-  75% {
-    color: #34a853;
-  }
-}
-
-.windows-loading-spinner {
-  box-sizing: border-box;
-  width: 1rem;
-  height: 1rem;
-  padding: 2px;
-  overflow: visible;
-}
-
-.windows-loading-spinner>circle {
-  stroke: #fff;
-  fill: none;
-  stroke-width: 2px;
-  stroke-linecap: round;
-  transform-origin: 50% 50%;
-  transition: all 0.2s ease-in-out 0s;
-  animation: 2s linear 0s infinite normal none running loading-spinner;
-}
-
-@keyframes loading-spinner {
-  0% {
-    stroke-dasharray: 0.01px, 43.97px;
-    transform: rotate(0);
-  }
-
-  50% {
-    stroke-dasharray: 21.99px, 21.99px;
-    transform: rotate(450deg);
-  }
-
-  100% {
-    stroke-dasharray: 0.01px, 43.97px;
-    transform: rotate(1080deg);
   }
 }
 

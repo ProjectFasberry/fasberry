@@ -103,6 +103,7 @@ export const checkOrderRoute = new Elysia()
       await general.transaction().execute(async (trx) => {
         const query = await trx
           .insertInto("payments")
+          // @ts-expect-error
           .values({
             ...order,
             status: "succeeded",

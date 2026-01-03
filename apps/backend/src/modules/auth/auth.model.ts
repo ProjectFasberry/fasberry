@@ -19,6 +19,7 @@ import { initPlayerSkin } from "../server/skin/skin.model"
 import { invariant } from "#/helpers/invariant"
 import type { Context } from "elysia";
 import { SESSION_KEY, setCookie } from "#/utils/auth/cookie"
+import { isProduction } from "#/shared/env"
 
 export const DEFAULT_SESSION_EXPIRE = 60 * 60 * 24 * 30 // 30 days
 export const DEFAULT_SESSION_EXPIRE_MS = 60 * 60 * 24 * 30 * 1000
@@ -342,6 +343,11 @@ async function deleteAccount({ nickname }: {nickname:string}) {
 }
 
 export async function registrationEvents({ nickname }: { nickname: string }) {
+  if (!isProduction) {
+    console.warn("Skipping registrationEvents on development")
+    return;
+  }
+
   const eventsRec = {
     "skin": initPlayerSkin,
   }
@@ -569,6 +575,11 @@ export async function getUserUUID(nickname: string) {
 }
 
 export async function afterLoginEvents({ nickname }: { nickname: string }) {
+  if (!isProduction) {
+    console.warn("Skipping afterLoginEvents on development")
+    return;
+  }
+
   const nc = getNats();
 
   nc.publish(SUBJECTS.EVENTS.AUTHORIZATION.LOGIN, JSON.stringify({

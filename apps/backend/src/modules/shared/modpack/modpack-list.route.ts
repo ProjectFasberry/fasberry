@@ -9,7 +9,8 @@ async function getModpacks() {
     .selectAll()
     .execute()
 
-  const data = query.map((modpack) => processModpack(modpack))
+  const data = query.map((modpack) => processModpack({ ...modpack, downloadLink: "unknown" }))
+
   return data
 }
 
@@ -36,7 +37,7 @@ export const modpackList = new Elysia()
 
     set.headers["Cache-Control"] = "public, max-age=60, s-maxage=60"
     set.headers["vary"] = "Origin";
-    
+
     return { data }
   }, {
     response: {

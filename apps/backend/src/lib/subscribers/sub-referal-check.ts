@@ -20,12 +20,12 @@ async function handleReferalCheck(msg: Msg) {
     await general.transaction().execute(async (trx) => {
       await abortablePromiseAll([
         // for initiator
-        (signal) => callServerCommand({ parent: "cmi", value: `money give ${result.initiator} 60` }, { signal }),
-        (signal) => callServerCommand({ parent: "p", value: `give ${result.initiator} 5` }, { signal }),
+        () => callServerCommand({ parent: "cmi", value: `money give ${result.initiator} 60` }),
+        () => callServerCommand({ parent: "p", value: `give ${result.initiator} 5` }),
 
         // for recipient
-        (signal) => callServerCommand({ parent: "cmi", value: `money give ${result.recipient} 30` }, { signal }),
-        (signal) => callServerCommand({ parent: "p", value: `give ${result.recipient} 1` }, { signal })
+        () => callServerCommand({ parent: "cmi", value: `money give ${result.recipient} 30` }),
+        () => callServerCommand({ parent: "p", value: `give ${result.recipient} 1` })
       ], controller)
 
       const update = await trx

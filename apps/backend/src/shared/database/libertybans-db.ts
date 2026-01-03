@@ -1,8 +1,10 @@
 import type { DB as libertyBansDBType } from "@repo/shared/types/db/libertybans-database-types";
 import { Kysely, PostgresDialect } from "kysely";
-import { Pool, type PoolConfig } from "pg";
+import pg, { type PoolConfig } from "pg";
 import { poolOptsHooks } from "./lobby-db";
 import { LIBERTYBANS_POSTGRES_DB, LIBERTYBANS_POSTGRES_HOST, LIBERTYBANS_POSTGRES_PASSWORD, LIBERTYBANS_POSTGRES_PORT, LIBERTYBANS_POSTGRES_USER } from "../env";
+
+const { Pool } = pg;
 
 export const inherit = {
   host: LIBERTYBANS_POSTGRES_HOST,

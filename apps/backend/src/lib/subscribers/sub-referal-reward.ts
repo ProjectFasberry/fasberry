@@ -17,8 +17,8 @@ async function handleReferalReward(msg: Msg) {
 
   try {
     await abortablePromiseAll([
-      (signal) => callServerCommand({ parent: "cmi", value: `money give ${payload.referral} 50` }, { signal }),
-      (signal) => callServerCommand({ parent: "p", value: `give ${payload.referrer} 1` }, { signal })
+      () => callServerCommand({ parent: "cmi", value: `money give ${payload.referral} 50` }),
+      () => callServerCommand({ parent: "p", value: `give ${payload.referrer} 1` })
     ], controller)
   } catch (e) {
     logErrorMsg(e)

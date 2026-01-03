@@ -3,6 +3,7 @@ import { TextStyleKit } from "@tiptap/extension-text-style"
 import Image from '@tiptap/extension-image'
 import { TableKit } from "@tiptap/extension-table";
 import { Dropcursor } from "@tiptap/extensions";
+import { MAIN_DOMAIN } from "@/shared/env";
 
 const ALLOWED_DOMAINS = [
   'google.com',
@@ -13,7 +14,7 @@ const ALLOWED_DOMAINS = [
   'apple.com',
   'amazon.com',
   'linkedin.com',
-  'fasberry.su',
+  MAIN_DOMAIN,
   'discord.gg'
 ];
 

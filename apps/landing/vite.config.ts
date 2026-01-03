@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
     ],
     build: {
       target: "es2022",
+      sourcemap: true
     },
     resolve: {
       dedupe: ['react', 'react-dom'],

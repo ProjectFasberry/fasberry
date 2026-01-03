@@ -1,9 +1,9 @@
 import { Ctx } from "@reatom/core";
 import { PageContextServer } from "vike/types";
-import { isDevelopment } from "../env";
 import { parseCookie } from "./cookie";
 import { playerSeemsLikePlayersIsShowAtom, playerSeemsLikePlayersIsShowKey } from "../components/app/player/models/player-seems-like.model";
 import { parseBoolean } from "./validate-primitives";
+import { devLog } from "./log";
 
 type Target<T = any> = Record<string, {
   atom: (ctx: Ctx, atom: any) => void,
@@ -18,6 +18,8 @@ const COOKIE_TARGETS: Target = {
 };
 
 export function initCookieOpts(ctx: Ctx, pageContext: PageContextServer) {
+  devLog("initCookieOpts.start")
+
   const headers = pageContext.headers;
   if (!headers) return;
 
@@ -28,12 +30,10 @@ export function initCookieOpts(ctx: Ctx, pageContext: PageContextServer) {
   for (const [key, value] of Object.entries(cookies)) {
     const target = COOKIE_TARGETS[key as keyof typeof COOKIE_TARGETS];
     if (!target) continue;
-    
+
     const finalValue = target.validator?.(value) ?? value;
 
-    if (isDevelopment) {
-      console.log(finalValue, "for", key);
-    }
+    devLog(finalValue, "for", key);
 
     target.atom(ctx, finalValue);
   }

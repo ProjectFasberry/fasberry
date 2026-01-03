@@ -22,7 +22,8 @@ async function getModpack(id: number) {
 
   if (!query) return null;
 
-  const data = processModpack(query)
+  const data = processModpack({ ...query, downloadLink: "unknown" })
+  
   return data
 }
 

@@ -1,10 +1,16 @@
 import Elysia, { t } from "elysia";
 import { defineOptionalUser } from "#/lib/middlewares/define";
 import { withData } from "#/shared/schemas";
-import { HttpStatusEnum } from "elysia-http-status-code/status";
 import { bannerExists } from "../../shared/banner/banner.model";
 import type { AppOptionsPayload } from "@repo/shared/types/entities/other";
 import { libertybans } from "#/shared/database/libertybans-db";
+import { getWhitelistIpList } from "#/shared/constants/urls";
+import { ipPlugin } from "#/lib/plugins/ip";
+
+function getWhitelist(ip: string) {
+  const whitelist = getWhitelistIpList()
+  return whitelist.includes(ip);
+}
 
 export async function getBan(nickname: string | null) {
   if (!nickname) return null;
@@ -31,20 +37,26 @@ export const appOptionsList = new Elysia()
     "options": withData(
       t.Object({
         bannerIsExists: t.Boolean(),
-        isBanned: t.Boolean()
+        isBanned: t.Boolean(),
+        isWl: t.Boolean(),
+        isAuth: t.Boolean()
       })
     )
   })
-  .get("/options", async ({ nickname, status }) => {
+  .use(ipPlugin())
+  .get("/options", async ({ nickname, ip }) => {
     const bannerIsExists = await bannerExists(nickname)
     const isBanned = await getBan(nickname);
+    const isWl = getWhitelist(ip)
 
     const data: AppOptionsPayload = {
       bannerIsExists,
-      isBanned: Boolean(isBanned)
+      isBanned: Boolean(isBanned),
+      isWl,
+      isAuth: Boolean(nickname)
     }
 
-    return status(HttpStatusEnum.HTTP_200_OK, { data })
+    return { data }
   }, {
     response: {
       200: "options"

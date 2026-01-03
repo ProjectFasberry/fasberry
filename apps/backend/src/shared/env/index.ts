@@ -6,7 +6,6 @@ export const NATS_USER = Bun.env.NATS_USER
 
 export const REDIS_HOST = Bun.env.REDIS_HOST
 
-export const LOGGER_BOT_TOKEN = Bun.env.BOT_LOGGER_TOKEN
 export const GUARD_BOT_TOKEN = Bun.env.BOT_GUARD_TOKEN;
 
 export const SQLITE_DATABASE_URL = Bun.env.SQLITE_DATABASE_URL;
@@ -86,3 +85,5 @@ export const PORT = Bun.env.PORT
 
 export const MINESKIN_API_KEY = Bun.env.MINESKIN_API_KEY
 export const MINESKIN_AES_SECRET_KEY = Bun.env.MINESKIN_AES_SECRET_KEY
+
+export const MAP_URL = Bun.env.MAP_INSTANCE_URL

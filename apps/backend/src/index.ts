@@ -1,10 +1,9 @@
 import "../imports"
 import "../declare.d.ts"
 
-import { initLoggerBot } from "./shared/bot/logger";
 import { handleFatalError } from "./utils/config/handle-log";
 import { checkDatabasesHealth } from "./shared/database/init";
-import { startGuardBot } from "./shared/bot/guard";
+import { startGuardBot } from "./shared/bot";
 import { initURLS } from "./shared/constants/urls";
 import { initChats } from "./shared/constants/chats";
 import { initPermissions } from "./shared/constants/permissions";
@@ -35,17 +34,12 @@ async function services() {
   appLogger.log(`Finished services`);
 }
 
-function bots() {
-  initLoggerBot();
-  startGuardBot();
-}
-
 async function startServices() {
   await entrypoint();
   await services();
 
   startJobs();
-  bots();
+  startGuardBot();
 }
 
 async function start() {

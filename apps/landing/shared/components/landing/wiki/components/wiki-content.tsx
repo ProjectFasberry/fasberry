@@ -74,7 +74,7 @@ export const WikiContentItem = () => {
   })
 
   if (isDevelopment) {
-    html = html.replaceAll("https://volume.fasberry.su", "http://127.0.0.1:9000")
+    html = html.replaceAll("https://volume.fasberry.fun", "http://127.0.0.1:9000")
   }
 
   return (

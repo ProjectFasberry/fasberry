@@ -1,8 +1,9 @@
 import { Bot, TelegramError } from "gramio";
 import { isProduction, GUARD_BOT_TOKEN as token } from "../env";
 import { logger } from "#/utils/config/logger";
-import { GUARD_COMMANDS } from "./guard-cmds";
+import { GUARD_COMMANDS } from "./cmds";
 import { getChats } from "../constants/chats";
+import { invariant } from "#/helpers/invariant";
 
 function validateChatId(chatId: string | number) {
   const chats = getChats();
@@ -11,31 +12,35 @@ function validateChatId(chatId: string | number) {
 
 export const botLogger = logger.withTag("Bot").withTag("Guard")
 
-export function initCommands(bot: Bot) {
-  for (const [cmd, { cb, type, publicCb }] of GUARD_COMMANDS) {
-    bot.command(cmd, async (ctx) => {
-      if (type === 'private') {
-        const isValid = validateChatId(ctx.chat.id)
-        if (!isValid) return;
-      }
-
-      if (type === 'public') {
-        if (typeof publicCb === 'function') {
-          publicCb(ctx)
-        }
-      }
-
-      return cb(ctx)
-    })
-    botLogger.success(`Command "${cmd}" inited`)
-  }
-}
-
-export let guardBot: Bot | null = null;
+let guardBot: Bot | null = null;
 
 export function getGuardBot(): Bot {
-  if (!guardBot) throw new Error("Guard bot is not defined")
+  invariant(guardBot, "Guard bot is not defined")
   return guardBot
+}
+
+export function initCommands(bot: Bot) {
+  try {
+    for (const [cmd, { cb, type, publicCb }] of GUARD_COMMANDS) {
+      bot.command(cmd, async (ctx) => {
+        if (type === 'private') {
+          const isValid = validateChatId(ctx.chat.id)
+          if (!isValid) return;
+        }
+
+        if (type === 'public') {
+          if (typeof publicCb === 'function') {
+            publicCb(ctx)
+          }
+        }
+
+        return cb(ctx)
+      })
+      botLogger.success(`Command "${cmd}" inited`)
+    }
+  } catch (e) {
+    botLogger.error(`Init commands error`, e)
+  }
 }
 
 export async function startGuardBot() {
